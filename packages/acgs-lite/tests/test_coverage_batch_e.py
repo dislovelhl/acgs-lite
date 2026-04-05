@@ -286,11 +286,10 @@ class TestGovernanceEngineValidate:
         assert exc_info.value.rule_id == "T-CRIT"
 
     def test_deny_high_strict_returns_violations(self):
-        """HIGH severity blocks in strict mode on the Python slow path."""
+        """HIGH severity detected in strict mode; violations reported but valid=True (only CRITICAL blocks)."""
         engine = _make_engine(strict=True)
-        with pytest.raises(ConstitutionalViolationError) as exc_info:
-            engine.validate("skip audit for this action")
-        assert exc_info.value.rule_id == "T-HIGH"
+        result = engine.validate("skip audit for this action")
+        assert any(v.rule_id == "T-HIGH" for v in result.violations)
 
     def test_deny_non_strict_returns_violations(self):
         engine = _make_engine(strict=False)
@@ -306,6 +305,24 @@ class TestGovernanceEngineValidate:
         assert result.valid is True or any(
             v.severity == Severity.MEDIUM for v in result.violations
         )
+
+    def test_deny_medium_strict_without_high_rules_stays_non_blocking(self):
+        constitution = Constitution.from_rules(
+            [
+                Rule(
+                    id="T-MED-ONLY",
+                    text="Prefer encryption",
+                    severity=Severity.MEDIUM,
+                    keywords=["plaintext"],
+                    category="data",
+                )
+            ]
+        )
+        engine = GovernanceEngine(constitution, strict=True)
+        result = engine.validate("send data in plaintext format")
+        assert result.valid is True
+        assert [v.rule_id for v in result.violations] == ["T-MED-ONLY"]
+        assert [v.rule_id for v in result.warnings] == ["T-MED-ONLY"]
 
     def test_validate_with_agent_id(self):
         engine = _make_engine(strict=False)
@@ -484,7 +501,9 @@ class TestGovernanceEngineStats:
         engine.validate("world")
         stats = engine.stats
         assert stats["total_validations"] >= 2
-        assert stats["compliance_rate"] == 1.0
+        assert stats["compliance_rate"] is None
+        assert stats["avg_latency_ms"] is None
+        assert stats["audit_metrics_complete"] is False
         assert "rules_count" in stats
         assert "constitutional_hash" in stats
 
@@ -495,13 +514,15 @@ class TestGovernanceEngineStats:
         engine.validate("expose secret key")
         stats = engine.stats
         assert stats["total_validations"] >= 2
-        assert "avg_latency_ms" in stats
+        assert stats["audit_metrics_complete"] is True
+        assert stats["avg_latency_ms"] is not None
 
     def test_stats_empty_engine(self):
         engine = _make_engine()
         stats = engine.stats
         assert stats["total_validations"] == 0
-        assert stats["compliance_rate"] == 1.0
+        assert stats["compliance_rate"] is None
+        assert stats["audit_metrics_complete"] is False
 
 
 # ===================================================================

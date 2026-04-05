@@ -1,37 +1,46 @@
 # LinkedIn Post
 
-Most AI infrastructure today helps agents do more.
+The EU AI Act takes full enforcement in August 2026.
 
-Almost none of it constrains what those agents are allowed to do.
+Fines: up to 7% of global annual revenue.
 
-That is the gap ACGS is built for.
+Most AI deployments today have zero governance infrastructure.
 
-𝗔𝗖𝗚𝗦 is the constitutional governance layer for AI agents:
+I spent two years building the solution:
 
-→ define machine-readable rules  
-→ govern actions before execution  
-→ keep proposer and validator roles separate  
-→ leave behind tamper-evident audit evidence  
-→ produce outputs compliance and security teams can review
+𝗔𝗖𝗚𝗦 — Constitutional governance for AI agents.
 
-Guardrails tools help with unsafe inputs and outputs.
-Agent frameworks help with orchestration.
-Governance platforms help with oversight.
+Five lines of Python. Nine regulatory frameworks. Tamper-evident audit trail.
 
-ACGS sits in the missing middle:
-**governance inside execution.**
+pip install acgs
 
-If AI agents can approve, deploy, deny, escalate, or execute, they need more than prompts.
-They need a constitution.
+What it covers:
+→ EU AI Act (Articles 12, 13, 14)
+→ NIST AI RMF
+→ ISO/IEC 42001
+→ GDPR Article 22
+→ SOC 2 + AI
+→ HIPAA + AI
+→ ECOA/FCRA
+→ NYC Local Law 144
+→ OECD AI Principles
 
-```bash
-pip install acgs-lite
-```
+125 compliance checklist items. 72 auto-populated.
 
-Watch the walkthrough: https://youtu.be/uWacmC3CbYg
+Every AI decision validated against constitutional rules. Every decision logged in a cryptographic audit chain. Every role boundary enforced.
+
+Think of it as HTTPS for AI — the early web couldn't scale commercially until SSL/TLS provided cryptographic proof that transactions were secure. AI can't scale into regulated domains without the equivalent.
+
+Open source. AGPL-3.0-or-later. 3,133 tests passing.
+
+I have no CS degree. I built this entirely with Claude (Anthropic's AI assistant) over two years of daily work. If governance infrastructure for AI can be built by anyone with a vision, then anyone can govern their own AI systems.
+
+That's the democratization that matters.
+
+Watch the 7-minute walkthrough: https://youtu.be/uWacmC3CbYg?si=q6wsOs4Z3OlZX6po
 
 Website: https://acgs.ai
-PyPI: https://pypi.org/project/acgs-lite/
+PyPI: https://pypi.org/project/acgs/
 GitHub: https://github.com/acgs2_admin/acgs
 
-#AIGovernance #AgenticAI #EUAIAct #AIInfrastructure #OpenSource
+#AIGovernance #EUAIAct #AI #Compliance #OpenSource

@@ -25,7 +25,7 @@ from enhanced_agent_bus.pipeline.middleware import MiddlewareConfig
 from enhanced_agent_bus.validators import ValidationResult
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "608508a9bd224290"
 

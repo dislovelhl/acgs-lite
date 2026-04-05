@@ -12,22 +12,24 @@ Features:
 - Checkpoint management for recovery
 """
 
-from abc import ABC, abstractmethod
-from datetime import datetime
+from abc import abstractmethod
+from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime
+
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-except ImportError:
-    CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
-
-try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.persistence.repository import GovernanceRepository
+
 from .models import (
+    FLYWHEEL_RUN_SAGA_NAME,
     CompensationEntry,
+    FlywheelRunRecord,
+    FlywheelRunStage,
     PersistedSagaState,
     SagaCheckpoint,
     SagaState,
@@ -35,7 +37,7 @@ from .models import (
 )
 
 
-class SagaStateRepository(ABC):
+class SagaStateRepository(GovernanceRepository[str, SagaCheckpoint, bool]):
     """
     Abstract repository for saga state persistence.
 
@@ -44,11 +46,6 @@ class SagaStateRepository(ABC):
 
     Constitutional Hash: 608508a9bd224290
     """
-
-    @property
-    def constitutional_hash(self) -> str:
-        """Return the constitutional hash for validation."""
-        return CONSTITUTIONAL_HASH  # type: ignore[no-any-return]
 
     # =========================================================================
     # Core CRUD Operations
@@ -340,25 +337,6 @@ class SagaStateRepository(ABC):
     # =========================================================================
 
     @abstractmethod
-    async def save_checkpoint(self, checkpoint: SagaCheckpoint) -> bool:
-        """
-        Save a saga checkpoint for recovery.
-
-        Checkpoints capture the saga state at critical points and enable
-        recovery after system failures.
-
-        Args:
-            checkpoint: The checkpoint to persist.
-
-        Returns:
-            True if save was successful.
-
-        Raises:
-            RepositoryError: On storage backend failures.
-        """
-        ...
-
-    @abstractmethod
     async def get_checkpoints(
         self,
         saga_id: str,
@@ -373,25 +351,6 @@ class SagaStateRepository(ABC):
 
         Returns:
             List of checkpoints, ordered by created_at descending.
-
-        Raises:
-            RepositoryError: On storage backend failures.
-        """
-        ...
-
-    @abstractmethod
-    async def get_latest_checkpoint(
-        self,
-        saga_id: str,
-    ) -> SagaCheckpoint | None:
-        """
-        Get the most recent checkpoint for a saga.
-
-        Args:
-            saga_id: Unique identifier of the saga.
-
-        Returns:
-            The latest checkpoint if any exist, None otherwise.
 
         Raises:
             RepositoryError: On storage backend failures.
@@ -591,6 +550,172 @@ class SagaStateRepository(ABC):
             RepositoryError: On storage backend failures.
         """
         ...
+
+    async def save_flywheel_run(self, run: FlywheelRunRecord) -> bool:
+        """Persist a bounded flywheel run via the canonical saga store."""
+        return await self.save(run.to_saga_state())
+
+    async def get_flywheel_run(self, run_id: str) -> FlywheelRunRecord | None:
+        """Load a flywheel run if the saga belongs to the flywheel namespace."""
+        saga = await self.get(run_id)
+        if saga is None or saga.saga_name != FLYWHEEL_RUN_SAGA_NAME:
+            return None
+        return FlywheelRunRecord.from_saga_state(saga)
+
+    async def list_flywheel_runs_by_tenant(
+        self,
+        tenant_id: str,
+        state: SagaState | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[FlywheelRunRecord]:
+        """List flywheel runs for a tenant while preserving the generic saga backends."""
+        return await self._scan_flywheel_runs(
+            lambda batch_limit, batch_offset: self.list_by_tenant(
+                tenant_id, state=state, limit=batch_limit, offset=batch_offset
+            ),
+            limit=limit,
+            offset=offset,
+        )
+
+    async def list_flywheel_runs_by_state(
+        self,
+        state: SagaState,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list[FlywheelRunRecord]:
+        """List flywheel runs for a specific saga state across all tenants."""
+        return await self._scan_flywheel_runs(
+            lambda batch_limit, batch_offset: self.list_by_state(
+                state, limit=batch_limit, offset=batch_offset
+            ),
+            limit=limit,
+            offset=offset,
+        )
+
+    async def start_flywheel_run(self, run_id: str) -> bool:
+        """Transition a flywheel run into RUNNING state."""
+        return await self.update_state(run_id, SagaState.RUNNING)
+
+    async def pause_flywheel_run(self, run_id: str, reason: str | None = None) -> bool:
+        """Pause a flywheel run at a safe boundary without mutating immutable evidence."""
+        run = await self.get_flywheel_run(run_id)
+        if run is None:
+            return False
+        run.paused = True
+        run.updated_at = datetime.now(UTC)
+        if reason:
+            run.metadata["pause_reason"] = reason
+        run.version += 1
+        return await self.save_flywheel_run(run)
+
+    async def resume_flywheel_run(self, run_id: str) -> bool:
+        """Resume a paused flywheel run from the latest checkpointed state."""
+        run = await self.get_flywheel_run(run_id)
+        if run is None:
+            return False
+        if run.state == SagaState.INITIALIZED:
+            state_updated = await self.update_state(run_id, SagaState.RUNNING)
+            if not state_updated:
+                return False
+            run = await self.get_flywheel_run(run_id)
+            if run is None:
+                return False
+        run.paused = False
+        run.metadata.pop("pause_reason", None)
+        run.updated_at = datetime.now(UTC)
+        run.version += 1
+        return await self.save_flywheel_run(run)
+
+    async def advance_flywheel_run_stage(
+        self,
+        run_id: str,
+        stage: FlywheelRunStage,
+        current_step_index: int | None = None,
+        metadata: JSONDict | None = None,
+    ) -> bool:
+        """Advance a flywheel run to a new stage and checkpointable progress index."""
+        run = await self.get_flywheel_run(run_id)
+        if run is None:
+            return False
+        run.stage = stage
+        if current_step_index is not None:
+            run.current_step_index = current_step_index
+            updated = await self.update_current_step(run_id, current_step_index)
+            if not updated:
+                return False
+        if metadata:
+            run.metadata.update(metadata)
+        run.updated_at = datetime.now(UTC)
+        run.version += 1
+        return await self.save_flywheel_run(run)
+
+    async def complete_flywheel_run(self, run_id: str) -> bool:
+        """Mark a flywheel run as completed."""
+        return await self.update_state(run_id, SagaState.COMPLETED)
+
+    async def stop_flywheel_run(self, run_id: str, reason: str) -> bool:
+        """Fail a flywheel run due to operator intervention or a hard stop."""
+        return await self.update_state(run_id, SagaState.FAILED, failure_reason=reason)
+
+    async def save_flywheel_checkpoint(
+        self,
+        run_id: str,
+        checkpoint_name: str,
+        *,
+        is_constitutional: bool = False,
+        metadata: JSONDict | None = None,
+    ) -> bool:
+        """Persist a checkpoint snapshot for a flywheel run."""
+        saga = await self.get(run_id)
+        if saga is None or saga.saga_name != FLYWHEEL_RUN_SAGA_NAME:
+            return False
+        checkpoint = SagaCheckpoint(
+            saga_id=run_id,
+            checkpoint_name=checkpoint_name,
+            state_snapshot=saga.to_dict(),
+            completed_step_ids=[step.step_id for step in saga.completed_steps],
+            pending_step_ids=[step.step_id for step in saga.pending_steps],
+            is_constitutional=is_constitutional,
+            metadata=metadata or {},
+            constitutional_hash=saga.constitutional_hash,
+        )
+        return await self.save_checkpoint(checkpoint)
+
+    async def get_latest_flywheel_checkpoint(self, run_id: str) -> SagaCheckpoint | None:
+        """Return the latest checkpoint for a flywheel run."""
+        run = await self.get_flywheel_run(run_id)
+        if run is None:
+            return None
+        return await self.get_latest_checkpoint(run_id)
+
+    async def _scan_flywheel_runs(
+        self,
+        fetch_page: Callable[[int, int], Awaitable[list[PersistedSagaState]]],
+        *,
+        limit: int,
+        offset: int,
+    ) -> list[FlywheelRunRecord]:
+        """Paginate generic saga queries until enough flywheel runs have been collected."""
+        results: list[FlywheelRunRecord] = []
+        seen = 0
+        batch_limit = max(limit, 100)
+        batch_offset = 0
+        while len(results) < limit:
+            batch = await fetch_page(batch_limit, batch_offset)
+            if not batch:
+                break
+            for saga in batch:
+                if saga.saga_name != FLYWHEEL_RUN_SAGA_NAME:
+                    continue
+                if seen < offset:
+                    seen += 1
+                    continue
+                results.append(FlywheelRunRecord.from_saga_state(saga))
+                if len(results) >= limit:
+                    break
+            batch_offset += batch_limit
+        return results
 
 
 class RepositoryError(ACGSBaseError):

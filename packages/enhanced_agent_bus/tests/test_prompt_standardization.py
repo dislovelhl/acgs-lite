@@ -7,8 +7,7 @@ Constitutional Hash: 608508a9bd224290
 from unittest.mock import AsyncMock, MagicMock, patch
 
 # Import LLMAssistant
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.deliberation_layer.llm_assistant import LLMAssistant
 from enhanced_agent_bus.models import AgentMessage, MessageType, Priority
 

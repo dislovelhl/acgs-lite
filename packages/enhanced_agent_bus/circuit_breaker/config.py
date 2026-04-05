@@ -19,11 +19,11 @@ Service Configurations (T002 requirements):
 from dataclasses import dataclass, field
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH  # noqa: E402
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH  # noqa: E402
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict  # noqa: E402
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -163,7 +163,7 @@ def get_service_config(service_name: str, use_unified_config: bool = True) -> Se
     # Attempt to load from unified configuration if available
     if use_unified_config:
         try:
-            from src.core.shared.config.unified import get_settings
+            from enhanced_agent_bus._compat.config.unified import get_settings
 
             settings = get_settings()
             cb_settings = settings.circuit_breaker

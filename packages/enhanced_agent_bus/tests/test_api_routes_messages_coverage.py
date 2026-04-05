@@ -23,8 +23,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from src.core.shared.security.auth import UserClaims
 
+from enhanced_agent_bus._compat.security.auth import UserClaims
 from enhanced_agent_bus.api.routes.messages import (
     MESSAGE_HANDLERS,
     _build_agent_message,
@@ -69,8 +69,7 @@ def _make_user_claims(tenant_id: str = "test-tenant") -> UserClaims:
 
 def _make_app(tenant_id: str = "test-tenant", bus: object = None) -> FastAPI:
     """Build a minimal FastAPI app with the messages router and mocked deps."""
-    from src.core.shared.security.auth import get_current_user
-
+    from enhanced_agent_bus._compat.security.auth import get_current_user
     from enhanced_agent_bus.api.dependencies import get_agent_bus
     from enhanced_agent_bus.api.rate_limiting import limiter
 
@@ -324,47 +323,21 @@ class TestRecordFailedBackgroundTask:
 
 
 class TestIsDevelopmentEnvironment:
-    def test_development_env_returns_true(self) -> None:
-        import enhanced_agent_bus.api.routes.messages as mod
+    def test_development_env_returns_true(self, monkeypatch) -> None:
+        monkeypatch.setenv("ENVIRONMENT", "development")
+        assert _is_development_environment() is True
 
-        with patch.dict(mod.__dict__, {"_ENVIRONMENT": "development"}):
-            # Patch the module-level variable used by the function
-            original = mod._ENVIRONMENT
-            mod._ENVIRONMENT = "development"
-            try:
-                assert _is_development_environment() is True
-            finally:
-                mod._ENVIRONMENT = original
+    def test_production_env_returns_false(self, monkeypatch) -> None:
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        assert _is_development_environment() is False
 
-    def test_production_env_returns_false(self) -> None:
-        import enhanced_agent_bus.api.routes.messages as mod
+    def test_test_env_returns_true(self, monkeypatch) -> None:
+        monkeypatch.setenv("ENVIRONMENT", "test")
+        assert _is_development_environment() is True
 
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "production"
-        try:
-            assert _is_development_environment() is False
-        finally:
-            mod._ENVIRONMENT = original
-
-    def test_test_env_returns_true(self) -> None:
-        import enhanced_agent_bus.api.routes.messages as mod
-
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "test"
-        try:
-            assert _is_development_environment() is True
-        finally:
-            mod._ENVIRONMENT = original
-
-    def test_ci_env_returns_true(self) -> None:
-        import enhanced_agent_bus.api.routes.messages as mod
-
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "ci"
-        try:
-            assert _is_development_environment() is True
-        finally:
-            mod._ENVIRONMENT = original
+    def test_ci_env_returns_true(self, monkeypatch) -> None:
+        monkeypatch.setenv("ENVIRONMENT", "ci")
+        assert _is_development_environment() is True
 
 
 # ---------------------------------------------------------------------------
@@ -722,58 +695,30 @@ INVALID_ID = "not-a-uuid"
 
 
 class TestGetMessageStatusEndpoint:
-    def _client(self, env: str = "development") -> TestClient:
-        import enhanced_agent_bus.api.routes.messages as mod
+    @staticmethod
+    def _client(monkeypatch, env: str = "development") -> TestClient:
+        monkeypatch.setenv("ENVIRONMENT", env)
+        app = _make_app()
+        return TestClient(app, raise_server_exceptions=False)
 
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = env
-        try:
-            app = _make_app()
-            client = TestClient(app, raise_server_exceptions=False)
-        finally:
-            mod._ENVIRONMENT = original
-        return client
-
-    def test_invalid_message_id_returns_400(self) -> None:
-        client = self._client()
+    def test_invalid_message_id_returns_400(self, monkeypatch) -> None:
+        client = self._client(monkeypatch)
         resp = client.get(f"/api/v1/messages/{INVALID_ID}")
         assert resp.status_code == 400
         assert "Invalid message ID format" in resp.json()["detail"]
 
-    def test_valid_id_dev_env_calls_dev_response(self) -> None:
-        """In dev env the endpoint calls _development_status_response.
-        FastAPI validates the response against MessageResponse; since the
-        response_model is set on the route and _development_status_response
-        returns "processed" (not a valid MessageStatusEnum), FastAPI raises a
-        500 ResponseValidationError. We verify the route IS reached (not 400/
-        404/501) by confirming the 500 comes from response validation, not from
-        our business logic raising HTTPException.
-        """
-        import enhanced_agent_bus.api.routes.messages as mod
-
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "development"
-        try:
-            app = _make_app()
-            client = TestClient(app, raise_server_exceptions=False)
-            resp = client.get(f"/api/v1/messages/{VALID_UUID}")
-        finally:
-            mod._ENVIRONMENT = original
-        # Route was reached; either 200 (if FastAPI skips validation for JSONDict)
-        # or 500 (response_model validation error) — not 400/404/501
+    def test_valid_id_dev_env_calls_dev_response(self, monkeypatch) -> None:
+        """In dev env the endpoint calls _development_status_response."""
+        client = self._client(monkeypatch, env="development")
+        resp = client.get(f"/api/v1/messages/{VALID_UUID}")
+        # Route was reached; either 200 or 500 (response validation) — not 400/404/501
         assert resp.status_code not in (400, 404, 501)
 
-    def test_valid_id_non_dev_env_returns_501(self) -> None:
-        import enhanced_agent_bus.api.routes.messages as mod
-
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "production"
-        try:
-            app = _make_app()
-            client = TestClient(app, raise_server_exceptions=False)
-            resp = client.get(f"/api/v1/messages/{VALID_UUID}")
-        finally:
-            mod._ENVIRONMENT = original
+    def test_valid_id_non_dev_env_returns_501(self, monkeypatch) -> None:
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        app = _make_app()
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get(f"/api/v1/messages/{VALID_UUID}")
         assert resp.status_code == 501
 
     def test_response_tenant_id_via_helper(self) -> None:
@@ -787,23 +732,16 @@ class TestGetMessageStatusEndpoint:
         assert data["tenant_id"] == "tenant-abc"
         assert data["message_id"] == VALID_UUID
 
-    def test_uppercase_uuid_passes_pattern_check(self) -> None:
+    def test_uppercase_uuid_passes_pattern_check(self, monkeypatch) -> None:
         """The MESSAGE_ID_PATTERN uses re.IGNORECASE, so uppercase UUIDs should
         not be rejected with 400. They may hit the dev/non-dev branch instead."""
-        import enhanced_agent_bus.api.routes.messages as mod
         from enhanced_agent_bus.api.routes.messages import MESSAGE_ID_PATTERN
 
         upper_uuid = VALID_UUID.upper()
-        # Confirm the pattern itself accepts uppercase
         assert MESSAGE_ID_PATTERN.match(upper_uuid) is not None
 
-        # In non-dev the endpoint raises 501, not 400 (pattern matched)
-        original = mod._ENVIRONMENT
-        mod._ENVIRONMENT = "production"
-        try:
-            app = _make_app()
-            client = TestClient(app, raise_server_exceptions=False)
-            resp = client.get(f"/api/v1/messages/{upper_uuid}")
-        finally:
-            mod._ENVIRONMENT = original
+        monkeypatch.setenv("ENVIRONMENT", "production")
+        app = _make_app()
+        client = TestClient(app, raise_server_exceptions=False)
+        resp = client.get(f"/api/v1/messages/{upper_uuid}")
         assert resp.status_code == 501

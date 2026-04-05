@@ -282,7 +282,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_dict(self):
         """safe_pickle_loads can deserialize a dict."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps({"key": "value", "num": 42})
         result = safe_pickle_loads(data)
@@ -290,7 +290,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_list(self):
         """safe_pickle_loads can deserialize a list."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps([1, 2, 3, "four"])
         result = safe_pickle_loads(data)
@@ -298,7 +298,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_str(self):
         """safe_pickle_loads can deserialize a string."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps("hello world")
         result = safe_pickle_loads(data)
@@ -306,7 +306,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_int(self):
         """safe_pickle_loads can deserialize an int."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps(12345)
         result = safe_pickle_loads(data)
@@ -314,7 +314,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_float(self):
         """safe_pickle_loads can deserialize a float."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps(3.14159)
         result = safe_pickle_loads(data)
@@ -322,7 +322,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_bool(self):
         """safe_pickle_loads can deserialize a bool."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps(True)
         result = safe_pickle_loads(data)
@@ -330,7 +330,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_set(self):
         """safe_pickle_loads can deserialize a set."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps({1, 2, 3})
         result = safe_pickle_loads(data)
@@ -338,7 +338,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_none(self):
         """safe_pickle_loads can deserialize None."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps(None)
         result = safe_pickle_loads(data)
@@ -346,7 +346,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_nested_dict_list(self):
         """safe_pickle_loads handles nested dict/list structures."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         payload = {"items": [1, 2, {"nested": True}], "count": 3}
         data = pickle.dumps(payload)
@@ -355,7 +355,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_empty_dict(self):
         """safe_pickle_loads handles empty dict."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps({})
         result = safe_pickle_loads(data)
@@ -363,7 +363,7 @@ class TestSafePickleLoadsBuiltins:
 
     def test_loads_empty_list(self):
         """safe_pickle_loads handles empty list."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps([])
         result = safe_pickle_loads(data)
@@ -377,7 +377,7 @@ class TestSafePickleLoadsUnsafe:
         """safe_pickle_loads rejects os.system."""
         import os
 
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         # Craft a pickle that references os.system
         payload = pickle.dumps(os.getcwd)
@@ -388,7 +388,7 @@ class TestSafePickleLoadsUnsafe:
         """safe_pickle_loads rejects subprocess.Popen."""
         import subprocess
 
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         payload = pickle.dumps(subprocess.Popen)
         with pytest.raises(pickle.UnpicklingError, match="Unsafe class detected"):
@@ -396,7 +396,7 @@ class TestSafePickleLoadsUnsafe:
 
     def test_rejects_eval_builtin(self):
         """safe_pickle_loads rejects builtins that are not whitelisted."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         payload = pickle.dumps(eval)
         with pytest.raises(pickle.UnpicklingError, match="Unsafe class detected"):
@@ -408,7 +408,7 @@ class TestSafePickleLoad:
 
     def test_load_from_bytesio(self):
         """safe_pickle_load deserializes from a BytesIO object."""
-        from src.core.shared.security.deserialization import safe_pickle_load
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_load
 
         data = pickle.dumps({"file": "test"})
         file_obj = io.BytesIO(data)
@@ -417,7 +417,7 @@ class TestSafePickleLoad:
 
     def test_load_from_bytesio_list(self):
         """safe_pickle_load deserializes a list from BytesIO."""
-        from src.core.shared.security.deserialization import safe_pickle_load
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_load
 
         data = pickle.dumps([10, 20, 30])
         file_obj = io.BytesIO(data)
@@ -428,7 +428,7 @@ class TestSafePickleLoad:
         """safe_pickle_load rejects unsafe classes from file objects."""
         import os
 
-        from src.core.shared.security.deserialization import safe_pickle_load
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_load
 
         payload = pickle.dumps(os.getcwd)
         file_obj = io.BytesIO(payload)
@@ -441,7 +441,7 @@ class TestSafeUnpicklerCustomGlobals:
 
     def test_custom_safe_globals_allows_specified(self):
         """SafeUnpickler with custom globals allows those globals."""
-        from src.core.shared.security.deserialization import SafeUnpickler
+        from enhanced_agent_bus._compat.security.deserialization import SafeUnpickler
 
         # Use default safe_globals=None -> uses SAFE_MODEL_GLOBALS
         data = pickle.dumps({"ok": True})
@@ -450,7 +450,7 @@ class TestSafeUnpicklerCustomGlobals:
 
     def test_custom_safe_globals_empty_still_allows_builtins(self):
         """SafeUnpickler with empty safe_globals still allows builtins."""
-        from src.core.shared.security.deserialization import SafeUnpickler
+        from enhanced_agent_bus._compat.security.deserialization import SafeUnpickler
 
         data = pickle.dumps(42)
         result = SafeUnpickler(io.BytesIO(data), safe_globals=set()).load()
@@ -460,7 +460,7 @@ class TestSafeUnpicklerCustomGlobals:
         """SafeUnpickler with empty safe_globals rejects non-builtins."""
         import os
 
-        from src.core.shared.security.deserialization import SafeUnpickler
+        from enhanced_agent_bus._compat.security.deserialization import SafeUnpickler
 
         payload = pickle.dumps(os.getcwd)
         with pytest.raises(pickle.UnpicklingError, match="Unsafe class detected"):
@@ -468,7 +468,7 @@ class TestSafeUnpicklerCustomGlobals:
 
     def test_safe_model_globals_constant_is_set(self):
         """SAFE_MODEL_GLOBALS is a non-empty set of tuples."""
-        from src.core.shared.security.deserialization import SAFE_MODEL_GLOBALS
+        from enhanced_agent_bus._compat.security.deserialization import SAFE_MODEL_GLOBALS
 
         assert isinstance(SAFE_MODEL_GLOBALS, set)
         assert len(SAFE_MODEL_GLOBALS) > 0
@@ -482,7 +482,7 @@ class TestSafeUnpicklerComplexType:
 
     def test_loads_complex_number(self):
         """safe_pickle_loads can deserialize a complex number."""
-        from src.core.shared.security.deserialization import safe_pickle_loads
+        from enhanced_agent_bus._compat.security.deserialization import safe_pickle_loads
 
         data = pickle.dumps(complex(1, 2))
         result = safe_pickle_loads(data)

@@ -16,11 +16,11 @@ import time
 from collections.abc import Callable
 from typing import Protocol, cast
 
-from src.core.shared.security.cors_config import get_cors_config
-from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+from enhanced_agent_bus._compat.security.cors_config import get_cors_config
+from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

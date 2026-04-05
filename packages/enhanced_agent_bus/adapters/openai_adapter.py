@@ -8,7 +8,7 @@ Adapter for OpenAI GPT models (GPT-4, GPT-3.5, etc.)
 from collections.abc import AsyncIterator
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

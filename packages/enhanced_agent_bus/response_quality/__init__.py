@@ -26,7 +26,7 @@ Usage:
 """
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -50,6 +50,8 @@ from .refiner import (
     CONSTITUTIONAL_HASH as REFINER_HASH,
 )
 from .refiner import (
+    AdapterConstitutionalCorrector,
+    AdapterLLMRefiner,
     ConstitutionalSelfCorrector,
     ConstitutionalViolationError,
     DefaultConstitutionalCorrector,
@@ -105,8 +107,10 @@ __all__ = [
     "ConstitutionalSelfCorrector",
     "ConstitutionalViolationError",
     "DefaultConstitutionalCorrector",
+    "AdapterConstitutionalCorrector",
     # Refiner - Default implementations
     "DefaultLLMRefiner",
+    "AdapterLLMRefiner",
     # Models - Type aliases
     "DimensionScores",
     # Validator - Classes

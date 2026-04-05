@@ -251,6 +251,10 @@ class TestTokenRevocationService:
 
         # _runtime_environment() reads settings.env, not AGENT_RUNTIME_ENVIRONMENT.
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("TOKEN_REVOCATION_FAIL_OPEN", raising=False)
 
         service = TokenRevocationService(redis_client=None)
@@ -267,6 +271,10 @@ class TestTokenRevocationService:
         from src.core.shared.security.token_revocation import TokenRevocationService
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.setenv("TOKEN_REVOCATION_FAIL_OPEN", "true")
 
         service = TokenRevocationService(redis_client=None)
@@ -724,6 +732,10 @@ class TestUserRevocationTracking:
         from src.core.shared.security.token_revocation import TokenRevocationService
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("TOKEN_REVOCATION_FAIL_OPEN", raising=False)
 
         service = TokenRevocationService(redis_client=None)

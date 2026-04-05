@@ -7,16 +7,27 @@ Extracted from main.py: startup/shutdown lifecycle for the FastAPI application.
 import os
 from contextlib import asynccontextmanager
 from inspect import isawaitable
+from pathlib import Path
 
 from fastapi import FastAPI
 
+from enhanced_agent_bus.data_flywheel.dataset_builder import (
+    InMemoryFeedbackEventSource,
+    RedisFeedbackEventSource,
+)
+from enhanced_agent_bus.data_flywheel.run_orchestrator import FlywheelRunOrchestrator
+from enhanced_agent_bus.persistence import InMemoryWorkflowRepository, PostgresWorkflowRepository
+from enhanced_agent_bus.saga_persistence import create_saga_repository
+
 try:
+    from src.core.self_evolution.evidence_store import SelfEvolutionEvidenceStore
     from src.core.self_evolution.research.operator_control import (
         DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX,
         create_research_operator_control_plane,
     )
 except ImportError:
     DEFAULT_RESEARCH_OPERATOR_CONTROL_KEY_PREFIX = "acgs:research:operator_control"
+    SelfEvolutionEvidenceStore = None  # type: ignore[misc,assignment]
 
     async def create_research_operator_control_plane(**kwargs: object) -> None:
         """Stub when self_evolution module is not installed."""
@@ -33,6 +44,12 @@ from .routes.feedback import _close_feedback_redis
 from .routes.proxy import close_proxy_client
 
 logger = get_logger(__name__)
+
+
+def _normalize_workflow_dsn(db_url: str) -> str:
+    if db_url.startswith("postgresql+asyncpg://"):
+        return db_url.replace("postgresql+asyncpg://", "postgresql://")
+    return db_url
 
 
 def _runtime_environment() -> str:
@@ -91,6 +108,85 @@ def _verify_constitutional_hash_at_startup() -> None:
         )
 
 
+async def _initialize_self_evolution_evidence_store(app_instance: FastAPI) -> object:
+    db_url = os.getenv("DATABASE_URL", "").strip()
+    if db_url and PostgresWorkflowRepository is not None:
+        repository = PostgresWorkflowRepository(dsn=_normalize_workflow_dsn(db_url))
+        await repository.initialize()
+        app_instance.state.self_evolution_workflow_repository = repository
+        if SelfEvolutionEvidenceStore is not None:
+            app_instance.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(
+                repository
+            )
+        logger.info("Self-evolution evidence persistence initialized", backend="postgres")
+        return repository
+
+    if _is_development_environment():
+        repository = InMemoryWorkflowRepository()
+        app_instance.state.self_evolution_workflow_repository = repository
+        if SelfEvolutionEvidenceStore is not None:
+            app_instance.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(
+                repository
+            )
+        logger.info("Self-evolution evidence persistence initialized", backend="memory")
+        return repository
+
+    raise RuntimeError(
+        "DATABASE_URL is required to initialize self-evolution evidence persistence in production"
+    )
+
+
+async def _initialize_self_evolution_run_orchestrator(app_instance: FastAPI) -> object | None:
+    repository = getattr(app_instance.state, "self_evolution_workflow_repository", None)
+    if repository is None:
+        logger.warning("Self-evolution run orchestrator unavailable: missing workflow repository")
+        return None
+
+    try:
+        saga_repository = await create_saga_repository()
+    except Exception as exc:
+        logger.warning(
+            "Self-evolution run orchestrator unavailable: failed to initialize saga repository",
+            error=str(exc),
+        )
+        return None
+
+    artifact_root = Path(
+        os.getenv("SELF_EVOLUTION_DATASET_ARTIFACT_ROOT", "/tmp/acgs-self-evolution")
+    )
+    redis_url = get_redis_url(db=0)
+    if _is_development_environment():
+        feedback_source = InMemoryFeedbackEventSource([])
+    else:
+        feedback_source = RedisFeedbackEventSource(redis_url)
+
+    orchestrator = FlywheelRunOrchestrator(
+        repository,
+        saga_repository,
+        feedback_source,
+        artifact_root=artifact_root,
+    )
+    app_instance.state.self_evolution_run_feedback_source = feedback_source
+    app_instance.state.self_evolution_saga_repository = saga_repository
+    app_instance.state.self_evolution_run_orchestrator = orchestrator
+    logger.info(
+        "Self-evolution run orchestrator initialized",
+        backend="memory" if isinstance(feedback_source, InMemoryFeedbackEventSource) else "redis",
+        artifact_root=str(artifact_root),
+    )
+    return orchestrator
+
+
+async def _close_if_available(resource: object | None) -> None:
+    if resource is None:
+        return
+    close_fn = getattr(resource, "aclose", None) or getattr(resource, "close", None)
+    if callable(close_fn):
+        close_result = close_fn()
+        if isawaitable(close_result):
+            await close_result
+
+
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI):
     """Manage shared client lifecycle (startup/shutdown)."""
@@ -116,6 +212,8 @@ async def lifespan(app_instance: FastAPI):
     if isawaitable(operator_control_plane):
         operator_control_plane = await operator_control_plane
     app_instance.state.research_operator_control_plane = operator_control_plane
+    self_evolution_repository = await _initialize_self_evolution_evidence_store(app_instance)
+    await _initialize_self_evolution_run_orchestrator(app_instance)
     logger.info(
         "AutonomyTierEnforcementMiddleware initialized",
         hitl_url=hitl_url,
@@ -135,12 +233,14 @@ async def lifespan(app_instance: FastAPI):
             "research_operator_control_plane",
             None,
         )
-        if research_operator_control_plane is not None:
-            close_fn = getattr(research_operator_control_plane, "aclose", None)
-            if callable(close_fn):
-                close_result = close_fn()
-                if isawaitable(close_result):
-                    await close_result
+        await _close_if_available(research_operator_control_plane)
+        await _close_if_available(
+            getattr(app_instance.state, "self_evolution_run_feedback_source", None)
+        )
+        await _close_if_available(
+            getattr(app_instance.state, "self_evolution_saga_repository", None)
+        )
+        await _close_if_available(self_evolution_repository)
         await close_proxy_client()
         await _close_feedback_redis()
         logger.info("API Gateway shut down cleanly")

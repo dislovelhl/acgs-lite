@@ -24,8 +24,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 
-from src.core.shared.types import AgentID
-
+from enhanced_agent_bus._compat.types import AgentID
 from enhanced_agent_bus.agent_health.metrics import emit_health_metrics
 from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,

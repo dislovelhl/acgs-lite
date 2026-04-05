@@ -8,11 +8,14 @@ Constitutional Hash: 608508a9bd224290
 
 Usage::
 
-    from acgs import Constitution, GovernedAgent
+    from acgs import Constitution, GovernedAgent, MACIRole
 
     constitution = Constitution.from_yaml("rules.yaml")
     agent = GovernedAgent(my_agent, constitution=constitution)
     result = agent.run("process this request")
+    # Optional MACI enforcement:
+    # agent = GovernedAgent(my_agent, constitution=constitution, maci_role=MACIRole.PROPOSER, enforce_maci=True)
+    # result = agent.run("draft change", governance_action="propose")
 """
 
 from acgs_lite._meta import CONSTITUTIONAL_HASH, VERSION
@@ -32,6 +35,7 @@ from acgs_lite.errors import (
     GovernanceError,
     MACIViolationError,
 )
+from acgs_lite.fail_closed import fail_closed as fail_closed
 from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole

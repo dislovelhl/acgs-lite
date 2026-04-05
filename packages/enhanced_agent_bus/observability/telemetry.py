@@ -16,11 +16,11 @@ from enhanced_agent_bus.bus_types import JSONDict
 from .structured_logging import get_logger
 
 try:
-    from src.core.shared.config import settings
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.config import settings
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     settings = None
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 logger = get_logger(__name__)
 _module = sys.modules.get(__name__)
@@ -40,7 +40,8 @@ try:
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
-    from src.core.shared.otel_attributes import (
+
+    from enhanced_agent_bus._compat.otel_attributes import (
         get_resource_attributes,
     )
 

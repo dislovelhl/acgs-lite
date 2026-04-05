@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -238,4 +238,4 @@ class MessageHandler:
 
     def requires_deliberation(self, msg: AgentMessage) -> bool:
         """Check if message requires deliberation based on impact score."""
-        return (getattr(msg, "impact_score", 0) or 0) > 0.7
+        return (getattr(msg, "impact_score", 0) or 0) >= 0.8

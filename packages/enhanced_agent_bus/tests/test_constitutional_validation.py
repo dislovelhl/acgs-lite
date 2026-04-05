@@ -297,6 +297,7 @@ class TestEnhancedAgentBus:
         return EnhancedAgentBus(
             enable_maci=False,
             enable_rate_limiting=False,
+            allow_unstarted=True,
         )  # test-only: MACI + rate limiting off — testing constitutional validation directly
 
     @pytest.fixture

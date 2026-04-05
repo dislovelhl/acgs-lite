@@ -20,10 +20,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-# Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 import enhanced_agent_bus.cb_opa_client as cb_opa_client_module
+
+# Import centralized constitutional hash
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 try:
     AIKAFKA_AVAILABLE = importlib.util.find_spec("aiokafka") is not None
@@ -266,6 +266,38 @@ class TestCircuitBreakerOPAClient:
             # Open the circuit
             for _ in range(5):
                 await client._circuit_breaker.record_failure(Exception("test"), "TestError")
+
+            result = await client.evaluate_policy({"action": "read"}, "data.acgs.allow")
+
+            assert result["allowed"] is False
+            assert result["metadata"]["security"] == "fail-closed"
+            assert "circuit breaker open" in result["reason"].lower()
+
+            await client.close()
+
+    async def test_opa_circuit_open_ignores_cached_allow(self):
+        """Open breaker must deny even when an allow result is cached."""
+        from enhanced_agent_bus.circuit_breaker_clients import (
+            CircuitBreakerOPAClient,
+        )
+
+        with patch("httpx.AsyncClient"):
+            client = CircuitBreakerOPAClient(enable_cache=True)
+            await client.initialize()
+
+            cache_key = client._get_cache_key("data.acgs.allow", {"action": "read"})
+            client._set_cache(
+                cache_key,
+                {
+                    "result": True,
+                    "allowed": True,
+                    "reason": "cached allow",
+                    "metadata": {"source": "cache"},
+                },
+            )
+
+            for _ in range(5):
+                await client._circuit_breaker.record_failure(Exception("boom"), "TestError")
 
             result = await client.evaluate_policy({"action": "read"}, "data.acgs.allow")
 

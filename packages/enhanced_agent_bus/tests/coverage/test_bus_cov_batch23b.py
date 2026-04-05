@@ -98,8 +98,7 @@ class TestCheckEnforcementForCreate:
         )
 
     async def test_strict_mode_none_key_type_raises(self):
-        from src.core.shared.security.pqc import PQCKeyRequiredError
-
+        from enhanced_agent_bus._compat.security.pqc import PQCKeyRequiredError
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
@@ -110,8 +109,7 @@ class TestCheckEnforcementForCreate:
             )
 
     async def test_strict_mode_classical_key_raises(self):
-        from src.core.shared.security.pqc import ClassicalKeyRejectedError
-
+        from enhanced_agent_bus._compat.security.pqc import ClassicalKeyRejectedError
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
@@ -124,8 +122,7 @@ class TestCheckEnforcementForCreate:
             )
 
     async def test_strict_mode_unsupported_pqc_raises(self):
-        from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
-
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
@@ -147,8 +144,7 @@ class TestCheckEnforcementForCreate:
         )
 
     async def test_strict_mode_pqc_with_empty_algorithm_raises(self):
-        from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
-
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
@@ -159,8 +155,7 @@ class TestCheckEnforcementForCreate:
             )
 
     async def test_strict_mode_pqc_with_none_algorithm_raises(self):
-        from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
-
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
         config = MagicMock()
@@ -191,8 +186,7 @@ class TestCheckEnforcementForUpdate:
         await check_enforcement_for_update(existing_key_type="classical", enforcement_config=config)
 
     async def test_strict_classical_raises_migration_required(self):
-        from src.core.shared.security.pqc import MigrationRequiredError
-
+        from enhanced_agent_bus._compat.security.pqc import MigrationRequiredError
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_update
 
         config = MagicMock()
@@ -326,8 +320,7 @@ class TestValidateConstitutionalHashPqc:
         assert result.valid
 
     async def test_pqc_enabled_v1_classical_signature_hits_type_error(self):
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
@@ -349,8 +342,7 @@ class TestValidateConstitutionalHashPqc:
             assert result.pqc_metadata.verification_mode == "classical_only"
 
     async def test_pqc_enabled_v1_deprecated_warning_phase5(self):
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
@@ -371,9 +363,8 @@ class TestValidateConstitutionalHashPqc:
             assert any("deprecated" in w for w in result.warnings)
 
     async def test_pqc_verification_error_caught(self):
-        from src.core.shared.security.pqc import PQCVerificationError
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc import PQCVerificationError
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
@@ -391,8 +382,7 @@ class TestValidateConstitutionalHashPqc:
             assert any("PQC verification failed" in e for e in result.errors)
 
     async def test_unexpected_runtime_error_caught(self):
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
@@ -410,9 +400,8 @@ class TestValidateConstitutionalHashPqc:
             assert any("Validation error" in e for e in result.errors)
 
     async def test_constitutional_hash_mismatch_error_caught(self):
-        from src.core.shared.security.pqc import ConstitutionalHashMismatchError
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc import ConstitutionalHashMismatchError
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True)
@@ -505,8 +494,7 @@ class TestValidateMaciRecordPqc:
         assert result.pqc_metadata is None
 
     async def test_valid_record_with_pqc_config_disabled(self):
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=False)
@@ -523,8 +511,7 @@ class TestValidateMaciRecordPqc:
         assert result.pqc_metadata.verification_mode == "classical_only"
 
     async def test_valid_record_with_pqc_enabled_and_signature(self):
-        from src.core.shared.security.pqc_crypto import PQCConfig
-
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=True)
@@ -639,8 +626,7 @@ class TestValidateSignature:
             assert result["key_type"] == "classical"
 
     async def test_classical_rejected_in_pqc_only_mode(self):
-        from src.core.shared.security.pqc import ClassicalKeyRejectedError
-
+        from enhanced_agent_bus._compat.security.pqc import ClassicalKeyRejectedError
         from enhanced_agent_bus.pqc_validators import validate_signature
 
         with pytest.raises(ClassicalKeyRejectedError, match="not accepted"):
@@ -670,8 +656,7 @@ class TestValidateSignature:
             assert result["algorithm"] == "ML-DSA-65"
 
     async def test_unsupported_algorithm_raises(self):
-        from src.core.shared.security.pqc import UnsupportedAlgorithmError
-
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedAlgorithmError
         from enhanced_agent_bus.pqc_validators import validate_signature
 
         with pytest.raises(UnsupportedAlgorithmError):
@@ -684,8 +669,7 @@ class TestValidateSignature:
             )
 
     async def test_key_registry_error_raises(self):
-        from src.core.shared.security.pqc import KeyRegistryUnavailableError
-
+        from enhanced_agent_bus._compat.security.pqc import KeyRegistryUnavailableError
         from enhanced_agent_bus.pqc_validators import validate_signature
 
         mock_registry_module = MagicMock()

@@ -362,6 +362,27 @@ class TestEvaluatePolicy:
             result = await client.evaluate_policy(inp, policy)
             assert result == cached
 
+    def test_memory_cache_ttl_boundary_expires_exactly_at_threshold(self):
+        client = OPAClient(enable_cache=True)
+        cache_key = "opa:data.acgs.allow:test"
+        client._memory_cache[cache_key] = {"allowed": True}
+        client._memory_cache_timestamps[cache_key] = 100.0
+        client.cache_ttl = 60
+
+        with patch("enhanced_agent_bus.opa_client.cache.time.time", return_value=160.0):
+            assert client._read_memory_cache(cache_key) is None
+
+        assert cache_key not in client._memory_cache
+        assert cache_key not in client._memory_cache_timestamps
+
+    async def test_fallback_empty_input_fails_closed(self):
+        client = OPAClient(mode="fallback", enable_cache=False)
+
+        result = await client.evaluate_policy({})
+
+        assert result["allowed"] is False
+        assert "fail" in result["reason"].lower() or "hash" in result["reason"].lower()
+
     async def test_fail_closed_on_connection_error(self, http_client):
         http_client._http_client.post = AsyncMock(side_effect=httpx.ConnectError("refused"))
         result = await http_client.evaluate_policy({"user": "a"}, "data.test.allow")
@@ -668,7 +689,7 @@ class TestValidateConstitutional:
             assert result.is_valid is False
 
     async def test_validation_error(self, client):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         with patch.object(
             client,

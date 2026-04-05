@@ -6,8 +6,8 @@ Target: ≥95% coverage of all classes, methods, and branches.
 """
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.impact_scorer_infra.models import (
     ImpactVector,
     ScoringConfig,

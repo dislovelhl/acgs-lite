@@ -19,12 +19,14 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
 
+from enhanced_agent_bus.data_flywheel.models import EvaluationMode
+
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )
@@ -103,6 +105,20 @@ class CompensationStrategy(str, Enum):
     LIFO = "LIFO"
     PARALLEL = "PARALLEL"
     SELECTIVE = "SELECTIVE"
+
+
+FLYWHEEL_RUN_SAGA_NAME = "flywheel_run"
+
+
+class FlywheelRunStage(str, Enum):
+    """Stages for bounded flywheel orchestration."""
+
+    DATASET_BUILD = "dataset_build"
+    CANDIDATE_GENERATION = "candidate_generation"
+    EVALUATION = "evaluation"
+    SHADOW = "shadow"
+    CANARY = "canary"
+    PROMOTION = "promotion"
 
 
 @dataclass
@@ -628,6 +644,128 @@ class SagaCheckpoint:
         )
 
 
+@dataclass
+class FlywheelRunRecord:
+    """
+    Domain view of a flywheel orchestration run stored on saga persistence.
+
+    The immutable evidence for a run lives in `persistence/`; this model only tracks
+    mutable orchestration state and checkpointable progress.
+    """
+
+    run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str = ""
+    workload_key: str = ""
+    constitutional_hash: str = CONSTITUTIONAL_HASH
+    state: SagaState = SagaState.INITIALIZED
+    stage: FlywheelRunStage = FlywheelRunStage.DATASET_BUILD
+    candidate_id: str | None = None
+    dataset_snapshot_id: str | None = None
+    evidence_id: str | None = None
+    evaluation_mode: EvaluationMode = EvaluationMode.OFFLINE_REPLAY
+    current_step_index: int = 0
+    paused: bool = False
+    context: JSONDict = field(default_factory=dict)
+    metadata: JSONDict = field(default_factory=dict)
+    correlation_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(UTC))
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    failed_at: datetime | None = None
+    failure_reason: str | None = None
+    timeout_ms: int = 300000
+    version: int = 1
+
+    def to_saga_state(self) -> PersistedSagaState:
+        """Serialize the flywheel run into the canonical persisted saga format."""
+        metadata = dict(self.metadata)
+        metadata.update(
+            {
+                "flywheel_run": True,
+                "workload_key": self.workload_key,
+                "stage": self.stage.value,
+                "candidate_id": self.candidate_id,
+                "dataset_snapshot_id": self.dataset_snapshot_id,
+                "evidence_id": self.evidence_id,
+                "evaluation_mode": self.evaluation_mode.value,
+                "paused": self.paused,
+                "updated_at": self.updated_at.isoformat(),
+            }
+        )
+        return PersistedSagaState(
+            saga_id=self.run_id,
+            saga_name=FLYWHEEL_RUN_SAGA_NAME,
+            tenant_id=self.tenant_id,
+            correlation_id=self.correlation_id,
+            state=self.state,
+            current_step_index=self.current_step_index,
+            context=dict(self.context),
+            metadata=metadata,
+            created_at=self.created_at,
+            started_at=self.started_at,
+            completed_at=self.completed_at,
+            failed_at=self.failed_at,
+            failure_reason=self.failure_reason,
+            timeout_ms=self.timeout_ms,
+            version=self.version,
+            constitutional_hash=self.constitutional_hash,
+        )
+
+    @classmethod
+    def from_saga_state(cls, saga: PersistedSagaState) -> "FlywheelRunRecord":
+        """Deserialize a flywheel run from the canonical persisted saga format."""
+        if saga.saga_name != FLYWHEEL_RUN_SAGA_NAME:
+            raise ValueError("Persisted saga is not a flywheel run")
+
+        metadata = dict(saga.metadata)
+        updated_at = saga.created_at
+        if metadata.get("updated_at"):
+            updated_at = datetime.fromisoformat(str(metadata["updated_at"]))
+        return cls(
+            run_id=saga.saga_id,
+            tenant_id=saga.tenant_id,
+            workload_key=str(metadata.get("workload_key", "")),
+            constitutional_hash=saga.constitutional_hash,
+            state=saga.state,
+            stage=FlywheelRunStage(str(metadata.get("stage", FlywheelRunStage.DATASET_BUILD.value))),
+            candidate_id=metadata.get("candidate_id") or None,
+            dataset_snapshot_id=metadata.get("dataset_snapshot_id") or None,
+            evidence_id=metadata.get("evidence_id") or None,
+            evaluation_mode=EvaluationMode(
+                str(metadata.get("evaluation_mode", EvaluationMode.OFFLINE_REPLAY.value))
+            ),
+            current_step_index=saga.current_step_index,
+            paused=bool(metadata.get("paused", False)),
+            context=dict(saga.context),
+            metadata={
+                key: value
+                for key, value in metadata.items()
+                if key
+                not in {
+                    "flywheel_run",
+                    "workload_key",
+                    "stage",
+                    "candidate_id",
+                    "dataset_snapshot_id",
+                    "evidence_id",
+                    "evaluation_mode",
+                    "paused",
+                    "updated_at",
+                }
+            },
+            correlation_id=saga.correlation_id,
+            created_at=saga.created_at,
+            updated_at=updated_at,
+            started_at=saga.started_at,
+            completed_at=saga.completed_at,
+            failed_at=saga.failed_at,
+            failure_reason=saga.failure_reason,
+            timeout_ms=saga.timeout_ms,
+            version=saga.version,
+        )
+
+
 # type aliases for saga operations
 SagaActionFunc = Callable[..., Coroutine[object, object, JSONDict]]
 CompensationFunc = Callable[..., Coroutine[object, object, JSONDict]]
@@ -638,6 +776,9 @@ __all__ = [
     "CompensationEntry",
     "CompensationFunc",
     "CompensationStrategy",
+    "FLYWHEEL_RUN_SAGA_NAME",
+    "FlywheelRunRecord",
+    "FlywheelRunStage",
     "PersistedSagaState",
     "PersistedStepSnapshot",
     "SagaActionFunc",

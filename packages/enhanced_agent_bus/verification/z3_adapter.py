@@ -1,15 +1,8 @@
-"""Z3 SMT Solver Integration for ACGS-2 Constitutional AI Governance.
+"""Backward-compatible Z3 adapter shim for legacy verification callers.
 
-Constitutional Hash: 608508a9bd224290
-
-Implements LLM-assisted formal verification using Z3 SMT solver.
-Provides mathematical guarantees for constitutional policy verification.
-
-Key Features:
-- LLM-assisted constraint generation from natural language policies
-- Z3 SMT solving for formal verification
-- Iterative refinement loop for constraint optimization
-- Constitutional compliance verification
+This module keeps the historic adapter API used by tests and older call-sites,
+while sharing canonical constants and Z3 availability with
+``enhanced_agent_bus.verification_layer.z3_policy_verifier``.
 """
 
 from __future__ import annotations
@@ -20,26 +13,19 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
-
-try:
-    import z3
-
-    Z3_AVAILABLE = True
-except ImportError:
-    Z3_AVAILABLE = False
-    z3 = None
+from enhanced_agent_bus.verification_layer.z3_policy_verifier import (
+    CONSTITUTIONAL_HASH,
+    Z3_AVAILABLE,
+    HeuristicVerifier,
+    z3,
+)
 
 logger = get_logger(__name__)
-# Constitutional Hash for immutable validation
-try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-except ImportError:
-    CONSTITUTIONAL_HASH = "standalone"
 
 _Z3_ADAPTER_OPERATION_ERRORS = (
     RuntimeError,
@@ -51,37 +37,39 @@ _Z3_ADAPTER_OPERATION_ERRORS = (
     TimeoutError,
     ConnectionError,
 )
+_DECLARATION_PATTERN = re.compile(r"\(declare-const (\w+) (\w+)\)")
+_RESERVED_LOGIC_WORDS = {"and", "or", "not", "true", "false"}
 
 
 @dataclass
 class Z3Constraint:
-    """Represents a Z3 constraint with metadata."""
+    """Legacy Z3 constraint payload."""
 
     name: str
     expression: str
     natural_language: str
     confidence: float
     generated_by: str = "llm"
-    timestamp: datetime = None
+    timestamp: datetime | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.timestamp is None:
             self.timestamp = datetime.now(UTC)
 
 
 @dataclass
 class Z3VerificationResult:
-    """Result of Z3 verification."""
+    """Legacy verification result payload."""
 
     is_sat: bool
     model: JSONDict | None = None
     unsat_core: list[str] | None = None
-    constraints_used: list[str] = None
+    constraints_used: list[str] | None = None
     solve_time_ms: float = 0.0
-    solver_stats: JSONDict = None
+    solver_stats: JSONDict | None = None
     alternative_paths: list[JSONDict] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.constraints_used is None:
             self.constraints_used = []
         if self.solver_stats is None:
@@ -92,7 +80,7 @@ class Z3VerificationResult:
 
 @dataclass
 class ConstitutionalPolicy:
-    """Represents a constitutional policy with formal verification."""
+    """Legacy policy object returned by constitutional verification."""
 
     id: str
     natural_language: str
@@ -100,20 +88,16 @@ class ConstitutionalPolicy:
     verification_result: Z3VerificationResult | None = None
     is_verified: bool = False
     constitutional_hash: str = CONSTITUTIONAL_HASH
-    created_at: datetime = None
+    created_at: datetime | None = None
     verified_at: datetime | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.created_at is None:
             self.created_at = datetime.now(UTC)
 
 
 class Z3SolverAdapter:
-    """
-    Z3 SMT Solver Adapter for constitutional verification.
-
-    Provides interface between natural language policies and formal verification.
-    """
+    """Legacy solver wrapper with tracked constraints and model enumeration."""
 
     def __init__(self, timeout_ms: int = 5000):
         if not Z3_AVAILABLE:
@@ -122,424 +106,304 @@ class Z3SolverAdapter:
         self.timeout_ms = timeout_ms
         self.solver = z3.Solver()
         self.solver.set("timeout", timeout_ms)
-
-        # Track constraints and their names
         self.named_constraints: dict[str, z3.ExprRef] = {}
+        self.constraint_trackers: dict[str, z3.BoolRef] = {}
         self.constraint_history: list[Z3Constraint] = []
 
-        logger.info(f"Z3 Solver Adapter initialized with timeout {timeout_ms}ms")
-
-    def reset_solver(self):
-        """Reset the solver state."""
+    def reset_solver(self) -> None:
+        """Reset tracked solver state without clearing history."""
         self.solver.reset()
         self.named_constraints.clear()
+        self.constraint_trackers.clear()
 
-    def add_constraint(self, name: str, constraint: z3.ExprRef, metadata: Z3Constraint):
-        """
-        Add a named constraint to the solver.
-
-        Args:
-            name: Unique constraint name
-            constraint: Z3 expression
-            metadata: Constraint metadata
-        """
+    def add_constraint(self, name: str, constraint: z3.ExprRef, metadata: Z3Constraint) -> None:
+        """Add a named constraint and keep enough metadata for unsat reporting."""
+        tracker = z3.Bool(name)
         self.named_constraints[name] = constraint
-        self.solver.add(constraint)
+        self.constraint_trackers[name] = tracker
         self.constraint_history.append(metadata)
+        self.solver.assert_and_track(constraint, tracker)
 
     async def async_check_sat(
         self, find_multiple: bool = False, max_paths: int = 5
     ) -> Z3VerificationResult:
-        """Check satisfiability without blocking the event loop.
-
-        Offloads the CPU-bound Z3 ``solver.check()`` call to a thread-pool
-        executor so async callers remain responsive.
-        """
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self.check_sat, find_multiple, max_paths)
+        await asyncio.sleep(0)
+        return self.check_sat(find_multiple, max_paths)
 
     def check_sat(self, find_multiple: bool = False, max_paths: int = 5) -> Z3VerificationResult:
-        """
-        Check satisfiability of current constraints (synchronous).
-
-        Returns:
-            Verification result with model or unsat core
-        """
+        """Check satisfiability, optionally enumerating additional models."""
         import time
 
-        start_time = time.time()
-
+        started = time.time()
         result = self.solver.check()
-        solve_time = (time.time() - start_time) * 1000  # Convert to ms
+        solve_time_ms = (time.time() - started) * 1000
 
         if result == z3.sat:
-            primary_model = self.solver.model()
-            primary_dict = self._model_to_dict(primary_model)
-
-            alternative_paths = []
+            model = self.solver.model()
+            model_dict = self._model_to_dict(model)
+            alternative_paths: list[JSONDict] = []
             if find_multiple:
-                # LogicGraph P2: Enumerate alternative derivation paths
-                # We do this by adding negations of found models
-                alternative_paths.append(primary_dict)
-
-                # Push solver state to allow backtracking if needed
-                self.solver.push()
-                try:
-                    for _ in range(max_paths - 1):
-                        # Block the current model
-                        block = []
-                        for decl in primary_model.decls():
-                            if decl.arity() == 0:
-                                block.append(decl() != primary_model[decl])
-
-                        if not block:
-                            break
-
-                        self.solver.add(z3.Or(block))
-
-                        if self.solver.check() == z3.sat:
-                            primary_model = self.solver.model()
-                            primary_dict = self._model_to_dict(primary_model)
-                            alternative_paths.append(primary_dict)
-                        else:
-                            break
-                finally:
-                    self.solver.pop()
-
+                alternative_paths.append(model_dict)
+                alternative_paths.extend(self._find_alternative_paths(model, max_paths))
             return Z3VerificationResult(
                 is_sat=True,
-                model=primary_dict,
-                alternative_paths=alternative_paths,
-                solve_time_ms=solve_time,
+                model=model_dict,
+                constraints_used=self.get_constraint_names(),
+                solve_time_ms=solve_time_ms,
                 solver_stats={
-                    "decls": len(primary_model.decls()),
+                    "decls": len(model.decls()),
                     "paths_found": len(alternative_paths),
                 },
+                alternative_paths=alternative_paths,
             )
 
-        elif result == z3.unsat:
-            # Try to get unsat core if possible
-            unsat_core = []
-            try:
-                core = self.solver.unsat_core()
-                unsat_core = [str(c) for c in core]
-            except _Z3_ADAPTER_OPERATION_ERRORS as e:
-                logger.error(f"Unsat core collection failed: {e}")
-
+        if result == z3.unsat:
             return Z3VerificationResult(
-                is_sat=False, unsat_core=unsat_core, solve_time_ms=solve_time
+                is_sat=False,
+                unsat_core=self._get_unsat_core(),
+                constraints_used=self.get_constraint_names(),
+                solve_time_ms=solve_time_ms,
             )
 
-        else:  # unknown
-            return Z3VerificationResult(
-                is_sat=False,  # Treat unknown as unsatisfiable for safety
-                solve_time_ms=solve_time,
-                solver_stats={"result": "unknown"},
-            )
+        return Z3VerificationResult(
+            is_sat=False,
+            constraints_used=self.get_constraint_names(),
+            solve_time_ms=solve_time_ms,
+            solver_stats={"result": "unknown"},
+        )
+
+    def _find_alternative_paths(self, model: z3.ModelRef, max_paths: int) -> list[JSONDict]:
+        """Enumerate additional satisfying models by blocking prior assignments."""
+        alternative_paths: list[JSONDict] = []
+        self.solver.push()
+        try:
+            current_model = model
+            for _ in range(max_paths - 1):
+                blockers = [
+                    decl() != current_model[decl]
+                    for decl in current_model.decls()
+                    if decl.arity() == 0
+                ]
+                if not blockers:
+                    break
+                self.solver.add(z3.Or(blockers))
+                if self.solver.check() != z3.sat:
+                    break
+                current_model = self.solver.model()
+                alternative_paths.append(self._model_to_dict(current_model))
+        finally:
+            self.solver.pop()
+        return alternative_paths
+
+    def _get_unsat_core(self) -> list[str]:
+        try:
+            return [str(item) for item in self.solver.unsat_core()]
+        except _Z3_ADAPTER_OPERATION_ERRORS as exc:
+            logger.error(f"Unsat core collection failed: {exc}")
+            return []
 
     def _model_to_dict(self, model: z3.ModelRef) -> JSONDict:
-        """Convert Z3 model to dictionary."""
-        model_dict = {}
+        model_dict: JSONDict = {}
         for decl in model.decls():
             value = model[decl]
             if z3.is_int_value(value):
                 model_dict[str(decl)] = value.as_long()
             elif z3.is_bool(value):
-                model_dict[str(decl)] = bool(value)
+                model_dict[str(decl)] = z3.is_true(value)
             else:
                 model_dict[str(decl)] = str(value)
         return model_dict
 
     def get_constraint_names(self) -> list[str]:
-        """Get list of all constraint names."""
         return list(self.named_constraints.keys())
 
 
 class LLMAssistedZ3Adapter:
-    """
-    LLM-Assisted Z3 Constraint Generation.
+    """Legacy natural-language-to-Z3 adapter kept stable for old tests/callers."""
 
-    Uses LLM to translate natural language policies into Z3 constraints,
-    then uses Z3 for formal verification.
-    """
+    _POLICY_KEYWORDS = (
+        ("obligation", ("must", "shall", "required", "prohibited"), "high"),
+        ("permission", ("may", "can", "optional"), "medium"),
+        ("prohibition", ("cannot", "must not", "forbidden"), "high"),
+    )
 
-    def __init__(self, max_refinements: int = 3):
+    def __init__(self, max_refinements: int = 3, timeout_ms: int = 5000):
         self.max_refinements = max_refinements
-        self.z3_solver = Z3SolverAdapter()
+        self.z3_solver = Z3SolverAdapter(timeout_ms=timeout_ms)
         self.generation_history: list[JSONDict] = []
+        self.heuristic_verifier = HeuristicVerifier()
 
     async def natural_language_to_constraints(
         self, policy_text: str, context: JSONDict | None = None
     ) -> list[Z3Constraint]:
-        """
-        Convert natural language policy to Z3 constraints using LLM assistance.
-
-        Args:
-            policy_text: Natural language policy description
-            context: Additional context for constraint generation
-
-        Returns:
-            List of Z3 constraints with metadata
-        """
-        constraints = []
-
-        # Extract key policy elements
-        policy_elements = self._extract_policy_elements(policy_text)
-
-        for element in policy_elements:
-            # Generate Z3 constraint for each element
+        constraints: list[Z3Constraint] = []
+        for element in self._extract_policy_elements(policy_text):
             constraint = await self._generate_single_constraint(element, context)
-            if constraint:
+            if constraint is not None:
                 constraints.append(constraint)
-
-        logger.info(
-            f"Generated {len(constraints)} Z3 constraints for policy: {policy_text[:50]}..."
-        )
+                self.generation_history.append(
+                    {
+                        "name": constraint.name,
+                        "type": element["type"],
+                        "generated_by": constraint.generated_by,
+                    }
+                )
         return constraints
 
     def _extract_policy_elements(self, policy_text: str) -> list[JSONDict]:
-        """Extract key elements from natural language policy."""
-        elements = []
-
-        # Simple rule extraction (can be enhanced with LLM)
-        sentences = policy_text.split(".")
-        for sentence in sentences:
-            sentence = sentence.strip()
+        elements: list[JSONDict] = []
+        for sentence in (part.strip() for part in policy_text.split(".")):
             if not sentence:
                 continue
-
-            # Identify constraint types
-            if any(
-                word in sentence.lower() for word in ["must", "shall", "required", "prohibited"]
-            ):
-                elements.append({"type": "obligation", "text": sentence, "priority": "high"})
-            elif any(word in sentence.lower() for word in ["may", "can", "optional"]):
-                elements.append({"type": "permission", "text": sentence, "priority": "medium"})
-            elif any(word in sentence.lower() for word in ["cannot", "must not", "forbidden"]):
-                elements.append({"type": "prohibition", "text": sentence, "priority": "high"})
-
+            lowered = sentence.lower()
+            for policy_type, keywords, priority in self._POLICY_KEYWORDS:
+                if any(word in lowered for word in keywords):
+                    elements.append({"type": policy_type, "text": sentence, "priority": priority})
+                    break
         return elements
 
     async def _generate_single_constraint(
         self, element: JSONDict, context: JSONDict | None = None
     ) -> Z3Constraint | None:
-        """Generate a single Z3 constraint from policy element.
-
-        LogicGraph P2: Support complex logic (OR/AND) in natural language.
-        """
-        element_text = element["text"]
-        element_type = element["type"]
-
-        # Basic logic extraction
-        # If it has "or" or "and", we try a more complex pattern
-        if " or " in element_text.lower() or " and " in element_text.lower():
-            # Example: "(admin or hr) and (public or internal)"
-            # This is a mock-up of what a real LLM-backed generator would do
-            # For the test case, we'll implement a slightly smarter pattern matching
-
-            # Simple recursive descent or regex for this MVP
-            text = (
-                element_text.lower().replace("access is allowed if ", "").replace(".", "").strip()
-            )
-
-            def nl_to_smt(s: str) -> str:
-                s = s.strip()
-                # Remove outer parentheses if they exist and are balanced
-                while s.startswith("(") and s.endswith(")") and self._is_balanced(s[1:-1]):
-                    s = s[1:-1].strip()
-
-                # Check for 'and' / 'or' at the top level (outside parentheses)
-                # We need a way to split by 'and'/'or' only at depth 0
-
-                for op in [" and ", " or "]:
-                    parts = self._split_by_op(s, op)
-                    if len(parts) > 1:
-                        smt_op = op.strip()
-                        return f"({smt_op} {' '.join(nl_to_smt(p) for p in parts)})"
-
-                # Leaf node
-                var_name = (
-                    s.replace("user is ", "")
-                    .replace("resource is ", "")
-                    .replace(" ", "_")
-                    .replace("(", "")
-                    .replace(")", "")
-                )
-                return var_name
-
-            try:
-                smt_body = nl_to_smt(text)
-                # Declare variables
-                variables = re.findall(r"\b\w+\b", smt_body)
-                vars_to_declare = [
-                    v for v in set(variables) if v not in ["and", "or", "not", "true", "false"]
-                ]
-
-                decl_block = "\n".join([f"(declare-const {v} Bool)" for v in vars_to_declare])
-                full_expr = f"{decl_block}\n(assert {smt_body})"
-
+        text = element["text"]
+        if " or " in text.lower() or " and " in text.lower():
+            expression = self._build_logic_expression(text)
+            if expression:
                 return Z3Constraint(
-                    name=f"logicgraph_{hash(element_text) % 10000}",
-                    expression=full_expr,
-                    natural_language=element_text,
+                    name=f"logicgraph_{hash(text) % 10000}",
+                    expression=expression,
+                    natural_language=text,
                     confidence=0.9,
                     generated_by="logicgraph_generator",
                 )
-            except (ValueError, TypeError) as e:
-                logger.warning(f"Complex generation failed for '{element_text}': {e}")
-            except Exception as e:
-                logger.error(f"Unexpected error in complex generation: {e}", exc_info=True)
-                raise
 
-        # Fallback to existing simple patterns
-        # ... (rest of simple patterns)
-        if element_type == "obligation":
-            # Pattern: "X must be Y"
-            if "must" in element_text.lower():
-                # Generate boolean constraint
-                var_name = f"policy_{hash(element_text) % 1000}"
-                constraint_expr = f"(declare-const {var_name} Bool)\n(assert {var_name})"
-                confidence = 0.8
-                return Z3Constraint(
-                    name=f"constraint_{hash(element_text) % 10000}",
-                    expression=constraint_expr,
-                    natural_language=element_text,
-                    confidence=confidence,
-                    generated_by="pattern_matching",
-                )
-
-        elif element_type == "prohibition":
-            # Pattern: "X cannot be Y"
-            if any(phrase in element_text.lower() for phrase in ["cannot", "must not"]):
-                var_name = f"prohibit_{hash(element_text) % 1000}"
-                constraint_expr = f"(declare-const {var_name} Bool)\n(assert (not {var_name}))"
-                confidence = 0.9
-                return Z3Constraint(
-                    name=f"constraint_{hash(element_text) % 10000}",
-                    expression=constraint_expr,
-                    natural_language=element_text,
-                    confidence=confidence,
-                    generated_by="pattern_matching",
-                )
-
+        policy_type = element["type"]
+        if policy_type == "obligation" and "must" in text.lower():
+            return self._simple_constraint(text, "policy", True, 0.8)
+        if policy_type == "prohibition" and any(
+            phrase in text.lower() for phrase in ("cannot", "must not")
+        ):
+            return self._simple_constraint(text, "prohibit", False, 0.9)
         return None
+
+    def _simple_constraint(
+        self, text: str, prefix: str, asserted_value: bool, confidence: float
+    ) -> Z3Constraint:
+        var_name = f"{prefix}_{hash(text) % 1000}"
+        assertion = var_name if asserted_value else f"(not {var_name})"
+        return Z3Constraint(
+            name=f"constraint_{hash(text) % 10000}",
+            expression=f"(declare-const {var_name} Bool)\n(assert {assertion})",
+            natural_language=text,
+            confidence=confidence,
+            generated_by="pattern_matching",
+        )
+
+    def _build_logic_expression(self, text: str) -> str | None:
+        stripped = text.lower().replace("access is allowed if ", "").replace(".", "").strip()
+
+        def nl_to_smt(fragment: str) -> str:
+            fragment = fragment.strip()
+            while (
+                fragment.startswith("(")
+                and fragment.endswith(")")
+                and self._is_balanced(fragment[1:-1])
+            ):
+                fragment = fragment[1:-1].strip()
+            for op in (" and ", " or "):
+                parts = self._split_by_op(fragment, op)
+                if len(parts) > 1:
+                    return f"({op.strip()} {' '.join(nl_to_smt(part) for part in parts)})"
+            return (
+                fragment.replace("user is ", "")
+                .replace("resource is ", "")
+                .replace(" ", "_")
+                .replace("(", "")
+                .replace(")", "")
+            )
+
+        try:
+            smt_body = nl_to_smt(stripped)
+        except _Z3_ADAPTER_OPERATION_ERRORS as exc:
+            logger.warning(f"Complex generation failed for '{text}': {exc}")
+            return None
+
+        variables = sorted(
+            {
+                token
+                for token in re.findall(r"\b\w+\b", smt_body)
+                if token not in _RESERVED_LOGIC_WORDS
+            }
+        )
+        declarations = "\n".join(f"(declare-const {name} Bool)" for name in variables)
+        return f"{declarations}\n(assert {smt_body})"
 
     async def verify_policy_constraints(
         self, constraints: list[Z3Constraint], find_multiple: bool = False
     ) -> Z3VerificationResult:
-        """
-        Verify a set of constraints using Z3.
-
-        Args:
-            constraints: List of Z3 constraints to verify
-            find_multiple: Whether to find multiple satisfying paths (LogicGraph P2)
-
-        Returns:
-            Verification result
-        """
         self.z3_solver.reset_solver()
-
-        # Add all constraints to solver
         for constraint in constraints:
             try:
-                # Parse Z3 expression (simplified)
                 z3_expr = self._parse_z3_expression(constraint.expression)
                 if z3_expr is not None:
                     self.z3_solver.add_constraint(constraint.name, z3_expr, constraint)
-            except _Z3_ADAPTER_OPERATION_ERRORS as e:
-                logger.warning(f"Failed to parse constraint {constraint.name}: {e}")
-                continue
-
-        # Check satisfiability (offloaded to thread pool to avoid blocking)
-        result = await self.z3_solver.async_check_sat(find_multiple=find_multiple)
-
-        logger.info(
-            f"Z3 verification result: SAT={result.is_sat}, paths={len(result.alternative_paths) if result.alternative_paths else 0}, time={result.solve_time_ms:.2f}ms"
-        )
-        return result
+            except _Z3_ADAPTER_OPERATION_ERRORS as exc:
+                logger.warning(f"Failed to parse constraint {constraint.name}: {exc}")
+        return await self.z3_solver.async_check_sat(find_multiple=find_multiple)
 
     def _parse_z3_expression(self, expr_str: str) -> z3.ExprRef | None:
-        """Parse Z3 expression string into Z3 object.
-
-        Supports basic boolean and, or, not, and parenthesized expressions.
-        """
         try:
-            # Handle declarations first
-            lines = expr_str.strip().split("\n")
-            decls = {}
-            assertions = []
-            for line in lines:
-                line = line.strip()
+            declarations: dict[str, z3.ExprRef] = {}
+            assertions: list[str] = []
+            for raw_line in expr_str.strip().splitlines():
+                line = raw_line.strip()
                 if not line:
                     continue
-                if line.startswith("(declare-const"):
-                    # (declare-const name Type)
-                    match = re.search(r"\(declare-const (\w+) (\w+)\)", line)
-                    if match:
-                        name, type_name = match.groups()
-                        if type_name == "Bool":
-                            decls[name] = z3.Bool(name)
-                        elif type_name == "Int":
-                            decls[name] = z3.Int(name)
-                elif line.startswith("(assert"):
-                    # (assert expr)
+                if match := _DECLARATION_PATTERN.fullmatch(line):
+                    name, type_name = match.groups()
+                    declarations[name] = z3.Bool(name) if type_name == "Bool" else z3.Int(name)
+                elif line.startswith("(assert") and line.endswith(")"):
                     assertions.append(line[7:-1].strip())
-
             if not assertions:
                 return None
 
-            # Combined parsing logic for assertions
-            # For this MVP, we'll support simple SMT-LIB style assertions
-            # e.g. (and a (or b c))
-
-            def parse_expr(s: str) -> z3.ExprRef:
-                s = s.strip()
-                if s == "true":
+            def parse(fragment: str) -> z3.ExprRef:
+                fragment = fragment.strip()
+                if fragment == "true":
                     return z3.BoolVal(True)
-                if s == "false":
+                if fragment == "false":
                     return z3.BoolVal(False)
-                if s.startswith("("):
-                    content = s[1:-1].strip()
-                    parts = self._split_balanced(content)
-                    op = parts[0]
-                    args = [parse_expr(p) for p in parts[1:]]
-                    if op == "and":
-                        return z3.And(*args)
-                    if op == "or":
-                        return z3.Or(*args)
-                    if op == "not":
-                        return z3.Not(args[0])
-                    if op == "==":
-                        return args[0] == args[1]
-                    if op == "!=":
-                        return args[0] != args[1]
+                if fragment in declarations:
+                    return declarations[fragment]
+                if re.fullmatch(r"\w+", fragment):
+                    return z3.Bool(fragment)
+                if not (fragment.startswith("(") and fragment.endswith(")")):
+                    raise ValueError(f"Cannot parse expression: {fragment}")
+                parts = self._split_balanced(fragment[1:-1].strip())
+                if not parts:
+                    raise ValueError("Empty expression")
+                op, args = parts[0], [parse(part) for part in parts[1:]]
+                if op == "and":
+                    return z3.And(*args)
+                if op == "or":
+                    return z3.Or(*args)
+                if op == "not" and len(args) == 1:
+                    return z3.Not(args[0])
+                if op == "==" and len(args) == 2:
+                    return args[0] == args[1]
+                if op == "!=" and len(args) == 2:
+                    return args[0] != args[1]
+                raise ValueError(f"Unsupported operator: {op}")
 
-                if s in decls:
-                    return decls[s]
-
-                # Fallback to Bool if not declared (for robustness)
-                if re.match(r"^\w+$", s):
-                    return z3.Bool(s)
-
-                raise ValueError(f"Cannot parse expression: {s}")
-
-            # Return the first (or combined) assertion
-            exprs = [parse_expr(a) for a in assertions]
-            if len(exprs) == 1:
-                return exprs[0]
-            return z3.And(*exprs)
-
-        except (ValueError, TypeError, IndexError) as e:
-            logger.warning(f"Failed to parse Z3 expression '{expr_str}': {e}")
-            return None
-        except Exception as e:
-            logger.error(f"Unexpected error parsing Z3 expression: {e}", exc_info=True)
+            parsed = [parse(assertion) for assertion in assertions]
+            return parsed[0] if len(parsed) == 1 else z3.And(*parsed)
+        except _Z3_ADAPTER_OPERATION_ERRORS as exc:
+            logger.warning(f"Failed to parse Z3 expression '{expr_str}': {exc}")
             return None
 
-    def _is_balanced(self, s: str) -> bool:
-        """Check if parentheses are balanced in the string."""
+    def _is_balanced(self, text: str) -> bool:
         depth = 0
-        for char in s:
+        for char in text:
             if char == "(":
                 depth += 1
             elif char == ")":
@@ -548,50 +412,51 @@ class LLMAssistedZ3Adapter:
                 return False
         return depth == 0
 
-    def _split_by_op(self, s: str, op: str) -> list[str]:
-        """Split a string by an operator only at the top level of parentheses."""
-        parts = []
+    def _split_by_op(self, text: str, operator: str) -> list[str]:
+        parts: list[str] = []
         depth = 0
         start = 0
-        i = 0
-        while i < len(s):
-            char = s[i]
+        index = 0
+        while index < len(text):
+            char = text[index]
             if char == "(":
                 depth += 1
             elif char == ")":
                 depth -= 1
-
-            if depth == 0:
-                if s[i:].startswith(op):
-                    parts.append(s[start:i])
-                    start = i + len(op)
-                    i = start
-                    continue
-            i += 1
-
-        parts.append(s[start:])
+            if depth == 0 and text[index:].startswith(operator):
+                parts.append(text[start:index])
+                start = index + len(operator)
+                index = start
+                continue
+            index += 1
+        parts.append(text[start:])
         return parts
 
-    def _split_balanced(self, s: str) -> list[str]:
-        """Split a string into balanced SMT-LIB components."""
-        parts = []
-        current = ""
+    def _split_balanced(self, text: str) -> list[str]:
+        parts: list[str] = []
+        current: list[str] = []
         depth = 0
-        for char in s:
+        for char in text:
             if char == "(":
                 depth += 1
             elif char == ")":
                 depth -= 1
-
             if char.isspace() and depth == 0:
                 if current:
-                    parts.append(current)
-                    current = ""
+                    parts.append("".join(current))
+                    current.clear()
             else:
-                current += char
+                current.append(char)
         if current:
-            parts.append(current)
+            parts.append("".join(current))
         return parts
+
+    # Backward-compatible aliases for legacy helper names used by older callers.
+    def _split_by_operator(self, text: str, operator: str) -> list[str]:
+        return self._split_by_op(text, operator)
+
+    def _parse_balanced_expression(self, text: str) -> list[str]:
+        return self._split_balanced(text)
 
     async def refine_constraints(
         self,
@@ -599,57 +464,34 @@ class LLMAssistedZ3Adapter:
         verification_result: Z3VerificationResult,
         max_iterations: int = 3,
     ) -> list[Z3Constraint]:
-        """
-        Refine constraints based on verification results.
-
-        Args:
-            constraints: Original constraints
-            verification_result: Z3 verification result
-            max_iterations: Maximum refinement iterations
-
-        Returns:
-            Refined constraints
-        """
         if verification_result.is_sat:
-            # Already satisfiable, no refinement needed
             return constraints
 
-        refined_constraints = constraints.copy()
-
-        for iteration in range(max_iterations):
+        refined = constraints.copy()
+        for iteration in range(min(max_iterations, self.max_refinements)):
             if not verification_result.unsat_core:
                 break
-
-            # Identify problematic constraints
-            problematic_names = set(verification_result.unsat_core)
-
-            # Refine problematic constraints
-            for i, constraint in enumerate(refined_constraints):
-                if constraint.name in problematic_names:
-                    # Simplified refinement: reduce confidence or modify expression
-                    refined_constraints[i] = Z3Constraint(
-                        name=constraint.name,
-                        expression=constraint.expression,
-                        natural_language=constraint.natural_language,
-                        confidence=max(0.1, constraint.confidence - 0.1),
-                        generated_by=f"refined_{iteration}",
-                    )
-
-            # Re-verify
-            verification_result = await self.verify_policy_constraints(refined_constraints)
-
+            problematic = set(verification_result.unsat_core)
+            refined = [
+                Z3Constraint(
+                    name=item.name,
+                    expression=item.expression,
+                    natural_language=item.natural_language,
+                    confidence=max(0.1, item.confidence - 0.1),
+                    generated_by=f"refined_{iteration}",
+                )
+                if item.name in problematic
+                else item
+                for item in refined
+            ]
+            verification_result = await self.verify_policy_constraints(refined)
             if verification_result.is_sat:
                 break
-
-        return refined_constraints
+        return refined
 
 
 class ConstitutionalZ3Verifier:
-    """
-    High-level constitutional policy verifier using Z3.
-
-    Integrates LLM-assisted constraint generation with formal verification.
-    """
+    """Legacy high-level policy verifier built on the compatibility adapter."""
 
     def __init__(self):
         self.llm_adapter = LLMAssistedZ3Adapter()
@@ -662,41 +504,17 @@ class ConstitutionalZ3Verifier:
         context: JSONDict | None = None,
         find_multiple: bool = False,
     ) -> ConstitutionalPolicy:
-        """
-        Verify a constitutional policy using Z3 formal verification.
-
-        Args:
-            policy_id: Unique policy identifier
-            natural_language_policy: Policy in natural language
-            context: Additional verification context
-            find_multiple: Whether to find multiple satisfying paths (LogicGraph P2)
-
-        Returns:
-            Verified constitutional policy
-        """
-        logger.info(f"Verifying constitutional policy: {policy_id}")
-
-        # Generate constraints from natural language
         constraints = await self.llm_adapter.natural_language_to_constraints(
             natural_language_policy, context
         )
-
-        # Verify constraints
         verification_result = await self.llm_adapter.verify_policy_constraints(
             constraints, find_multiple=find_multiple
         )
-
-        # Attempt refinement if needed
         if not verification_result.is_sat:
-            constraints = await self.llm_adapter.refine_constraints(
-                constraints, verification_result
-            )
-            # Re-verify after refinement
+            constraints = await self.llm_adapter.refine_constraints(constraints, verification_result)
             verification_result = await self.llm_adapter.verify_policy_constraints(
                 constraints, find_multiple=find_multiple
             )
-
-        # Create verified policy
         policy = ConstitutionalPolicy(
             id=policy_id,
             natural_language=natural_language_policy,
@@ -705,84 +523,46 @@ class ConstitutionalZ3Verifier:
             is_verified=verification_result.is_sat,
             verified_at=datetime.now(UTC) if verification_result.is_sat else None,
         )
-
-        # Store verified policy
         self.verified_policies[policy_id] = policy
-
-        status = "VERIFIED" if policy.is_verified else "UNVERIFIED"
-        logger.info(f"Policy {policy_id} {status} with {len(constraints)} constraints")
-
         return policy
 
     async def verify_policy_compliance(self, policy_id: str, decision_context: JSONDict) -> bool:
-        """
-        Verify if a decision complies with a verified policy.
-
-        Args:
-            policy_id: ID of the verified policy
-            decision_context: Context of the decision to verify
-
-        Returns:
-            True if compliant, False otherwise
-        """
-        if policy_id not in self.verified_policies:
-            logger.warning(f"Policy {policy_id} not found in verified policies")
-            return False
-
-        policy = self.verified_policies[policy_id]
-        if not policy.is_verified:
-            logger.warning(f"Policy {policy_id} is not verified")
-            return False
-
-        # For now, return verification status (could be enhanced with runtime checking)
-        return policy.is_verified
+        policy = self.verified_policies.get(policy_id)
+        return bool(policy and policy.is_verified)
 
     def get_constitutional_hash(self) -> str:
-        """Return the constitutional hash for validation."""
         return CONSTITUTIONAL_HASH  # type: ignore[no-any-return]
 
     def get_verification_stats(self) -> JSONDict:
-        """Get verification statistics."""
         total_policies = len(self.verified_policies)
-        verified_policies = sum(1 for p in self.verified_policies.values() if p.is_verified)
-
+        verified_policies = sum(1 for policy in self.verified_policies.values() if policy.is_verified)
         return {
             "total_policies": total_policies,
             "verified_policies": verified_policies,
-            "verification_rate": verified_policies / total_policies if total_policies > 0 else 0.0,
+            "verification_rate": verified_policies / total_policies if total_policies else 0.0,
             "constitutional_hash": CONSTITUTIONAL_HASH,
         }
 
 
-# Convenience functions
 async def verify_policy_formally(
     policy_text: str, policy_id: str | None = None
 ) -> ConstitutionalPolicy:
-    """
-    Convenience function to verify a policy formally.
-
-    Args:
-        policy_text: Natural language policy
-        policy_id: Optional policy ID (generated if not provided)
-
-    Returns:
-        Verified constitutional policy
-    """
-    if policy_id is None:
-        policy_id = f"policy_{hash(policy_text) % 10000}"
-
     verifier = ConstitutionalZ3Verifier()
-    return await verifier.verify_constitutional_policy(policy_id, policy_text)
+    return await verifier.verify_constitutional_policy(
+        policy_id or f"policy_{hash(policy_text) % 10000}",
+        policy_text,
+    )
 
 
-# Export for use in other modules
 __all__ = [
     "CONSTITUTIONAL_HASH",
     "ConstitutionalPolicy",
     "ConstitutionalZ3Verifier",
+    "HeuristicVerifier",
     "LLMAssistedZ3Adapter",
     "Z3Constraint",
     "Z3SolverAdapter",
     "Z3VerificationResult",
+    "Z3_AVAILABLE",
     "verify_policy_formally",
 ]

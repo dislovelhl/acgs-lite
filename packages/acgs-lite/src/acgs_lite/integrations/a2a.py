@@ -161,7 +161,7 @@ def create_a2a_app(
 
     constitution = constitution or Constitution.default()
     audit_log = AuditLog()
-    engine = GovernanceEngine(constitution, audit_log=audit_log, strict=False)
+    engine = GovernanceEngine(constitution, audit_log=audit_log, strict=False, audit_mode="full")
 
     a2a_agent_card = {
         "name": f"ACGS Governance Agent ({constitution.name})",

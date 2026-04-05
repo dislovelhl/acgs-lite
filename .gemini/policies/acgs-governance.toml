@@ -1,0 +1,12 @@
+name = "acgs-governance"
+description = "Repo-local governance policy guidance for Gemini sessions in ACGS."
+constitution_hash = "608508a9bd224290"
+
+[policy]
+summary = "Respect constitutional validation, MACI role separation, and fail-closed governance defaults."
+principles = [
+  "Never self-validate agent output.",
+  "Prefer explicit allowlists over permissive defaults.",
+  "Use deterministic verification commands when available.",
+  "Do not weaken constitutional hash checks in code or docs."
+]

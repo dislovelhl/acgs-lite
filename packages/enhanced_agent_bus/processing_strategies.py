@@ -43,10 +43,13 @@ import asyncio
 import inspect
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
+from importlib import import_module
 from threading import Lock
 from typing import TYPE_CHECKING, Protocol, cast
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.plugin_registry import available, require
+from enhanced_agent_bus.shared.fail_closed import fail_closed
 
 if TYPE_CHECKING:
     from .validation_strategies import (
@@ -70,7 +73,7 @@ class _StrategyLike(Protocol):
 
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     from .models import AgentMessage, MessageStatus
     from .validation_strategies import (
@@ -81,19 +84,19 @@ try:
     )
     from .validators import ValidationResult
 except (ImportError, ValueError):
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
-    from models import (  # type: ignore[no-redef]
+    from .models import (  # type: ignore[no-redef]
         AgentMessage,
         MessageStatus,
     )
-    from validation_strategies import (  # type: ignore[no-redef]
+    from .validation_strategies import (  # type: ignore[no-redef]
         DynamicPolicyValidationStrategy,
         OPAValidationStrategy,
         RustValidationStrategy,
         StaticHashValidationStrategy,
     )
-    from validators import ValidationResult  # type: ignore[no-redef]
+    from .validators import ValidationResult  # type: ignore[no-redef]
 
 logger = get_logger(__name__)
 try:
@@ -796,20 +799,18 @@ class MACIProcessingStrategy:
         self._inner: _StrategyLike = inner_strategy
 
         # Initialize MACI components if not provided (VULN-001)
-        if maci_registry is None:
+        if maci_registry is None and available("maci_enforcement"):
             try:
-                from .maci_enforcement import MACIRoleRegistry
-
-                maci_registry = MACIRoleRegistry()
-            except (ImportError, ValueError):
+                maci_registry = import_module(require("maci_enforcement")).MACIRoleRegistry()
+            except ValueError:
                 pass
 
-        if maci_enforcer is None and maci_registry is not None:
+        if maci_enforcer is None and maci_registry is not None and available("maci_enforcement"):
             try:
-                from .maci_enforcement import MACIEnforcer
-
-                maci_enforcer = MACIEnforcer(registry=maci_registry, strict_mode=strict_mode)
-            except (ImportError, ValueError):
+                maci_enforcer = import_module(require("maci_enforcement")).MACIEnforcer(
+                    registry=maci_registry, strict_mode=strict_mode
+                )
+            except ValueError:
                 pass
 
         self._registry = maci_registry
@@ -837,10 +838,11 @@ class MACIProcessingStrategy:
         validate_action = getattr(maci_enforcer, "validate_action", None)
         if callable(validate_action):
             try:
-                from .maci.strategy import MACIValidationStrategy
-
-                return MACIValidationStrategy(maci_enforcer)
-            except (ImportError, ValueError):
+                if available("maci_strategy"):
+                    return import_module(require("maci_strategy")).MACIValidationStrategy(
+                        maci_enforcer
+                    )
+            except ValueError:
                 return maci_enforcer
 
         return maci_enforcer
@@ -918,23 +920,35 @@ class MACIProcessingStrategy:
             ValidationResult.errors list.
         """
         if self._maci_available and self._maci_strategy:
-            try:
-                valid, error = await self._validate_message(msg)
-                if not valid:
-                    if self._strict:
-                        return ValidationResult(
-                            is_valid=False,
-                            errors=(
-                                [f"MACIRoleViolationError: {error}"]
-                                if error
-                                else ["MACIRoleViolationError: MACI violation"]
-                            ),
-                        )
-            except Exception as e:
-                if self._strict:
-                    return ValidationResult(is_valid=False, errors=[f"{type(e).__name__}: {e!s}"])
+            return await self._process_with_maci_validation(msg, handlers)
 
         return await self._inner.process(msg, handlers)
+
+    @fail_closed(
+        lambda self, msg, handlers, *, error: self._handle_maci_validation_error(error),
+        exceptions=(Exception,),
+    )
+    async def _process_with_maci_validation(
+        self,
+        msg: AgentMessage,
+        handlers: dict[object, list[Callable[[AgentMessage], object]]],
+    ) -> ValidationResult:
+        valid, error = await self._validate_message(msg)
+        if not valid and self._strict:
+            return ValidationResult(
+                is_valid=False,
+                errors=(
+                    [f"MACIRoleViolationError: {error}"]
+                    if error
+                    else ["MACIRoleViolationError: MACI violation"]
+                ),
+            )
+        return await self._inner.process(msg, handlers)
+
+    def _handle_maci_validation_error(self, error: BaseException) -> ValidationResult:
+        if self._strict:
+            return ValidationResult(is_valid=False, errors=[f"{type(error).__name__}: {error!s}"])
+        return ValidationResult(is_valid=True)
 
     def is_available(self) -> bool:
         """Check if the MACI strategy is available.

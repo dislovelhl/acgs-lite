@@ -25,10 +25,10 @@ import sys
 from collections import deque
 from datetime import UTC, datetime
 
-from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         MessagePayload,
         PolicyContext,
     )
@@ -37,22 +37,23 @@ except ImportError:
     PolicyContext = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.plugin_registry import available, require
 
 # Optional ML dependencies — lazy-imported to avoid import-time failures
 # when torch/sklearn/numpy are not installed
-try:
-    import numpy as np
-
+if available("numpy"):
+    np = __import__(require("numpy"))
     NUMPY_AVAILABLE = True
-except ImportError:
+else:
     np = None  # type: ignore[assignment]
     NUMPY_AVAILABLE = False
 
-try:
-    from sklearn.ensemble import RandomForestRegressor
-
+if available("sklearn"):
+    RandomForestRegressor = __import__(
+        require("sklearn"), fromlist=["RandomForestRegressor"]
+    ).RandomForestRegressor
     SKLEARN_AVAILABLE = True
-except ImportError:
+else:
     RandomForestRegressor = None  # type: ignore[assignment, misc]
     SKLEARN_AVAILABLE = False
 
@@ -67,21 +68,19 @@ except (ImportError, OSError, RuntimeError, Exception):
     TORCH_AVAILABLE = False
 
 # MLflow imports for model versioning
-try:
-    import mlflow
-
+if available("mlflow"):
+    mlflow = __import__(require("mlflow"))
     MLFLOW_AVAILABLE = True
-except ImportError:
+else:
     MLFLOW_AVAILABLE = False
     mlflow = None
 
-try:
-    from .stability.mhc import sinkhorn_projection
-except (ImportError, ValueError):
-    try:
-        from ..governance.stability.mhc import sinkhorn_projection
-    except ImportError:
-        sinkhorn_projection = None
+if available("governance_mhc"):
+    sinkhorn_projection = __import__(
+        require("governance_mhc"), fromlist=["sinkhorn_projection"]
+    ).sinkhorn_projection
+else:
+    sinkhorn_projection = None
 
 # Import data models from local package
 from .models import ImpactFeatures

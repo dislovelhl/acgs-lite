@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 from enhanced_agent_bus.bus_types import JSONDict, JSONValue, MetadataDict
 
 try:
-    from src.core.shared.types import AgentInfo
+    from enhanced_agent_bus._compat.types import AgentInfo
 except ImportError:
     AgentInfo = JSONDict  # type: ignore[misc, assignment]
 
@@ -74,7 +74,7 @@ try:
         StaticHashValidationStrategy,
     )
 except (ImportError, ValueError):
-    from processing_strategies import (  # type: ignore[no-redef]
+    from .processing_strategies import (  # type: ignore[no-redef]
         CompositeProcessingStrategy,
         DynamicPolicyProcessingStrategy,
         MACIProcessingStrategy,
@@ -82,7 +82,7 @@ except (ImportError, ValueError):
         PythonProcessingStrategy,
         RustProcessingStrategy,
     )
-    from validation_strategies import (  # type: ignore[no-redef]
+    from .validation_strategies import (  # type: ignore[no-redef]
         CompositeValidationStrategy,
         DynamicPolicyValidationStrategy,
         OPAValidationStrategy,

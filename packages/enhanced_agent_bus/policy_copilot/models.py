@@ -13,7 +13,7 @@ if _module is not None:
     sys.modules.setdefault("packages.enhanced_agent_bus.policy_copilot.models", _module)
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

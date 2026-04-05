@@ -24,7 +24,12 @@ This module provides durable workflow execution with:
 
 from .executor import DurableWorkflowExecutor
 from .models import (
+    CandidateArtifact,
+    DatasetSnapshot,
+    DecisionEvent,
+    EvaluationRun,
     EventType,
+    EvidenceBundle,
     StepStatus,
     StepType,
     WorkflowCompensation,
@@ -42,8 +47,13 @@ except ImportError:
     PostgresWorkflowRepository = None  # type: ignore[misc,assignment]
 
 __all__ = [
+    "CandidateArtifact",
+    "DatasetSnapshot",
+    "DecisionEvent",
     "DurableWorkflowExecutor",
+    "EvaluationRun",
     "EventType",
+    "EvidenceBundle",
     "InMemoryWorkflowRepository",
     "PostgresWorkflowRepository",
     "ReplayEngine",
@@ -58,6 +68,6 @@ __all__ = [
 ]
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"

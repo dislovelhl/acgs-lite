@@ -38,7 +38,7 @@ from enhanced_agent_bus.agent_health.models import (
 from enhanced_agent_bus.agent_health.store import AgentHealthStore
 
 try:
-    from src.core.shared.types import AgentID
+    from enhanced_agent_bus._compat.types import AgentID
 except ImportError:
     AgentID = str  # type: ignore[misc,assignment]
 
@@ -53,7 +53,7 @@ BoundedApprovalAwaiter = Callable[[AgentID], Awaitable[bool]]
 
 def _validate_constitutional_hash() -> None:
     """Raise RuntimeError if the module-local CONSTITUTIONAL_HASH diverges from shared constants."""
-    from src.core.shared.constants import CONSTITUTIONAL_HASH as _CANONICAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as _CANONICAL_HASH
 
     if CONSTITUTIONAL_HASH != _CANONICAL_HASH:
         raise RuntimeError(
@@ -381,7 +381,7 @@ class HealingEngine:
         extra: dict[str, Any] | None = None,
     ) -> None:
         """Write a governance audit log entry via the injected audit_log_client."""
-        from src.core.shared.audit.logger import AuditEventType, AuditSeverity
+        from enhanced_agent_bus._compat.audit.logger import AuditEventType, AuditSeverity
 
         action_payload: dict[str, Any] = {
             "type": "HEALING_ACTION",

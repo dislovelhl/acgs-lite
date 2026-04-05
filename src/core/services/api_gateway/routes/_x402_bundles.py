@@ -340,14 +340,26 @@ async def _eval_anomaly(action: str, _context: dict[str, Any]) -> dict[str, Any]
 async def _eval_explain(action: str, context: dict[str, Any]) -> dict[str, Any]:
     """Run the /explain decision explainability logic."""
     try:
-        from acgs_lite.constitution import Constitution
         from acgs_lite.constitution.decision_explainer import (
-            explain_decision as _explain,
+            ExplanationDetail,
+            GovernanceDecisionExplainer,
         )
 
-        constitution = Constitution.from_template("default")
-        result = constitution.validate(action, context)
-        explanation = _explain(result, constitution=constitution, detail_level="standard")
+        from .x402_marketplace import _build_triggered_rules, _evaluate_governance_action
+
+        constitution, result = _evaluate_governance_action(action, context)
+        explanation = GovernanceDecisionExplainer(store_history=False).explain(
+            decision_id=str(result.request_id or "x402-bundle-explain"),
+            outcome=(
+                "deny"
+                if result.blocking_violations
+                else ("warn" if result.violations else "allow")
+            ),
+            triggered_rules=_build_triggered_rules(constitution, result),
+            input_text=action,
+            context=context or None,
+            detail=ExplanationDetail.STANDARD,
+        )
         return (
             explanation.to_dict()
             if hasattr(explanation, "to_dict")
@@ -393,11 +405,12 @@ async def _eval_compliance(
 async def _eval_simulate(action: str, context: dict[str, Any]) -> dict[str, Any]:
     """Run the /simulate policy change simulation logic."""
     try:
-        from acgs_lite.constitution import Constitution
         from acgs_lite.constitution.policy_simulator import GovernancePolicySimulator
 
-        baseline = Constitution.from_template("default")
-        candidate = Constitution.from_template("strict")
+        from .x402_marketplace import _build_governance_engine
+
+        baseline, _ = _build_governance_engine("general")
+        candidate, _ = _build_governance_engine("security")
         simulator = GovernancePolicySimulator()
         report = simulator.evaluate_single(
             baseline=baseline,

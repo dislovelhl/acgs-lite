@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as CONST_HASH
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
     AdaptiveGovernanceEngine,
 )
@@ -36,7 +36,7 @@ class TestInstantiation:
 
         assert engine.constitutional_hash == CONST_HASH
         assert engine.mode == GovernanceMode.ADAPTIVE
-        assert list(engine.decision_history) == []
+        assert len(engine.decision_history) == 0
         assert engine.running is False
         assert engine.learning_task is None
 

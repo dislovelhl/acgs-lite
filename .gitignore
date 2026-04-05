@@ -22,15 +22,21 @@ htmlcov/
 mlruns/
 
 # Codex CLI
+.codex/
 .codex-home/
+.codex-readiness-integration-test/
 .codex-readiness-unit-test/
 .codex_write_check
 
 # AI agent / coding-assistant dev stacks (local tooling, not project source)
-.context/
 .gstack/
 .openclaw/
 .agents/
+!.agents/
+!.agents/archive/
+!.agents/archive/**
+!.agents/skills/
+!.agents/skills/**
 .claude/
 .mcp.json
 .playwright-cli/
@@ -46,9 +52,7 @@ autoresearch/candidate_scenarios/*
 !autoresearch/candidate_scenarios/
 !autoresearch/candidate_scenarios/*.json
 !autoresearch/candidate_scenarios/*.patch
-autoresearch/paper_extracts/*
-!autoresearch/paper_extracts/2603_19220v1.json
-!autoresearch/paper_extracts/2603_19220v1_adapter_manifest.json
+autoresearch/paper_extracts/
 autoresearch/raw_dataset_adapter.md
 autoresearch/build_paper_adapter_manifest.py
 autoresearch/render_candidate_promotion_patch.py
@@ -123,3 +127,18 @@ src/split_engine.py
 .gstack/
 .python-version
 .github/workflows/docs-pdf.yml
+
+# Per-rule eval harness output
+eval_results/
+.omx/
+
+# Session memory / local output
+.remember/
+output/
+
+# SQLite WAL/SHM (transient)
+*.db-shm
+*.db-wal
+
+# TypeScript build info
+*.tsbuildinfo

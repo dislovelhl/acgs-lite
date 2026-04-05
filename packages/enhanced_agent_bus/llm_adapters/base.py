@@ -16,11 +16,12 @@ from datetime import UTC, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field
-from src.core.shared.resilience.retry import RetryConfig as SharedRetryConfig
-from src.core.shared.resilience.retry import retry
+
+from enhanced_agent_bus._compat.resilience.retry import RetryConfig as SharedRetryConfig
+from enhanced_agent_bus._compat.resilience.retry import retry
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -30,7 +31,7 @@ logger = get_logger(__name__)
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 

@@ -15,8 +15,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from redis.exceptions import RedisError
 
+from enhanced_agent_bus.data_flywheel.models import DatasetSnapshot
+from enhanced_agent_bus.data_flywheel.run_orchestrator import FlywheelRunOrchestrationError
 from src.core.services.api_gateway.routes.evolution_control import (
     get_operator_control_plane,
+    get_run_orchestrator,
 )
 from src.core.services.api_gateway.routes.evolution_control import (
     router as evolution_router,
@@ -90,6 +93,24 @@ def mock_control_plane() -> AsyncMock:
 @pytest.fixture()
 def client(mock_control_plane: AsyncMock) -> TestClient:
     return TestClient(_build_app(mock_control_plane))
+
+
+@pytest.fixture()
+def mock_orchestrator() -> AsyncMock:
+    orchestrator = AsyncMock()
+    orchestrator.run_dataset_build_step = AsyncMock(
+        return_value=DatasetSnapshot(
+            snapshot_id="snapshot-001",
+            tenant_id="tenant-1",
+            workload_key="tenant-1/enhanced_agent_bus/message_processor/policy/608508a9bd224290",
+            constitutional_hash="608508a9bd224290",
+            record_count=2,
+            redaction_status="redacted",
+            artifact_manifest_uri="file:///tmp/snapshot-001/manifest.json",
+            created_at=datetime(2026, 3, 30, 12, 0, tzinfo=UTC),
+        )
+    )
+    return orchestrator
 
 
 # ---------------------------------------------------------------------------
@@ -247,6 +268,47 @@ class TestOperatorControlStop:
         mock_control_plane.request_stop = AsyncMock(side_effect=ValueError("bad"))
         cl = TestClient(_build_app(mock_control_plane))
         resp = cl.post("/evolution/operator-control/stop", json={})
+        assert resp.status_code == 503
+
+
+# ---------------------------------------------------------------------------
+# POST /evolution/operator-control/dataset-build
+# ---------------------------------------------------------------------------
+
+
+class TestDatasetBuildTrigger:
+    """POST /evolution/operator-control/dataset-build"""
+
+    def test_dataset_build_success(
+        self, mock_control_plane: AsyncMock, mock_orchestrator: AsyncMock
+    ):
+        app = _build_app(mock_control_plane)
+        app.dependency_overrides[get_run_orchestrator] = lambda: mock_orchestrator
+        cl = TestClient(app)
+
+        resp = cl.post(
+            "/evolution/operator-control/dataset-build",
+            json={"run_id": "run-123", "limit": 250, "reason": "seed from live traffic"},
+        )
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["run_id"] == "run-123"
+        assert body["requested_by"] == "admin-1"
+        assert body["snapshot"]["snapshot_id"] == "snapshot-001"
+        mock_orchestrator.run_dataset_build_step.assert_awaited_once_with("run-123", limit=250)
+
+    def test_dataset_build_missing_run(self, mock_control_plane: AsyncMock):
+        orchestrator = AsyncMock()
+        orchestrator.run_dataset_build_step = AsyncMock(
+            side_effect=FlywheelRunOrchestrationError("boom")
+        )
+        app = _build_app(mock_control_plane)
+        app.dependency_overrides[get_run_orchestrator] = lambda: orchestrator
+        cl = TestClient(app)
+
+        resp = cl.post("/evolution/operator-control/dataset-build", json={"run_id": "run-123"})
+
         assert resp.status_code == 503
 
 

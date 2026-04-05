@@ -500,7 +500,10 @@ class TestIsProductionEnvironment:
             assert ad_mod._is_production_environment() is False
 
     def test_production_is_production(self):
-        with patch.object(ad_mod, "settings") as mock_settings:
+        with (
+            patch.object(ad_mod, "settings") as mock_settings,
+            patch.dict(os.environ, {"ENVIRONMENT": "", "APP_ENV": "", "ACGS2_ENV": "", "AGENT_RUNTIME_ENVIRONMENT": ""}),
+        ):
             mock_settings.env = "production"
             assert ad_mod._is_production_environment() is True
 
@@ -566,12 +569,22 @@ class TestCheckRevocation:
         await ad_mod._check_revocation("valid-jti")
 
     @pytest.mark.asyncio
-    async def test_exception_non_blocking(self):
+    async def test_exception_non_blocking_in_non_production(self):
         svc = AsyncMock()
         svc.is_token_revoked.side_effect = RuntimeError("redis down")
         ad_mod._revocation_service = svc
-        # Should not raise
-        await ad_mod._check_revocation("some-jti")
+        with patch.object(ad_mod, "_is_production_environment", return_value=False):
+            await ad_mod._check_revocation("some-jti")
+
+    @pytest.mark.asyncio
+    async def test_exception_fails_closed_in_production(self):
+        svc = AsyncMock()
+        svc.is_token_revoked.side_effect = RuntimeError("redis down")
+        ad_mod._revocation_service = svc
+        with patch.object(ad_mod, "_is_production_environment", return_value=True):
+            with pytest.raises(HTTPException) as exc_info:
+                await ad_mod._check_revocation("some-jti")
+            assert exc_info.value.status_code == 503
 
 
 class TestRequireAuth:

@@ -10,8 +10,8 @@ from datetime import UTC, datetime, timezone
 from enum import Enum
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.core_models import (
     AgentMessage,
     ConversationMessage,
@@ -469,14 +469,15 @@ class TestAgentMessageFromDict:
         msg = AgentMessage.from_dict({"autonomy_tier": "advisory"})
         assert msg.autonomy_tier == AutonomyTier.ADVISORY
 
-    def test_autonomy_tier_none_in_dict(self):
+    def test_autonomy_tier_none_in_dict_defaults_to_bounded(self):
         msg = AgentMessage.from_dict({"autonomy_tier": None})
-        assert msg.autonomy_tier is None
+        # None defaults to BOUNDED (safe default)
+        assert msg.autonomy_tier == AutonomyTier.BOUNDED
 
-    def test_autonomy_tier_missing_in_dict(self):
-        # When key is missing, data.get returns None → _parse_autonomy_tier(None) → None
+    def test_autonomy_tier_missing_in_dict_defaults_to_bounded(self):
         msg = AgentMessage.from_dict({})
-        assert msg.autonomy_tier is None
+        # Missing key defaults to BOUNDED (safe default)
+        assert msg.autonomy_tier == AutonomyTier.BOUNDED
 
     def test_metadata_preserved(self):
         msg = AgentMessage.from_dict({"metadata": {"k": "v"}})

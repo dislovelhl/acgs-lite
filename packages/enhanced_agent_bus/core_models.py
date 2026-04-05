@@ -13,7 +13,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from pydantic import BaseModel, Field
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 # Import type aliases
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
         MetadataDict,
@@ -42,7 +42,7 @@ except ImportError:
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -93,6 +93,19 @@ class RoutingContext:
             raise ValueError("source_agent_id is required")
         if not self.target_agent_id:
             raise ValueError("target_agent_id is required")
+
+    def to_dict(self) -> JSONDict:
+        """Serialize routing fields for transport/storage."""
+        return {
+            "source_agent_id": self.source_agent_id,
+            "target_agent_id": self.target_agent_id,
+            "routing_key": self.routing_key,
+            "routing_tags": list(self.routing_tags),
+            "retry_count": self.retry_count,
+            "max_retries": self.max_retries,
+            "timeout_ms": self.timeout_ms,
+            "constitutional_hash": self.constitutional_hash,
+        }
 
 
 @dataclass
@@ -221,7 +234,9 @@ class AgentMessage:
         data.update(
             {
                 "payload": self.payload,
+                "routing": self.routing.to_dict() if self.routing is not None else None,
                 "sender_id": self.sender_id,
+                "headers": self.headers,
                 "security_context": self.security_context,
                 "metadata": self.metadata,
                 "expires_at": self.expires_at.isoformat() if self.expires_at else None,
@@ -259,16 +274,47 @@ class AgentMessage:
                 # If SessionContext is not available or parsing fails, set to None
                 session_context = None
 
+        routing = None
+        raw_routing = data.get("routing")
+        if isinstance(raw_routing, dict):
+            routing = RoutingContext(
+                source_agent_id=str(raw_routing.get("source_agent_id", "")),
+                target_agent_id=str(raw_routing.get("target_agent_id", "")),
+                routing_key=str(raw_routing.get("routing_key", "")),
+                routing_tags=list(raw_routing.get("routing_tags", [])),
+                retry_count=int(raw_routing.get("retry_count", 0)),
+                max_retries=int(raw_routing.get("max_retries", 3)),
+                timeout_ms=int(raw_routing.get("timeout_ms", 5000)),
+                constitutional_hash=str(
+                    raw_routing.get("constitutional_hash", CONSTITUTIONAL_HASH)
+                ),
+            )
+
+        def _parse_datetime(raw: Any) -> datetime | None:
+            if not isinstance(raw, str) or not raw:
+                return None
+            return datetime.fromisoformat(raw)
+
         return cls(
             message_id=data.get("message_id", str(uuid.uuid4())),
             conversation_id=data.get("conversation_id", str(uuid.uuid4())),
             content=data.get("content", {}),
+            payload=data.get("payload", {}),
             from_agent=data.get("from_agent", ""),
             to_agent=data.get("to_agent", ""),
+            sender_id=data.get("sender_id", ""),
             message_type=MessageType(data.get("message_type", "command")),
+            routing=routing,
+            headers=data.get("headers", {}),
             tenant_id=data.get("tenant_id", "default"),  # Match model's Field default
+            security_context=data.get("security_context", {}),
             priority=Priority(data.get("priority", 1)),  # Default to MEDIUM/NORMAL
             status=MessageStatus(data.get("status", "pending")),
+            autonomy_tier=(
+                cls._parse_autonomy_tier(data.get("autonomy_tier")) or AutonomyTier.BOUNDED
+            ),
+            constitutional_hash=data.get("constitutional_hash", CONSTITUTIONAL_HASH),
+            constitutional_validated=bool(data.get("constitutional_validated", False)),
             metadata=data.get("metadata", {}),
             session_id=data.get("session_id"),
             session_context=session_context,
@@ -278,10 +324,14 @@ class AgentMessage:
             schema_version=data.get("schema_version", "1.3.0"),  # T012: Schema versioning
             requested_tool=data.get("requested_tool"),
             payload_hmac=data.get("payload_hmac"),
-            autonomy_tier=cls._parse_autonomy_tier(data.get("autonomy_tier")),
             ifc_label=(
                 IFCLabel.from_dict(data["ifc_label"]) if data.get("ifc_label") is not None else None
             ),
+            created_at=_parse_datetime(data.get("created_at")) or datetime.now(UTC),
+            updated_at=_parse_datetime(data.get("updated_at")) or datetime.now(UTC),
+            expires_at=_parse_datetime(data.get("expires_at")),
+            impact_score=data.get("impact_score"),
+            performance_metrics=data.get("performance_metrics", {}),
         )
 
 

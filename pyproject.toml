@@ -89,7 +89,7 @@ acgs-deliberation = { workspace = true }
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-exclude = [".claude", ".codex-home", "demo", "examples", "node_modules", "__pycache__", "tools"]
+exclude = [".claude", ".codex", ".codex-home", ".codex-readiness-integration-test", "demo", "examples", "node_modules", "__pycache__", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "S", "RUF", "C90"]
@@ -102,10 +102,13 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110"]
-"**/tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110"]
+"tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110", "B905"]
+"**/tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110", "B905"]
 "packages/enhanced_agent_bus/**/*.py" = ["BLE001", "S311"]
 "packages/acgs-lite/**/*.py" = ["BLE001", "S311"]
+"packages/acgs-core/**/*.py" = ["BLE001", "S102"]
+"packages/clinicalguard/**/*.py" = ["BLE001", "S104", "S108", "S110"]
+"packages/constitutional_swarm/**/*.py" = ["S105"]
 "src/**/*.py" = ["BLE001", "S105", "S106", "S108", "RUF001", "RUF002", "RUF003"]
 "src/acgs_lite/**/*.py" = ["BLE001", "S311", "F401", "RUF012"]
 "autoresearch/**/*.py" = ["BLE001", "S311", "T201"]
@@ -117,7 +120,7 @@ ignore = [
 max-complexity = 15
 
 [tool.ruff.lint.isort]
-known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation"]
+known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation", "clinicalguard"]
 
 [tool.mypy]
 python_version = "3.11"

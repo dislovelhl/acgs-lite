@@ -17,9 +17,11 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from datetime import UTC, datetime, timezone
+from importlib import import_module
 from typing import TYPE_CHECKING, cast
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.plugin_registry import available, require
 
 if TYPE_CHECKING:
     # Import protocols directly from interfaces for proper type checking
@@ -54,13 +56,12 @@ def _get_imports():
     from .opa_guard_models import GuardDecision, GuardResult
     from .redis_integration import get_redis_deliberation_queue, get_redis_voting_system
 
-    try:
-        from src.core.shared.governance.metrics.dfc import (
-            DFCCalculator,
-            DFCComponents,
-            get_dfc_components_from_context,
-        )
-    except ImportError:
+    if available("dfc_metrics"):
+        _dfc_module = import_module(require("dfc_metrics"))
+        DFCCalculator = _dfc_module.DFCCalculator
+        DFCComponents = _dfc_module.DFCComponents
+        get_dfc_components_from_context = _dfc_module.get_dfc_components_from_context
+    else:
         DFCCalculator = None
         DFCComponents = None
 
@@ -116,7 +117,7 @@ def _truncate_content_for_hotl(content: object, limit: int = 500) -> str:
 
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
     )
@@ -154,18 +155,13 @@ DFC_DIAGNOSTIC_ERRORS = (
     AttributeError,
 )
 
-# Import mixin for OPA Guard methods
-try:
-    from .opa_guard_mixin import OPAGuardMixin
-except ImportError:
-    try:
-        from opa_guard_mixin import OPAGuardMixin  # type: ignore[import-untyped]
-    except ImportError:
-        # Define empty mixin if import fails
-        class OPAGuardMixin:  # type: ignore[no-redef]
-            """Fallback empty mixin when opa_guard_mixin unavailable."""
+if available("opa_guard_mixin"):
+    OPAGuardMixin = import_module(require("opa_guard_mixin")).OPAGuardMixin
+else:
+    class OPAGuardMixin:  # type: ignore[no-redef]
+        """Fallback empty mixin when opa_guard_mixin unavailable."""
 
-            pass
+        pass
 
 
 class DeliberationLayer(OPAGuardMixin):
@@ -582,14 +578,12 @@ class DeliberationLayer(OPAGuardMixin):
             return await self._process_fast_lane(message, routing_decision)
 
         # Check medium-risk tier before committing to full deliberation
-        try:
-            from src.core.services.hitl_approvals.hotl_manager import get_hotl_manager
-            from src.core.shared.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
+        if available("hotl_manager"):
+            from enhanced_agent_bus._compat.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
 
+            import_module(require("hotl_manager"))  # verify importability
             if RISK_TIER_LOW_MAX <= impact_score < RISK_TIER_HIGH_MIN:
                 return await self._process_medium_risk(message, routing_decision, impact_score)
-        except ImportError:
-            pass  # HOTL module unavailable — fall through to standard deliberation
 
         return await self._process_deliberation(message, routing_decision)
 

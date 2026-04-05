@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -123,15 +124,16 @@ def create_acgs_app(service_name: str, **config: Any) -> FastAPI:
         async def validation_exception_handler(
             request: Request, exc: RequestValidationError
         ) -> JSONResponse:
+            encoded_errors = jsonable_encoder(exc.errors())
             logger.error(
                 "validation_error",
                 extra={
                     "service": service_name,
                     "path": request.url.path,
-                    "detail": exc.errors(),
+                    "detail": encoded_errors,
                 },
             )
-            return JSONResponse(status_code=422, content={"detail": exc.errors()})
+            return JSONResponse(status_code=422, content={"detail": encoded_errors})
 
         @app.exception_handler(Exception)
         async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:

@@ -2,21 +2,19 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
-from pathlib import Path
-from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
 
 _evidence_api = pytest.importorskip("src.core.self_evolution.api.evidence")
-_evidence_store = pytest.importorskip("src.core.self_evolution.research.experiment_evidence_store")
+_self_evolution_store = pytest.importorskip("src.core.self_evolution.evidence_store")
 
-set_evidence_store_path = _evidence_api.set_evidence_store_path
-DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH = _evidence_store.DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH
-BoundedExperimentEvidenceRecord = _evidence_store.BoundedExperimentEvidenceRecord
-BoundedExperimentEvidenceStore = _evidence_store.BoundedExperimentEvidenceStore
+SelfEvolutionEvidenceStore = _self_evolution_store.SelfEvolutionEvidenceStore
 
+from enhanced_agent_bus.data_flywheel.models import EvidenceBundle
+from enhanced_agent_bus.persistence.repository import InMemoryWorkflowRepository
 from src.core.services.api_gateway.main import app
 from src.core.shared.security.auth import UserClaims, get_current_user
 
@@ -39,36 +37,34 @@ def _cleanup_overrides() -> None:
     app.dependency_overrides.clear()
     yield
     app.dependency_overrides.clear()
-    set_evidence_store_path(DEFAULT_BOUNDED_EXPERIMENT_EVIDENCE_PATH)
 
 
 @pytest.fixture
-def client() -> TestClient:
-    return TestClient(app)
+def client() -> Iterator[TestClient]:
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
-def seeded_evidence(tmp_path: Path) -> BoundedExperimentEvidenceRecord:
-    path = tmp_path / "gateway-evidence"
-    set_evidence_store_path(path)
-    record = BoundedExperimentEvidenceRecord(
-        experiment_id=uuid4(),
-        hypothesis_id=uuid4(),
-        cycle_id=uuid4(),
-        proposal_id=uuid4(),
-        metric_name="p99_latency_ms",
-        baseline=1.0,
-        observed=0.9,
-        delta_percent=10.0,
-        kept=True,
-        reason="improved",
-        lower_is_better=True,
-        recorded_at=datetime(2026, 3, 1, 12, 0, 0, tzinfo=UTC),
+def seeded_evidence(client: TestClient) -> EvidenceBundle:
+    repository = InMemoryWorkflowRepository()
+    client.app.state.self_evolution_evidence_store = SelfEvolutionEvidenceStore(repository)
+    record = EvidenceBundle(
+        evidence_id="evidence-001",
+        tenant_id="tenant-admin",
+        workload_key="tenant-admin/api/tool/policy/608508a9bd224290",
+        candidate_id="candidate-001",
+        dataset_snapshot_id="snapshot-001",
+        constitutional_hash="608508a9bd224290",
+        approval_state="pending_review",
+        validator_records=[{"validator": "validator-1"}],
+        rollback_plan={"action": "rollback"},
+        artifact_manifest_uri="file:///tmp/evidence-001.json",
+        created_at=datetime(2026, 3, 1, 12, 0, 0, tzinfo=UTC),
     )
-    store = BoundedExperimentEvidenceStore(path=path)
     import asyncio
 
-    asyncio.run(store.append(record))
+    asyncio.run(repository.save_evidence_bundle(record))
     return record
 
 
@@ -81,7 +77,7 @@ class TestGatewayAdminEvidenceMount:
     def test_admin_can_query_bounded_experiment_evidence(
         self,
         client: TestClient,
-        seeded_evidence: BoundedExperimentEvidenceRecord,
+        seeded_evidence: EvidenceBundle,
     ) -> None:
         app.dependency_overrides[get_current_user] = lambda: _claims(roles=["admin"])
 
@@ -95,10 +91,28 @@ class TestGatewayAdminEvidenceMount:
     def test_non_admin_is_rejected(
         self,
         client: TestClient,
-        seeded_evidence: BoundedExperimentEvidenceRecord,
+        seeded_evidence: EvidenceBundle,
     ) -> None:
         app.dependency_overrides[get_current_user] = lambda: _claims(roles=["user"])
 
         response = client.get("/api/v1/admin/evolution/bounded-experiments")
 
         assert response.status_code == 403
+
+    def test_admin_cannot_read_evidence_from_another_tenant(
+        self,
+        client: TestClient,
+        seeded_evidence: EvidenceBundle,
+    ) -> None:
+        app.dependency_overrides[get_current_user] = lambda: UserClaims(
+            sub="other-admin",
+            tenant_id="tenant-other",
+            roles=["admin"],
+            permissions=[],
+            exp=4_102_444_800,
+            iat=1_700_000_000,
+        )
+
+        response = client.get(f"/api/v1/admin/evolution/bounded-experiments/{seeded_evidence.evidence_id}")
+
+        assert response.status_code == 404

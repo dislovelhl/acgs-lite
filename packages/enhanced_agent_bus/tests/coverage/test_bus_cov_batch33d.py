@@ -18,7 +18,7 @@ import pytest
 # ---------------------------------------------------------------------------
 # OIDC Handler imports
 # ---------------------------------------------------------------------------
-from src.core.shared.auth.oidc_handler import (
+from enhanced_agent_bus._compat.auth.oidc_handler import (
     DEFAULT_SCOPES,
     OIDCAuthenticationError,
     OIDCConfigurationError,
@@ -799,6 +799,7 @@ class TestOIDCHandlerDecodeIdToken:
         )
         handler._fetch_metadata = AsyncMock(return_value={"issuer": "https://idp.example"})
         provider = handler.get_provider("p1")
+        # jwks_uri check precedes authlib check — missing jwks_uri error takes priority
         with patch("src.core.shared.auth.oidc_handler.HAS_AUTHLIB", False):
             with pytest.raises(OIDCTokenError, match="JWKS URI not found"):
                 await handler._decode_id_token("token", provider)

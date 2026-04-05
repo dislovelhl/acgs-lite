@@ -12,16 +12,17 @@ from datetime import datetime
 from typing import Protocol
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
+from enhanced_agent_bus.llm_adapters.base import BaseLLMAdapter, LLMMessage
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .models import (
@@ -217,6 +218,113 @@ class DefaultConstitutionalCorrector:
     ) -> str:
         """Async version uses sync implementation."""
         return self.correct(response, violations, context)
+
+
+class AdapterLLMRefiner(LLMRefiner):
+    """
+    LLM refiner that uses a BaseLLMAdapter for actual response improvement.
+    """
+    def __init__(self, adapter: BaseLLMAdapter):
+        self.adapter = adapter
+
+    def refine(
+        self, response: str, assessment: QualityAssessment, context: JSONDict | None = None
+    ) -> str:
+        prompt = self._build_prompt(response, assessment, context)
+        messages = [
+            LLMMessage(role="system", content="You are a response quality improvement assistant. Refine the provided response based on the quality assessment and critique. Return ONLY the refined response text, without any additional commentary."),
+            LLMMessage(role="user", content=prompt)
+        ]
+        try:
+            result = self.adapter.complete(messages=messages, temperature=0.3)
+            return result.content.strip()
+        except Exception as e:
+            logger.error(f"AdapterLLMRefiner failed: {e}")
+            return response
+
+    async def refine_async(
+        self, response: str, assessment: QualityAssessment, context: JSONDict | None = None
+    ) -> str:
+        prompt = self._build_prompt(response, assessment, context)
+        messages = [
+            LLMMessage(role="system", content="You are a response quality improvement assistant. Refine the provided response based on the quality assessment and critique. Return ONLY the refined response text, without any additional commentary."),
+            LLMMessage(role="user", content=prompt)
+        ]
+        try:
+            result = await self.adapter.acomplete(messages=messages, temperature=0.3)
+            return result.content.strip()
+        except Exception as e:
+            logger.error(f"AdapterLLMRefiner async failed: {e}")
+            return response
+
+    def _build_prompt(self, response: str, assessment: QualityAssessment, context: JSONDict | None) -> str:
+        critiques = []
+        for dim in assessment.failing_dimensions:
+            if dim.critique:
+                critiques.append(f"- {dim.name}: {dim.critique}")
+            else:
+                critiques.append(f"- {dim.name}: Score {dim.score:.2f} is below threshold {dim.threshold:.2f}")
+
+        prompt = f"Original Response:\n{response}\n\nThe response failed the following quality dimensions:\n"
+        prompt += "\n".join(critiques)
+
+        if assessment.refinement_suggestions:
+            prompt += "\n\nSuggestions for improvement:\n"
+            for sug in assessment.refinement_suggestions:
+                prompt += f"- {sug}\n"
+
+        if context:
+            prompt += f"\n\nContext:\n{context}\n"
+
+        prompt += "\nPlease provide a refined version of the response that addresses these issues. Keep the core meaning intact while improving the quality."
+        return prompt
+
+
+class AdapterConstitutionalCorrector(ConstitutionalSelfCorrector):
+    """
+    Constitutional corrector that uses a BaseLLMAdapter for actual response improvement.
+    """
+    def __init__(self, adapter: BaseLLMAdapter):
+        self.adapter = adapter
+
+    def correct(self, response: str, violations: list[str], context: JSONDict | None = None) -> str:
+        prompt = self._build_prompt(response, violations, context)
+        messages = [
+            LLMMessage(role="system", content="You are a constitutional compliance assistant. Correct the provided response to address the listed constitutional violations. Ensure the core meaning is preserved but non-compliant parts are rewritten or removed. Return ONLY the corrected response text, without any additional commentary."),
+            LLMMessage(role="user", content=prompt)
+        ]
+        try:
+            result = self.adapter.complete(messages=messages, temperature=0.2)
+            return result.content.strip()
+        except Exception as e:
+            logger.error(f"AdapterConstitutionalCorrector failed: {e}")
+            return response
+
+    async def correct_async(
+        self, response: str, violations: list[str], context: JSONDict | None = None
+    ) -> str:
+        prompt = self._build_prompt(response, violations, context)
+        messages = [
+            LLMMessage(role="system", content="You are a constitutional compliance assistant. Correct the provided response to address the listed constitutional violations. Ensure the core meaning is preserved but non-compliant parts are rewritten or removed. Return ONLY the corrected response text, without any additional commentary."),
+            LLMMessage(role="user", content=prompt)
+        ]
+        try:
+            result = await self.adapter.acomplete(messages=messages, temperature=0.2)
+            return result.content.strip()
+        except Exception as e:
+            logger.error(f"AdapterConstitutionalCorrector async failed: {e}")
+            return response
+
+    def _build_prompt(self, response: str, violations: list[str], context: JSONDict | None) -> str:
+        prompt = f"Original Response:\n{response}\n\nConstitutional Violations:\n"
+        for v in violations:
+            prompt += f"- {v}\n"
+
+        if context:
+            prompt += f"\nContext:\n{context}\n"
+
+        prompt += "\nPlease provide a corrected version of the response that resolves these violations."
+        return prompt
 
 
 class ResponseRefiner:
@@ -735,6 +843,8 @@ __all__ = [
     "ConstitutionalViolationError",
     "DefaultConstitutionalCorrector",
     "DefaultLLMRefiner",
+    "AdapterLLMRefiner",
+    "AdapterConstitutionalCorrector",
     "LLMRefiner",
     "RefinementConfig",
     "RefinementError",

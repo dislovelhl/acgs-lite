@@ -28,7 +28,7 @@ except ImportError as _cicd_import_error:
     )
 
 # Constitutional hash for ACGS-2 compliance
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 class TestConstitutionalHashValidation:

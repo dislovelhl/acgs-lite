@@ -25,6 +25,12 @@ PROMOTION_PATCH = (
 _CANDIDATE_FILES_AVAILABLE = CANDIDATE_SCENARIOS.exists() and PROMOTION_PATCH.exists()
 
 
+_skip_missing_candidates = pytest.mark.skipif(
+    not CANDIDATE_SCENARIOS.exists(),
+    reason="autoresearch candidate_scenarios not generated",
+)
+
+
 def _load_rows(path: Path) -> list[dict[str, object]]:
     data = json.loads(path.read_text())
     return data if isinstance(data, list) else [data]
@@ -79,6 +85,7 @@ def test_real_use_case_fixture_is_mostly_novel_relative_to_frozen_benchmark_corp
     assert len(real_use_case_actions - benchmark_actions) >= 15
 
 
+@_skip_missing_candidates
 @pytest.mark.unit
 @pytest.mark.skipif(
     not _CANDIDATE_FILES_AVAILABLE,
@@ -98,6 +105,7 @@ def test_candidate_scenario_pack_is_balanced_and_traceable() -> None:
         assert isinstance(row["source_note"], str) and row["source_note"].strip()
 
 
+@_skip_missing_candidates
 @pytest.mark.unit
 @pytest.mark.skipif(
     not _CANDIDATE_FILES_AVAILABLE,
@@ -115,6 +123,7 @@ def test_candidate_scenario_pack_is_fully_novel_relative_to_frozen_corpus() -> N
     assert benchmark_actions.isdisjoint(candidate_actions)
 
 
+@_skip_missing_candidates
 @pytest.mark.unit
 @pytest.mark.skipif(
     not _CANDIDATE_FILES_AVAILABLE,

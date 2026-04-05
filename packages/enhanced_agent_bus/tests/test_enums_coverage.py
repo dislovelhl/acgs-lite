@@ -287,7 +287,7 @@ class TestValidationStatus:
 
 
 # ---------------------------------------------------------------------------
-# RiskLevel (re-exported from src.core.shared.enums)
+# RiskLevel (re-exported from enhanced_agent_bus._compat.enums)
 # ---------------------------------------------------------------------------
 
 
@@ -788,8 +788,7 @@ class TestCrossEnumConsistency:
             assert len(enum_cls) >= 1
 
     def test_risk_level_is_re_exported_from_shared(self):
-        from src.core.shared.enums import RiskLevel as SharedRiskLevel
-
+        from enhanced_agent_bus._compat.enums import RiskLevel as SharedRiskLevel
         from enhanced_agent_bus.enums import RiskLevel as BusRiskLevel
 
         assert SharedRiskLevel is BusRiskLevel

@@ -10,7 +10,8 @@ import warnings
 from typing import ClassVar
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helper: import the package under test (already cached in sys.modules)

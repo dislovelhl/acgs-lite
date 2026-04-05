@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enhanced-agent-bus"
-version = "3.0.0"
+version = "3.0.1"
 description = "ACGS-2 Enhanced Agent Bus with Constitutional Compliance"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -34,6 +34,14 @@ dependencies = [
     "orjson>=3.9.0",
     "python-multipart>=0.0.20",
 ]
+
+[project.urls]
+Homepage = "https://acgs.ai"
+Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/enhanced_agent_bus"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/enhanced-agent-bus/"
 
 [project.optional-dependencies]
 dev = [
@@ -64,12 +72,6 @@ postgres = [
 ]
 messaging = [
     "aiokafka>=0.10.0",
-]
-
-[tool.setuptools]
-packages = [
-    "enhanced_agent_bus",
-    "enhanced_agent_bus.deliberation_layer",
 ]
 
 [tool.setuptools.package-dir]

@@ -10,6 +10,7 @@ import binascii
 import hashlib
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
+from enhanced_agent_bus.shared.fail_closed import fail_closed
 
 try:
     from .dependency_bridge import get_dependency, is_feature_available
@@ -18,7 +19,7 @@ try:
     OPA_CLIENT_AVAILABLE: bool = is_feature_available("OPA")
     get_opa_client = get_dependency("get_opa_client")
 except (ImportError, ValueError):
-    from models import AgentMessage  # type: ignore[import-untyped]
+    from .models import AgentMessage  # type: ignore[import-untyped]
 
     OPA_CLIENT_AVAILABLE = False
     get_opa_client = None
@@ -26,7 +27,7 @@ except (ImportError, ValueError):
 try:
     from .models import CONSTITUTIONAL_HASH, AgentMessage
 except ImportError:
-    from models import CONSTITUTIONAL_HASH, AgentMessage  # type: ignore[import-untyped]
+    from .models import CONSTITUTIONAL_HASH, AgentMessage  # type: ignore[import-untyped]
 
 # Import Protocol types for type safety
 try:
@@ -156,14 +157,21 @@ class DynamicPolicyValidationStrategy:
         if not self._policy_client:
             return False, "Policy client not available"
 
-        try:
-            result = await self._policy_client.validate_message_signature(message)
-            if not result.is_valid:
-                return False, "; ".join(result.errors)
-            return True, None
-        except _VALIDATION_OPERATION_ERRORS as e:
-            logger.error(f"Dynamic policy validation error: {e}")
-            return False, f"Dynamic validation error: {e!s}"
+        return await self._validate_with_policy_client(message)
+
+    @fail_closed(
+        lambda self, message, *, error: self._handle_dynamic_policy_error(error),
+        exceptions=_VALIDATION_OPERATION_ERRORS,
+    )
+    async def _validate_with_policy_client(self, message: AgentMessage) -> tuple[bool, str | None]:
+        result = await self._policy_client.validate_message_signature(message)
+        if not result.is_valid:
+            return False, "; ".join(result.errors)
+        return True, None
+
+    def _handle_dynamic_policy_error(self, error: BaseException) -> tuple[bool, str | None]:
+        logger.error(f"Dynamic policy validation error: {error}")
+        return False, f"Dynamic validation error: {error!s}"
 
 
 class OPAValidationStrategy:
@@ -187,15 +195,21 @@ class OPAValidationStrategy:
         if not self._opa_client:
             return False, "OPA client not available"
 
-        try:
-            # Evaluate constitutional policies
-            result = await self._opa_client.validate_constitutional(message.to_dict())
-            if not result.is_valid:
-                return False, "; ".join(result.errors)
-            return True, None
-        except _VALIDATION_OPERATION_ERRORS as e:
-            logger.error(f"OPA validation execution error: {e}")
-            return False, f"OPA validation error: {e!s}"
+        return await self._validate_with_opa(message)
+
+    @fail_closed(
+        lambda self, message, *, error: self._handle_opa_validation_error(error),
+        exceptions=_VALIDATION_OPERATION_ERRORS,
+    )
+    async def _validate_with_opa(self, message: AgentMessage) -> tuple[bool, str | None]:
+        result = await self._opa_client.validate_constitutional(message.to_dict())
+        if not result.is_valid:
+            return False, "; ".join(result.errors)
+        return True, None
+
+    def _handle_opa_validation_error(self, error: BaseException) -> tuple[bool, str | None]:
+        logger.error(f"OPA validation execution error: {error}")
+        return False, f"OPA validation error: {error!s}"
 
 
 class RustValidationStrategy:
@@ -233,56 +247,62 @@ class RustValidationStrategy:
         if not self._rust_processor:
             return False, "Rust processor not available"
 
-        try:
-            # Attempt to use Rust processor's validation method
-            # Check for validate_message method (preferred)
-            if hasattr(self._rust_processor, "validate_message"):
-                result = await self._rust_processor.validate_message(message.to_dict())
-                if isinstance(result, bool):
-                    if result:
-                        return True, None
-                    return False, "Rust validation rejected message"
-                elif isinstance(result, dict):
-                    is_valid = result.get("is_valid", False)
-                    if is_valid:
-                        return True, None
-                    error = result.get("error", "Rust validation failed")
-                    return False, error
+        return await self._validate_with_rust_processor(message)
 
-            # Check for synchronous validate method
-            if hasattr(self._rust_processor, "validate"):
-                result = self._rust_processor.validate(message.to_dict())
-                if isinstance(result, bool):
-                    if result:
-                        return True, None
-                    return False, "Rust validation rejected message"
-                elif isinstance(result, dict):
-                    is_valid = result.get("is_valid", False)
-                    if is_valid:
-                        return True, None
-                    error = result.get("error", "Rust validation failed")
-                    return False, error
-
-            # Check for constitutional_validate method
-            if hasattr(self._rust_processor, "constitutional_validate"):
-                result = self._rust_processor.constitutional_validate(
-                    message.constitutional_hash, self._constitutional_hash
-                )
+    @fail_closed(
+        lambda self, message, *, error: self._handle_rust_validation_error(error),
+        exceptions=_VALIDATION_OPERATION_ERRORS,
+    )
+    async def _validate_with_rust_processor(
+        self, message: AgentMessage
+    ) -> tuple[bool, str | None]:
+        # Attempt to use Rust processor's validation method
+        # Check for validate_message method (preferred)
+        if hasattr(self._rust_processor, "validate_message"):
+            result = await self._rust_processor.validate_message(message.to_dict())
+            if isinstance(result, bool):
                 if result:
                     return True, None
-                return False, "Constitutional hash validation failed in Rust backend"
+                return False, "Rust validation rejected message"
+            elif isinstance(result, dict):
+                is_valid = result.get("is_valid", False)
+                if is_valid:
+                    return True, None
+                error = result.get("error", "Rust validation failed")
+                return False, error
 
-            # SECURITY: No validation method available - fail closed
-            logger.warning(
-                "RustValidationStrategy: No validation method found on Rust processor. "
-                "Failing closed for security."
+        # Check for synchronous validate method
+        if hasattr(self._rust_processor, "validate"):
+            result = self._rust_processor.validate(message.to_dict())
+            if isinstance(result, bool):
+                if result:
+                    return True, None
+                return False, "Rust validation rejected message"
+            elif isinstance(result, dict):
+                is_valid = result.get("is_valid", False)
+                if is_valid:
+                    return True, None
+                error = result.get("error", "Rust validation failed")
+                return False, error
+
+        # Check for constitutional_validate method
+        if hasattr(self._rust_processor, "constitutional_validate"):
+            result = self._rust_processor.constitutional_validate(
+                message.constitutional_hash, self._constitutional_hash
             )
-            return False, "Rust processor has no validation method - fail closed"
+            if result:
+                return True, None
+            return False, "Constitutional hash validation failed in Rust backend"
 
-        except _VALIDATION_OPERATION_ERRORS as e:
-            logger.error(f"Rust validation execution error: {e}")
-            # SECURITY: Always fail closed on exceptions
-            return False, f"Rust validation error: {e!s}"
+        logger.warning(
+            "RustValidationStrategy: No validation method found on Rust processor. "
+            "Failing closed for security."
+        )
+        return False, "Rust processor has no validation method - fail closed"
+
+    def _handle_rust_validation_error(self, error: BaseException) -> tuple[bool, str | None]:
+        logger.error(f"Rust validation execution error: {error}")
+        return False, f"Rust validation error: {error!s}"
 
 
 class PQCValidationStrategy:
@@ -542,40 +562,43 @@ class ConstitutionalValidationStrategy:
         if not self._verifier:
             return False, "Constitutional verifier not available"
 
-        try:
-            # We treat the message as an action to be verified against policies
-            # For now, we use a simple context, but this can be expanded
-            context = {
-                "message_type": message.message_type.name,
-                "priority": message.priority.name,
-                "sender": message.from_agent,
-                "tenant_id": message.tenant_id,
-            }
+        return await self._validate_with_constitutional_verifier(message)
 
-            # Map message content to policy variables if applicable
-            if isinstance(message.content, dict):
-                context.update(
-                    {k: v for k, v in message.content.items() if isinstance(v, (int, bool, float))}  # type: ignore[misc]
-                )
+    @fail_closed(
+        lambda self, message, *, error: self._handle_constitutional_validation_error(error),
+        exceptions=_VALIDATION_OPERATION_ERRORS,
+    )
+    async def _validate_with_constitutional_verifier(
+        self, message: AgentMessage
+    ) -> tuple[bool, str | None]:
+        context = {
+            "message_type": message.message_type.name,
+            "priority": message.priority.name,
+            "sender": message.from_agent,
+            "tenant_id": message.tenant_id,
+        }
 
-            # Use the conversation_id as session_id for overrides
-            session_id = message.conversation_id
-
-            result = await self._verifier.verify_constitutional_compliance(
-                # We validate against all loaded constitutional policies for the message
-                action_data=message.to_dict(),
-                context=context,
-                session_id=session_id,
+        if isinstance(message.content, dict):
+            context.update(
+                {k: v for k, v in message.content.items() if isinstance(v, (int, bool, float))}  # type: ignore[misc]
             )
 
-            if not result.is_valid:
-                return False, f"Constitutional violation: {result.failure_reason}"
+        result = await self._verifier.verify_constitutional_compliance(
+            action_data=message.to_dict(),
+            context=context,
+            session_id=message.conversation_id,
+        )
 
-            return True, None
-        except _VALIDATION_OPERATION_ERRORS as e:
-            logger.error(f"Constitutional validation error: {e}")
-            # Security: Fail closed on verification errors
-            return False, f"Formal verification error: {e!s}"
+        if not result.is_valid:
+            return False, f"Constitutional violation: {result.failure_reason}"
+
+        return True, None
+
+    def _handle_constitutional_validation_error(
+        self, error: BaseException
+    ) -> tuple[bool, str | None]:
+        logger.error(f"Constitutional validation error: {error}")
+        return False, f"Formal verification error: {error!s}"
 
 
 __all__ = [

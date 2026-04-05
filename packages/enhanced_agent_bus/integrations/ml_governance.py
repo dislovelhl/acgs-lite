@@ -16,7 +16,7 @@ from enum import Enum
 import httpx
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -42,7 +42,7 @@ except (ImportError, ValueError):
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = os.environ.get("CONSTITUTIONAL_HASH", CONSTITUTIONAL_HASH)
 
@@ -829,7 +829,7 @@ class MLGovernanceClient:
 
     def _sanitize_error(self, error: Exception | None) -> str:
         """Strip sensitive metadata from error messages."""
-        from src.core.shared.security.error_sanitizer import sanitize_error
+        from enhanced_agent_bus._compat.security.error_sanitizer import sanitize_error
 
         return sanitize_error(error)  # type: ignore[no-any-return]
 

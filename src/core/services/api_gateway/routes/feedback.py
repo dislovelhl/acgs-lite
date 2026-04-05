@@ -17,6 +17,7 @@ from fastapi import BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator, model_validator
 from redis.exceptions import RedisError
 
+from enhanced_agent_bus.data_flywheel.ingest import build_feedback_event
 from src.core.shared.api_versioning import (
     create_version_info_endpoint,
     create_version_metrics_endpoint,
@@ -331,6 +332,16 @@ async def submit_feedback_v1(
             "submission_auth_mode": "authenticated" if user else "anonymous",
             "environment": ENVIRONMENT,
         }
+        tenant_id = user.tenant_id if user else str(feedback.metadata.get("tenant_id") or "public")
+        flywheel_feedback = build_feedback_event(
+            feedback_record,
+            tenant_id=tenant_id,
+            constitutional_hash=feedback.constitutional_hash,
+        )
+        feedback_record["tenant_id"] = tenant_id
+        feedback_record["workload_key"] = flywheel_feedback.workload_key
+        feedback_record["decision_kind"] = "user_feedback"
+        feedback_record["flywheel_feedback_event"] = flywheel_feedback.model_dump(mode="json")
 
         # Save feedback asynchronously
         background_tasks.add_task(save_feedback_to_redis, feedback_record)

@@ -27,10 +27,19 @@ from typing import Any, Literal
 import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
-from src.core.tools.pqc_migration.phase4.exceptions import DualVerifyWindowError
+try:
+    from src.core.tools.pqc_migration.phase4.exceptions import DualVerifyWindowError
+except ImportError:
+
+    class DualVerifyWindowError(Exception):
+        """Stub for standalone mode."""
+
+        def __init__(self, message: str = "", *, error_code: str = "") -> None:
+            super().__init__(message)
+            self.error_code = error_code
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

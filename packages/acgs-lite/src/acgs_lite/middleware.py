@@ -33,6 +33,7 @@ from typing import Any
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
+from acgs_lite.errors import ConstitutionalViolationError
 
 logger = logging.getLogger(__name__)
 
@@ -105,10 +106,45 @@ class GovernanceASGIMiddleware:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.skip_paths = skip_paths if skip_paths is not None else DEFAULT_SKIP_PATHS
         self.agent_id = agent_id
         self.validate_responses = validate_responses
+
+    async def _buffer_request_messages(
+        self,
+        receive: Callable[[], Awaitable[dict[str, Any]]],
+    ) -> tuple[list[dict[str, Any]], list[bytes]]:
+        """Read the full request body so strict governance can block before app execution."""
+        messages: list[dict[str, Any]] = []
+        body_chunks: list[bytes] = []
+
+        while True:
+            message = await receive()
+            messages.append(message)
+            if message.get("type") != "http.request":
+                break
+            body = message.get("body", b"")
+            if body:
+                body_chunks.append(body)
+            if not message.get("more_body", False):
+                break
+
+        return messages, body_chunks
+
+    def _make_receive_replay(
+        self,
+        messages: list[dict[str, Any]],
+    ) -> Callable[[], Awaitable[dict[str, Any]]]:
+        pending = list(messages)
+
+        async def replay_receive() -> dict[str, Any]:
+            if pending:
+                return pending.pop(0)
+            return {"type": "http.request", "body": b"", "more_body": False}
+
+        return replay_receive
 
     async def __call__(
         self,
@@ -133,17 +169,13 @@ class GovernanceASGIMiddleware:
         governance_violations: list[str] = []
 
         if method in BODY_METHODS:
-            body_chunks: list[bytes] = []
+            request_messages, body_chunks = await self._buffer_request_messages(receive)
+            replay_receive = self._make_receive_replay(request_messages)
 
-            async def receive_wrapper() -> dict[str, Any]:
-                message = await receive()
-                if message.get("type") == "http.request":
-                    body = message.get("body", b"")
-                    if body:
-                        body_chunks.append(body)
-                return message
+            if body_chunks:
+                request_text = b"".join(body_chunks).decode("utf-8", errors="replace")
+                self._validate_text(request_text, f"{self.agent_id}:request")
 
-            # Use wrapped receive to capture the body
             if self.validate_responses:
                 # We need to buffer response too
                 response_body_chunks: list[bytes] = []
@@ -174,12 +206,7 @@ class GovernanceASGIMiddleware:
 
                     await send(message)
 
-                await self.app(scope, receive_wrapper, send_wrapper)
-
-                # Validate request body if captured
-                if body_chunks:
-                    request_text = b"".join(body_chunks).decode("utf-8", errors="replace")
-                    self._validate_text(request_text, f"{self.agent_id}:request")
+                await self.app(scope, replay_receive, send_wrapper)
 
                 # Validate response body (non-blocking)
                 if response_body_chunks:
@@ -187,11 +214,7 @@ class GovernanceASGIMiddleware:
                     self._validate_output(response_text)
 
             else:
-                await self.app(scope, receive_wrapper, send)
-
-                if body_chunks:
-                    request_text = b"".join(body_chunks).decode("utf-8", errors="replace")
-                    self._validate_text(request_text, f"{self.agent_id}:request")
+                await self.app(scope, replay_receive, send)
         else:
             # GET/HEAD/OPTIONS — just pass through with governance headers
             if self.validate_responses:
@@ -230,6 +253,8 @@ class GovernanceASGIMiddleware:
 
             if text.strip():
                 self.engine.validate(text, agent_id=agent_id)
+        except ConstitutionalViolationError:
+            raise
         except Exception as e:
             logger.debug("Governance middleware validation error: %s", e)
 
@@ -287,6 +312,7 @@ class GovernanceWSGIMiddleware:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.skip_paths = skip_paths if skip_paths is not None else DEFAULT_SKIP_PATHS
         self.agent_id = agent_id
@@ -319,6 +345,8 @@ class GovernanceWSGIMiddleware:
                             text[:2000],
                             agent_id=f"{self.agent_id}:request",
                         )
+                except ConstitutionalViolationError:
+                    raise
                 except Exception as e:
                     logger.debug("WSGI governance validation error: %s", e)
 

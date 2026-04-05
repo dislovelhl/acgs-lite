@@ -27,7 +27,7 @@ except ImportError:
     from batch_processor import BatchMessageProcessor
     from models import BatchRequest, BatchRequestItem
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 class MockValidationResult:

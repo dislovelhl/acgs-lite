@@ -950,12 +950,11 @@ class TestChaosExperimentConstitutionalHash:
 # ---------------------------------------------------------------------------
 # explanation_service tests
 # ---------------------------------------------------------------------------
-from src.core.shared.event_schemas.decision_explanation import (
+from enhanced_agent_bus._compat.event_schemas.decision_explanation import (
     ExplanationFactor,
     GovernanceDimension,
     PredictedOutcome,
 )
-
 from enhanced_agent_bus.explanation_service import (
     CounterfactualEngine,
     ExplanationService,

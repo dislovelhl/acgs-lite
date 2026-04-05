@@ -942,7 +942,7 @@ class TestCheckEnforcementForCreate:
     async def test_strict_no_key_type_raises(self):
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
-        from src.core.shared.security.pqc import PQCKeyRequiredError
+        from enhanced_agent_bus._compat.security.pqc import PQCKeyRequiredError
 
         with pytest.raises(PQCKeyRequiredError):
             await check_enforcement_for_create(None, None, config)
@@ -950,7 +950,7 @@ class TestCheckEnforcementForCreate:
     async def test_strict_classical_rejected(self):
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
-        from src.core.shared.security.pqc import ClassicalKeyRejectedError
+        from enhanced_agent_bus._compat.security.pqc import ClassicalKeyRejectedError
 
         with pytest.raises(ClassicalKeyRejectedError):
             await check_enforcement_for_create("classical", "Ed25519", config)
@@ -958,7 +958,7 @@ class TestCheckEnforcementForCreate:
     async def test_strict_unsupported_pqc_raises(self):
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
-        from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
 
         with pytest.raises(UnsupportedPQCAlgorithmError):
             await check_enforcement_for_create("pqc", "UNKNOWN-ALG", config)
@@ -971,7 +971,7 @@ class TestCheckEnforcementForCreate:
     async def test_config_get_mode_failure_defaults_strict(self):
         config = AsyncMock()
         config.get_mode = AsyncMock(side_effect=RuntimeError("broken"))
-        from src.core.shared.security.pqc import PQCKeyRequiredError
+        from enhanced_agent_bus._compat.security.pqc import PQCKeyRequiredError
 
         with pytest.raises(PQCKeyRequiredError):
             await check_enforcement_for_create(None, None, config)
@@ -991,7 +991,7 @@ class TestCheckEnforcementForUpdate:
     async def test_strict_classical_requires_migration(self):
         config = AsyncMock()
         config.get_mode = AsyncMock(return_value="strict")
-        from src.core.shared.security.pqc import MigrationRequiredError
+        from enhanced_agent_bus._compat.security.pqc import MigrationRequiredError
 
         with pytest.raises(MigrationRequiredError):
             await check_enforcement_for_update("classical", config)
@@ -1062,7 +1062,7 @@ class TestValidateConstitutionalHashPqc:
         """When PQC is enabled, the code tries to construct PQCCryptoService
         with config= kwarg which fails (constructor takes no args).
         The error is caught and returned as validation failure."""
-        from src.core.shared.security.pqc_crypto import PQCConfig
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
 
         pqc_config = PQCConfig(pqc_enabled=True)
         result = await validate_constitutional_hash_pqc(
@@ -1081,7 +1081,7 @@ class TestValidateConstitutionalHashPqc:
         """When pqc_config has pqc_enabled=False and signature has 'signature' key,
         the classical verification path runs and returns a valid result.
         ValidationResult now accepts classical_verification_ms so no TypeError."""
-        from src.core.shared.security.pqc_crypto import PQCConfig
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
 
         pqc_config = PQCConfig(pqc_enabled=False)
         result = await validate_constitutional_hash_pqc(
@@ -1096,7 +1096,7 @@ class TestValidateConstitutionalHashPqc:
 
     async def test_pqc_disabled_with_config_no_sig_key(self):
         """PQC disabled config, signature dict without 'signature' key -- valid."""
-        from src.core.shared.security.pqc_crypto import PQCConfig
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
 
         pqc_config = PQCConfig(pqc_enabled=False)
         result = await validate_constitutional_hash_pqc(
@@ -1163,7 +1163,7 @@ class TestValidateMaciRecordPqc:
         assert any("Self-validation" in e for e in result.errors)
 
     async def test_pqc_metadata_when_config_provided(self):
-        from src.core.shared.security.pqc_crypto import PQCConfig
+        from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
 
         result = await validate_maci_record_pqc(
             {
@@ -1226,7 +1226,7 @@ class TestValidateSignature:
             assert result["key_type"] == "pqc"
 
     async def test_classical_rejected_in_pqc_only_mode(self):
-        from src.core.shared.security.pqc import ClassicalKeyRejectedError
+        from enhanced_agent_bus._compat.security.pqc import ClassicalKeyRejectedError
 
         with pytest.raises(ClassicalKeyRejectedError):
             await validate_signature(
@@ -1238,7 +1238,7 @@ class TestValidateSignature:
             )
 
     async def test_unsupported_algorithm(self):
-        from src.core.shared.security.pqc import UnsupportedAlgorithmError
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedAlgorithmError
 
         with pytest.raises(UnsupportedAlgorithmError):
             await validate_signature(
@@ -1250,7 +1250,7 @@ class TestValidateSignature:
             )
 
     async def test_key_registry_failure_raises(self):
-        from src.core.shared.security.pqc import KeyRegistryUnavailableError
+        from enhanced_agent_bus._compat.security.pqc import KeyRegistryUnavailableError
 
         with patch(
             "importlib.import_module",

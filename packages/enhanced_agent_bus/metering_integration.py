@@ -16,7 +16,7 @@ from functools import wraps
 from typing import TypeVar
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -26,7 +26,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 try:
     import importlib
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH as _DEFAULT_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as _DEFAULT_HASH
 
     _models = importlib.import_module("src.core.services.metering.app.models")
     CONSTITUTIONAL_HASH = getattr(_models, "CONSTITUTIONAL_HASH", _DEFAULT_HASH)
@@ -64,7 +64,9 @@ except ImportError:
         MeteringTier: object | None = None  # type: ignore[no-redef]
         UsageEvent: object | None = None  # type: ignore[no-redef]
         UsageMeteringService: object | None = None  # type: ignore[no-redef]
-        from src.core.shared.constants import CONSTITUTIONAL_HASH  # type: ignore[no-redef]
+        from enhanced_agent_bus._compat.constants import (
+            CONSTITUTIONAL_HASH,  # type: ignore[no-redef]
+        )
 
 # Import models for type checking
 try:

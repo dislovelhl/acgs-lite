@@ -9,7 +9,7 @@ from collections import defaultdict
 from collections.abc import Callable
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -48,6 +48,12 @@ class LocalEventBus:
     async def stop(self) -> None:
         """Stop the local bus and clear queues."""
         self._running = False
+        tasks = list(self._background_tasks)
+        for task in tasks:
+            task.cancel()
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+        self._background_tasks.clear()
         self._queues.clear()
         logger.info("[Lite] LocalEventBus stopped")
 
@@ -107,15 +113,17 @@ class LocalEventBus:
 
     async def _consume_queue(self, q: asyncio.Queue, handler: Callable) -> None:
         """Internal loop to pump messages from queue to handler."""
-        while self._running:
+        while True:
             try:
                 msg_data = await q.get()
+            except asyncio.CancelledError:
+                break
+            try:
                 await handler(msg_data)
-                q.task_done()
             except Exception as e:
                 logger.error(f"[Lite] Error in local message handler: {e}")
-                if not self._running:
-                    break
+            finally:
+                q.task_done()
 
     async def publish_vote_event(self, tenant_id: str, vote_event: JSONDict) -> bool:
         """Mimic Kafka vote publishing."""

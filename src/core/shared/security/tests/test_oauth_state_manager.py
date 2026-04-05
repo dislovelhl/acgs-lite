@@ -391,6 +391,10 @@ class TestGracefulDegradation:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)
 
         with pytest.raises(OSError, match="Redis is required for OAuth2StateManager"):
@@ -400,6 +404,10 @@ class TestGracefulDegradation:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "development")
+        # Clear env vars that override settings.env (e.g. EAB conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.delenv("APP_ENV", raising=False)
         monkeypatch.setenv("ENVIRONMENT", "production")
         monkeypatch.delenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", raising=False)
@@ -411,6 +419,10 @@ class TestGracefulDegradation:
         from src.core.shared.config import settings
 
         monkeypatch.setattr(settings, "env", "production")
+        # Clear env vars that would override settings.env (e.g. conftest sets ENVIRONMENT=test)
+        monkeypatch.delenv("ENVIRONMENT", raising=False)
+        monkeypatch.delenv("APP_ENV", raising=False)
+        monkeypatch.delenv("ACGS2_ENV", raising=False)
         monkeypatch.setenv("OAUTH_STATE_ALLOW_DEGRADED_MODE", "true")
 
         manager = OAuth2StateManager(redis_client=None)
