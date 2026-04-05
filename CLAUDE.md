@@ -43,6 +43,23 @@ When fixing code issues introduced by Codex/omx:
 - If a batch causes >5 test failures, revert it and try a more conservative approach
 - Sub-agents may explore/analyze in parallel, but mutations flow through one sequential path with test gates
 
+## Code Quality (from insights analysis)
+
+- After making multi-file edits, always run the full test suite before committing
+  - ACGS: `make lint && make test-quick`
+  - Svelte: `cd packages/propriety-ai && npm run check && npm run lint`
+  - Never commit without a green test run
+- When editing JSX/TSX/Svelte files, run the build after changes and fix syntax errors before considering the task complete
+
+## ACGS-Specific Conventions (from insights analysis)
+
+- Severity enum: use `.value` for comparisons (not `.name`)
+- Violation objects: use `.rule_text` (not `.message`)
+- Audit logging: use `record()` (not `append()`)
+- Constitutional hash: `608508a9bd224290` — flag any other value as stale
+- GovernedAgent retry: configured via `max_retries` parameter
+- TemplateRegistry: built-in templates are protected from overwrite
+
 ## Constraints
 
 - use canonical enhanced-agent-bus namespaces
