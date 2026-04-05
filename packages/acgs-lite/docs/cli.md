@@ -18,7 +18,7 @@ The CLI is available as both `acgs` (preferred) and `acgs-lite` (compatibility a
 | `acgs otel` | Export OpenTelemetry-compatible telemetry |
 | `acgs activate` | Store a license key |
 | `acgs status` | Show current license tier and features |
-| `acgs verify` | Validate license key + constitutional hash |
+| `acgs verify` | Validate license key integrity |
 
 ## Usage Examples
 
@@ -53,4 +53,4 @@ acgs refusal --last
 ```
 
 !!! info "Constitutional Hash"
-    `acgs verify` checks that your installation matches hash `608508a9bd224290`.
+    `608508a9bd224290` is the documented constitutional hash for this release line. `acgs verify` currently validates license key integrity only.

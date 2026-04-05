@@ -18,9 +18,13 @@ Commands:
     acgs refusal                Explain governance denials + suggest alternatives
     acgs observe                Export governance telemetry summary / Prometheus
     acgs otel                   Export OpenTelemetry-compatible governance telemetry
+    acgs halt --system-id X     Halt all governed agents (Article 14 kill-switch)
+    acgs resume --system-id X   Resume governed agents after halt
+    acgs breaker-status --id X  Check circuit breaker status
+    acgs evidence               Collect compliance evidence from runtime + filesystem
     acgs activate <key>         Store license key
     acgs status                 Show current license tier and features
-    acgs verify                 Validate license key integrity
+    acgs verify                 Validate license key integrity only
 """
 
 from __future__ import annotations
@@ -32,6 +36,8 @@ from typing import Any
 from acgs_lite.commands import (
     assess,
     eu_ai_act,
+    evidence,
+    halt,
     init,
     lifecycle,
     lint,
@@ -68,6 +74,10 @@ cmd_lifecycle = lifecycle.handler
 cmd_refusal = refusal.handler
 cmd_observe = observe.cmd_observe
 cmd_otel = observe.cmd_otel
+cmd_halt = halt.cmd_halt
+cmd_resume = halt.cmd_resume
+cmd_breaker_status = halt.cmd_breaker_status
+cmd_evidence = evidence.handler
 
 
 # ---------------------------------------------------------------------------
@@ -202,7 +212,7 @@ def _add_license_parsers(sub: argparse._SubParsersAction) -> None:
 
     sub.add_parser("status", help="Show current license tier and features")
 
-    p_verify = sub.add_parser("verify", help="Validate license key integrity")
+    p_verify = sub.add_parser("verify", help="Validate license key integrity only")
     p_verify.add_argument("--key", help="Key to verify (default: currently loaded key)")
 
 
@@ -225,6 +235,8 @@ def build_parser() -> argparse.ArgumentParser:
     lifecycle.add_parser(sub)
     refusal.add_parser(sub)
     observe.add_parser(sub)
+    halt.add_parser(sub)
+    evidence.add_parser(sub)
 
     return parser
 
@@ -247,6 +259,10 @@ _COMMAND_MAP: dict[str, str] = {
     "activate": "cmd_activate",
     "status": "cmd_status",
     "verify": "cmd_verify",
+    "halt": "cmd_halt",
+    "resume": "cmd_resume",
+    "breaker-status": "cmd_breaker_status",
+    "evidence": "cmd_evidence",
 }
 
 

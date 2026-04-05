@@ -42,4 +42,4 @@ result = agent.run("process this request")  # Governed.
 - [Contributing](contributing.md) -- How to contribute
 
 !!! info "Constitutional Hash"
-    `608508a9bd224290` -- Verify this hash matches your installation with `acgs verify`.
+    `608508a9bd224290` -- documented constitutional hash for this release line. `acgs verify` currently validates license key integrity only.
