@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timezone
 from enum import Enum
+from typing import Any
 
 
 class GovernanceMode(Enum):
@@ -91,6 +92,27 @@ class GovernanceDecision:
     # A/B testing cohort assignment (champion or candidate)
     cohort: str | None = None
     model_version: int | None = None
+
+    def to_decision_record(self) -> dict[str, Any]:
+        """Convert to canonical decision record dict.
+
+        Returns a dict matching the ``GovernanceDecisionRecord`` schema.
+        Uses a plain dict to avoid cross-package import from ``acgs_lite``.
+        """
+        return {
+            "decision": "allow" if self.action_allowed else "deny",
+            "triggered_rules": [],
+            "violations": [],
+            "confidence": self.confidence_score,
+            "model_id": f"adaptive-v{self.model_version or 0}",
+            "latency_ms": 0.0,
+            "constitutional_hash": "",
+            "audit_entry_id": self.decision_id,
+            "action": "",
+            "agent_id": "",
+            "rules_checked": 0,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else "",
+        }
 
 
 __all__ = [
