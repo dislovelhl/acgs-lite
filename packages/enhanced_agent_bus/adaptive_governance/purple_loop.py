@@ -74,13 +74,15 @@ class PurpleTeamReport:
                 if text in seen:
                     continue
                 seen.add(text)
-                cases.append({
-                    "name": f"purple-bypass-{bypass.attack.rule_id}-{len(cases)}",
-                    "input_text": text,
-                    "expected_decision": "deny",
-                    "expected_rules_triggered": [bypass.attack.rule_id],
-                    "tags": ["purple-team", "auto-generated", bypass.attack.strategy],
-                })
+                cases.append(
+                    {
+                        "name": f"purple-bypass-{bypass.attack.rule_id}-{len(cases)}",
+                        "input_text": text,
+                        "expected_decision": "deny",
+                        "expected_rules_triggered": [bypass.attack.rule_id],
+                        "tags": ["purple-team", "auto-generated", bypass.attack.strategy],
+                    }
+                )
         return cases
 
     def summary(self) -> str:

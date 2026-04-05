@@ -226,16 +226,14 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "block false and harmful content"
     ),
     "CN-ALG Art.16": (
-        "acgs-lite TransparencyDisclosure — algorithmic involvement labelling "
-        "fields in system card"
+        "acgs-lite TransparencyDisclosure — algorithmic involvement labelling fields in system card"
     ),
     "CN-DS Art.14": (
         "acgs-lite GovernanceEngine — constitutional rules block prohibited "
         "content generation classes"
     ),
     "CN-DS Art.17": (
-        "acgs-lite TransparencyDisclosure — AI-generated content labelling "
-        "fields in system card"
+        "acgs-lite TransparencyDisclosure — AI-generated content labelling fields in system card"
     ),
     "CN-DS Art.18": (
         "acgs-lite GovernanceEngine — security controls and anomaly detection "
@@ -246,8 +244,7 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "block illegal generative content"
     ),
     "CN-GAI Art.9": (
-        "acgs-lite TransparencyDisclosure — AI system identification in "
-        "user-facing notices"
+        "acgs-lite TransparencyDisclosure — AI system identification in user-facing notices"
     ),
     "CN-GAI Art.14": (
         "acgs-lite HumanOversightGateway — complaint and report pathway "
@@ -266,14 +263,12 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "integrity for regulatory review"
     ),
     "CN-PIPL Art.55": (
-        "acgs-lite RiskClassifier — impact assessment scopes PIPIA obligations "
-        "per PIPL Article 55"
+        "acgs-lite RiskClassifier — impact assessment scopes PIPIA obligations per PIPL Article 55"
     ),
     "CN-GAIG P1": (
         "acgs-lite GovernanceEngine — constitutional rules for safety, "
         "reliability, controllability, and fairness"
     ),
-
 }
 
 
@@ -341,7 +336,8 @@ class ChinaAIFramework:
 def _build_assessment(fw: ChinaAIFramework, checklist: list[ChecklistItem]) -> FrameworkAssessment:
     total = len(checklist)
     compliant = sum(
-        1 for item in checklist
+        1
+        for item in checklist
         if item.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
     )
     acgs_covered = sum(1 for item in checklist if item.acgs_lite_feature is not None)

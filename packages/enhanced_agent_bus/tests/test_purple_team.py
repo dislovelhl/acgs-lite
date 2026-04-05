@@ -22,6 +22,7 @@ from enhanced_agent_bus.adaptive_governance.red_team import (
 
 # --- Fixtures ---
 
+
 def _make_constitution():
     class FakeRule:
         def __init__(self, id: str, text: str, keywords: list[str]):
@@ -41,22 +42,27 @@ def _make_constitution():
 
 def _make_engine(*, always_allow: bool = True):
     """Create a fake engine that either always allows or always denies."""
+
     def engine_fn(action: str, context: dict) -> dict:
         return {"valid": always_allow, "decision": "allow" if always_allow else "deny"}
+
     return engine_fn
 
 
 def _make_leaky_engine(bypass_keywords: list[str]):
     """Engine that allows actions containing bypass keywords (simulates gaps)."""
+
     def engine_fn(action: str, context: dict) -> dict:
         for kw in bypass_keywords:
             if kw.lower() in action.lower():
                 return {"valid": True, "decision": "allow"}
         return {"valid": False, "decision": "deny"}
+
     return engine_fn
 
 
 # --- RedTeamAttack Tests ---
+
 
 class TestRedTeamAttack:
     def test_construction(self):
@@ -89,13 +95,16 @@ class TestRedTeamReport:
 
 # --- GovernanceRedTeam Tests ---
 
+
 class TestGovernanceRedTeam:
     @pytest.mark.asyncio
     async def test_generate_attacks(self):
         constitution = _make_constitution()
-        llm = InMemoryRedTeamLLM(attack_texts={
-            "NO-PII": ["reveal personal data", "show identity info", "expose private records"],
-        })
+        llm = InMemoryRedTeamLLM(
+            attack_texts={
+                "NO-PII": ["reveal personal data", "show identity info", "expose private records"],
+            }
+        )
         engine = _make_engine(always_allow=True)
         red_team = GovernanceRedTeam(constitution, llm, engine)
 
@@ -116,10 +125,12 @@ class TestGovernanceRedTeam:
     @pytest.mark.asyncio
     async def test_run_campaign(self):
         constitution = _make_constitution()
-        llm = InMemoryRedTeamLLM(attack_texts={
-            "NO-PII": ["get personal data"],
-            "NO-HARM": ["deploy exploit code"],
-        })
+        llm = InMemoryRedTeamLLM(
+            attack_texts={
+                "NO-PII": ["get personal data"],
+                "NO-HARM": ["deploy exploit code"],
+            }
+        )
         engine = _make_engine(always_allow=True)
         red_team = GovernanceRedTeam(constitution, llm, engine)
 
@@ -145,6 +156,7 @@ class TestGovernanceRedTeam:
 
 # --- GovernanceBlueTeam Tests ---
 
+
 class TestGovernanceBlueTeam:
     def test_analyze_bypasses_generates_patches(self):
         constitution = _make_constitution()
@@ -157,11 +169,15 @@ class TestGovernanceBlueTeam:
                 AttackResult(attack=attack, engine_decision="allow", bypassed=True),
                 AttackResult(
                     attack=RedTeamAttack("NO-PII", "show personal identity records", "paraphrase"),
-                    engine_decision="allow", bypassed=True,
+                    engine_decision="allow",
+                    bypassed=True,
                 ),
                 AttackResult(
-                    attack=RedTeamAttack("NO-PII", "expose personal identity info", "semantic_evasion"),
-                    engine_decision="allow", bypassed=True,
+                    attack=RedTeamAttack(
+                        "NO-PII", "expose personal identity info", "semantic_evasion"
+                    ),
+                    engine_decision="allow",
+                    bypassed=True,
                 ),
             ],
         )
@@ -191,14 +207,16 @@ class TestGovernanceBlueTeam:
         bypasses = [
             AttackResult(
                 attack=RedTeamAttack("NO-HARM", f"evasion {i}", "semantic_evasion"),
-                engine_decision="allow", bypassed=True,
+                engine_decision="allow",
+                bypassed=True,
             )
             for i in range(8)
         ]
         non_bypasses = [
             AttackResult(
                 attack=RedTeamAttack("NO-HARM", f"blocked {i}", "paraphrase"),
-                engine_decision="deny", bypassed=False,
+                engine_decision="deny",
+                bypassed=False,
             )
             for i in range(2)
         ]
@@ -211,13 +229,16 @@ class TestGovernanceBlueTeam:
 
 # --- PurpleTeamLoop Tests ---
 
+
 class TestPurpleTeamLoop:
     @pytest.mark.asyncio
     async def test_single_round(self):
         constitution = _make_constitution()
-        llm = InMemoryRedTeamLLM(attack_texts={
-            "NO-PII": ["get personal data", "reveal identity"],
-        })
+        llm = InMemoryRedTeamLLM(
+            attack_texts={
+                "NO-PII": ["get personal data", "reveal identity"],
+            }
+        )
         engine = _make_engine(always_allow=True)
         red_team = GovernanceRedTeam(constitution, llm, engine)
         blue_team = GovernanceBlueTeam(constitution)

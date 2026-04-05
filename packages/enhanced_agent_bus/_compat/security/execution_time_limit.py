@@ -1,4 +1,5 @@
 """Shim for src.core.shared.security.execution_time_limit."""
+
 from __future__ import annotations
 
 import functools

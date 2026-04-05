@@ -11,6 +11,7 @@ Usage (from repo root):
     python3 autoresearch/feature_grid.py --scope hot-path
     python3 autoresearch/feature_grid.py --all      # include discard rows
 """
+
 from __future__ import annotations
 
 import argparse
@@ -113,11 +114,15 @@ def print_grid(
         if tightness is not None:
             best_family = _best_family_to_explore(grid, rows, scope)
             if tightness == "tight":
-                print(f"  ⚠  CEILING in {scope} (TIGHT): composite spread < 0.0001 — true measurement floor.")
+                print(
+                    f"  ⚠  CEILING in {scope} (TIGHT): composite spread < 0.0001 — true measurement floor."
+                )
                 if best_family:
                     print(f"     Pivot now: try '{best_family}' family.")
             else:
-                print(f"  ⚠  CEILING in {scope} (LOOSE): composite spread ≥ 0.0001 — noise may mask signal.")
+                print(
+                    f"  ⚠  CEILING in {scope} (LOOSE): composite spread ≥ 0.0001 — noise may mask signal."
+                )
                 print("     Run bench_stable.py --trials 7 to verify before pivoting.")
                 if best_family:
                     print(f"     If ceiling confirmed: try '{best_family}' family.")
@@ -137,25 +142,19 @@ def _best_family_to_explore(
     """
     scoped = [r for r in rows if infer_scope(r) == scope]
     recent_counts: Counter[str] = Counter(
-        extract_family(r.get("description", ""))
-        for r in scoped[-_RECENT_WINDOW:]
+        extract_family(r.get("description", "")) for r in scoped[-_RECENT_WINDOW:]
     )
 
     # 1. Unexplored families that haven't been hammered recently
     for family in _ALL_FAMILIES:
-        if (
-            (family, scope) not in grid
-            and recent_counts[family] < _RECENT_EXHAUSTION_THRESHOLD
-        ):
+        if (family, scope) not in grid and recent_counts[family] < _RECENT_EXHAUSTION_THRESHOLD:
             return family
 
     # 2. Explored families — lowest composite, penalised for recent exhaustion
     candidates: list[tuple[str, float]] = []
     for family in _ALL_FAMILIES:
         composite = (
-            float(grid[(family, scope)].get("composite", "0"))
-            if (family, scope) in grid
-            else 0.0
+            float(grid[(family, scope)].get("composite", "0")) if (family, scope) in grid else 0.0
         )
         excess = max(0, recent_counts[family] - _RECENT_EXHAUSTION_THRESHOLD)
         effective = composite - 0.001 * excess  # 0.001 penalty per excess attempt
@@ -169,12 +168,14 @@ def main() -> int:
         description="MAP-Elites feature grid for autoresearch experiments.",
     )
     parser.add_argument(
-        "--scope", default="any",
+        "--scope",
+        default="any",
         choices=["any", "hot-path", "sidecar"],
         help="Scope filter (default: any)",
     )
     parser.add_argument(
-        "--all", action="store_true",
+        "--all",
+        action="store_true",
         help="Include discard rows in the grid (default: kept-only)",
     )
     args = parser.parse_args()

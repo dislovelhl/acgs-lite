@@ -188,9 +188,7 @@ class TestSessionState:
 class TestSynthesis:
     def test_majority_vote_wins(self):
         # Exclude_sybils=False so all 3 reveals count for confidence
-        session, _ = _three_miner_session(
-            j1="allow", j2="allow", j3="deny", exclude_sybils=False
-        )
+        session, _ = _three_miner_session(j1="allow", j2="allow", j3="deny", exclude_sybils=False)
         consensus = session.synthesize(SynthesisMethod.MAJORITY_VOTE)
         assert consensus.judgment_text == "allow"
         assert consensus.confidence == pytest.approx(2 / 3)
@@ -211,8 +209,12 @@ class TestSynthesis:
         # m1 (2.5x) and m3 (2.5x) vote "allow"; m2 (1.0x) votes "deny"
         # exclude_sybils=False so all 3 contribute to weighted sum
         session, _ = _three_miner_session(
-            j1="allow", j2="deny", j3="allow",
-            w1=2.5, w2=1.0, w3=2.5,
+            j1="allow",
+            j2="deny",
+            j3="allow",
+            w1=2.5,
+            w2=1.0,
+            w3=2.5,
             exclude_sybils=False,
         )
         consensus = session.synthesize(SynthesisMethod.WEIGHTED_VOTE)
@@ -264,7 +266,9 @@ class TestSybilDetection:
 
     def test_exact_duplicate_flagged(self):
         session, _ = _three_miner_session(
-            j1="allow", j2="allow", j3="deny",
+            j1="allow",
+            j2="allow",
+            j3="deny",
             exclude_sybils=False,  # don't exclude — just detect
         )
         consensus = session.synthesize()
@@ -277,7 +281,9 @@ class TestSybilDetection:
     def test_sybil_excluded_from_consensus(self):
         # m2 copies m1's judgment → only m1 + m3 contribute
         session, _ = _three_miner_session(
-            j1="allow", j2="allow", j3="deny",
+            j1="allow",
+            j2="allow",
+            j3="deny",
             exclude_sybils=True,
         )
         consensus = session.synthesize()
@@ -287,7 +293,9 @@ class TestSybilDetection:
 
     def test_excluded_miners_recorded(self):
         session, _ = _three_miner_session(
-            j1="allow", j2="allow", j3="deny",
+            j1="allow",
+            j2="allow",
+            j3="deny",
             exclude_sybils=True,
         )
         consensus = session.synthesize()
@@ -296,7 +304,9 @@ class TestSybilDetection:
     def test_all_miners_identical_no_exclusion(self):
         """If all miners submit the same judgment, none are excluded."""
         session, _ = _three_miner_session(
-            j1="allow", j2="allow", j3="allow",
+            j1="allow",
+            j2="allow",
+            j3="allow",
             exclude_sybils=True,
         )
         consensus = session.synthesize()

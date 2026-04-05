@@ -177,7 +177,8 @@ class ConstitutionalEvolutionEngine:
         population = [copy.deepcopy(self._baseline_rules)]
         for _ in range(self._population_size - 1):
             mutant = await self._mutate_rules(
-                copy.deepcopy(self._baseline_rules), evidence,
+                copy.deepcopy(self._baseline_rules),
+                evidence,
             )
             population.append(mutant)
 
@@ -344,18 +345,20 @@ class ConstitutionalEvolutionEngine:
                     }
 
             if changes:
-                proposals.append({
-                    "rule_id": rule_id,
-                    "proposed_changes": changes,
-                    "justification": (
-                        f"Evolution engine improvement: "
-                        f"fitness {report.baseline_fitness.weighted_total:.3f} -> "
-                        f"{report.best_fitness.weighted_total:.3f} "
-                        f"({report.improvement_pct:.1f}% improvement)"
-                    ),
-                    "source": "constitutional_evolution",
-                    "generation": report.generations_completed,
-                })
+                proposals.append(
+                    {
+                        "rule_id": rule_id,
+                        "proposed_changes": changes,
+                        "justification": (
+                            f"Evolution engine improvement: "
+                            f"fitness {report.baseline_fitness.weighted_total:.3f} -> "
+                            f"{report.best_fitness.weighted_total:.3f} "
+                            f"({report.improvement_pct:.1f}% improvement)"
+                        ),
+                        "source": "constitutional_evolution",
+                        "generation": report.generations_completed,
+                    }
+                )
 
         return proposals
 

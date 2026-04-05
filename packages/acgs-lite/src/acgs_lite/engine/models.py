@@ -52,7 +52,9 @@ class ValidationResult:
         from .decision_record import GovernanceDecisionRecord, TriggeredRule
 
         triggered = [
-            TriggeredRule(id=v.rule_id, text=v.rule_text, severity=v.severity.value, category=v.category)
+            TriggeredRule(
+                id=v.rule_id, text=v.rule_text, severity=v.severity.value, category=v.category
+            )
             for v in self.violations
         ]
         violations_dicts = [

@@ -82,12 +82,7 @@ def clean_files() -> list[dict[str, Any]]:
     return [
         {
             "filename": "src/app.py",
-            "patch": (
-                "@@ -1,3 +1,5 @@\n"
-                "+def health():\n"
-                "+    return 'ok'\n"
-                " # existing\n"
-            ),
+            "patch": ("@@ -1,3 +1,5 @@\n+def health():\n+    return 'ok'\n # existing\n"),
         }
     ]
 
@@ -108,11 +103,7 @@ def violating_files() -> list[dict[str, Any]]:
     return [
         {
             "filename": "src/evil.py",
-            "patch": (
-                "@@ -0,0 +1,2 @@\n"
-                "+bypass validation here\n"
-                "+safe line\n"
-            ),
+            "patch": ("@@ -0,0 +1,2 @@\n+bypass validation here\n+safe line\n"),
         }
     ]
 
@@ -147,14 +138,7 @@ class TestParseAddedLines:
         assert result[0][1] == "added"
 
     def test_multiple_hunks(self) -> None:
-        diff = (
-            "@@ -1,2 +1,3 @@\n"
-            " ctx\n"
-            "+first add\n"
-            "@@ -10,2 +11,3 @@\n"
-            " ctx\n"
-            "+second add\n"
-        )
+        diff = "@@ -1,2 +1,3 @@\n ctx\n+first add\n@@ -10,2 +11,3 @@\n ctx\n+second add\n"
         result = _parse_added_lines(diff)
         assert len(result) == 2
         assert result[0][1] == "first add"
@@ -231,16 +215,12 @@ class TestGovernanceReport:
     """Tests for the frozen GovernanceReport dataclass."""
 
     def test_immutable(self) -> None:
-        report = GovernanceReport(
-            pr_number=1, title="t", passed=True, risk_score=0.0
-        )
+        report = GovernanceReport(pr_number=1, title="t", passed=True, risk_score=0.0)
         with pytest.raises(AttributeError):
             report.passed = False  # type: ignore[misc]
 
     def test_defaults(self) -> None:
-        report = GovernanceReport(
-            pr_number=1, title="t", passed=True, risk_score=0.0
-        )
+        report = GovernanceReport(pr_number=1, title="t", passed=True, risk_score=0.0)
         assert report.violations == []
         assert report.warnings == []
         assert report.rules_checked == 0
@@ -315,16 +295,18 @@ class TestFormatGovernanceReport:
         assert "W-001" in md
 
     def test_footer_present(self) -> None:
-        report = GovernanceReport(
-            pr_number=1, title="t", passed=True, risk_score=0.0
-        )
+        report = GovernanceReport(pr_number=1, title="t", passed=True, risk_score=0.0)
         md = format_governance_report(report)
         assert "ACGS Governance Bot" in md
 
     def test_table_structure(self) -> None:
         report = GovernanceReport(
-            pr_number=1, title="t", passed=True, risk_score=0.5,
-            rules_checked=10, constitutional_hash="608508a9bd224290",
+            pr_number=1,
+            title="t",
+            passed=True,
+            risk_score=0.5,
+            rules_checked=10,
+            constitutional_hash="608508a9bd224290",
         )
         md = format_governance_report(report)
         assert "| Field | Value |" in md
@@ -399,14 +381,10 @@ class TestGitHubGovernanceBot:
 
     def test_repo_url(self, bot: GitHubGovernanceBot) -> None:
         url = bot._repo_url("pulls/42")
-        expected = (
-            "https://api.github.example.com/repos/acme/governance/pulls/42"
-        )
+        expected = "https://api.github.example.com/repos/acme/governance/pulls/42"
         assert url == expected
 
-    def test_base_url_trailing_slash_stripped(
-        self, constitution: Constitution
-    ) -> None:
+    def test_base_url_trailing_slash_stripped(self, constitution: Constitution) -> None:
         b = GitHubGovernanceBot(
             token="t",
             repo="a/b",
@@ -416,25 +394,19 @@ class TestGitHubGovernanceBot:
         assert b._base_url == "https://example.com"
 
     def test_default_constitution_when_none(self) -> None:
-        b = GitHubGovernanceBot(
-            token="t", repo="a/b", constitution=None
-        )
+        b = GitHubGovernanceBot(token="t", repo="a/b", constitution=None)
         assert b.constitution is not None
         assert len(b.constitution.rules) > 0
 
     def test_httpx_import_guard(self) -> None:
         with (
-            patch(
-                "acgs_lite.integrations.github.HTTPX_AVAILABLE", False
-            ),
+            patch("acgs_lite.integrations.github.HTTPX_AVAILABLE", False),
             pytest.raises(ImportError, match="httpx is required"),
         ):
             GitHubGovernanceBot(token="t", repo="a/b")
 
     @pytest.mark.asyncio
-    async def test_get_calls_httpx(
-        self, bot: GitHubGovernanceBot
-    ) -> None:
+    async def test_get_calls_httpx(self, bot: GitHubGovernanceBot) -> None:
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"id": 42}
         mock_resp.raise_for_status = MagicMock()
@@ -454,9 +426,7 @@ class TestGitHubGovernanceBot:
         mock_client.get.assert_awaited_once()
 
     @pytest.mark.asyncio
-    async def test_post_calls_httpx(
-        self, bot: GitHubGovernanceBot
-    ) -> None:
+    async def test_post_calls_httpx(self, bot: GitHubGovernanceBot) -> None:
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"id": 1}
         mock_resp.raise_for_status = MagicMock()
@@ -470,9 +440,7 @@ class TestGitHubGovernanceBot:
             "acgs_lite.integrations.github.httpx.AsyncClient",
             return_value=mock_client,
         ):
-            result = await bot._post(
-                "issues/42/comments", {"body": "hello"}
-            )
+            result = await bot._post("issues/42/comments", {"body": "hello"})
 
         assert result == {"id": 1}
         mock_client.post.assert_awaited_once()
@@ -528,14 +496,10 @@ class TestGitHubGovernanceBot:
         assert len(entries) >= 1
 
     @pytest.mark.asyncio
-    async def test_post_governance_comment(
-        self, bot: GitHubGovernanceBot
-    ) -> None:
+    async def test_post_governance_comment(self, bot: GitHubGovernanceBot) -> None:
         post_called_with: dict[str, Any] = {}
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             post_called_with["path"] = path
             post_called_with["body"] = json_body
             return {"id": 1}
@@ -568,9 +532,7 @@ class TestGitHubGovernanceBot:
 
         posted: list[str] = []
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             posted.append(path)
             return {"id": 1}
 
@@ -598,9 +560,7 @@ class TestGitHubGovernanceBot:
 
         posted: list[str] = []
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             posted.append(path)
             return {"id": 1}
 
@@ -614,9 +574,7 @@ class TestGitHubGovernanceBot:
         # Should have posted governance comment
         assert any("comments" in p for p in posted)
 
-    def test_validate_text_restores_strict(
-        self, bot: GitHubGovernanceBot
-    ) -> None:
+    def test_validate_text_restores_strict(self, bot: GitHubGovernanceBot) -> None:
         bot.engine.strict = True
         bot._validate_text("bypass validation", agent_id="test")
         assert bot.engine.strict is True
@@ -629,7 +587,9 @@ class TestGitHubGovernanceBot:
 
     @pytest.mark.asyncio
     async def test_validate_pr_empty_body(
-        self, bot: GitHubGovernanceBot, clean_files: list[dict[str, Any]],
+        self,
+        bot: GitHubGovernanceBot,
+        clean_files: list[dict[str, Any]],
     ) -> None:
         pr_data = {
             "number": 10,
@@ -650,7 +610,8 @@ class TestGitHubGovernanceBot:
 
     @pytest.mark.asyncio
     async def test_validate_pr_no_patch(
-        self, bot: GitHubGovernanceBot,
+        self,
+        bot: GitHubGovernanceBot,
     ) -> None:
         pr_data = {
             "number": 11,
@@ -689,50 +650,34 @@ class TestGitHubWebhookHandler:
             bot=bot,
         )
 
-    def test_verify_signature_valid(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    def test_verify_signature_valid(self, handler: GitHubWebhookHandler) -> None:
         import hashlib
         import hmac as _hmac
 
         payload = b'{"action": "opened"}'
-        digest = _hmac.new(
-            self.WEBHOOK_SECRET.encode(), payload, hashlib.sha256
-        ).hexdigest()
+        digest = _hmac.new(self.WEBHOOK_SECRET.encode(), payload, hashlib.sha256).hexdigest()
         signature = f"sha256={digest}"
         assert handler.verify_signature(payload, signature) is True
 
-    def test_verify_signature_invalid(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    def test_verify_signature_invalid(self, handler: GitHubWebhookHandler) -> None:
         payload = b'{"action": "opened"}'
-        assert (
-            handler.verify_signature(payload, "sha256=badhex") is False
-        )
+        assert handler.verify_signature(payload, "sha256=badhex") is False
 
-    def test_verify_signature_missing_prefix(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    def test_verify_signature_missing_prefix(self, handler: GitHubWebhookHandler) -> None:
         payload = b'{"action": "opened"}'
         assert handler.verify_signature(payload, "nope") is False
 
-    def test_verify_signature_empty(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    def test_verify_signature_empty(self, handler: GitHubWebhookHandler) -> None:
         assert handler.verify_signature(b"", "") is False
 
     @pytest.mark.asyncio
-    async def test_route_event_unsupported(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    async def test_route_event_unsupported(self, handler: GitHubWebhookHandler) -> None:
         result = await handler._route_event("push", {})
         assert result["action"] == "ignored"
         assert "unsupported" in result["reason"]
 
     @pytest.mark.asyncio
-    async def test_route_event_pull_request_skipped(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    async def test_route_event_pull_request_skipped(self, handler: GitHubWebhookHandler) -> None:
         body = {
             "action": "closed",
             "pull_request": {"number": 42},
@@ -752,9 +697,7 @@ class TestGitHubWebhookHandler:
                 return clean_files
             return clean_pr_data
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             return {"id": 1}
 
         handler._bot._get = mock_get  # type: ignore[assignment]
@@ -782,9 +725,7 @@ class TestGitHubWebhookHandler:
                 return clean_files
             return clean_pr_data
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             return {"id": 1}
 
         handler._bot._get = mock_get  # type: ignore[assignment]
@@ -801,9 +742,7 @@ class TestGitHubWebhookHandler:
         assert "governance_passed" in result
 
     @pytest.mark.asyncio
-    async def test_handle_pull_request_missing_number(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    async def test_handle_pull_request_missing_number(self, handler: GitHubWebhookHandler) -> None:
         body = {
             "action": "opened",
             "pull_request": {},
@@ -812,9 +751,7 @@ class TestGitHubWebhookHandler:
         assert result["status"] == "skipped"
 
     @pytest.mark.asyncio
-    async def test_handle_webhook_invalid_signature(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    async def test_handle_webhook_invalid_signature(self, handler: GitHubWebhookHandler) -> None:
         """Full handle() path with invalid signature returns 401."""
         try:
             import starlette  # noqa: F401
@@ -853,18 +790,14 @@ class TestGitHubWebhookHandler:
                 return clean_files
             return clean_pr_data
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             return {"id": 1}
 
         handler._bot._get = mock_get  # type: ignore[assignment]
         handler._bot._post = mock_post  # type: ignore[assignment]
 
         payload = b'{"action":"opened","pull_request":{"number":42}}'
-        digest = _hmac.new(
-            self.WEBHOOK_SECRET.encode(), payload, hashlib.sha256
-        ).hexdigest()
+        digest = _hmac.new(self.WEBHOOK_SECRET.encode(), payload, hashlib.sha256).hexdigest()
 
         mock_request = MagicMock()
         mock_request.headers = {
@@ -883,9 +816,7 @@ class TestGitHubWebhookHandler:
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_handle_webhook_processing_error(
-        self, handler: GitHubWebhookHandler
-    ) -> None:
+    async def test_handle_webhook_processing_error(self, handler: GitHubWebhookHandler) -> None:
         """Exception during event routing returns 500."""
         try:
             import starlette  # noqa: F401
@@ -896,17 +827,13 @@ class TestGitHubWebhookHandler:
         import hmac as _hmac
 
         # Make _route_event raise
-        async def broken_route(
-            event_type: str, body: dict[str, Any]
-        ) -> Any:
+        async def broken_route(event_type: str, body: dict[str, Any]) -> Any:
             raise RuntimeError("processing exploded")
 
         handler._route_event = broken_route  # type: ignore[assignment]
 
         payload = b'{"action":"opened","pull_request":{"number":1}}'
-        digest = _hmac.new(
-            self.WEBHOOK_SECRET.encode(), payload, hashlib.sha256
-        ).hexdigest()
+        digest = _hmac.new(self.WEBHOOK_SECRET.encode(), payload, hashlib.sha256).hexdigest()
 
         mock_request = MagicMock()
         mock_request.headers = {
@@ -984,9 +911,7 @@ class TestGitHubMACIEnforcer:
 
         bot._get = mock_get  # type: ignore[assignment]
 
-        result = await maci_enforcer.check_pr_separation(
-            bot, pr_number=42
-        )
+        result = await maci_enforcer.check_pr_separation(bot, pr_number=42)
 
         assert result["separation_valid"] is True
         assert result["author"] == "dev-user"
@@ -1011,9 +936,7 @@ class TestGitHubMACIEnforcer:
 
         bot._get = mock_get  # type: ignore[assignment]
 
-        result = await maci_enforcer.check_pr_separation(
-            bot, pr_number=42
-        )
+        result = await maci_enforcer.check_pr_separation(bot, pr_number=42)
 
         assert result["separation_valid"] is False
         assert len(result["violations"]) == 1
@@ -1033,9 +956,7 @@ class TestGitHubMACIEnforcer:
 
         bot._get = mock_get  # type: ignore[assignment]
 
-        result = await maci_enforcer.check_pr_separation(
-            bot, pr_number=42
-        )
+        result = await maci_enforcer.check_pr_separation(bot, pr_number=42)
 
         assert result["separation_valid"] is True
         assert result["approvers"] == []
@@ -1060,9 +981,7 @@ class TestGitHubMACIEnforcer:
 
         bot._get = mock_get  # type: ignore[assignment]
 
-        result = await maci_enforcer.check_pr_separation(
-            bot, pr_number=42
-        )
+        result = await maci_enforcer.check_pr_separation(bot, pr_number=42)
 
         assert result["separation_valid"] is True
 
@@ -1074,16 +993,12 @@ class TestGitHubMACIEnforcer:
     ) -> None:
         async def mock_get(path: str) -> Any:
             if "reviews" in path:
-                return [
-                    {"user": {"login": ""}, "state": "APPROVED"}
-                ]
+                return [{"user": {"login": ""}, "state": "APPROVED"}]
             return {"user": {"login": "dev-user"}}
 
         bot._get = mock_get  # type: ignore[assignment]
 
-        result = await maci_enforcer.check_pr_separation(
-            bot, pr_number=42
-        )
+        result = await maci_enforcer.check_pr_separation(bot, pr_number=42)
         assert result["separation_valid"] is True
 
     @pytest.mark.asyncio
@@ -1113,9 +1028,7 @@ class TestGitHubMACIEnforcer:
     ) -> None:
         posted: list[dict[str, Any]] = []
 
-        async def mock_post(
-            path: str, json_body: dict[str, Any]
-        ) -> Any:
+        async def mock_post(path: str, json_body: dict[str, Any]) -> Any:
             posted.append({"path": path, "body": json_body})
             return {"id": 1}
 
@@ -1125,14 +1038,10 @@ class TestGitHubMACIEnforcer:
             {
                 "type": "self_approval",
                 "agent": "dev-user",
-                "message": (
-                    "dev-user authored and approved PR #42"
-                ),
+                "message": ("dev-user authored and approved PR #42"),
             }
         ]
-        await maci_enforcer.post_maci_violation(
-            bot, pr_number=42, violations=violations
-        )
+        await maci_enforcer.post_maci_violation(bot, pr_number=42, violations=violations)
 
         assert len(posted) == 1
         assert "comments" in posted[0]["path"]
@@ -1180,9 +1089,7 @@ class TestHttpxUnavailable:
 
     def test_bot_raises_without_httpx(self) -> None:
         with (
-            patch(
-                "acgs_lite.integrations.github.HTTPX_AVAILABLE", False
-            ),
+            patch("acgs_lite.integrations.github.HTTPX_AVAILABLE", False),
             pytest.raises(ImportError, match="httpx is required"),
         ):
             GitHubGovernanceBot(token="t", repo="a/b")

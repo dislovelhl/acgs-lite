@@ -101,7 +101,7 @@ class PrecedentRecord:
     votes_for: int
     votes_against: int
     proof_root_hash: str
-    validator_grade: float          # 0.0-1.0; votes_for / total_votes
+    validator_grade: float  # 0.0-1.0; votes_for / total_votes
 
     # SN Owner perspective
     escalation_type: EscalationType
@@ -111,7 +111,7 @@ class PrecedentRecord:
 
     # Metadata
     recorded_at: float
-    is_active: bool = True          # False = revoked/rolled back
+    is_active: bool = True  # False = revoked/rolled back
 
     @classmethod
     def create(
@@ -161,8 +161,8 @@ class PrecedentMatch:
     """A single precedent retrieved by similarity search."""
 
     precedent: PrecedentRecord
-    similarity: float       # cosine similarity to the query vector
-    rank: int               # 1 = best match
+    similarity: float  # cosine similarity to the query vector
+    rank: int  # 1 = best match
 
     @property
     def is_high_confidence(self) -> bool:
@@ -179,9 +179,9 @@ class RetrievalResult:
 
     query_vector: dict[str, float]
     matches: list[PrecedentMatch]
-    auto_resolution: str | None = None    # judgment text if auto-resolving
+    auto_resolution: str | None = None  # judgment text if auto-resolving
     auto_resolution_confidence: float = 0.0
-    auto_resolution_source: str = ""      # precedent_id of the source
+    auto_resolution_source: str = ""  # precedent_id of the source
 
     @property
     def can_auto_resolve(self) -> bool:
@@ -298,13 +298,10 @@ class PrecedentStore:
             )
         if record.votes_for < self._min_votes:
             raise ValueError(
-                f"Insufficient validator votes: "
-                f"got={record.votes_for} required={self._min_votes}"
+                f"Insufficient validator votes: got={record.votes_for} required={self._min_votes}"
             )
         if record.precedent_id in self._records:
-            raise ValueError(
-                f"Precedent {record.precedent_id} already stored."
-            )
+            raise ValueError(f"Precedent {record.precedent_id} already stored.")
         self._records[record.precedent_id] = record
 
     def retrieve(
@@ -334,21 +331,16 @@ class PrecedentStore:
             RetrievalResult with ranked matches and optional auto-resolution
         """
         candidates = [
-            r for r in self._records.values()
-            if r.is_active
-            and (escalation_type is None or r.escalation_type == escalation_type)
+            r
+            for r in self._records.values()
+            if r.is_active and (escalation_type is None or r.escalation_type == escalation_type)
         ]
 
         # Score all candidates
-        scored = [
-            (r, _cosine_similarity(impact_vector, r.impact_vector))
-            for r in candidates
-        ]
+        scored = [(r, _cosine_similarity(impact_vector, r.impact_vector)) for r in candidates]
 
         # Filter and sort
-        filtered = [
-            (r, sim) for r, sim in scored if sim >= min_similarity
-        ]
+        filtered = [(r, sim) for r, sim in scored if sim >= min_similarity]
         filtered.sort(key=lambda x: x[1], reverse=True)
 
         # Build matches
@@ -390,14 +382,17 @@ class PrecedentStore:
         record = self._records[precedent_id]
         # Replace with an inactive copy (PrecedentRecord is frozen)
         import dataclasses
+
         inactive = dataclasses.replace(record, is_active=False)
         self._records[precedent_id] = inactive
 
-        self._revocation_log.append({
-            "precedent_id": precedent_id,
-            "revoked_at": time.time(),
-            "reason": reason,
-        })
+        self._revocation_log.append(
+            {
+                "precedent_id": precedent_id,
+                "revoked_at": time.time(),
+                "reason": reason,
+            }
+        )
 
     # ------------------------------------------------------------------
     # Statistics and reporting

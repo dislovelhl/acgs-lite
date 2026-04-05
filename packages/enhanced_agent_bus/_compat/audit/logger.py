@@ -1,4 +1,5 @@
 """Shim for src.core.shared.audit.logger."""
+
 from __future__ import annotations
 
 from enum import StrEnum

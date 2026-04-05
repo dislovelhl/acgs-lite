@@ -29,7 +29,8 @@ class TestCellularResilience:
         """
         # MACI is disabled for these legacy tests to isolate cellular resilience testing
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off — testing cellular resilience independently
 
         # Mock the processor to raise an exception, simulating a crash/hang
@@ -90,7 +91,8 @@ class TestCellularResilience:
         """
         # MACI is disabled for these legacy tests to isolate stress testing
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off — testing cellular resilience independently
 
         # Simulate partial failure: 50% of requests fail to the processor

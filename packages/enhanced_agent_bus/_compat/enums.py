@@ -1,4 +1,5 @@
 """Shim for src.core.shared.enums."""
+
 from __future__ import annotations
 
 try:

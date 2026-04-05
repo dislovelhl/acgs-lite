@@ -73,13 +73,15 @@ class AuditReport:
         candidates = []
         for j in self.disagreements:
             case_name = f"audit-regression-{j.entry_id[:8]}"
-            candidates.append({
-                "name": case_name,
-                "input_text": j.action,
-                "expected_decision": j.judge_decision,
-                "expected_rules_triggered": j.scores.missed_violations,
-                "tags": ["audit-regression", "auto-generated"],
-            })
+            candidates.append(
+                {
+                    "name": case_name,
+                    "input_text": j.action,
+                    "expected_decision": j.judge_decision,
+                    "expected_rules_triggered": j.scores.missed_violations,
+                    "tags": ["audit-regression", "auto-generated"],
+                }
+            )
         return candidates
 
     def summary(self) -> str:
@@ -151,7 +153,7 @@ class GovernanceAuditJudge:
                 n_allow = self.sample_size - 1
             sampled_allows = self._rng.sample(allows, min(n_allow, len(allows)))
             sampled_denies = self._rng.sample(denies, min(n_deny, len(denies)))
-            sampled = (sampled_allows + sampled_denies)[:self.sample_size]
+            sampled = (sampled_allows + sampled_denies)[: self.sample_size]
             self._rng.shuffle(sampled)
             return sampled
 
@@ -177,13 +179,15 @@ class GovernanceAuditJudge:
         # MACI: pass extracted rules (read-only data), not the live constitution object
         judgment: LLMJudgment = await self.llm_judge.evaluate(
             action=action,
-            context={"rubric": build_audit_rubric(
-                action=action,
-                engine_decision=engine_decision,
-                engine_violations=violation_dicts,
-                constitution_rules=rules,
-                context=context,
-            )},
+            context={
+                "rubric": build_audit_rubric(
+                    action=action,
+                    engine_decision=engine_decision,
+                    engine_violations=violation_dicts,
+                    constitution_rules=rules,
+                    context=context,
+                )
+            },
             constitution=self.constitution,
         )
 
@@ -236,12 +240,16 @@ def _extract_rules(constitution: Any) -> list[dict[str, Any]]:
     rule_list = getattr(constitution, "rules", [])
     for r in rule_list:
         if hasattr(r, "id"):
-            rules.append({
-                "id": r.id,
-                "text": getattr(r, "text", ""),
-                "severity": getattr(r, "severity", "").value if hasattr(getattr(r, "severity", ""), "value") else str(getattr(r, "severity", "")),
-                "keywords": list(getattr(r, "keywords", [])),
-            })
+            rules.append(
+                {
+                    "id": r.id,
+                    "text": getattr(r, "text", ""),
+                    "severity": getattr(r, "severity", "").value
+                    if hasattr(getattr(r, "severity", ""), "value")
+                    else str(getattr(r, "severity", "")),
+                    "keywords": list(getattr(r, "keywords", [])),
+                }
+            )
         elif isinstance(r, dict):
             rules.append(r)
     return rules

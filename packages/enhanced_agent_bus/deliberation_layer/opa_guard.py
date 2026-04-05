@@ -794,7 +794,9 @@ class OPAGuard:
         return await self._evaluate_impl(message_data, policy_path)
 
     @fail_closed(
-        lambda self, message_data, policy_path="data.acgs.guard.verify", *, error: self._handle_evaluate_error(error),
+        lambda self, message_data, policy_path="data.acgs.guard.verify", *, error: (
+            self._handle_evaluate_error(error)
+        ),
         exceptions=_OPA_GUARD_OPERATION_ERRORS,
     )
     async def _evaluate_impl(
@@ -828,7 +830,9 @@ class OPAGuard:
                 allow_value = allow_raw if isinstance(allow_raw, bool) else default_allow
 
             reasons_raw = result.get("reasons")
-            reasons: list[str] = cast(list[str], reasons_raw) if isinstance(reasons_raw, list) else []
+            reasons: list[str] = (
+                cast(list[str], reasons_raw) if isinstance(reasons_raw, list) else []
+            )
             version = get_str(result, "version", "1.0.0")
         else:
             allow_value = default_allow

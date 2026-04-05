@@ -122,7 +122,9 @@ class TestGovernanceServer:
         assert "valid" in chain_data
         assert chain_data["entry_count"] == 2
 
-        filtered_response = client.get("/audit/entries", params={"agent_id": "alpha", "limit": 10, "offset": 0})
+        filtered_response = client.get(
+            "/audit/entries", params={"agent_id": "alpha", "limit": 10, "offset": 0}
+        )
         assert filtered_response.status_code == 200
         entries = filtered_response.json()
         assert len(entries) == 1

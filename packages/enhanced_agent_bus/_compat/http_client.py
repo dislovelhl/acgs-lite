@@ -1,4 +1,5 @@
 """Shim for src.core.shared.http_client."""
+
 from __future__ import annotations
 
 import asyncio

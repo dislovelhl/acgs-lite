@@ -3,6 +3,7 @@ ACGS-2 Deliberation Layer - Voting Service
 Constitutional Hash: 608508a9bd224290
 Enables multi-agent consensus for high-impact decisions.
 """
+
 from __future__ import annotations
 
 import uuid

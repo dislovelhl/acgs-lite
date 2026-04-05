@@ -25,7 +25,15 @@ class TestListRules:
     def test_rule_has_expected_fields(self, client):
         resp = client.get("/rules")
         rule = resp.json()[0]
-        for field in ["id", "text", "severity", "keywords", "category", "workflow_action", "enabled"]:
+        for field in [
+            "id",
+            "text",
+            "severity",
+            "keywords",
+            "category",
+            "workflow_action",
+            "enabled",
+        ]:
             assert field in rule
 
 
@@ -72,18 +80,24 @@ class TestCreateRule:
 
     def test_created_rule_is_enforceable(self, client):
         """After creating a rule, validation should enforce it."""
-        client.post("/rules", json={
-            "id": "test-enforce",
-            "text": "Block test keyword",
-            "severity": "critical",
-            "keywords": ["blockedword"],
-            "category": "safety",
-            "workflow_action": "block",
-        })
-        result = client.post("/validate", json={
-            "action": "do something with blockedword",
-            "agent_id": "test",
-        }).json()
+        client.post(
+            "/rules",
+            json={
+                "id": "test-enforce",
+                "text": "Block test keyword",
+                "severity": "critical",
+                "keywords": ["blockedword"],
+                "category": "safety",
+                "workflow_action": "block",
+            },
+        )
+        result = client.post(
+            "/validate",
+            json={
+                "action": "do something with blockedword",
+                "agent_id": "test",
+            },
+        ).json()
         assert len(result["violations"]) > 0
         assert any(v["rule_id"] == "test-enforce" for v in result["violations"])
 
@@ -114,12 +128,15 @@ class TestUpdateRule:
 class TestDeleteRule:
     def test_delete_existing_rule(self, client):
         # Create then delete
-        client.post("/rules", json={
-            "id": "to-delete",
-            "text": "Will be deleted",
-            "severity": "low",
-            "category": "test",
-        })
+        client.post(
+            "/rules",
+            json={
+                "id": "to-delete",
+                "text": "Will be deleted",
+                "severity": "low",
+                "category": "test",
+            },
+        )
         resp = client.delete("/rules/to-delete")
         assert resp.status_code == 204
 

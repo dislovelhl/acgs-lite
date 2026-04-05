@@ -29,6 +29,7 @@ from typing import Any, Protocol
 # 1. DEFINE: Protocol (interface contract)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class AuditStorage(Protocol):
     """Interface for persisting governance audit entries.
 
@@ -48,6 +49,7 @@ class AuditStorage(Protocol):
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. STUB: InMemory implementation for tests (zero dependencies)
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 class InMemoryAuditStorage:
     """Ephemeral in-process stub for AuditStorage.
@@ -74,6 +76,7 @@ class InMemoryAuditStorage:
 # 3. PRODUCTION implementation (swapped in at runtime)
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 class FileAuditStorage:
     """Production AuditStorage backed by the local filesystem.
 
@@ -83,11 +86,13 @@ class FileAuditStorage:
 
     def __init__(self, base_path: str = "/tmp/acgs_audit") -> None:
         import os
+
         os.makedirs(base_path, exist_ok=True)
         self._base_path = base_path
 
     def save(self, entry_id: str, payload: dict[str, Any]) -> str:
         import os
+
         path = os.path.join(self._base_path, f"{entry_id}.json")
         with open(path, "w") as f:
             json.dump(payload, f)
@@ -96,6 +101,7 @@ class FileAuditStorage:
 
     def load(self, entry_id: str) -> dict[str, Any] | None:
         import os
+
         path = os.path.join(self._base_path, f"{entry_id}.json")
         if not os.path.exists(path):
             return None
@@ -107,17 +113,18 @@ class FileAuditStorage:
 # 4. CONSUMER: business logic depends only on the Protocol
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 @dataclass
 class GovernanceDecisionRecorder:
     """Records governance decisions to pluggable storage.
 
     Depends only on AuditStorage Protocol — works with any implementation.
     """
+
     storage: AuditStorage
     _decision_count: int = field(default=0, init=False)
 
-    def record(self, decision_id: str, action: str, allowed: bool,
-               reason: str = "") -> str:
+    def record(self, decision_id: str, action: str, allowed: bool, reason: str = "") -> str:
         self._decision_count += 1
         payload = {
             "decision_id": decision_id,
@@ -141,6 +148,7 @@ class GovernanceDecisionRecorder:
 # 5. DEMO: tests using InMemory stub, production using FileAuditStorage
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def demo_with_stub() -> None:
     """Tests use InMemoryAuditStorage — zero I/O, zero credentials."""
     print("\n── 1. Unit Test Pattern (InMemory stub) ──────────────────────")
@@ -150,8 +158,9 @@ def demo_with_stub() -> None:
 
     # Use exactly as you would in a pytest test
     r1 = recorder.record("dec-001", "approve_model_v2", allowed=True)
-    r2 = recorder.record("dec-002", "deploy_to_prod", allowed=False,
-                         reason="Validator rejected: missing audit trail")
+    r2 = recorder.record(
+        "dec-002", "deploy_to_prod", allowed=False, reason="Validator rejected: missing audit trail"
+    )
     r3 = recorder.record("dec-003", "rollback_v2", allowed=True)
 
     print(f"  Decisions recorded : {recorder.total_decisions}")
@@ -189,8 +198,7 @@ def demo_swap_to_production() -> None:
 
         loaded = recorder.get_decision("prod-001")
         assert loaded is not None and loaded["allowed"] is True
-        print(f"  Loaded back     : allowed={loaded['allowed']}, "
-              f"action={loaded['action']}")
+        print(f"  Loaded back     : allowed={loaded['allowed']}, action={loaded['action']}")
         print("  ✅ Same business logic, different storage backend")
     finally:
         shutil.rmtree(tmp_dir)
@@ -202,8 +210,10 @@ def demo_failing_stub() -> None:
 
     class FailingAuditStorage:
         """Stub that always raises — tests error-handling paths."""
+
         def save(self, entry_id: str, payload: dict[str, Any]) -> str:
             raise IOError("Simulated storage failure")
+
         def load(self, entry_id: str) -> dict[str, Any] | None:
             return None
 

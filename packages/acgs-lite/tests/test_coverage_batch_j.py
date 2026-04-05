@@ -168,8 +168,10 @@ class TestCmdStatus:
 
         # Simulate validate_license_key.__wrapped__ working
         mock_wrapped = MagicMock(return_value=LicenseInfo(tier=Tier.PRO, expiry=1, key="k"))
-        with patch.dict("os.environ", {"ACGS_LICENSE_KEY": "env-key"}), \
-             patch("acgs_lite.cli.validate_license_key") as mock_vlk:
+        with (
+            patch.dict("os.environ", {"ACGS_LICENSE_KEY": "env-key"}),
+            patch("acgs_lite.cli.validate_license_key") as mock_vlk,
+        ):
             # The code accesses validate_license_key.__wrapped__
             mock_vlk.__wrapped__ = mock_wrapped
             # Need to patch the import inside the function
@@ -191,6 +193,7 @@ class TestCmdStatus:
         with patch.dict("os.environ", {}, clear=False):
             # Remove ACGS_LICENSE_KEY if present
             import os
+
             env_backup = os.environ.pop("ACGS_LICENSE_KEY", None)
             try:
                 with patch("acgs_lite.licensing._read_license_file", return_value=None):
@@ -247,6 +250,7 @@ class TestCmdVerify:
         args = argparse.Namespace()  # no key attribute
         with patch.dict("os.environ", {}, clear=False):
             import os
+
             env_backup = os.environ.pop("ACGS_LICENSE_KEY", None)
             try:
                 with patch("acgs_lite.licensing._read_license_file", return_value=None):
@@ -449,7 +453,10 @@ class TestSeverityToCloudSeverity:
         from acgs_lite.integrations.cloud_logging import _severity_to_cloud_severity
 
         entry = AuditEntry(
-            id="t", type="v", valid=False, violations=["r1"],
+            id="t",
+            type="v",
+            valid=False,
+            violations=["r1"],
             metadata={"severity": "critical"},
         )
         assert _severity_to_cloud_severity(entry) == "CRITICAL"
@@ -459,7 +466,10 @@ class TestSeverityToCloudSeverity:
         from acgs_lite.integrations.cloud_logging import _severity_to_cloud_severity
 
         entry = AuditEntry(
-            id="t", type="v", valid=False, violations=["r1"],
+            id="t",
+            type="v",
+            valid=False,
+            violations=["r1"],
             metadata={"severity": "high"},
         )
         assert _severity_to_cloud_severity(entry) == "ERROR"
@@ -469,7 +479,10 @@ class TestSeverityToCloudSeverity:
         from acgs_lite.integrations.cloud_logging import _severity_to_cloud_severity
 
         entry = AuditEntry(
-            id="t", type="v", valid=False, violations=["r1"],
+            id="t",
+            type="v",
+            valid=False,
+            violations=["r1"],
             metadata={"severity": "error"},
         )
         assert _severity_to_cloud_severity(entry) == "ERROR"
@@ -495,8 +508,10 @@ class TestCloudLoggingAuditExporter:
         mock_logger = MagicMock()
         mock_client.logger.return_value = mock_logger
 
-        with patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True), \
-             patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)):
+        with (
+            patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True),
+            patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)),
+        ):
             exporter = cl_mod.CloudLoggingAuditExporter(project_id="test-proj")
 
         assert exporter.exported_count == 0
@@ -513,8 +528,10 @@ class TestCloudLoggingAuditExporter:
         mock_cl_logger = MagicMock()
         mock_client.logger.return_value = mock_cl_logger
 
-        with patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True), \
-             patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)):
+        with (
+            patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True),
+            patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)),
+        ):
             exporter = cl_mod.CloudLoggingAuditExporter(project_id="p")
 
         entry = AuditEntry(id="e1", type="validation", valid=True, agent_id="a1")
@@ -532,8 +549,10 @@ class TestCloudLoggingAuditExporter:
         mock_cl_logger = MagicMock()
         mock_client.logger.return_value = mock_cl_logger
 
-        with patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True), \
-             patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)):
+        with (
+            patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True),
+            patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)),
+        ):
             exporter = cl_mod.CloudLoggingAuditExporter(project_id="p")
 
         entries = [
@@ -554,8 +573,10 @@ class TestCloudLoggingAuditExporter:
         mock_cl_logger.log_struct.side_effect = [None, RuntimeError("fail"), None]
         mock_client.logger.return_value = mock_cl_logger
 
-        with patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True), \
-             patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)):
+        with (
+            patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True),
+            patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)),
+        ):
             exporter = cl_mod.CloudLoggingAuditExporter(project_id="p")
 
         entries = [
@@ -576,11 +597,11 @@ class TestCloudLoggingAuditExporter:
         mock_client_cls.return_value = mock_client
         mock_client.logger.return_value = MagicMock()
 
-        with patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True), \
-             patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)):
-            exporter = cl_mod.CloudLoggingAuditExporter(
-                project_id="p", log_name="custom-log"
-            )
+        with (
+            patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", True),
+            patch.object(cl_mod, "cloud_logging", MagicMock(Client=mock_client_cls)),
+        ):
+            exporter = cl_mod.CloudLoggingAuditExporter(project_id="p", log_name="custom-log")
 
         assert exporter.stats["log_name"] == "custom-log"
 
@@ -629,11 +650,14 @@ class TestCloudRunServer:
 
         with patch.dict("sys.modules", {"acgs_lite.integrations.cloud_logging": None}):
             # Force ImportError
-            with patch(
-                "acgs_lite.integrations.cloud_run_server.CloudLoggingAuditExporter",
-                side_effect=ImportError,
-            ) if hasattr(srv, "CloudLoggingAuditExporter") else \
-                 patch.object(srv, "_init_cloud_exporter", wraps=srv._init_cloud_exporter):
+            with (
+                patch(
+                    "acgs_lite.integrations.cloud_run_server.CloudLoggingAuditExporter",
+                    side_effect=ImportError,
+                )
+                if hasattr(srv, "CloudLoggingAuditExporter")
+                else patch.object(srv, "_init_cloud_exporter", wraps=srv._init_cloud_exporter)
+            ):
                 result = srv._init_cloud_exporter()
         # Should return None (graceful fallback)
         assert result is None
@@ -704,8 +728,10 @@ class TestCloudRunServer:
         original_bot = srv._bot
         try:
             srv._bot = None
-            with patch.object(srv, "_GITLAB_TOKEN", ""), \
-                 patch.object(srv, "_GITLAB_PROJECT_ID", "0"):
+            with (
+                patch.object(srv, "_GITLAB_TOKEN", ""),
+                patch.object(srv, "_GITLAB_PROJECT_ID", "0"),
+            ):
                 result = srv._get_bot()
             assert result is None
         finally:
@@ -731,9 +757,11 @@ class TestCloudRunServer:
         original_bot = srv._bot
         try:
             srv._bot = None
-            with patch.object(srv, "_GITLAB_TOKEN", "tok"), \
-                 patch.object(srv, "_GITLAB_PROJECT_ID", "123"), \
-                 patch.object(srv, "GitLabGovernanceBot", side_effect=ValueError("fail")):
+            with (
+                patch.object(srv, "_GITLAB_TOKEN", "tok"),
+                patch.object(srv, "_GITLAB_PROJECT_ID", "123"),
+                patch.object(srv, "GitLabGovernanceBot", side_effect=ValueError("fail")),
+            ):
                 result = srv._get_bot()
             assert result is None
         finally:
@@ -761,8 +789,10 @@ class TestCloudRunServer:
         try:
             srv._webhook_handler = None
             srv._bot = None
-            with patch.object(srv, "_GITLAB_TOKEN", ""), \
-                 patch.object(srv, "_GITLAB_PROJECT_ID", "0"):
+            with (
+                patch.object(srv, "_GITLAB_TOKEN", ""),
+                patch.object(srv, "_GITLAB_PROJECT_ID", "0"),
+            ):
                 result = srv._get_webhook_handler()
             assert result is None
         finally:
@@ -780,8 +810,10 @@ class TestCloudRunServer:
         try:
             srv._webhook_handler = None
             srv._bot = mock_bot
-            with patch.object(srv, "_GITLAB_WEBHOOK_SECRET", "secret"), \
-                 patch.object(srv, "GitLabWebhookHandler", mock_handler_cls):
+            with (
+                patch.object(srv, "_GITLAB_WEBHOOK_SECRET", "secret"),
+                patch.object(srv, "GitLabWebhookHandler", mock_handler_cls),
+            ):
                 result = srv._get_webhook_handler()
             assert result is not None
             mock_handler_cls.assert_called_once()
@@ -800,8 +832,10 @@ class TestCloudRunServer:
         try:
             srv._webhook_handler = None
             srv._bot = mock_bot
-            with patch.object(srv, "_GITLAB_WEBHOOK_SECRET", ""), \
-                 patch.object(srv, "GitLabWebhookHandler", mock_handler_cls):
+            with (
+                patch.object(srv, "_GITLAB_WEBHOOK_SECRET", ""),
+                patch.object(srv, "GitLabWebhookHandler", mock_handler_cls),
+            ):
                 srv._get_webhook_handler()
             # Security hardening: empty secret → handler must NOT be instantiated
             mock_handler_cls.assert_not_called()
@@ -821,13 +855,16 @@ class TestCloudRunEndpoints:
         original_bot = srv._bot
         try:
             srv._bot = None
-            with patch.object(srv, "_GITLAB_TOKEN", ""), \
-                 patch.object(srv, "_GITLAB_PROJECT_ID", "0"):
+            with (
+                patch.object(srv, "_GITLAB_TOKEN", ""),
+                patch.object(srv, "_GITLAB_PROJECT_ID", "0"),
+            ):
                 response = await srv.health_endpoint(mock_request)
         finally:
             srv._bot = original_bot
 
         import json
+
         body = json.loads(response.body)
         assert body["status"] == "healthy"
         assert "constitutional_hash" in body
@@ -842,6 +879,7 @@ class TestCloudRunEndpoints:
         response = await srv.governance_summary_endpoint(mock_request)
 
         import json
+
         body = json.loads(response.body)
         assert "constitutional_hash" in body
         assert "summary" in body
@@ -856,14 +894,17 @@ class TestCloudRunEndpoints:
         try:
             srv._webhook_handler = None
             srv._bot = None
-            with patch.object(srv, "_GITLAB_TOKEN", ""), \
-                 patch.object(srv, "_GITLAB_PROJECT_ID", "0"):
+            with (
+                patch.object(srv, "_GITLAB_TOKEN", ""),
+                patch.object(srv, "_GITLAB_PROJECT_ID", "0"),
+            ):
                 response = await srv.webhook_endpoint(mock_request)
         finally:
             srv._webhook_handler = original_wh
             srv._bot = original_bot
 
         import json
+
         body = json.loads(response.body)
         assert response.status_code == 503
         assert "error" in body
@@ -876,7 +917,9 @@ class TestCloudRunEndpoints:
         mock_request.headers = {"X-Gitlab-Event": "Merge Request Hook"}
 
         mock_handler = MagicMock()
-        mock_handler.handle = AsyncMock(return_value=MagicMock(body=b'{"ok":true}', status_code=200))
+        mock_handler.handle = AsyncMock(
+            return_value=MagicMock(body=b'{"ok":true}', status_code=200)
+        )
 
         mock_bot = MagicMock()
         mock_bot.audit_log = MagicMock()
@@ -947,8 +990,11 @@ class TestRuleToRegoConditions:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R1", text="No harm", severity=Severity.HIGH,
-            keywords=["harm", "danger"], category="safety",
+            id="R1",
+            text="No harm",
+            severity=Severity.HIGH,
+            keywords=["harm", "danger"],
+            category="safety",
         )
         conds = _rule_to_rego_conditions(rule)
         assert len(conds) == 2
@@ -960,8 +1006,11 @@ class TestRuleToRegoConditions:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R2", text="No PII", severity=Severity.MEDIUM,
-            patterns=["\\d{3}-\\d{2}-\\d{4}"], category="privacy",
+            id="R2",
+            text="No PII",
+            severity=Severity.MEDIUM,
+            patterns=["\\d{3}-\\d{2}-\\d{4}"],
+            category="privacy",
         )
         conds = _rule_to_rego_conditions(rule)
         assert len(conds) == 1
@@ -972,8 +1021,12 @@ class TestRuleToRegoConditions:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R3", text="Bad regex", severity=Severity.LOW,
-            patterns=[".*valid.*"], keywords=["valid", "extra"], category="general",
+            id="R3",
+            text="Bad regex",
+            severity=Severity.LOW,
+            patterns=[".*valid.*"],
+            keywords=["valid", "extra"],
+            category="general",
         )
         # Inject an invalid pattern after construction to bypass pydantic validation
         rule.patterns = ["[invalid"]
@@ -986,8 +1039,11 @@ class TestRuleToRegoConditions:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R4", text="Empty", severity=Severity.LOW,
-            keywords=["", "  ", "valid"], category="general",
+            id="R4",
+            text="Empty",
+            severity=Severity.LOW,
+            keywords=["", "  ", "valid"],
+            category="general",
         )
         conds = _rule_to_rego_conditions(rule)
         assert len(conds) == 1
@@ -997,8 +1053,11 @@ class TestRuleToRegoConditions:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R5", text="Empty pat", severity=Severity.LOW,
-            patterns=["", "  "], category="general",
+            id="R5",
+            text="Empty pat",
+            severity=Severity.LOW,
+            patterns=["", "  "],
+            category="general",
         )
         conds = _rule_to_rego_conditions(rule)
         assert len(conds) == 0
@@ -1008,7 +1067,10 @@ class TestRuleToRegoConditions:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R6", text="No match", severity=Severity.LOW, category="general",
+            id="R6",
+            text="No match",
+            severity=Severity.LOW,
+            category="general",
         )
         conds = _rule_to_rego_conditions(rule)
         assert len(conds) == 0
@@ -1053,12 +1115,20 @@ class TestConstitutionToRego:
             name="test",
             rules=[
                 Rule(
-                    id="R1", text="Active", severity=Severity.HIGH,
-                    keywords=["active"], category="test", enabled=True,
+                    id="R1",
+                    text="Active",
+                    severity=Severity.HIGH,
+                    keywords=["active"],
+                    category="test",
+                    enabled=True,
                 ),
                 Rule(
-                    id="R2", text="Disabled", severity=Severity.LOW,
-                    keywords=["disabled"], category="test", enabled=False,
+                    id="R2",
+                    text="Disabled",
+                    severity=Severity.LOW,
+                    keywords=["disabled"],
+                    category="test",
+                    enabled=False,
                 ),
             ],
         )
@@ -1083,8 +1153,11 @@ class TestConstitutionToRego:
         from acgs_lite.constitution.rule import Rule, Severity
 
         rule = Rule(
-            id="R-SPARSE", text="Sparse rule", severity=Severity.LOW,
-            keywords=["real"], category="general",
+            id="R-SPARSE",
+            text="Sparse rule",
+            severity=Severity.LOW,
+            keywords=["real"],
+            category="general",
         )
         # Manually blank out keywords after construction to bypass validation
         rule.keywords = ["", "  "]
@@ -1127,12 +1200,20 @@ class TestConstitutionToRegoBundle:
             name="test",
             rules=[
                 Rule(
-                    id="R1", text="Active rule", severity=Severity.HIGH,
-                    keywords=["active"], category="t", enabled=True,
+                    id="R1",
+                    text="Active rule",
+                    severity=Severity.HIGH,
+                    keywords=["active"],
+                    category="t",
+                    enabled=True,
                 ),
                 Rule(
-                    id="R2", text="Disabled rule", severity=Severity.LOW,
-                    keywords=["disabled"], category="t", enabled=False,
+                    id="R2",
+                    text="Disabled rule",
+                    severity=Severity.LOW,
+                    keywords=["disabled"],
+                    category="t",
+                    enabled=False,
                 ),
             ],
         )

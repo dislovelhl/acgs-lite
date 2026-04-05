@@ -142,8 +142,12 @@ class TestGovernanceAccessControl:
         )
         acl.add_role(AccessRole("scoped_reader", policies=[policy]))
         acl.assign("agent", "scoped_reader")
-        assert acl.check("agent", Permission.READ_RULES, "rules/abc").decision == AccessDecision.ALLOW
-        assert acl.check("agent", Permission.READ_RULES, "audit/abc").decision == AccessDecision.DENY
+        assert (
+            acl.check("agent", Permission.READ_RULES, "rules/abc").decision == AccessDecision.ALLOW
+        )
+        assert (
+            acl.check("agent", Permission.READ_RULES, "audit/abc").decision == AccessDecision.DENY
+        )
 
     def test_check_no_record(self) -> None:
         acl = self._setup_acl()
@@ -251,7 +255,9 @@ from acgs_lite.constitution.consent import (
 
 class TestConsentRecord:
     def test_is_valid_active(self) -> None:
-        record = ConsentRecord("user1", "marketing", LawfulBasis.CONSENT, status=ConsentStatus.ACTIVE)
+        record = ConsentRecord(
+            "user1", "marketing", LawfulBasis.CONSENT, status=ConsentStatus.ACTIVE
+        )
         assert record.is_valid is True
 
     def test_is_valid_withdrawn(self) -> None:
@@ -491,9 +497,7 @@ class TestDelegationTokenAuthority:
         auth = DelegationTokenAuthority(signing_key="secret")
         scope = DelegationScope(permissions={"read", "write"}, max_depth=2)
         parent = auth.issue("admin", "agent-1", scope)
-        child = auth.delegate(
-            parent, "agent-1", "agent-2", DelegationScope(permissions={"read"})
-        )
+        child = auth.delegate(parent, "agent-1", "agent-2", DelegationScope(permissions={"read"}))
         assert child is not None
         assert auth.verify(child).status == TokenStatus.VALID
         assert child.chain_depth == 1
@@ -730,9 +734,7 @@ from acgs_lite.constitution.observability_exporter import (
 
 class TestHistogramMetric:
     def test_record_and_mean(self) -> None:
-        h = HistogramMetric(
-            name="test", buckets=[HistogramBucket(le=1.0), HistogramBucket(le=5.0)]
-        )
+        h = HistogramMetric(name="test", buckets=[HistogramBucket(le=1.0), HistogramBucket(le=5.0)])
         h.record(0.5)
         h.record(3.0)
         assert h.count == 2
@@ -975,9 +977,11 @@ from acgs_lite.constitution.obligation_engine import (
 
 class TestObligationEngine:
     def test_emit(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access", sla_minutes=60)],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access", sla_minutes=60)],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         assert len(ids) == 1
         assert ids[0].startswith("obl-")
@@ -988,9 +992,11 @@ class TestObligationEngine:
         assert len(ids) == 0
 
     def test_fulfill(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access", sla_minutes=60)],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access", sla_minutes=60)],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         record = engine.fulfill(ids[0], fulfilled_by="agent-1")
         assert record.status == ObligationStatus.FULFILLED
@@ -1001,34 +1007,42 @@ class TestObligationEngine:
             engine.fulfill("nonexistent")
 
     def test_fulfill_already_fulfilled(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access")],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access")],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         engine.fulfill(ids[0])
         with pytest.raises(ValueError):
             engine.fulfill(ids[0])
 
     def test_waive(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access")],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access")],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         record = engine.waive(ids[0], reason="Not applicable")
         assert record.status == ObligationStatus.WAIVED
 
     def test_waive_empty_reason(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access")],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access")],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         with pytest.raises(ValueError, match="non-empty reason"):
             engine.waive(ids[0], reason="")
 
     def test_waive_invalid_status(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access")],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access")],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         engine.fulfill(ids[0])
         with pytest.raises(ValueError):
@@ -1043,9 +1057,11 @@ class TestObligationEngine:
         assert removed == 1
 
     def test_pending_and_fulfilled_queries(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access", sla_minutes=0)],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access", sla_minutes=0)],
+            }
+        )
         ids = engine.emit("agent-1", "read data", ["RULE-1"])
         assert len(engine.pending()) == 1
         engine.fulfill(ids[0])
@@ -1053,25 +1069,31 @@ class TestObligationEngine:
         assert len(engine.pending()) == 0
 
     def test_for_agent_and_for_rule(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access")],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access")],
+            }
+        )
         engine.emit("agent-1", "read data", ["RULE-1"])
         assert len(engine.for_agent("agent-1")) == 1
         assert len(engine.for_rule("RULE-1")) == 1
 
     def test_breach_report(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access", sla_minutes=60)],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access", sla_minutes=60)],
+            }
+        )
         engine.emit("agent-1", "read data", ["RULE-1"])
         report = engine.breach_report()
         assert report["overdue_count"] == 0
 
     def test_summary(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log")],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log")],
+            }
+        )
         engine.emit("agent-1", "action", ["RULE-1"])
         s = engine.summary()
         assert s["total"] == 1
@@ -1082,9 +1104,11 @@ class TestObligationEngine:
         assert "ObligationEngine" in r
 
     def test_obligation_record_to_dict(self) -> None:
-        engine = ObligationEngine({
-            "RULE-1": [ObligationSpec("Log access", sla_minutes=5)],
-        })
+        engine = ObligationEngine(
+            {
+                "RULE-1": [ObligationSpec("Log access", sla_minutes=5)],
+            }
+        )
         engine.emit("agent-1", "read data", ["RULE-1"])
         records = engine.for_agent("agent-1")
         d = records[0].to_dict()
@@ -1265,9 +1289,7 @@ class TestGovernanceNotificationBus:
         received: list[GovernanceNotification] = []
         bus = GovernanceNotificationBus()
         bus.subscribe(Subscriber("s1", received.append))
-        notifs = [
-            GovernanceNotification(topic="t", payload={"i": i}) for i in range(3)
-        ]
+        notifs = [GovernanceNotification(topic="t", payload={"i": i}) for i in range(3)]
         results = bus.publish_batch(notifs)
         assert len(results) == 3
         assert len(received) == 3
@@ -1589,10 +1611,12 @@ class TestEvaluationContext:
         assert ctx.custom["extra_key"] == "val"
 
     def test_from_dict_nested(self) -> None:
-        ctx = EvaluationContext.from_dict({
-            "agent": {"id": "alpha", "tier": "standard"},
-            "deployment": {"region": "US"},
-        })
+        ctx = EvaluationContext.from_dict(
+            {
+                "agent": {"id": "alpha", "tier": "standard"},
+                "deployment": {"region": "US"},
+            }
+        )
         assert ctx.agent_id == "alpha"
         assert ctx.deployment_region == "US"
 
@@ -1623,11 +1647,13 @@ from acgs_lite.constitution.compliance_mapping import (
 class TestComplianceMapper:
     def _setup(self) -> ComplianceMapper:
         mapper = ComplianceMapper()
-        mapper.register_framework(RegulatoryFramework(
-            framework_id="eu_ai",
-            name="EU AI Act",
-            controls=["Art.9", "Art.13", "Art.14"],
-        ))
+        mapper.register_framework(
+            RegulatoryFramework(
+                framework_id="eu_ai",
+                name="EU AI Act",
+                controls=["Art.9", "Art.13", "Art.14"],
+            )
+        )
         return mapper
 
     def test_map_rule(self) -> None:
@@ -1693,9 +1719,9 @@ class TestComplianceMapper:
 
     def test_cross_framework_overlap(self) -> None:
         mapper = self._setup()
-        mapper.register_framework(RegulatoryFramework(
-            framework_id="nist", name="NIST", controls=["GOV-1"]
-        ))
+        mapper.register_framework(
+            RegulatoryFramework(framework_id="nist", name="NIST", controls=["GOV-1"])
+        )
         mapper.map_rule("SAFE-001", "eu_ai", "Art.9")
         mapper.map_rule("SAFE-001", "nist", "GOV-1")
         overlap = mapper.cross_framework_overlap("SAFE-001")
@@ -1748,7 +1774,9 @@ class TestGovernanceEmergencyOverride:
     def test_activate(self) -> None:
         eo = GovernanceEmergencyOverride()
         override = eo.activate(
-            requestor_id="ops", authorizer_id="sec", justification=self._justification(),
+            requestor_id="ops",
+            authorizer_id="sec",
+            justification=self._justification(),
             scope=OverrideScope.ALL_RULES,
         )
         assert override.is_active is True
@@ -1779,7 +1807,10 @@ class TestGovernanceEmergencyOverride:
         policy = OverridePolicy(max_duration=timedelta(hours=1))
         eo = GovernanceEmergencyOverride(policy)
         override = eo.activate(
-            "ops", "sec", self._justification(), OverrideScope.ALL_RULES,
+            "ops",
+            "sec",
+            self._justification(),
+            OverrideScope.ALL_RULES,
             duration=timedelta(hours=10),
         )
         diff = override.expires_at - override.activated_at
@@ -1793,7 +1824,10 @@ class TestGovernanceEmergencyOverride:
     def test_is_overridden_specific_rules(self) -> None:
         eo = GovernanceEmergencyOverride()
         eo.activate(
-            "ops", "sec", self._justification(), OverrideScope.SPECIFIC_RULES,
+            "ops",
+            "sec",
+            self._justification(),
+            OverrideScope.SPECIFIC_RULES,
             scope_filter=["RULE-1"],
         )
         assert eo.is_overridden("RULE-1") is True
@@ -1802,7 +1836,10 @@ class TestGovernanceEmergencyOverride:
     def test_is_overridden_severity_tier(self) -> None:
         eo = GovernanceEmergencyOverride()
         eo.activate(
-            "ops", "sec", self._justification(), OverrideScope.SEVERITY_TIER,
+            "ops",
+            "sec",
+            self._justification(),
+            OverrideScope.SEVERITY_TIER,
             scope_filter=["medium", "low"],
         )
         assert eo.is_overridden("RULE-1", severity="medium") is True
@@ -1811,7 +1848,10 @@ class TestGovernanceEmergencyOverride:
     def test_is_overridden_category(self) -> None:
         eo = GovernanceEmergencyOverride()
         eo.activate(
-            "ops", "sec", self._justification(), OverrideScope.CATEGORY,
+            "ops",
+            "sec",
+            self._justification(),
+            OverrideScope.CATEGORY,
             scope_filter=["financial"],
         )
         assert eo.is_overridden("RULE-1", category="financial") is True
@@ -2041,9 +2081,7 @@ class TestGovernanceRateLimiter:
         assert result.allowed is True
 
     def test_check_and_record(self) -> None:
-        limiter = GovernanceRateLimiter(
-            RateLimitPolicy(requests_per_window=5, burst_allowance=0)
-        )
+        limiter = GovernanceRateLimiter(RateLimitPolicy(requests_per_window=5, burst_allowance=0))
         for _ in range(5):
             result = limiter.check_and_record("agent-1")
             assert result.allowed is True
@@ -2079,9 +2117,7 @@ class TestGovernanceRateLimiter:
         assert len(limiter.all_agents_usage()) == 2
 
     def test_violations(self) -> None:
-        limiter = GovernanceRateLimiter(
-            RateLimitPolicy(requests_per_window=1, burst_allowance=0)
-        )
+        limiter = GovernanceRateLimiter(RateLimitPolicy(requests_per_window=1, burst_allowance=0))
         limiter.check_and_record("agent-1")
         limiter.check_and_record("agent-1")
         assert len(limiter.violations()) == 1
@@ -2258,7 +2294,9 @@ class TestCostBudgetManager:
 
     def test_auto_reset_daily(self) -> None:
         mgr = CostBudgetManager()
-        mgr.set_budget(CostBudget("b1", soft_limit=50, hard_limit=100, reset_period=ResetPeriod.DAILY))
+        mgr.set_budget(
+            CostBudget("b1", soft_limit=50, hard_limit=100, reset_period=ResetPeriod.DAILY)
+        )
         mgr.record("b1", tokens=80)
         # Record far in the future so the daily window has elapsed
         future = datetime.now(timezone.utc) + timedelta(days=2)
@@ -2393,8 +2431,9 @@ from acgs_lite.constitution.data_classification import (
 class TestDataClassifier:
     def test_add_policy_and_classify(self) -> None:
         dc = DataClassifier()
-        dc.add_policy("pii", SensitivityLevel.CONFIDENTIAL,
-                       HandlingRequirement(encrypt_at_rest=True))
+        dc.add_policy(
+            "pii", SensitivityLevel.CONFIDENTIAL, HandlingRequirement(encrypt_at_rest=True)
+        )
         result = dc.classify("record-1", labels=["pii"])
         assert result.level == SensitivityLevel.CONFIDENTIAL
         assert result.handling.encrypt_at_rest is True
@@ -2402,8 +2441,11 @@ class TestDataClassifier:
     def test_highest_level_wins(self) -> None:
         dc = DataClassifier()
         dc.add_policy("pii", SensitivityLevel.CONFIDENTIAL)
-        dc.add_policy("financial", SensitivityLevel.RESTRICTED,
-                       HandlingRequirement(cross_border_allowed=False))
+        dc.add_policy(
+            "financial",
+            SensitivityLevel.RESTRICTED,
+            HandlingRequirement(cross_border_allowed=False),
+        )
         result = dc.classify("record-1", labels=["pii", "financial"])
         assert result.level == SensitivityLevel.RESTRICTED
         assert result.handling.cross_border_allowed is False
@@ -2490,8 +2532,11 @@ class TestDataClassifier:
 
     def test_compliance_report(self) -> None:
         dc = DataClassifier()
-        dc.add_policy("pii", SensitivityLevel.CONFIDENTIAL,
-                       HandlingRequirement(encrypt_at_rest=True, cross_border_allowed=False))
+        dc.add_policy(
+            "pii",
+            SensitivityLevel.CONFIDENTIAL,
+            HandlingRequirement(encrypt_at_rest=True, cross_border_allowed=False),
+        )
         dc.classify("r1", labels=["pii"])
         report = dc.compliance_report()
         assert report["total_classified"] == 1
@@ -2628,17 +2673,23 @@ class TestPolicyDecisionPoint:
         assert decision.outcome == DecisionOutcome.ALLOW
 
     def test_decide_deny(self) -> None:
-        pdp = PolicyDecisionPoint("test-pdp", rules=[
-            {"id": "R1", "keywords": ["delete"], "severity": "critical"},
-        ])
+        pdp = PolicyDecisionPoint(
+            "test-pdp",
+            rules=[
+                {"id": "R1", "keywords": ["delete"], "severity": "critical"},
+            ],
+        )
         decision = pdp.decide("delete everything")
         assert decision.outcome == DecisionOutcome.DENY
         assert "R1" in decision.matched_rules
 
     def test_decide_conditional(self) -> None:
-        pdp = PolicyDecisionPoint("test-pdp", rules=[
-            {"id": "R1", "keywords": ["modify"], "severity": "low"},
-        ])
+        pdp = PolicyDecisionPoint(
+            "test-pdp",
+            rules=[
+                {"id": "R1", "keywords": ["modify"], "severity": "low"},
+            ],
+        )
         decision = pdp.decide("modify settings")
         assert decision.outcome == DecisionOutcome.CONDITIONAL
 
@@ -2668,25 +2719,34 @@ class TestPolicyDecisionPoint:
 
 class TestPolicyEnforcementPoint:
     def test_enforce_strict(self) -> None:
-        pdp = PolicyDecisionPoint("pdp", rules=[
-            {"id": "R1", "keywords": ["delete"], "severity": "critical"},
-        ])
+        pdp = PolicyDecisionPoint(
+            "pdp",
+            rules=[
+                {"id": "R1", "keywords": ["delete"], "severity": "critical"},
+            ],
+        )
         pep = PolicyEnforcementPoint("pep", pdp, EnforcementPolicy.strict())
         result = pep.enforce("delete everything")
         assert result.enforcement_action == EnforcementAction.BLOCK
 
     def test_enforce_permissive(self) -> None:
-        pdp = PolicyDecisionPoint("pdp", rules=[
-            {"id": "R1", "keywords": ["delete"], "severity": "critical"},
-        ])
+        pdp = PolicyDecisionPoint(
+            "pdp",
+            rules=[
+                {"id": "R1", "keywords": ["delete"], "severity": "critical"},
+            ],
+        )
         pep = PolicyEnforcementPoint("pep", pdp, EnforcementPolicy.permissive())
         result = pep.enforce("delete everything")
         assert result.enforcement_action == EnforcementAction.WARN
 
     def test_enforce_audit_only(self) -> None:
-        pdp = PolicyDecisionPoint("pdp", rules=[
-            {"id": "R1", "keywords": ["delete"], "severity": "critical"},
-        ])
+        pdp = PolicyDecisionPoint(
+            "pdp",
+            rules=[
+                {"id": "R1", "keywords": ["delete"], "severity": "critical"},
+            ],
+        )
         pep = PolicyEnforcementPoint("pep", pdp, EnforcementPolicy.audit_only())
         result = pep.enforce("delete everything")
         assert result.enforcement_action == EnforcementAction.LOG_ONLY
@@ -2780,7 +2840,9 @@ class TestPolicyBoundary:
 
     def test_matches_pattern(self) -> None:
         b = PolicyBoundary(
-            "B1", "No Visa", "PCI",
+            "B1",
+            "No Visa",
+            "PCI",
             forbidden_patterns=[r"4[0-9]{12}(?:[0-9]{3})?"],
         )
         assert b.matches("charge 4111111111111111") is True
@@ -2809,17 +2871,21 @@ class TestPolicyBoundary:
 
 class TestPolicyBoundarySet:
     def test_check_blocked(self) -> None:
-        bs = PolicyBoundarySet([
-            PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
-        ])
+        bs = PolicyBoundarySet(
+            [
+                PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
+            ]
+        )
         result = bs.check("store card number")
         assert result["blocked"] is True
         assert len(result["violations"]) == 1
 
     def test_check_allowed(self) -> None:
-        bs = PolicyBoundarySet([
-            PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
-        ])
+        bs = PolicyBoundarySet(
+            [
+                PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
+            ]
+        )
         result = bs.check("deploy service")
         assert result["blocked"] is False
 
@@ -2832,9 +2898,11 @@ class TestPolicyBoundarySet:
         assert bs.remove("B1") is False
 
     def test_check_batch(self) -> None:
-        bs = PolicyBoundarySet([
-            PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
-        ])
+        bs = PolicyBoundarySet(
+            [
+                PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
+            ]
+        )
         result = bs.check_batch(["store card 4111", "deploy service"])
         assert result["total"] == 2
         assert result["blocked_count"] == 1
@@ -2846,9 +2914,11 @@ class TestPolicyBoundarySet:
         assert result["compliance_rate"] == 1.0
 
     def test_summary(self) -> None:
-        bs = PolicyBoundarySet([
-            PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
-        ])
+        bs = PolicyBoundarySet(
+            [
+                PolicyBoundary("B1", "No card", "PCI", forbidden_keywords=["store card"]),
+            ]
+        )
         s = bs.summary()
         assert s["count"] == 1
 

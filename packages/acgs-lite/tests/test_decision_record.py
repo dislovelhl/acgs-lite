@@ -22,7 +22,9 @@ class TestGovernanceDecisionRecord:
     def test_dict_protocol_triggered_rules(self):
         record = GovernanceDecisionRecord(
             decision="deny",
-            triggered_rules=[TriggeredRule(id="R1", text="No harm", severity="high", category="safety")],
+            triggered_rules=[
+                TriggeredRule(id="R1", text="No harm", severity="high", category="safety")
+            ],
         )
         rules = record["triggered_rules"]
         assert len(rules) == 1
@@ -102,9 +104,13 @@ class TestValidationResultConversion:
         assert record.agent_id == "agent-1"
 
     def test_roundtrip_to_dict(self):
-        vr = ValidationResult(valid=False, constitutional_hash="abc", violations=[
-            Violation("R1", "text", Severity.HIGH, "match", "cat"),
-        ])
+        vr = ValidationResult(
+            valid=False,
+            constitutional_hash="abc",
+            violations=[
+                Violation("R1", "text", Severity.HIGH, "match", "cat"),
+            ],
+        )
         d = vr.to_decision_record().to_dict()
         assert d["decision"] == "deny"
         assert d["triggered_rules"][0]["id"] == "R1"

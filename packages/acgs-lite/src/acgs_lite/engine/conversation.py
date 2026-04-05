@@ -77,9 +77,7 @@ def _safe_validate(
                     category="constitutional-violation",
                 ),
             ],
-            rules_checked=len(
-                engine.constitution.active_rules()
-            ),
+            rules_checked=len(engine.constitution.active_rules()),
             action=action[:200],
             agent_id=agent_id,
         )
@@ -142,14 +140,8 @@ class ConversationValidationResult:
                 "turn_number": self.turn.turn_number,
                 "metadata": self.turn.metadata,
             },
-            "individual_result": (
-                self.individual_result.to_dict()
-            ),
-            "context_result": (
-                self.context_result.to_dict()
-                if self.context_result
-                else None
-            ),
+            "individual_result": (self.individual_result.to_dict()),
+            "context_result": (self.context_result.to_dict() if self.context_result else None),
             "trajectory_flags": self.trajectory_flags,
             "escalation_score": self.escalation_score,
             "valid": self.valid,
@@ -182,10 +174,7 @@ class ConversationContext:
     ) -> ConversationTurn:
         """Append a turn and return the created turn."""
         if role not in _VALID_ROLES:
-            raise ValueError(
-                f"Invalid role {role!r}; "
-                f"expected one of {sorted(_VALID_ROLES)}"
-            )
+            raise ValueError(f"Invalid role {role!r}; expected one of {sorted(_VALID_ROLES)}")
         turn = ConversationTurn(
             role=role,
             content=content,
@@ -205,14 +194,11 @@ class ConversationContext:
         return turns[-n:]
 
     def get_full_text(
-        self, last_n: int | None = None,
+        self,
+        last_n: int | None = None,
     ) -> str:
         """Concatenate turn content for the last *last_n* turns."""
-        window = (
-            self.get_window(last_n)
-            if last_n is not None
-            else list(self._turns)
-        )
+        window = self.get_window(last_n) if last_n is not None else list(self._turns)
         return "\n".join(t.content for t in window)
 
     def clear(self) -> None:
@@ -240,7 +226,8 @@ def _word_set(text: str) -> set[str]:
 
 
 def _jaccard_similarity(
-    a: set[str], b: set[str],
+    a: set[str],
+    b: set[str],
 ) -> float:
     """Jaccard index between two word sets."""
     if not a and not b:
@@ -276,7 +263,8 @@ def _detect_trajectory_flags(
         first_words = _word_set(turns[0].content)
         last_words = _word_set(turns[-1].content)
         similarity = _jaccard_similarity(
-            first_words, last_words,
+            first_words,
+            last_words,
         )
         if similarity < 0.15:
             flags.append("topic_drift")
@@ -287,7 +275,8 @@ def _detect_trajectory_flags(
         repeat_count = 0
         for prior in turns[:-1]:
             sim = _jaccard_similarity(
-                latest_words, _word_set(prior.content),
+                latest_words,
+                _word_set(prior.content),
             )
             if sim > 0.8:
                 repeat_count += 1
@@ -312,9 +301,7 @@ def _compute_escalation_score(
     if vc:
         recent = vc[-5:] if len(vc) >= 5 else vc
         total_violations = sum(recent)
-        density = (
-            total_violations / len(recent) if recent else 0.0
-        )
+        density = total_violations / len(recent) if recent else 0.0
         # Each violation in recent window contributes up to 0.15
         score += min(density * 0.15, 0.6)
 
@@ -360,7 +347,8 @@ class ConversationGovernanceEngine:
         agent_id: str = "conversation-agent",
     ) -> None:
         if isinstance(
-            engine_or_constitution, GovernanceEngine,
+            engine_or_constitution,
+            GovernanceEngine,
         ):
             self._engine = engine_or_constitution
         elif isinstance(engine_or_constitution, Constitution):
@@ -399,7 +387,9 @@ class ConversationGovernanceEngine:
         """
         # Step 1: Individual validation
         individual_result = _safe_validate(
-            self._engine, content, self._agent_id,
+            self._engine,
+            content,
+            self._agent_id,
         )
 
         # Step 2: Context-aware validation
@@ -410,7 +400,9 @@ class ConversationGovernanceEngine:
         if window_text:
             combined_text = f"{window_text}\n{content}"
             context_result = _safe_validate(
-                self._engine, combined_text, self._agent_id,
+                self._engine,
+                combined_text,
+                self._agent_id,
             )
 
         # Count violations for this turn (both validations)
@@ -418,14 +410,9 @@ class ConversationGovernanceEngine:
             individual_result.violations,
         )
         if context_result is not None:
-            individual_rule_ids = {
-                v.rule_id
-                for v in individual_result.violations
-            }
+            individual_rule_ids = {v.rule_id for v in individual_result.violations}
             context_only = [
-                v
-                for v in context_result.violations
-                if v.rule_id not in individual_rule_ids
+                v for v in context_result.violations if v.rule_id not in individual_rule_ids
             ]
             turn_violation_count += len(context_only)
         self._violation_counts.append(turn_violation_count)
@@ -439,23 +426,20 @@ class ConversationGovernanceEngine:
             content=content,
             timestamp=datetime.now(timezone.utc).isoformat(),
             turn_number=self._context.next_turn_number,
-            metadata=(
-                metadata if metadata is not None else {}
-            ),
+            metadata=(metadata if metadata is not None else {}),
         )
         analysis_turns = [*window_turns, preview_turn]
         trajectory_flags = _detect_trajectory_flags(
-            analysis_turns, self._violation_counts,
+            analysis_turns,
+            self._violation_counts,
         )
 
         escalation_score = _compute_escalation_score(
-            self._violation_counts, trajectory_flags,
+            self._violation_counts,
+            trajectory_flags,
         )
 
-        if (
-            "gradual_escalation" in trajectory_flags
-            or escalation_score >= 0.5
-        ):
+        if "gradual_escalation" in trajectory_flags or escalation_score >= 0.5:
             self._escalation_detected = True
 
         # Step 4: Record the turn
@@ -522,16 +506,13 @@ class ConversationGovernanceEngine:
             "escalation_detected": self._escalation_detected,
             "trajectory_score": (
                 _compute_escalation_score(
-                    self._violation_counts, [],
+                    self._violation_counts,
+                    [],
                 )
                 if self._violation_counts
                 else 0.0
             ),
-            "total_violations": (
-                sum(self._violation_counts)
-                if self._violation_counts
-                else 0
-            ),
+            "total_violations": (sum(self._violation_counts) if self._violation_counts else 0),
             "context_window": self._context_window,
             "agent_id": self._agent_id,
             "constitutional_hash": _CONSTITUTIONAL_HASH,

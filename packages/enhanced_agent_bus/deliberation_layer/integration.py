@@ -158,6 +158,7 @@ DFC_DIAGNOSTIC_ERRORS = (
 if available("opa_guard_mixin"):
     OPAGuardMixin = import_module(require("opa_guard_mixin")).OPAGuardMixin
 else:
+
     class OPAGuardMixin:  # type: ignore[no-redef]
         """Fallback empty mixin when opa_guard_mixin unavailable."""
 

@@ -172,9 +172,7 @@ class GitHubGovernanceBot:
         for text, source in [(title, "title"), (body, "body")]:
             if not text:
                 continue
-            result = self._validate_text(
-                text, agent_id=f"github-pr-{pr_number}:{source}"
-            )
+            result = self._validate_text(text, agent_id=f"github-pr-{pr_number}:{source}")
             total_checked += result.rules_checked
             for v in result.blocking_violations:
                 all_violations.append(
@@ -203,9 +201,7 @@ class GitHubGovernanceBot:
                 continue
 
             for line_no, line in _parse_added_lines(patch):
-                result = self._validate_text(
-                    line, agent_id=f"github-pr-{pr_number}:{filename}"
-                )
+                result = self._validate_text(line, agent_id=f"github-pr-{pr_number}:{filename}")
                 total_checked += result.rules_checked
                 for v in result.blocking_violations:
                     entry = {
@@ -252,9 +248,7 @@ class GitHubGovernanceBot:
 
         return report
 
-    async def post_governance_comment(
-        self, pr_number: int, report: GovernanceReport
-    ) -> Any:
+    async def post_governance_comment(self, pr_number: int, report: GovernanceReport) -> Any:
         """Post a formatted governance comment on the pull request.
 
         Args:
@@ -265,13 +259,9 @@ class GitHubGovernanceBot:
             GitHub API response for the created comment.
         """
         body = format_governance_report(report)
-        return await self._post(
-            f"issues/{pr_number}/comments", {"body": body}
-        )
+        return await self._post(f"issues/{pr_number}/comments", {"body": body})
 
-    async def run_governance_pipeline(
-        self, pr_number: int
-    ) -> GovernanceReport:
+    async def run_governance_pipeline(self, pr_number: int) -> GovernanceReport:
         """Run the full governance pipeline: validate, comment, approve/block.
 
         Args:
@@ -285,8 +275,7 @@ class GitHubGovernanceBot:
         await self.post_governance_comment(pr_number, report)
 
         logger.info(
-            "Governance pipeline complete for PR #%s: %s "
-            "(risk=%.2f, violations=%d)",
+            "Governance pipeline complete for PR #%s: %s (risk=%.2f, violations=%d)",
             pr_number,
             "PASSED" if report.passed else "BLOCKED",
             report.risk_score,
@@ -365,10 +354,8 @@ class GitHubWebhookHandler:
         if not signature.startswith("sha256="):
             return False
 
-        expected = hmac.new(
-            self._secret, payload, hashlib.sha256
-        ).hexdigest()
-        received = signature[len("sha256="):]
+        expected = hmac.new(self._secret, payload, hashlib.sha256).hexdigest()
+        received = signature[len("sha256=") :]
         return hmac.compare_digest(expected, received)
 
     async def handle(self, request: Any) -> Any:
@@ -384,17 +371,14 @@ class GitHubWebhookHandler:
             from starlette.responses import JSONResponse
         except ImportError as exc:
             raise ImportError(
-                "starlette is required for webhook handling. "
-                "Install with: pip install starlette"
+                "starlette is required for webhook handling. Install with: pip install starlette"
             ) from exc
 
         # Read raw body for signature verification
         raw_body = await request.body()
         signature = request.headers.get("X-Hub-Signature-256", "")
         if not self.verify_signature(raw_body, signature):
-            return JSONResponse(
-                {"error": "Invalid webhook signature"}, status_code=401
-            )
+            return JSONResponse({"error": "Invalid webhook signature"}, status_code=401)
 
         event_type = request.headers.get("X-GitHub-Event", "")
         body: dict[str, Any] = await request.json()
@@ -404,13 +388,9 @@ class GitHubWebhookHandler:
             return JSONResponse({"status": "processed", "result": result})
         except (ValueError, TypeError, KeyError, RuntimeError):
             logger.error("Webhook processing failed", exc_info=True)
-            return JSONResponse(
-                {"error": "Processing failed"}, status_code=500
-            )
+            return JSONResponse({"error": "Processing failed"}, status_code=500)
 
-    async def _route_event(
-        self, event_type: str, body: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _route_event(self, event_type: str, body: dict[str, Any]) -> dict[str, Any]:
         """Route a webhook event to the appropriate handler."""
         if event_type == "pull_request":
             return await self._handle_pull_request(body)
@@ -421,9 +401,7 @@ class GitHubWebhookHandler:
             "reason": "unsupported event type",
         }
 
-    async def _handle_pull_request(
-        self, body: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _handle_pull_request(self, body: dict[str, Any]) -> dict[str, Any]:
         """Handle pull_request events."""
         action = body.get("action", "")
         pr_data = body.get("pull_request", {})
@@ -500,9 +478,7 @@ class GitHubMACIEnforcer:
 
         # Collect users who submitted an APPROVED review
         approved_by = [
-            r.get("user", {}).get("login", "")
-            for r in reviews
-            if r.get("state") == "APPROVED"
+            r.get("user", {}).get("login", "") for r in reviews if r.get("state") == "APPROVED"
         ]
 
         # Assign MACI roles
@@ -571,14 +547,11 @@ class GitHubMACIEnforcer:
         for v in violations:
             lines.append(f"- **{v['type']}**: {v['message']}")
         lines.append(
-            "\n> Constitutional rule ACGS-004: "
-            "Proposers cannot validate their own proposals."
+            "\n> Constitutional rule ACGS-004: Proposers cannot validate their own proposals."
         )
 
         body = "\n".join(lines)
-        return await bot._post(
-            f"issues/{pr_number}/comments", {"body": body}
-        )
+        return await bot._post(f"issues/{pr_number}/comments", {"body": body})
 
 
 # ---------------------------------------------------------------------------
@@ -646,9 +619,7 @@ def _compute_risk_score(
     for v in violations:
         total += severity_weights.get(v.get("severity", "medium"), 0.3)
     for w in warnings:
-        total += (
-            severity_weights.get(w.get("severity", "low"), 0.1) * 0.5
-        )
+        total += severity_weights.get(w.get("severity", "low"), 0.1) * 0.5
 
     # Normalize to 0.0-1.0 range (cap at 1.0)
     return min(total / max(len(violations) + len(warnings), 1), 1.0)
@@ -688,8 +659,7 @@ def format_governance_report(report: GovernanceReport) -> str:
             if v.get("file") and v.get("line"):
                 file_ref = f" (`{v['file']}:{v['line']}`)"
             lines.append(
-                f"- **[{sev}]** `{v['rule_id']}`: "
-                f"{v.get('rule_text', '')}{file_ref} ({source})"
+                f"- **[{sev}]** `{v['rule_id']}`: {v.get('rule_text', '')}{file_ref} ({source})"
             )
         lines.append("")
 
@@ -698,10 +668,7 @@ def format_governance_report(report: GovernanceReport) -> str:
         lines.append("")
         for w in report.warnings:
             sev = w.get("severity", "unknown").upper()
-            lines.append(
-                f"- **[{sev}]** `{w['rule_id']}`: "
-                f"{w.get('rule_text', '')}"
-            )
+            lines.append(f"- **[{sev}]** `{w['rule_id']}`: {w.get('rule_text', '')}")
         lines.append("")
 
     lines.append("---")
@@ -754,7 +721,7 @@ def create_github_actions_config(
         "\n"
         "      - name: Run governance validation\n"
         "        env:\n"
-        '          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n'
+        "          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"
         '          CONSTITUTIONAL_HASH: "' + const_hash + '"\n'
         "        run: |\n"
         '          python -c "\n'

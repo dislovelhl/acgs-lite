@@ -84,7 +84,9 @@ class RecordingSagaRepository(SagaStateRepository):
             saga.completed_at = NOW
         return True
 
-    async def update_step_state(self, saga_id, step_id, new_state, output_data=None, error_message=None):
+    async def update_step_state(
+        self, saga_id, step_id, new_state, output_data=None, error_message=None
+    ):
         return True
 
     async def update_current_step(self, saga_id, step_index):
@@ -208,7 +210,10 @@ async def test_dataset_build_step_advances_run_and_checkpoints(tmp_path: Path) -
     assert updated_run.state == SagaState.RUNNING
     assert updated_run.stage == FlywheelRunStage.CANDIDATE_GENERATION
     assert updated_run.dataset_snapshot_id == snapshot.snapshot_id
-    assert updated_run.context["dataset_snapshot"]["artifact_manifest_uri"] == snapshot.artifact_manifest_uri
+    assert (
+        updated_run.context["dataset_snapshot"]["artifact_manifest_uri"]
+        == snapshot.artifact_manifest_uri
+    )
     assert updated_run.metadata["latest_dataset_snapshot_id"] == snapshot.snapshot_id
     assert checkpoint is not None
     assert checkpoint.checkpoint_name == "dataset_build_completed"

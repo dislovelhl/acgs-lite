@@ -52,9 +52,7 @@ class GovernanceRepository(
         """Persist a checkpoint snapshot."""
 
     @abstractmethod
-    async def get_latest_checkpoint(
-        self, instance_id: RepositoryIdT
-    ) -> CheckpointT | None:
+    async def get_latest_checkpoint(self, instance_id: RepositoryIdT) -> CheckpointT | None:
         """Get the latest checkpoint for a governance record."""
 
 
@@ -340,10 +338,14 @@ class InMemoryWorkflowRepository(WorkflowRepository):
         offset: int = 0,
     ) -> list[DatasetSnapshot]:
         snapshots = [
-            snapshot for snapshot in self._dataset_snapshots.values() if snapshot.tenant_id == tenant_id
+            snapshot
+            for snapshot in self._dataset_snapshots.values()
+            if snapshot.tenant_id == tenant_id
         ]
         if workload_key is not None:
-            snapshots = [snapshot for snapshot in snapshots if snapshot.workload_key == workload_key]
+            snapshots = [
+                snapshot for snapshot in snapshots if snapshot.workload_key == workload_key
+            ]
         snapshots.sort(key=lambda item: item.created_at, reverse=True)
         return snapshots[offset : offset + limit]
 
@@ -366,7 +368,9 @@ class InMemoryWorkflowRepository(WorkflowRepository):
             if candidate.tenant_id == tenant_id
         ]
         if workload_key is not None:
-            candidates = [candidate for candidate in candidates if candidate.workload_key == workload_key]
+            candidates = [
+                candidate for candidate in candidates if candidate.workload_key == workload_key
+            ]
         candidates.sort(key=lambda item: item.created_at, reverse=True)
         return candidates[offset : offset + limit]
 
@@ -402,7 +406,9 @@ class InMemoryWorkflowRepository(WorkflowRepository):
         limit: int = 100,
         offset: int = 0,
     ) -> list[EvidenceBundle]:
-        bundles = [bundle for bundle in self._evidence_bundles.values() if bundle.tenant_id == tenant_id]
+        bundles = [
+            bundle for bundle in self._evidence_bundles.values() if bundle.tenant_id == tenant_id
+        ]
         if workload_key is not None:
             bundles = [bundle for bundle in bundles if bundle.workload_key == workload_key]
         bundles.sort(key=lambda item: item.created_at, reverse=True)

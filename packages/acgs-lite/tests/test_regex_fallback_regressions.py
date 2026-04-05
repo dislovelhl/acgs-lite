@@ -19,7 +19,7 @@ def _disable_rust_and_ac(engine: GovernanceEngine) -> None:
     """
     _h = engine._hot
     engine._hot = (
-        None,       # [0] ac_iter — disabled
+        None,  # [0] ac_iter — disabled
         _h[1],
         _h[2],
         _h[3],
@@ -27,9 +27,9 @@ def _disable_rust_and_ac(engine: GovernanceEngine) -> None:
         _h[5],
         _h[6],
         _h[7],
-        False,      # [8] has_ac — disabled
+        False,  # [8] has_ac — disabled
         _h[9],
-        None,       # [10] rust_validator — disabled
+        None,  # [10] rust_validator — disabled
     )
     engine._ac_iter = None
     engine._rust_validator = None

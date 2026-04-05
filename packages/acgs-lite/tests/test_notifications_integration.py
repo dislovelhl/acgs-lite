@@ -161,9 +161,7 @@ class TestSeverityFilter:
             ("CRITICAL", "CRITICAL", True),
         ],
     )
-    def test_severity_passes_filter(
-        self, event_sev: str, min_sev: str, expected: bool
-    ) -> None:
+    def test_severity_passes_filter(self, event_sev: str, min_sev: str, expected: bool) -> None:
         assert _severity_passes_filter(event_sev, min_sev) is expected
 
     def test_case_insensitive(self) -> None:
@@ -291,9 +289,7 @@ class TestSlackNotifier:
         assert notifier.name == "slack"
 
     def test_severity_filter_property(self) -> None:
-        notifier = SlackNotifier(
-            webhook_url="https://test", severity_filter="critical"
-        )
+        notifier = SlackNotifier(webhook_url="https://test", severity_filter="critical")
         assert notifier.severity_filter == "CRITICAL"
 
     @pytest.mark.asyncio
@@ -438,9 +434,7 @@ class TestWebhookNotifier:
 
     @pytest.mark.asyncio
     async def test_severity_filter(self) -> None:
-        notifier = WebhookNotifier(
-            url="https://test", severity_filter="CRITICAL"
-        )
+        notifier = WebhookNotifier(url="https://test", severity_filter="CRITICAL")
         event = _make_event(severity="HIGH")
         with patch("acgs_lite.integrations.notifications.httpx"):
             result = await notifier.send(event)
@@ -538,9 +532,7 @@ class TestNotificationRouter:
 
 
 class TestGovernanceNotifier:
-    def _make_mock_engine(
-        self, *, valid: bool = True, strict: bool = False
-    ) -> MagicMock:
+    def _make_mock_engine(self, *, valid: bool = True, strict: bool = False) -> MagicMock:
         engine = MagicMock()
         engine._const_hash = "608508a9bd224290"
 
@@ -630,9 +622,7 @@ class TestGovernanceNotifier:
         engine = self._make_mock_engine(valid=False)
         ch = _FakeChannel("test")
         router = NotificationRouter([ch])
-        notifier = GovernanceNotifier(
-            engine=engine, router=router, notify_on_deny=False
-        )
+        notifier = GovernanceNotifier(engine=engine, router=router, notify_on_deny=False)
 
         notifier.validate("deploy production", agent_id="bot-4")
 
@@ -662,9 +652,7 @@ class TestGovernanceNotifier:
 
         ch = _FakeChannel("test")
         router = NotificationRouter([ch])
-        notifier = GovernanceNotifier(
-            engine=engine, router=router, notify_on_warning=True
-        )
+        notifier = GovernanceNotifier(engine=engine, router=router, notify_on_warning=True)
 
         notifier.validate("deploy staging", agent_id="bot-5")
 
@@ -763,21 +751,24 @@ class TestStatsTracking:
 
 class TestGracefulDegradation:
     def test_slack_raises_import_error_without_httpx(self) -> None:
-        with patch(
-            "acgs_lite.integrations.notifications.HTTPX_AVAILABLE", False
-        ), pytest.raises(ImportError, match="httpx"):
+        with (
+            patch("acgs_lite.integrations.notifications.HTTPX_AVAILABLE", False),
+            pytest.raises(ImportError, match="httpx"),
+        ):
             SlackNotifier(webhook_url="https://test")
 
     def test_teams_raises_import_error_without_httpx(self) -> None:
-        with patch(
-            "acgs_lite.integrations.notifications.HTTPX_AVAILABLE", False
-        ), pytest.raises(ImportError, match="httpx"):
+        with (
+            patch("acgs_lite.integrations.notifications.HTTPX_AVAILABLE", False),
+            pytest.raises(ImportError, match="httpx"),
+        ):
             TeamsNotifier(webhook_url="https://test")
 
     def test_webhook_raises_import_error_without_httpx(self) -> None:
-        with patch(
-            "acgs_lite.integrations.notifications.HTTPX_AVAILABLE", False
-        ), pytest.raises(ImportError, match="httpx"):
+        with (
+            patch("acgs_lite.integrations.notifications.HTTPX_AVAILABLE", False),
+            pytest.raises(ImportError, match="httpx"),
+        ):
             WebhookNotifier(url="https://test")
 
     def test_governance_event_works_without_httpx(self) -> None:

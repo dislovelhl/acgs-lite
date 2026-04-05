@@ -97,7 +97,10 @@ class TestGovernanceEvent:
     def test_to_dict_rule_ids_is_list(self) -> None:
         """rule_ids should be serialized as a list, not a tuple."""
         event = GovernanceEvent(
-            event_type="t", action="a", decision="d", timestamp_ns=0,
+            event_type="t",
+            action="a",
+            decision="d",
+            timestamp_ns=0,
             rule_ids=("A", "B"),
         )
         assert isinstance(event.to_dict()["rule_ids"], list)
@@ -148,7 +151,8 @@ class TestCreateGovernanceEvent:
 
     def test_workflow_action_and_risk_score(self) -> None:
         event = create_governance_event(
-            "a", "deny",
+            "a",
+            "deny",
             workflow_action="require_human_review",
             context_risk_score=0.75,
         )
@@ -280,7 +284,9 @@ class TestGovernanceMetrics:
         assert restored.snapshot()["total_decisions"] == 0
 
     def test_from_snapshot_no_latency(self) -> None:
-        restored = GovernanceMetrics.from_snapshot({"total_decisions": 5, "by_decision": {"allow": 5}})
+        restored = GovernanceMetrics.from_snapshot(
+            {"total_decisions": 5, "by_decision": {"allow": 5}}
+        )
         assert restored.snapshot()["total_decisions"] == 5
 
 
@@ -325,7 +331,9 @@ class TestGovernanceSession:
         assert any("High deny rate" in a for a in report["anomalies"])
 
     def test_consecutive_denials_anomaly(self) -> None:
-        s = GovernanceSession("a", deny_threshold=1.0)  # high threshold so only consecutive triggers
+        s = GovernanceSession(
+            "a", deny_threshold=1.0
+        )  # high threshold so only consecutive triggers
         # Need >= 10 total decisions and last 5 all denials
         for _ in range(10):
             s.record("allow")

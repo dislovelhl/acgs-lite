@@ -183,7 +183,9 @@ def test_all_skip_reasons_present_in_mixed_constitution() -> None:
         [
             Rule(id="OK", text="Good rule.", severity=Severity.HIGH, patterns=[r"^\d+$"]),
             Rule(id="OFF", text="Disabled.", severity=Severity.LOW, keywords=["x"], enabled=False),
-            Rule(id="OLD", text="Deprecated.", severity=Severity.LOW, keywords=["y"], deprecated=True),
+            Rule(
+                id="OLD", text="Deprecated.", severity=Severity.LOW, keywords=["y"], deprecated=True
+            ),
             Rule(id="SEMANTIC", text="No patterns or keywords.", severity=Severity.CRITICAL),
         ]
     )

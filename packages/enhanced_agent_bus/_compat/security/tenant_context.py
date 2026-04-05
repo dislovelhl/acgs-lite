@@ -1,4 +1,5 @@
 """Shim for src.core.shared.security.tenant_context."""
+
 from __future__ import annotations
 
 from typing import Any

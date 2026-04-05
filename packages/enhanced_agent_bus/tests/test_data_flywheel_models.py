@@ -39,4 +39,3 @@ def test_evaluation_run_uses_explicit_mode_enum() -> None:
         status="running",
     )
     assert run.evaluation_mode is EvaluationMode.SHADOW
-

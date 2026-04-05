@@ -206,7 +206,8 @@ class TestFullStackIntegration:
 
         # ── 5. Coordinator records miner's submission ──
         coordinator.submit_result(
-            case_id, "miner-e2e",
+            case_id,
+            "miner-e2e",
             result={
                 "judgment": judgment.judgment,
                 "reasoning": judgment.reasoning,
@@ -218,7 +219,9 @@ class TestFullStackIntegration:
 
         # ── 6. Coordinator selects validator quorum ──
         selection = coordinator.select_and_begin_validation(
-            case_id, seed="deadbeef" * 8, _now=_ts(3),
+            case_id,
+            seed="deadbeef" * 8,
+            _now=_ts(3),
         )
         assert selection.producer_excluded
         assert "miner-e2e" not in selection.selected
@@ -240,7 +243,9 @@ class TestFullStackIntegration:
         # Construct votes from the selected validators (all approve since validation accepted)
         votes = {vid: "approve" for vid in selection.selected}
         coordinator.finalize_case(
-            case_id, accepted=True, validator_votes=votes,
+            case_id,
+            accepted=True,
+            validator_votes=votes,
             proof_hash=validation.proof_root_hash,
             _now=_ts(4),
         )
@@ -300,7 +305,9 @@ class TestFullStackIntegration:
         # Process 3 cases
         for i in range(3):
             cid = coordinator.create_case(
-                f"case-{i}", domain="governance", risk_tier="medium",
+                f"case-{i}",
+                domain="governance",
+                risk_tier="medium",
                 _now=_ts(i * 10),
             )
             escalated = owner.package_case(f"case-{i} desc", "governance")
@@ -308,20 +315,25 @@ class TestFullStackIntegration:
             coordinator.assign_miner(cid, "miner-multi", _now=_ts(i * 10 + 1))
             judgment = await miner.process(escalated.synapse)
             coordinator.submit_result(
-                cid, "miner-multi",
+                cid,
+                "miner-multi",
                 result={"judgment": judgment.judgment},
                 _now=_ts(i * 10 + 2),
             )
 
             sel = coordinator.select_and_begin_validation(
-                cid, seed=f"{i:064x}", _now=_ts(i * 10 + 3),
+                cid,
+                seed=f"{i:064x}",
+                _now=_ts(i * 10 + 3),
             )
 
             validation = validator.validate(judgment)
             votes = {vid: "approve" for vid in sel.selected}
 
             coordinator.finalize_case(
-                cid, accepted=True, validator_votes=votes,
+                cid,
+                accepted=True,
+                validator_votes=votes,
                 proof_hash=validation.proof_root_hash or "proof",
                 _now=_ts(i * 10 + 4),
             )
@@ -337,7 +349,8 @@ class TestFullStackIntegration:
             return "approve"
 
         audit = coordinator.run_audit_cycle(
-            check_fn=_selective_oracle, _now=_ts(40),
+            check_fn=_selective_oracle,
+            _now=_ts(40),
         )
         assert len(audit.spot_check_results) == 3
         # 2 agreements, 1 disagreement
@@ -373,7 +386,9 @@ class TestFullStackIntegration:
 
     @pytest.mark.asyncio
     async def test_emission_weights_from_validated_judgments(
-        self, constitution_path, coordinator,
+        self,
+        constitution_path,
+        coordinator,
     ):
         """Validator computes TAO emission weights from accumulated judgments."""
         miner = ConstitutionalMiner(
@@ -402,7 +417,10 @@ class TestFullStackIntegration:
         coordinator.assign_miner(cid, "miner-w", _now=_ts(1))
         judgment = await miner.process(escalated.synapse)
         coordinator.submit_result(
-            cid, "miner-w", {"judgment": judgment.judgment}, _now=_ts(2),
+            cid,
+            "miner-w",
+            {"judgment": judgment.judgment},
+            _now=_ts(2),
         )
         sel = coordinator.select_and_begin_validation(cid, _now=_ts(3))
 
@@ -411,7 +429,10 @@ class TestFullStackIntegration:
 
         votes = {vid: "approve" for vid in sel.selected}
         coordinator.finalize_case(
-            cid, accepted=True, validator_votes=votes, _now=_ts(4),
+            cid,
+            accepted=True,
+            validator_votes=votes,
+            _now=_ts(4),
         )
 
         # Compute emission weights

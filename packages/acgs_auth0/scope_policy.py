@@ -187,8 +187,7 @@ class MACIScopePolicy:
         """
         if not YAML_AVAILABLE:
             raise ImportError(
-                "PyYAML is required to load policies from YAML. "
-                "Install it with: pip install pyyaml"
+                "PyYAML is required to load policies from YAML. Install it with: pip install pyyaml"
             )
         with open(path) as fh:
             data: dict[str, Any] = yaml.safe_load(fh)
@@ -258,9 +257,7 @@ class MACIScopePolicy:
 
         rule = self.get_rule(connection=connection, role=role)
         if rule is None:
-            error = MACIRoleNotPermittedError(
-                agent_id=agent_id, role=role, connection=connection
-            )
+            error = MACIRoleNotPermittedError(agent_id=agent_id, role=role, connection=connection)
             return PolicyValidationResult(
                 permitted=False,
                 agent_id=agent_id,

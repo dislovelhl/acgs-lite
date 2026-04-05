@@ -20,9 +20,7 @@ from acgs_lite.constitution.claim_lifecycle import (
 
 def _ts(minutes_offset: float = 0) -> datetime:
     """Helper: return a UTC datetime with optional minute offset."""
-    return datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc) + timedelta(
-        minutes=minutes_offset
-    )
+    return datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc) + timedelta(minutes=minutes_offset)
 
 
 # ── Happy path ───────────────────────────────────────────────────────────────

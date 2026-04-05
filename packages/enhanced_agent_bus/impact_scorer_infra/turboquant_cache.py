@@ -186,12 +186,41 @@ def _lloyd_max_boundaries(bits: int) -> tuple[list[float], list[float]]:
     elif bits == 4:
         # 16-level Lloyd-Max for N(0,1)
         boundaries = [
-            -float("inf"), -2.401, -1.844, -1.437, -1.099, -0.800, -0.524, -0.262,
-            0.0, 0.262, 0.524, 0.800, 1.099, 1.437, 1.844, 2.401, float("inf"),
+            -float("inf"),
+            -2.401,
+            -1.844,
+            -1.437,
+            -1.099,
+            -0.800,
+            -0.524,
+            -0.262,
+            0.0,
+            0.262,
+            0.524,
+            0.800,
+            1.099,
+            1.437,
+            1.844,
+            2.401,
+            float("inf"),
         ]
         recon = [
-            -2.733, -2.069, -1.618, -1.256, -0.942, -0.657, -0.390, -0.130,
-            0.130, 0.390, 0.657, 0.942, 1.256, 1.618, 2.069, 2.733,
+            -2.733,
+            -2.069,
+            -1.618,
+            -1.256,
+            -0.942,
+            -0.657,
+            -0.390,
+            -0.130,
+            0.130,
+            0.390,
+            0.657,
+            0.942,
+            1.256,
+            1.618,
+            2.069,
+            2.733,
         ]
     elif bits == 2:
         boundaries = [-float("inf"), -0.982, 0.0, 0.982, float("inf")]
@@ -199,12 +228,16 @@ def _lloyd_max_boundaries(bits: int) -> tuple[list[float], list[float]]:
     else:
         # Uniform quantization fallback for other bit widths
         step = 6.0 / n_levels  # Cover [-3, 3] for Gaussian
-        boundaries = [-float("inf")] + [-3.0 + step * i for i in range(1, n_levels)] + [float("inf")]
+        boundaries = (
+            [-float("inf")] + [-3.0 + step * i for i in range(1, n_levels)] + [float("inf")]
+        )
         recon = [-3.0 + step * (i + 0.5) for i in range(n_levels)]
     return boundaries, recon
 
 
-def _quantize_scalar(value: float, boundaries: list[float], recon: list[float]) -> tuple[int, float]:
+def _quantize_scalar(
+    value: float, boundaries: list[float], recon: list[float]
+) -> tuple[int, float]:
     """Quantize a single scalar using Lloyd-Max boundaries."""
     for i in range(len(recon)):
         if value < boundaries[i + 1]:
@@ -234,10 +267,7 @@ def _qjl_project(residual: list[float], projection_dim: int, seed: int) -> tuple
     signs: list[int] = []
     for _ in range(projection_dim):
         # Random Rademacher projection: each element is +1 or -1
-        proj = sum(
-            residual[j] * (1.0 if rng.random() > 0.5 else -1.0)
-            for j in range(dim)
-        )
+        proj = sum(residual[j] * (1.0 if rng.random() > 0.5 else -1.0) for j in range(dim))
         signs.append(1 if proj >= 0 else 0)
     return signs, l2_norm
 
@@ -301,6 +331,7 @@ class TurboQuantCompressor:
         if self._config.use_triton:
             try:
                 import turboquant as tq  # noqa: F401
+
                 self._triton_available = True
                 logger.info("TurboQuant Triton kernels available")
             except ImportError:
@@ -317,9 +348,7 @@ class TurboQuantCompressor:
     def _get_rotation(self, dim: int) -> list[list[float]]:
         """Get or create rotation matrix for a given dimension."""
         if dim not in self._rotation_cache:
-            self._rotation_cache[dim] = _generate_rotation_matrix(
-                dim, self._config.rotation_seed
-            )
+            self._rotation_cache[dim] = _generate_rotation_matrix(dim, self._config.rotation_seed)
         return self._rotation_cache[dim]
 
     def compress(self, vector: list[float]) -> CompressedVector:
@@ -332,9 +361,9 @@ class TurboQuantCompressor:
         dim = len(vector)
 
         # Content hash for cache keying
-        content_hash = hashlib.sha256(
-            ":".join(f"{v:.6f}" for v in vector).encode()
-        ).hexdigest()[:16]
+        content_hash = hashlib.sha256(":".join(f"{v:.6f}" for v in vector).encode()).hexdigest()[
+            :16
+        ]
 
         # Step 1: Normalize
         mean = sum(vector) / dim
@@ -448,9 +477,7 @@ class TurboQuantCompressor:
             "cosine_similarity": cosine,
             "mse": mse,
             "max_absolute_error": max_abs,
-            "snr_db": 10 * math.log10(
-                sum(x * x for x in original) / max(mse * dim, 1e-12)
-            ),
+            "snr_db": 10 * math.log10(sum(x * x for x in original) / max(mse * dim, 1e-12)),
         }
 
 
@@ -559,7 +586,7 @@ class GovernanceKVCache:
         results = []
         for cache_key, compressed in self._cache.items():
             if cache_key.startswith(prefix):
-                original_key = cache_key[len(prefix):]
+                original_key = cache_key[len(prefix) :]
                 results.append((original_key, self._compressor.decompress(compressed)))
         return results
 

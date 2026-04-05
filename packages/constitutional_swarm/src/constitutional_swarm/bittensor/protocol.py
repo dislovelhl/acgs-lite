@@ -29,10 +29,10 @@ class EscalationType(Enum):
 class MinerTier(Enum):
     """Qualification tiers for complexity-based task routing."""
 
-    APPRENTICE = "apprentice"    # < 10 validated judgments
-    JOURNEYMAN = "journeyman"   # >= 10, reputation >= 1.2
-    MASTER = "master"           # >= 50, reputation >= 1.5, domain specialist
-    ELDER = "elder"             # >= 200, precedent-setting
+    APPRENTICE = "apprentice"  # < 10 validated judgments
+    JOURNEYMAN = "journeyman"  # >= 10, reputation >= 1.2
+    MASTER = "master"  # >= 50, reputation >= 1.5, domain specialist
+    ELDER = "elder"  # >= 200, precedent-setting
 
 
 TIER_TAO_MULTIPLIER: dict[MinerTier, float] = {

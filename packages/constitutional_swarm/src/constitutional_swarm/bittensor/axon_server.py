@@ -53,7 +53,8 @@ class MinerAxonServer:
         return self._miner
 
     async def forward(
-        self, synapse: GovernanceDeliberation,
+        self,
+        synapse: GovernanceDeliberation,
     ) -> GovernanceDeliberation:
         """Process a governance deliberation request.
 

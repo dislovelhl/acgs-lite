@@ -225,9 +225,7 @@ class TestOIDCLogin:
         assert resp.status_code == 302
         assert "idp.example.com" in resp.headers["location"]
 
-    def test_login_stores_session_state(
-        self, client: TestClient, mock_handler: MagicMock
-    ) -> None:
+    def test_login_stores_session_state(self, client: TestClient, mock_handler: MagicMock) -> None:
         resp = client.get(
             "/oidc/login?provider=google",
             follow_redirects=False,
@@ -254,7 +252,8 @@ class TestOIDCLogin:
         assert "disabled" in resp.json()["detail"].lower()
 
     def test_login_unknown_provider_returns_404(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         mock_handler.initiate_login = AsyncMock(
             side_effect=OIDCConfigurationError("Provider not found")
@@ -268,11 +267,10 @@ class TestOIDCLogin:
         assert "not found" in resp.json()["detail"].lower()
 
     def test_login_provider_error_returns_500(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.initiate_login = AsyncMock(
-            side_effect=OIDCProviderError("IdP unreachable")
-        )
+        mock_handler.initiate_login = AsyncMock(side_effect=OIDCProviderError("IdP unreachable"))
         app = _build_app(mock_handler)
         resp = TestClient(app, base_url="https://testserver").get(
             "/oidc/login?provider=google",
@@ -282,11 +280,10 @@ class TestOIDCLogin:
         assert "failed" in resp.json()["detail"].lower()
 
     def test_login_auth_error_returns_500(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.initiate_login = AsyncMock(
-            side_effect=OIDCAuthenticationError("Auth failed")
-        )
+        mock_handler.initiate_login = AsyncMock(side_effect=OIDCAuthenticationError("Auth failed"))
         app = _build_app(mock_handler)
         resp = TestClient(app, base_url="https://testserver").get(
             "/oidc/login?provider=google",
@@ -295,11 +292,10 @@ class TestOIDCLogin:
         assert resp.status_code == 500
 
     def test_login_token_error_returns_500(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.initiate_login = AsyncMock(
-            side_effect=OIDCTokenError("Token error")
-        )
+        mock_handler.initiate_login = AsyncMock(side_effect=OIDCTokenError("Token error"))
         app = _build_app(mock_handler)
         resp = TestClient(app, base_url="https://testserver").get(
             "/oidc/login?provider=google",
@@ -308,11 +304,10 @@ class TestOIDCLogin:
         assert resp.status_code == 500
 
     def test_login_value_error_returns_500(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.initiate_login = AsyncMock(
-            side_effect=ValueError("Bad value")
-        )
+        mock_handler.initiate_login = AsyncMock(side_effect=ValueError("Bad value"))
         app = _build_app(mock_handler)
         resp = TestClient(app, base_url="https://testserver").get(
             "/oidc/login?provider=google",
@@ -321,11 +316,10 @@ class TestOIDCLogin:
         assert resp.status_code == 500
 
     def test_login_type_error_returns_500(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.initiate_login = AsyncMock(
-            side_effect=TypeError("Bad type")
-        )
+        mock_handler.initiate_login = AsyncMock(side_effect=TypeError("Bad type"))
         app = _build_app(mock_handler)
         resp = TestClient(app, base_url="https://testserver").get(
             "/oidc/login?provider=google",
@@ -334,7 +328,8 @@ class TestOIDCLogin:
         assert resp.status_code == 500
 
     def test_login_with_invalid_redirect_uri_returns_400(
-        self, client: TestClient,
+        self,
+        client: TestClient,
     ) -> None:
         resp = client.get(
             "/oidc/login?provider=google&redirect_uri=https://evil.com/steal",
@@ -344,7 +339,8 @@ class TestOIDCLogin:
         assert "redirect" in resp.json()["detail"].lower()
 
     def test_login_with_valid_redirect_uri(
-        self, client: TestClient,
+        self,
+        client: TestClient,
     ) -> None:
         resp = client.get(
             "/oidc/login?provider=google&redirect_uri=/sso/oidc/callback",
@@ -400,9 +396,7 @@ class TestOIDCCallback:
         mock_handler: MagicMock,
     ) -> None:
         mock_provisioner = MagicMock()
-        mock_provisioner.get_or_create_user = AsyncMock(
-            return_value=_MOCK_PROVISIONING_RESULT
-        )
+        mock_provisioner.get_or_create_user = AsyncMock(return_value=_MOCK_PROVISIONING_RESULT)
         mock_get_provisioner.return_value = mock_provisioner
 
         resp = self._login_then_callback(mock_handler)
@@ -411,9 +405,7 @@ class TestOIDCCallback:
         assert data["sub"] == "oidc-sub-001"
         assert data["email"] == "alice@example.com"
 
-    def test_callback_with_idp_error_returns_401(
-        self, mock_handler: MagicMock
-    ) -> None:
+    def test_callback_with_idp_error_returns_401(self, mock_handler: MagicMock) -> None:
         resp = self._login_then_callback(
             mock_handler,
             error="access_denied",
@@ -422,9 +414,7 @@ class TestOIDCCallback:
         assert resp.status_code == 401
         assert "denied" in resp.json()["detail"].lower()
 
-    def test_callback_with_idp_error_code_only(
-        self, mock_handler: MagicMock
-    ) -> None:
+    def test_callback_with_idp_error_code_only(self, mock_handler: MagicMock) -> None:
         resp = self._login_then_callback(
             mock_handler,
             error="server_error",
@@ -433,7 +423,8 @@ class TestOIDCCallback:
         assert resp.json()["detail"] == "server_error"
 
     def test_callback_invalid_state_returns_401(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
@@ -443,7 +434,8 @@ class TestOIDCCallback:
         assert "state" in resp.json()["detail"].lower()
 
     def test_callback_missing_code_returns_422(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
@@ -451,7 +443,8 @@ class TestOIDCCallback:
         assert resp.status_code == 422
 
     def test_callback_missing_state_returns_422(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
@@ -464,9 +457,7 @@ class TestOIDCCallback:
         mock_get_provisioner: MagicMock,
         mock_handler: MagicMock,
     ) -> None:
-        mock_handler.handle_callback = AsyncMock(
-            side_effect=OIDCConfigurationError("Bad config")
-        )
+        mock_handler.handle_callback = AsyncMock(side_effect=OIDCConfigurationError("Bad config"))
         resp = self._login_then_callback(mock_handler)
         assert resp.status_code == 500
         assert "failed" in resp.json()["detail"].lower()
@@ -477,9 +468,7 @@ class TestOIDCCallback:
         mock_get_provisioner: MagicMock,
         mock_handler: MagicMock,
     ) -> None:
-        mock_handler.handle_callback = AsyncMock(
-            side_effect=OIDCAuthenticationError("Auth failed")
-        )
+        mock_handler.handle_callback = AsyncMock(side_effect=OIDCAuthenticationError("Auth failed"))
         resp = self._login_then_callback(mock_handler)
         assert resp.status_code == 500
 
@@ -501,9 +490,7 @@ class TestOIDCCallback:
         mock_get_provisioner: MagicMock,
         mock_handler: MagicMock,
     ) -> None:
-        mock_handler.handle_callback = AsyncMock(
-            side_effect=OIDCProviderError("Provider down")
-        )
+        mock_handler.handle_callback = AsyncMock(side_effect=OIDCProviderError("Provider down"))
         resp = self._login_then_callback(mock_handler)
         assert resp.status_code == 500
 
@@ -513,9 +500,7 @@ class TestOIDCCallback:
         mock_get_provisioner: MagicMock,
         mock_handler: MagicMock,
     ) -> None:
-        mock_handler.handle_callback = AsyncMock(
-            side_effect=ValueError("Bad value")
-        )
+        mock_handler.handle_callback = AsyncMock(side_effect=ValueError("Bad value"))
         resp = self._login_then_callback(mock_handler)
         assert resp.status_code == 500
 
@@ -525,9 +510,7 @@ class TestOIDCCallback:
         mock_get_provisioner: MagicMock,
         mock_handler: MagicMock,
     ) -> None:
-        mock_handler.handle_callback = AsyncMock(
-            side_effect=TypeError("Bad type")
-        )
+        mock_handler.handle_callback = AsyncMock(side_effect=TypeError("Bad type"))
         resp = self._login_then_callback(mock_handler)
         assert resp.status_code == 500
 
@@ -537,9 +520,7 @@ class TestOIDCCallback:
         mock_get_provisioner: MagicMock,
         mock_handler: MagicMock,
     ) -> None:
-        mock_handler.handle_callback = AsyncMock(
-            side_effect=LookupError("Not found")
-        )
+        mock_handler.handle_callback = AsyncMock(side_effect=LookupError("Not found"))
         resp = self._login_then_callback(mock_handler)
         assert resp.status_code == 500
 
@@ -551,9 +532,7 @@ class TestOIDCCallback:
     ) -> None:
         """Verify that a successful callback stores user info in session."""
         mock_provisioner = MagicMock()
-        mock_provisioner.get_or_create_user = AsyncMock(
-            return_value=_MOCK_PROVISIONING_RESULT
-        )
+        mock_provisioner.get_or_create_user = AsyncMock(return_value=_MOCK_PROVISIONING_RESULT)
         mock_get_provisioner.return_value = mock_provisioner
 
         resp = self._login_then_callback(mock_handler)
@@ -572,9 +551,7 @@ class TestOIDCCallback:
 class TestOIDCLogout:
     """Tests for POST /oidc/logout."""
 
-    def test_logout_no_session_user(
-        self, client: TestClient, mock_handler: MagicMock
-    ) -> None:
+    def test_logout_no_session_user(self, client: TestClient, mock_handler: MagicMock) -> None:
         """Logout without a logged-in user still succeeds."""
         resp = client.post("/oidc/logout")
         assert resp.status_code == 200
@@ -583,7 +560,8 @@ class TestOIDCLogout:
         assert "logged out" in data["message"].lower()
 
     def test_logout_with_session_user_returns_redirect_url(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         """Logout with a session user calls handler.logout and returns redirect URL."""
         app = _build_app(mock_handler)
@@ -602,9 +580,7 @@ class TestOIDCLogout:
         with patch(
             "src.core.services.api_gateway.routes.sso.oidc.StarletteRequest.session",
             new_callable=lambda: property(
-                lambda self: {
-                    "user": {"provider": "google", "email": "alice@example.com"}
-                }
+                lambda self: {"user": {"provider": "google", "email": "alice@example.com"}}
             ),
         ):
             pass
@@ -619,12 +595,11 @@ class TestOIDCLogout:
         assert data["success"] is True
 
     def test_logout_handler_config_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         """Logout should succeed even if IdP logout fails with config error."""
-        mock_handler.logout = AsyncMock(
-            side_effect=OIDCConfigurationError("Config error")
-        )
+        mock_handler.logout = AsyncMock(side_effect=OIDCConfigurationError("Config error"))
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
         resp = client.post("/oidc/logout")
@@ -632,11 +607,10 @@ class TestOIDCLogout:
         assert resp.json()["success"] is True
 
     def test_logout_handler_provider_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.logout = AsyncMock(
-            side_effect=OIDCProviderError("Provider error")
-        )
+        mock_handler.logout = AsyncMock(side_effect=OIDCProviderError("Provider error"))
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
         resp = client.post("/oidc/logout")
@@ -644,11 +618,10 @@ class TestOIDCLogout:
         assert resp.json()["success"] is True
 
     def test_logout_handler_auth_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
-        mock_handler.logout = AsyncMock(
-            side_effect=OIDCAuthenticationError("Auth error")
-        )
+        mock_handler.logout = AsyncMock(side_effect=OIDCAuthenticationError("Auth error"))
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
         resp = client.post("/oidc/logout")
@@ -656,7 +629,8 @@ class TestOIDCLogout:
         assert resp.json()["success"] is True
 
     def test_logout_handler_value_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         mock_handler.logout = AsyncMock(side_effect=ValueError("Bad value"))
         app = _build_app(mock_handler)
@@ -666,7 +640,8 @@ class TestOIDCLogout:
         assert resp.json()["success"] is True
 
     def test_logout_handler_type_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         mock_handler.logout = AsyncMock(side_effect=TypeError("Bad type"))
         app = _build_app(mock_handler)
@@ -676,7 +651,8 @@ class TestOIDCLogout:
         assert resp.json()["success"] is True
 
     def test_logout_handler_lookup_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         mock_handler.logout = AsyncMock(side_effect=LookupError("Not found"))
         app = _build_app(mock_handler)
@@ -686,7 +662,8 @@ class TestOIDCLogout:
         assert resp.json()["success"] is True
 
     def test_logout_handler_token_error_still_succeeds(
-        self, mock_handler: MagicMock,
+        self,
+        mock_handler: MagicMock,
     ) -> None:
         mock_handler.logout = AsyncMock(side_effect=OIDCTokenError("Token error"))
         app = _build_app(mock_handler)
@@ -712,24 +689,18 @@ class TestOIDCRoundTrip:
         mock_handler: MagicMock,
     ) -> None:
         mock_provisioner = MagicMock()
-        mock_provisioner.get_or_create_user = AsyncMock(
-            return_value=_MOCK_PROVISIONING_RESULT
-        )
+        mock_provisioner.get_or_create_user = AsyncMock(return_value=_MOCK_PROVISIONING_RESULT)
         mock_get_provisioner.return_value = mock_provisioner
 
         app = _build_app(mock_handler)
         client = TestClient(app, base_url="https://testserver")
 
         # 1. Login
-        login_resp = client.get(
-            "/oidc/login?provider=google", follow_redirects=False
-        )
+        login_resp = client.get("/oidc/login?provider=google", follow_redirects=False)
         assert login_resp.status_code == 302
 
         # 2. Callback
-        callback_resp = client.get(
-            "/oidc/callback?code=auth-code&state=state-token-abc"
-        )
+        callback_resp = client.get("/oidc/callback?code=auth-code&state=state-token-abc")
         assert callback_resp.status_code == 200
         assert callback_resp.json()["email"] == "alice@example.com"
 
@@ -756,12 +727,8 @@ class TestValidateRedirectUriWithConfiguredUrls:
 
         # Patch the source module so the inner `from ... import settings` picks it up
         with patch("src.core.shared.config.settings") as mock_s:
-            mock_s.sso = _make_sso_settings(
-                oidc_callback_urls=["https://app.example.com/callback"]
-            )
-            result = oidc_mod._validate_redirect_uri(
-                "https://app.example.com/callback"
-            )
+            mock_s.sso = _make_sso_settings(oidc_callback_urls=["https://app.example.com/callback"])
+            result = oidc_mod._validate_redirect_uri("https://app.example.com/callback")
 
         assert result is True
 
@@ -773,8 +740,6 @@ class TestValidateRedirectUriWithConfiguredUrls:
 
         with patch("src.core.shared.config.settings") as mock_s:
             mock_s.sso = _make_sso_settings(oidc_callback_urls=[])
-            result = oidc_mod._validate_redirect_uri(
-                "https://notallowed.example.com/callback"
-            )
+            result = oidc_mod._validate_redirect_uri("https://notallowed.example.com/callback")
 
         assert result is False

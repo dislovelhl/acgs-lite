@@ -33,7 +33,9 @@ from acgs_auth0.token_vault import ConstitutionalTokenVault, TokenVaultRequest
 
 # ── Constitution & vault ─────────────────────────────────────────────────────
 
-CONSTITUTION_PATH = Path(__file__).parent.parent / "governed_agents" / "constitutions" / "default.yaml"
+CONSTITUTION_PATH = (
+    Path(__file__).parent.parent / "governed_agents" / "constitutions" / "default.yaml"
+)
 policy = MACIScopePolicy.from_yaml(CONSTITUTION_PATH)
 audit_log = TokenAuditLog()
 vault = ConstitutionalTokenVault(policy=policy, audit_log=audit_log)
@@ -123,7 +125,9 @@ async def check_governance(req: CheckRequest) -> CheckResponse:
     )
 
     if not result.permitted:
-        outcome = "denied_role_not_permitted" if not result.permitted_scopes else "denied_scope_violation"
+        outcome = (
+            "denied_role_not_permitted" if not result.permitted_scopes else "denied_scope_violation"
+        )
         audit_log.record_denied(
             agent_id=req.agent_id,
             role=req.role,
@@ -202,33 +206,47 @@ async def simulate(req: SimulateRequest) -> CheckResponse:
     """Run a preset simulation scenario."""
     scenarios = {
         "grant": CheckRequest(
-            agent_id="planner", role="EXECUTIVE", connection="github",
+            agent_id="planner",
+            role="EXECUTIVE",
+            connection="github",
             scopes=["read:user", "repo:read"],
         ),
         "deny": CheckRequest(
-            agent_id="planner", role="EXECUTIVE", connection="github",
+            agent_id="planner",
+            role="EXECUTIVE",
+            connection="github",
             scopes=["repo:write"],
         ),
         "step-up": CheckRequest(
-            agent_id="executor", role="IMPLEMENTER", connection="github",
+            agent_id="executor",
+            role="IMPLEMENTER",
+            connection="github",
             scopes=["repo:read", "repo:write"],
         ),
         "role-blocked": CheckRequest(
-            agent_id="validator", role="JUDICIAL", connection="github",
+            agent_id="validator",
+            role="JUDICIAL",
+            connection="github",
             scopes=["read:user"],
         ),
         "calendar-read": CheckRequest(
-            agent_id="planner", role="EXECUTIVE", connection="google-oauth2",
+            agent_id="planner",
+            role="EXECUTIVE",
+            connection="google-oauth2",
             scopes=["openid", "https://www.googleapis.com/auth/calendar.freebusy"],
         ),
         "calendar-write": CheckRequest(
-            agent_id="executor", role="IMPLEMENTER", connection="google-oauth2",
+            agent_id="executor",
+            role="IMPLEMENTER",
+            connection="google-oauth2",
             scopes=["https://www.googleapis.com/auth/calendar"],
         ),
     }
     scenario_req = scenarios.get(req.scenario)
     if not scenario_req:
-        raise HTTPException(status_code=400, detail=f"Unknown scenario: {req.scenario}. Valid: {list(scenarios)}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown scenario: {req.scenario}. Valid: {list(scenarios)}"
+        )
     return await check_governance(scenario_req)
 
 
@@ -367,4 +385,5 @@ setInterval(loadAudit, 5000);
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=7860)

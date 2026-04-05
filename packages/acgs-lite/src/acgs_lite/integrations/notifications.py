@@ -138,9 +138,7 @@ class NotificationChannel(Protocol):
 
 def _severity_passes_filter(event_severity: str, minimum: str) -> bool:
     """Return ``True`` if *event_severity* meets or exceeds *minimum*."""
-    return _SEVERITY_ORDER.get(event_severity.upper(), 0) >= _SEVERITY_ORDER.get(
-        minimum.upper(), 0
-    )
+    return _SEVERITY_ORDER.get(event_severity.upper(), 0) >= _SEVERITY_ORDER.get(minimum.upper(), 0)
 
 
 def _truncate(text: str, max_len: int = 200) -> str:
@@ -224,8 +222,7 @@ class SlackNotifier(BaseNotifier):
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
-                "httpx is required for SlackNotifier. "
-                "Install with: pip install httpx"
+                "httpx is required for SlackNotifier. Install with: pip install httpx"
             )
         super().__init__(severity_filter=severity_filter, timeout=timeout)
         self._webhook_url = webhook_url
@@ -323,8 +320,7 @@ class TeamsNotifier(BaseNotifier):
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
-                "httpx is required for TeamsNotifier. "
-                "Install with: pip install httpx"
+                "httpx is required for TeamsNotifier. Install with: pip install httpx"
             )
         super().__init__(severity_filter=severity_filter, timeout=timeout)
         self._webhook_url = webhook_url
@@ -371,9 +367,7 @@ class TeamsNotifier(BaseNotifier):
                             },
                             {
                                 "type": "TextBlock",
-                                "text": (
-                                    f"Constitutional Hash: {event.constitutional_hash}"
-                                ),
+                                "text": (f"Constitutional Hash: {event.constitutional_hash}"),
                                 "size": "Small",
                                 "isSubtle": True,
                             },
@@ -413,8 +407,7 @@ class WebhookNotifier(BaseNotifier):
     ) -> None:
         if not HTTPX_AVAILABLE:
             raise ImportError(
-                "httpx is required for WebhookNotifier. "
-                "Install with: pip install httpx"
+                "httpx is required for WebhookNotifier. Install with: pip install httpx"
             )
         super().__init__(severity_filter=severity_filter, timeout=timeout)
         self._url = url
@@ -484,9 +477,7 @@ class NotificationRouter:
                     pass
 
     @staticmethod
-    async def _safe_send(
-        channel: NotificationChannel, event: GovernanceEvent
-    ) -> bool:
+    async def _safe_send(channel: NotificationChannel, event: GovernanceEvent) -> bool:
         """Wrapper that converts exceptions into return values for gather."""
         return await channel.send(event)
 
@@ -557,9 +548,7 @@ class GovernanceNotifier:
         mode), the notification is sent before re-raising.
         """
         try:
-            result = self._engine.validate(
-                action, agent_id=agent_id, context=context
-            )
+            result = self._engine.validate(action, agent_id=agent_id, context=context)
         except ConstitutionalViolationError as exc:
             # Strict-mode violation -- still notify, then re-raise.
             if self.notify_on_deny:
@@ -574,9 +563,7 @@ class GovernanceNotifier:
                             "message": str(exc),
                         }
                     ],
-                    constitutional_hash=getattr(
-                        self._engine, "_const_hash", "608508a9bd224290"
-                    ),
+                    constitutional_hash=getattr(self._engine, "_const_hash", "608508a9bd224290"),
                 )
                 self._dispatch(event)
             raise
@@ -587,9 +574,7 @@ class GovernanceNotifier:
             warnings = result.warnings
 
             if blocking and self.notify_on_deny:
-                event = self._event_from_result(
-                    result, agent_id=agent_id, action=action
-                )
+                event = self._event_from_result(result, agent_id=agent_id, action=action)
                 self._dispatch(event)
             elif warnings and self.notify_on_warning:
                 event = self._event_from_result(
@@ -624,9 +609,7 @@ class GovernanceNotifier:
                 severity="CRITICAL",
                 agent_id="system",
                 action="Audit chain integrity check failed",
-                constitutional_hash=getattr(
-                    self._engine, "_const_hash", "608508a9bd224290"
-                ),
+                constitutional_hash=getattr(self._engine, "_const_hash", "608508a9bd224290"),
             )
             await self._router.notify(event)
         return intact
@@ -661,9 +644,7 @@ class GovernanceNotifier:
                 (_SEVERITY_ORDER.get(v.severity.value.upper(), 0) for v in result.violations),
                 default=0,
             )
-            severity = next(
-                (k for k, v in _SEVERITY_ORDER.items() if v == max_sev), "HIGH"
-            )
+            severity = next((k for k, v in _SEVERITY_ORDER.items() if v == max_sev), "HIGH")
         return GovernanceEvent(
             event_type="violation",
             severity=severity,

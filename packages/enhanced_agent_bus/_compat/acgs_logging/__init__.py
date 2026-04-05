@@ -1,4 +1,5 @@
 """Shim for src.core.shared.acgs_logging."""
+
 from __future__ import annotations
 
 import logging

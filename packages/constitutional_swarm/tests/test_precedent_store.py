@@ -15,23 +15,39 @@ CONST_HASH = "608508a9bd224290"
 
 # Standard 7-dim governance vectors
 PRIVACY_HEAVY = {
-    "safety": 0.1, "security": 0.2, "privacy": 0.9,
-    "fairness": 0.3, "reliability": 0.1, "transparency": 0.6,
+    "safety": 0.1,
+    "security": 0.2,
+    "privacy": 0.9,
+    "fairness": 0.3,
+    "reliability": 0.1,
+    "transparency": 0.6,
     "efficiency": 0.1,
 }
 SECURITY_HEAVY = {
-    "safety": 0.8, "security": 0.9, "privacy": 0.2,
-    "fairness": 0.1, "reliability": 0.7, "transparency": 0.3,
+    "safety": 0.8,
+    "security": 0.9,
+    "privacy": 0.2,
+    "fairness": 0.1,
+    "reliability": 0.7,
+    "transparency": 0.3,
     "efficiency": 0.5,
 }
 FAIRNESS_HEAVY = {
-    "safety": 0.2, "security": 0.1, "privacy": 0.3,
-    "fairness": 0.9, "reliability": 0.2, "transparency": 0.7,
+    "safety": 0.2,
+    "security": 0.1,
+    "privacy": 0.3,
+    "fairness": 0.9,
+    "reliability": 0.2,
+    "transparency": 0.7,
     "efficiency": 0.2,
 }
 BALANCED = {
-    "safety": 0.5, "security": 0.5, "privacy": 0.5,
-    "fairness": 0.5, "reliability": 0.5, "transparency": 0.5,
+    "safety": 0.5,
+    "security": 0.5,
+    "privacy": 0.5,
+    "fairness": 0.5,
+    "reliability": 0.5,
+    "transparency": 0.5,
     "efficiency": 0.5,
 }
 
@@ -46,10 +62,24 @@ class TestVectorUtilities:
         assert _cosine_similarity(PRIVACY_HEAVY, PRIVACY_HEAVY) == pytest.approx(1.0, abs=1e-6)
 
     def test_cosine_orthogonal_vectors(self):
-        a = {"safety": 1.0, "security": 0.0, "privacy": 0.0,
-             "fairness": 0.0, "reliability": 0.0, "transparency": 0.0, "efficiency": 0.0}
-        b = {"safety": 0.0, "security": 1.0, "privacy": 0.0,
-             "fairness": 0.0, "reliability": 0.0, "transparency": 0.0, "efficiency": 0.0}
+        a = {
+            "safety": 1.0,
+            "security": 0.0,
+            "privacy": 0.0,
+            "fairness": 0.0,
+            "reliability": 0.0,
+            "transparency": 0.0,
+            "efficiency": 0.0,
+        }
+        b = {
+            "safety": 0.0,
+            "security": 1.0,
+            "privacy": 0.0,
+            "fairness": 0.0,
+            "reliability": 0.0,
+            "transparency": 0.0,
+            "efficiency": 0.0,
+        }
         assert _cosine_similarity(a, b) == pytest.approx(0.0, abs=1e-9)
 
     def test_cosine_range(self):
@@ -59,9 +89,8 @@ class TestVectorUtilities:
     def test_cosine_similar_vectors_higher_than_dissimilar(self):
         similar = {k: v + 0.05 for k, v in PRIVACY_HEAVY.items()}
         dissimilar = SECURITY_HEAVY
-        assert (
-            _cosine_similarity(PRIVACY_HEAVY, similar)
-            > _cosine_similarity(PRIVACY_HEAVY, dissimilar)
+        assert _cosine_similarity(PRIVACY_HEAVY, similar) > _cosine_similarity(
+            PRIVACY_HEAVY, dissimilar
         )
 
     def test_cosine_zero_vector(self):
@@ -121,11 +150,17 @@ class TestPrecedentRecord:
     def test_zero_votes_grade(self):
         # Edge case: 0 total votes
         r = PrecedentRecord.create(
-            case_id="c", task_id="t", miner_uid="m",
-            judgment="j", reasoning="r",
-            votes_for=0, votes_against=0,
-            proof_root_hash="", escalation_type=EscalationType.UNKNOWN,
-            impact_vector=BALANCED, constitutional_hash=CONST_HASH,
+            case_id="c",
+            task_id="t",
+            miner_uid="m",
+            judgment="j",
+            reasoning="r",
+            votes_for=0,
+            votes_against=0,
+            proof_root_hash="",
+            escalation_type=EscalationType.UNKNOWN,
+            impact_vector=BALANCED,
+            constitutional_hash=CONST_HASH,
         )
         assert r.validator_grade == 0.0
 
@@ -166,6 +201,7 @@ class TestPrecedentStoreBasicOps:
         store = PrecedentStore(CONST_HASH, min_votes_for_precedent=1)
         # Create a record with validation_accepted=False — must bypass create()
         import dataclasses
+
         r = _make_record()
         bad = dataclasses.replace(r, validation_accepted=False)
         with pytest.raises(ValueError, match="not accepted"):
@@ -221,24 +257,30 @@ class TestPrecedentStoreRetrieval:
             min_votes_for_precedent=1,
             auto_resolve_threshold=0.9,
         )
-        store.add(_make_record(
-            case_id="c1",
-            judgment="Privacy wins",
-            impact_vector=PRIVACY_HEAVY,
-            escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
-        ))
-        store.add(_make_record(
-            case_id="c2",
-            judgment="Security wins",
-            impact_vector=SECURITY_HEAVY,
-            escalation_type=EscalationType.CONTEXT_SENSITIVITY,
-        ))
-        store.add(_make_record(
-            case_id="c3",
-            judgment="Fairness wins",
-            impact_vector=FAIRNESS_HEAVY,
-            escalation_type=EscalationType.STAKEHOLDER_IRRECONCILABILITY,
-        ))
+        store.add(
+            _make_record(
+                case_id="c1",
+                judgment="Privacy wins",
+                impact_vector=PRIVACY_HEAVY,
+                escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
+            )
+        )
+        store.add(
+            _make_record(
+                case_id="c2",
+                judgment="Security wins",
+                impact_vector=SECURITY_HEAVY,
+                escalation_type=EscalationType.CONTEXT_SENSITIVITY,
+            )
+        )
+        store.add(
+            _make_record(
+                case_id="c3",
+                judgment="Fairness wins",
+                impact_vector=FAIRNESS_HEAVY,
+                escalation_type=EscalationType.STAKEHOLDER_IRRECONCILABILITY,
+            )
+        )
         return store
 
     def test_retrieve_returns_matches(self):
@@ -266,7 +308,8 @@ class TestPrecedentStoreRetrieval:
     def test_retrieve_by_escalation_type(self):
         store = self._populated_store()
         result = store.retrieve(
-            PRIVACY_HEAVY, k=10,
+            PRIVACY_HEAVY,
+            k=10,
             escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
         )
         assert all(
@@ -351,14 +394,18 @@ class TestPrecedentStoreStatistics:
     def test_escalation_distribution(self):
         store = PrecedentStore(CONST_HASH, min_votes_for_precedent=1)
         for i in range(3):
-            store.add(_make_record(
-                case_id=f"cc{i}",
-                escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
-            ))
-        store.add(_make_record(
-            case_id="ctx1",
-            escalation_type=EscalationType.CONTEXT_SENSITIVITY,
-        ))
+            store.add(
+                _make_record(
+                    case_id=f"cc{i}",
+                    escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
+                )
+            )
+        store.add(
+            _make_record(
+                case_id="ctx1",
+                escalation_type=EscalationType.CONTEXT_SENSITIVITY,
+            )
+        )
         dist = store.escalation_distribution()
         assert dist["constitutional_conflict"] == 3
         assert dist["context_sensitivity"] == 1

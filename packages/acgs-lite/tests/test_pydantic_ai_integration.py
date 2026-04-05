@@ -57,9 +57,7 @@ class FakeModel:
 class TestGovernedPydanticAgent:
     @pytest.fixture(autouse=True)
     def _patch_available(self):
-        with patch(
-            "acgs_lite.integrations.pydantic_ai.PYDANTIC_AI_AVAILABLE", True
-        ):
+        with patch("acgs_lite.integrations.pydantic_ai.PYDANTIC_AI_AVAILABLE", True):
             yield
 
     def test_run_sync_validates_prompt(self):
@@ -161,9 +159,7 @@ class TestGovernedPydanticAgent:
             ]
         )
         agent = FakeAgent()
-        governed = GovernedPydanticAgent(
-            agent, constitution=constitution, strict=True
-        )
+        governed = GovernedPydanticAgent(agent, constitution=constitution, strict=True)
 
         # Safe prompt passes
         result = governed.run_sync("Research databases")
@@ -196,9 +192,7 @@ class TestGovernedPydanticAgent:
             ]
         )
         agent = FakeAgent()
-        governed = GovernedPydanticAgent.wrap(
-            agent, constitution=constitution, strict=True
-        )
+        governed = GovernedPydanticAgent.wrap(agent, constitution=constitution, strict=True)
 
         result = governed.run_sync("Research dogs")
         assert result is not None
@@ -230,9 +224,7 @@ class TestGovernedPydanticAgent:
 class TestGovernedModel:
     @pytest.fixture(autouse=True)
     def _patch_available(self):
-        with patch(
-            "acgs_lite.integrations.pydantic_ai.PYDANTIC_AI_AVAILABLE", True
-        ):
+        with patch("acgs_lite.integrations.pydantic_ai.PYDANTIC_AI_AVAILABLE", True):
             yield
 
     def test_request_validates_messages(self):
@@ -278,9 +270,7 @@ class TestGovernedModel:
         from acgs_lite.integrations.pydantic_ai import GovernedModel
 
         model = FakeModel()
-        model._response = MagicMock(
-            content="self-validate bypass checks"
-        )
+        model._response = MagicMock(content="self-validate bypass checks")
         governed = GovernedModel(model, strict=True)
         messages = [{"content": "Research governance"}]
         # Should NOT raise even though output contains violation keywords

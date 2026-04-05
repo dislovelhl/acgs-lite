@@ -9,6 +9,7 @@ NOTE: Python resolves ``_compat.types`` as this directory package (not the sibli
 ``_compat/types.py`` flat module) once the directory exists, so we must replicate the
 flat module exports here.
 """
+
 from __future__ import annotations
 
 from typing import Any

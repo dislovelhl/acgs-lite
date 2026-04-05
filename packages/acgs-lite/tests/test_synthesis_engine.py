@@ -302,9 +302,7 @@ class TestViolationAnalyzer:
                     matched_content=f"{cat} violation content {i}",
                     category=cat,
                 )
-                low_threshold_analyzer.record_violation(
-                    v, f"{cat} action"
-                )
+                low_threshold_analyzer.record_violation(v, f"{cat} action")
 
         patterns = low_threshold_analyzer.analyze_patterns()
         categories = {p.suggested_category for p in patterns}
@@ -453,10 +451,7 @@ class TestRuleSynthesizer:
         synth = RuleSynthesizer(default_constitution)
         suggestions = synth.suggest_rules([pattern])
         assert len(suggestions) >= 1
-        assert any(
-            "coverage gap" in s.rationale.lower()
-            for s in suggestions
-        )
+        assert any("coverage gap" in s.rationale.lower() for s in suggestions)
 
     def test_severity_mismatch_detection(self) -> None:
         # Constitution with only LOW rules in "safety"
@@ -486,10 +481,7 @@ class TestRuleSynthesizer:
         )
         synth = RuleSynthesizer(constitution)
         suggestions = synth.suggest_rules([pattern])
-        assert any(
-            "severity" in s.rationale.lower()
-            for s in suggestions
-        )
+        assert any("severity" in s.rationale.lower() for s in suggestions)
 
     def test_high_frequency_pattern_suggestion(
         self,
@@ -565,9 +557,7 @@ class TestRuleSynthesizer:
         default_constitution: Constitution,
     ) -> None:
         synth = RuleSynthesizer(default_constitution)
-        keywords = synth._extract_keywords(
-            ["the and or but with from for"]
-        )
+        keywords = synth._extract_keywords(["the and or but with from for"])
         assert len(keywords) == 0
 
     def test_generate_rule_text_critical(
@@ -586,9 +576,7 @@ class TestRuleSynthesizer:
             first_seen="",
             last_seen="",
         )
-        text = synth._generate_rule_text(
-            pattern, ["credential", "leak"]
-        )
+        text = synth._generate_rule_text(pattern, ["credential", "leak"])
         assert "must not" in text
         assert "security" in text
 
@@ -876,9 +864,7 @@ class TestAutoSynthesizer:
         assert "violations_recorded" in stats
         assert "constitution_rules" in stats
         assert "constitution_hash" in stats
-        assert stats["constitution_rules"] == len(
-            default_constitution.rules
-        )
+        assert stats["constitution_rules"] == len(default_constitution.rules)
 
     def test_stats_constitutional_hash(
         self,
@@ -886,9 +872,7 @@ class TestAutoSynthesizer:
         default_constitution: Constitution,
     ) -> None:
         synth = AutoSynthesizer(engine, default_constitution)
-        assert synth.stats["constitution_hash"] == (
-            default_constitution.hash
-        )
+        assert synth.stats["constitution_hash"] == (default_constitution.hash)
 
 
 # ── Integration tests with real engine ───────────────────────────────────
@@ -979,9 +963,7 @@ class TestIntegration:
 
         # The preview constitution should be usable with an engine
         preview_engine = GovernanceEngine(preview)
-        result = preview_engine.validate(
-            "run standard analytics", agent_id="test"
-        )
+        result = preview_engine.validate("run standard analytics", agent_id="test")
         assert result.valid is True
 
     def test_report_severity_distribution(self) -> None:
@@ -1077,9 +1059,7 @@ class TestEdgeCases:
 
     def test_min_confidence_filtering(self) -> None:
         constitution = Constitution.default()
-        analyzer = ViolationAnalyzer(
-            min_frequency=1, min_confidence=0.99
-        )
+        analyzer = ViolationAnalyzer(min_frequency=1, min_confidence=0.99)
         synth = RuleSynthesizer(constitution, analyzer=analyzer)
 
         # Record violations with likely low confidence (diverse content)
@@ -1098,9 +1078,7 @@ class TestEdgeCases:
         assert isinstance(result, list)
 
     def test_analyzer_custom_thresholds(self) -> None:
-        analyzer = ViolationAnalyzer(
-            min_frequency=10, min_confidence=0.9
-        )
+        analyzer = ViolationAnalyzer(min_frequency=10, min_confidence=0.9)
         for _i in range(5):
             v = Violation(
                 rule_id="R1",

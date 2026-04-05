@@ -20,6 +20,7 @@ CTX: dict = {}
 # PHI Detector Tests
 # ---------------------------------------------------------------------------
 
+
 class TestPHIDetector:
     """Detect HIPAA Safe Harbor identifiers in clinical text."""
 
@@ -95,6 +96,7 @@ class TestPHIDetector:
 # Clinical Decision Auditor Tests
 # ---------------------------------------------------------------------------
 
+
 class TestClinicalDecisionAuditor:
     """Flag unsafe clinical claims and recommendations."""
 
@@ -144,6 +146,7 @@ class TestClinicalDecisionAuditor:
 # ---------------------------------------------------------------------------
 # Adverse Event Logger Tests
 # ---------------------------------------------------------------------------
+
 
 class TestAdverseEventLogger:
     """Detect signals requiring MedWatch or incident reporting."""
@@ -200,6 +203,7 @@ class TestAdverseEventLogger:
 # Integration: register_all
 # ---------------------------------------------------------------------------
 
+
 class TestRegisterAll:
     """Verify all validators can be registered on a GovernanceEngine."""
 
@@ -217,7 +221,14 @@ class TestRegisterAll:
 
         # Use minimal constitution so no CRITICAL rules short-circuit custom validators
         constitution = Constitution.from_rules(
-            [Rule(id="TEST-001", text="placeholder", severity=Sev.LOW, keywords=["zzz_nevermatches"])],
+            [
+                Rule(
+                    id="TEST-001",
+                    text="placeholder",
+                    severity=Sev.LOW,
+                    keywords=["zzz_nevermatches"],
+                )
+            ],
             name="test-minimal",
         )
         engine = GovernanceEngine(constitution, strict=False)

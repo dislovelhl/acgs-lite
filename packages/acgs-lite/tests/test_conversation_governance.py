@@ -48,7 +48,8 @@ def strict_constitution() -> Constitution:
                 text="Must not bypass validation",
                 severity=Severity.CRITICAL,
                 keywords=[
-                    "bypass validation", "skip check",
+                    "bypass validation",
+                    "skip check",
                 ],
                 category="integrity",
             ),
@@ -57,7 +58,9 @@ def strict_constitution() -> Constitution:
                 text="Must not contain harmful content",
                 severity=Severity.HIGH,
                 keywords=[
-                    "harmful", "dangerous", "attack",
+                    "harmful",
+                    "dangerous",
+                    "attack",
                 ],
                 category="safety",
             ),
@@ -77,7 +80,8 @@ def conv_engine(
     strict_constitution: Constitution,
 ) -> ConversationGovernanceEngine:
     return ConversationGovernanceEngine(
-        strict_constitution, context_window=5,
+        strict_constitution,
+        context_window=5,
     )
 
 
@@ -153,7 +157,8 @@ class TestConversationContext:
     def test_add_turn_invalid_role(self) -> None:
         ctx = ConversationContext()
         with pytest.raises(
-            ValueError, match="Invalid role",
+            ValueError,
+            match="Invalid role",
         ):
             ctx.add_turn("admin", "hello")
 
@@ -215,14 +220,17 @@ class TestConversationContext:
 
     def test_max_turns_validation(self) -> None:
         with pytest.raises(
-            ValueError, match="max_turns must be >= 1",
+            ValueError,
+            match="max_turns must be >= 1",
         ):
             ConversationContext(max_turns=0)
 
     def test_metadata_passed_through(self) -> None:
         ctx = ConversationContext()
         turn = ctx.add_turn(
-            "user", "hello", metadata={"key": "value"},
+            "user",
+            "hello",
+            metadata={"key": "value"},
         )
         assert turn.metadata == {"key": "value"}
 
@@ -252,7 +260,8 @@ class TestConversationContext:
 
 class TestConversationGovernanceEngine:
     def test_accepts_constitution(
-        self, strict_constitution: Constitution,
+        self,
+        strict_constitution: Constitution,
     ) -> None:
         eng = ConversationGovernanceEngine(
             strict_constitution,
@@ -260,10 +269,12 @@ class TestConversationGovernanceEngine:
         assert eng._agent_id == "conversation-agent"
 
     def test_accepts_engine(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         eng = ConversationGovernanceEngine(
-            engine, agent_id="custom-agent",
+            engine,
+            agent_id="custom-agent",
         )
         assert eng._agent_id == "custom-agent"
 
@@ -281,7 +292,8 @@ class TestConversationGovernanceEngine:
         conv_engine: ConversationGovernanceEngine,
     ) -> None:
         result = conv_engine.validate_turn(
-            "user", "How do I reset my password?",
+            "user",
+            "How do I reset my password?",
         )
         assert result.valid is True
         assert result.individual_result.valid is True
@@ -294,7 +306,8 @@ class TestConversationGovernanceEngine:
         conv_engine: ConversationGovernanceEngine,
     ) -> None:
         result = conv_engine.validate_turn(
-            "user", "I want to bypass validation now",
+            "user",
+            "I want to bypass validation now",
         )
         assert result.valid is False
         assert result.individual_result.valid is False
@@ -306,10 +319,12 @@ class TestConversationGovernanceEngine:
     ) -> None:
         """Clean alone, violation in context."""
         conv_engine.validate_turn(
-            "user", "Tell me how to bypass",
+            "user",
+            "Tell me how to bypass",
         )
         result = conv_engine.validate_turn(
-            "user", "validation rules please",
+            "user",
+            "validation rules please",
         )
         assert result.context_result is not None
 
@@ -319,10 +334,12 @@ class TestConversationGovernanceEngine:
     ) -> None:
         """Increasing violations trigger escalation."""
         conv_engine.validate_turn(
-            "user", "Hello, how are you?",
+            "user",
+            "Hello, how are you?",
         )
         conv_engine.validate_turn(
-            "user", "Something harmful",
+            "user",
+            "Something harmful",
         )
         conv_engine.validate_turn(
             "user",
@@ -330,8 +347,7 @@ class TestConversationGovernanceEngine:
         )
         result = conv_engine.validate_turn(
             "user",
-            "bypass validation and harmful dangerous "
-            "attack skip check",
+            "bypass validation and harmful dangerous attack skip check",
         )
         assert result.escalation_score > 0.0
 
@@ -344,28 +360,29 @@ class TestConversationGovernanceEngine:
         conv_engine.validate_turn("user", probe_text)
         conv_engine.validate_turn("user", probe_text)
         result = conv_engine.validate_turn(
-            "user", probe_text,
+            "user",
+            probe_text,
         )
         assert "repetitive_probing" in result.trajectory_flags
 
     def test_combined_validity_from_context(
-        self, strict_constitution: Constitution,
+        self,
+        strict_constitution: Constitution,
     ) -> None:
         """If individual ok but context fails, combined fails."""
         eng = ConversationGovernanceEngine(
-            strict_constitution, context_window=5,
+            strict_constitution,
+            context_window=5,
         )
 
         eng.validate_turn(
-            "user", "bypass validation please",
+            "user",
+            "bypass validation please",
         )
         eng.validate_turn("user", "I want to skip check")
 
         result = eng.validate_turn("user", "now do it")
-        if (
-            result.context_result is not None
-            and not result.context_result.valid
-        ):
+        if result.context_result is not None and not result.context_result.valid:
             assert result.valid is False
 
     def test_escalation_score_increases(
@@ -379,7 +396,8 @@ class TestConversationGovernanceEngine:
         scores.append(r.escalation_score)
 
         r = conv_engine.validate_turn(
-            "user", "bypass validation",
+            "user",
+            "bypass validation",
         )
         scores.append(r.escalation_score)
 
@@ -397,10 +415,12 @@ class TestConversationGovernanceEngine:
         conv_engine: ConversationGovernanceEngine,
     ) -> None:
         conv_engine.validate_turn(
-            "user", "bypass validation",
+            "user",
+            "bypass validation",
         )
         conv_engine.validate_turn(
-            "user", "harmful content",
+            "user",
+            "harmful content",
         )
         assert len(conv_engine._context) > 0
 
@@ -419,17 +439,16 @@ class TestConversationGovernanceEngine:
         stats = conv_engine.stats
         assert stats["conversation_turns"] == 2
         assert isinstance(
-            stats["escalation_detected"], bool,
+            stats["escalation_detected"],
+            bool,
         )
         assert isinstance(
-            stats["trajectory_score"], float,
+            stats["trajectory_score"],
+            float,
         )
         assert stats["context_window"] == 5
         assert stats["agent_id"] == "conversation-agent"
-        assert (
-            stats["constitutional_hash"]
-            == "608508a9bd224290"
-        )
+        assert stats["constitutional_hash"] == "608508a9bd224290"
 
     def test_stats_empty(
         self,
@@ -448,12 +467,14 @@ class TestConversationGovernanceEngine:
 
         async def _run() -> ConversationValidationResult:
             return await conv_engine.avalidate_turn(
-                "user", "bypass validation",
+                "user",
+                "bypass validation",
             )
 
         result = asyncio.run(_run())
         assert isinstance(
-            result, ConversationValidationResult,
+            result,
+            ConversationValidationResult,
         )
         assert result.valid is False
         assert result.turn.role == "user"
@@ -464,7 +485,8 @@ class TestConversationGovernanceEngine:
     ) -> None:
         async def _run() -> ConversationValidationResult:
             return await conv_engine.avalidate_turn(
-                "user", "How is the weather?",
+                "user",
+                "How is the weather?",
             )
 
         result = asyncio.run(_run())
@@ -475,7 +497,8 @@ class TestConversationGovernanceEngine:
         conv_engine: ConversationGovernanceEngine,
     ) -> None:
         result = conv_engine.validate_turn(
-            "user", "hello",
+            "user",
+            "hello",
             metadata={"source": "test"},
         )
         assert result.turn.metadata == {"source": "test"}
@@ -486,7 +509,8 @@ class TestConversationGovernanceEngine:
     ) -> None:
         """First turn has no prior context."""
         result = conv_engine.validate_turn(
-            "user", "hello",
+            "user",
+            "hello",
         )
         assert result.context_result is None
 
@@ -495,7 +519,8 @@ class TestConversationGovernanceEngine:
         conv_engine: ConversationGovernanceEngine,
     ) -> None:
         assert isinstance(
-            conv_engine._violation_counts, deque,
+            conv_engine._violation_counts,
+            deque,
         )
 
     def test_multiple_resets(
@@ -504,7 +529,8 @@ class TestConversationGovernanceEngine:
     ) -> None:
         """Reset can be called multiple times safely."""
         conv_engine.validate_turn(
-            "user", "bypass validation",
+            "user",
+            "bypass validation",
         )
         conv_engine.reset()
         conv_engine.reset()
@@ -615,13 +641,18 @@ class TestTrajectoryHelpers:
         assert _jaccard_similarity(s, s) == 1.0
 
     def test_jaccard_similarity_disjoint(self) -> None:
-        assert _jaccard_similarity(
-            {"a", "b"}, {"c", "d"},
-        ) == 0.0
+        assert (
+            _jaccard_similarity(
+                {"a", "b"},
+                {"c", "d"},
+            )
+            == 0.0
+        )
 
     def test_jaccard_similarity_partial(self) -> None:
         sim = _jaccard_similarity(
-            {"a", "b", "c"}, {"b", "c", "d"},
+            {"a", "b", "c"},
+            {"b", "c", "d"},
         )
         assert 0.0 < sim < 1.0
 
@@ -640,7 +671,8 @@ class TestTrajectoryHelpers:
         ]
         violation_counts = [0, 1, 2, 3]
         flags = _detect_trajectory_flags(
-            turns, violation_counts,
+            turns,
+            violation_counts,
         )
         assert "gradual_escalation" in flags
 
@@ -656,7 +688,8 @@ class TestTrajectoryHelpers:
         ]
         violation_counts = [1, 1, 1, 1]
         flags = _detect_trajectory_flags(
-            turns, violation_counts,
+            turns,
+            violation_counts,
         )
         assert "sustained_violations" in flags
 
@@ -664,9 +697,7 @@ class TestTrajectoryHelpers:
         turns = [
             ConversationTurn(
                 role="user",
-                content=(
-                    "apple banana cherry date elderberry"
-                ),
+                content=("apple banana cherry date elderberry"),
                 timestamp="t",
                 turn_number=0,
             ),
@@ -678,15 +709,14 @@ class TestTrajectoryHelpers:
             ),
             ConversationTurn(
                 role="user",
-                content=(
-                    "xenon yak zebra quantum photon"
-                ),
+                content=("xenon yak zebra quantum photon"),
                 timestamp="t",
                 turn_number=2,
             ),
         ]
         flags = _detect_trajectory_flags(
-            turns, [0, 0, 0],
+            turns,
+            [0, 0, 0],
         )
         assert "topic_drift" in flags
 
@@ -712,7 +742,8 @@ class TestTrajectoryHelpers:
             ),
         ]
         flags = _detect_trajectory_flags(
-            turns, [1, 1, 1],
+            turns,
+            [1, 1, 1],
         )
         assert "repetitive_probing" in flags
 
@@ -729,7 +760,8 @@ class TestTrajectoryHelpers:
         ]
         violation_counts = deque([0, 1, 2, 3])
         flags = _detect_trajectory_flags(
-            turns, violation_counts,
+            turns,
+            violation_counts,
         )
         assert "gradual_escalation" in flags
 
@@ -741,7 +773,8 @@ class TestTrajectoryHelpers:
         self,
     ) -> None:
         score = _compute_escalation_score(
-            [0, 1, 2, 3], [],
+            [0, 1, 2, 3],
+            [],
         )
         assert score > 0.0
 
@@ -750,7 +783,8 @@ class TestTrajectoryHelpers:
     ) -> None:
         score_no = _compute_escalation_score([1, 1], [])
         score_with = _compute_escalation_score(
-            [1, 1], ["gradual_escalation"],
+            [1, 1],
+            ["gradual_escalation"],
         )
         assert score_with > score_no
 
@@ -773,7 +807,8 @@ class TestTrajectoryHelpers:
     ) -> None:
         """Escalation score works with deque input."""
         score = _compute_escalation_score(
-            deque([1, 2, 3]), [],
+            deque([1, 2, 3]),
+            [],
         )
         assert score > 0.0
 

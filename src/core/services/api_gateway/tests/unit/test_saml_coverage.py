@@ -5,6 +5,7 @@ Constitutional Hash: 608508a9bd224290
 Covers: metadata, providers, login, ACS callback, SLS, logout, and error paths.
 All SAML handler interactions are mocked — no real IdP required.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -52,6 +53,7 @@ class _FakeUserInfo:
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_app(handler_mock: AsyncMock) -> FastAPI:
     """Build a minimal FastAPI app with the SAML router and session middleware.
@@ -106,6 +108,7 @@ def client(handler: AsyncMock) -> TestClient:
 
 # Helpers -------------------------------------------------------------------
 
+
 def _sso_settings(
     *,
     enabled: bool = True,
@@ -134,6 +137,7 @@ _SSO_SETTINGS_PATH = "src.core.services.api_gateway.routes.sso.saml.settings"
 # ===========================================================================
 # Tests
 # ===========================================================================
+
 
 @pytest.mark.unit
 class TestSAMLMetadata:
@@ -207,9 +211,7 @@ class TestSAMLLogin:
             force_authn=False,
         )
 
-    def test_login_with_relay_state_and_force(
-        self, client: TestClient, handler: AsyncMock
-    ) -> None:
+    def test_login_with_relay_state_and_force(self, client: TestClient, handler: AsyncMock) -> None:
         with patch(_SSO_SETTINGS_PATH) as mock_settings:
             mock_settings.sso = _sso_settings()
             resp = client.get(
@@ -239,9 +241,7 @@ class TestSAMLLogin:
         assert resp.status_code == 503
         assert "SAML disabled" in resp.json()["detail"]
 
-    def test_login_configuration_error_returns_404(
-        self, handler: AsyncMock
-    ) -> None:
+    def test_login_configuration_error_returns_404(self, handler: AsyncMock) -> None:
         handler.initiate_login.side_effect = SAMLConfigurationError("no such provider")
         app = _make_app(handler)
         c = TestClient(app, base_url="http://testserver", raise_server_exceptions=False)
@@ -313,10 +313,13 @@ class TestSAMLACS:
 
                 return _R()
 
-        with patch(
-            "src.core.services.api_gateway.routes.sso.saml.get_provisioner",
-            return_value=_FakeProv(),
-        ), patch(_SSO_SETTINGS_PATH) as mock_settings:
+        with (
+            patch(
+                "src.core.services.api_gateway.routes.sso.saml.get_provisioner",
+                return_value=_FakeProv(),
+            ),
+            patch(_SSO_SETTINGS_PATH) as mock_settings,
+        ):
             mock_settings.sso = _sso_settings()
             app = _make_app(handler)
             c = TestClient(app, base_url="http://testserver")
@@ -407,9 +410,7 @@ class TestSAMLSLS:
         assert body["redirect_url"] is None
         handler.process_sls_response.assert_not_awaited()
 
-    def test_sls_post_with_response_and_user(
-        self, client: TestClient, handler: AsyncMock
-    ) -> None:
+    def test_sls_post_with_response_and_user(self, client: TestClient, handler: AsyncMock) -> None:
         """When a SAMLResponse is present and user is in session, process SLS."""
         self._seed(client)
         resp = client.get(
@@ -423,9 +424,7 @@ class TestSAMLSLS:
         assert body["redirect_url"] == "/home"
         handler.process_sls_response.assert_awaited_once_with("abc123", "okta")
 
-    def test_sls_rejects_absolute_relay_state(
-        self, client: TestClient
-    ) -> None:
+    def test_sls_rejects_absolute_relay_state(self, client: TestClient) -> None:
         """Open-redirect protection: absolute URLs are rejected."""
         self._seed(client)
         resp = client.get(
@@ -435,9 +434,7 @@ class TestSAMLSLS:
         body = resp.json()
         assert body["redirect_url"] is None
 
-    def test_sls_rejects_protocol_relative_relay_state(
-        self, client: TestClient
-    ) -> None:
+    def test_sls_rejects_protocol_relative_relay_state(self, client: TestClient) -> None:
         """Absolute http:// URLs are rejected by the open-redirect guard."""
         resp = client.get(
             "/sso/saml/sls",
@@ -498,9 +495,7 @@ class TestSAMLLogout:
         assert body["redirect_url"] == "https://idp.example.com/slo"
         handler.initiate_logout.assert_awaited_once()
 
-    def test_logout_no_name_id_skips_slo(
-        self, client: TestClient, handler: AsyncMock
-    ) -> None:
+    def test_logout_no_name_id_skips_slo(self, client: TestClient, handler: AsyncMock) -> None:
         """User in session but missing name_id skips SLO."""
         self._seed(client, {"user": {"id": "uid-2", "provider": "okta"}})
         resp = client.post("/sso/saml/logout")

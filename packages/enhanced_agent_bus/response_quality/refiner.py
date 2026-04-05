@@ -224,6 +224,7 @@ class AdapterLLMRefiner(LLMRefiner):
     """
     LLM refiner that uses a BaseLLMAdapter for actual response improvement.
     """
+
     def __init__(self, adapter: BaseLLMAdapter):
         self.adapter = adapter
 
@@ -232,8 +233,11 @@ class AdapterLLMRefiner(LLMRefiner):
     ) -> str:
         prompt = self._build_prompt(response, assessment, context)
         messages = [
-            LLMMessage(role="system", content="You are a response quality improvement assistant. Refine the provided response based on the quality assessment and critique. Return ONLY the refined response text, without any additional commentary."),
-            LLMMessage(role="user", content=prompt)
+            LLMMessage(
+                role="system",
+                content="You are a response quality improvement assistant. Refine the provided response based on the quality assessment and critique. Return ONLY the refined response text, without any additional commentary.",
+            ),
+            LLMMessage(role="user", content=prompt),
         ]
         try:
             result = self.adapter.complete(messages=messages, temperature=0.3)
@@ -247,8 +251,11 @@ class AdapterLLMRefiner(LLMRefiner):
     ) -> str:
         prompt = self._build_prompt(response, assessment, context)
         messages = [
-            LLMMessage(role="system", content="You are a response quality improvement assistant. Refine the provided response based on the quality assessment and critique. Return ONLY the refined response text, without any additional commentary."),
-            LLMMessage(role="user", content=prompt)
+            LLMMessage(
+                role="system",
+                content="You are a response quality improvement assistant. Refine the provided response based on the quality assessment and critique. Return ONLY the refined response text, without any additional commentary.",
+            ),
+            LLMMessage(role="user", content=prompt),
         ]
         try:
             result = await self.adapter.acomplete(messages=messages, temperature=0.3)
@@ -257,13 +264,17 @@ class AdapterLLMRefiner(LLMRefiner):
             logger.error(f"AdapterLLMRefiner async failed: {e}")
             return response
 
-    def _build_prompt(self, response: str, assessment: QualityAssessment, context: JSONDict | None) -> str:
+    def _build_prompt(
+        self, response: str, assessment: QualityAssessment, context: JSONDict | None
+    ) -> str:
         critiques = []
         for dim in assessment.failing_dimensions:
             if dim.critique:
                 critiques.append(f"- {dim.name}: {dim.critique}")
             else:
-                critiques.append(f"- {dim.name}: Score {dim.score:.2f} is below threshold {dim.threshold:.2f}")
+                critiques.append(
+                    f"- {dim.name}: Score {dim.score:.2f} is below threshold {dim.threshold:.2f}"
+                )
 
         prompt = f"Original Response:\n{response}\n\nThe response failed the following quality dimensions:\n"
         prompt += "\n".join(critiques)
@@ -284,14 +295,18 @@ class AdapterConstitutionalCorrector(ConstitutionalSelfCorrector):
     """
     Constitutional corrector that uses a BaseLLMAdapter for actual response improvement.
     """
+
     def __init__(self, adapter: BaseLLMAdapter):
         self.adapter = adapter
 
     def correct(self, response: str, violations: list[str], context: JSONDict | None = None) -> str:
         prompt = self._build_prompt(response, violations, context)
         messages = [
-            LLMMessage(role="system", content="You are a constitutional compliance assistant. Correct the provided response to address the listed constitutional violations. Ensure the core meaning is preserved but non-compliant parts are rewritten or removed. Return ONLY the corrected response text, without any additional commentary."),
-            LLMMessage(role="user", content=prompt)
+            LLMMessage(
+                role="system",
+                content="You are a constitutional compliance assistant. Correct the provided response to address the listed constitutional violations. Ensure the core meaning is preserved but non-compliant parts are rewritten or removed. Return ONLY the corrected response text, without any additional commentary.",
+            ),
+            LLMMessage(role="user", content=prompt),
         ]
         try:
             result = self.adapter.complete(messages=messages, temperature=0.2)
@@ -305,8 +320,11 @@ class AdapterConstitutionalCorrector(ConstitutionalSelfCorrector):
     ) -> str:
         prompt = self._build_prompt(response, violations, context)
         messages = [
-            LLMMessage(role="system", content="You are a constitutional compliance assistant. Correct the provided response to address the listed constitutional violations. Ensure the core meaning is preserved but non-compliant parts are rewritten or removed. Return ONLY the corrected response text, without any additional commentary."),
-            LLMMessage(role="user", content=prompt)
+            LLMMessage(
+                role="system",
+                content="You are a constitutional compliance assistant. Correct the provided response to address the listed constitutional violations. Ensure the core meaning is preserved but non-compliant parts are rewritten or removed. Return ONLY the corrected response text, without any additional commentary.",
+            ),
+            LLMMessage(role="user", content=prompt),
         ]
         try:
             result = await self.adapter.acomplete(messages=messages, temperature=0.2)
@@ -323,7 +341,9 @@ class AdapterConstitutionalCorrector(ConstitutionalSelfCorrector):
         if context:
             prompt += f"\nContext:\n{context}\n"
 
-        prompt += "\nPlease provide a corrected version of the response that resolves these violations."
+        prompt += (
+            "\nPlease provide a corrected version of the response that resolves these violations."
+        )
         return prompt
 
 

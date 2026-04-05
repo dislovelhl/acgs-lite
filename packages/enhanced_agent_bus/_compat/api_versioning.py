@@ -1,4 +1,5 @@
 """Shim for src.core.shared.api_versioning."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -6,7 +7,6 @@ from typing import Any
 try:
     from src.core.shared.api_versioning import *  # noqa: F403
 except ImportError:
-
     DEFAULT_API_VERSION = "v1"
 
     class APIVersion:

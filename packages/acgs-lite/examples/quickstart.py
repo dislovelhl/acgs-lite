@@ -89,7 +89,10 @@ def main() -> None:
         maci_role=MACIRole.PROPOSER,
         enforce_maci=True,
     )
-    print("   ✅ Enforced proposer run:", enforced_agent.run("Draft a proposal", governance_action="propose"))
+    print(
+        "   ✅ Enforced proposer run:",
+        enforced_agent.run("Draft a proposal", governance_action="propose"),
+    )
     try:
         enforced_agent.run("Validate this change", governance_action="validate")
     except MACIViolationError as e:

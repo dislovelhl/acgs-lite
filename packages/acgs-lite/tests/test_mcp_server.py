@@ -161,7 +161,9 @@ class TestListTools:
         assert tool_names == expected
 
     @pytest.mark.asyncio
-    async def test_tool_schemas_have_required_fields(self, default_constitution: Constitution) -> None:
+    async def test_tool_schemas_have_required_fields(
+        self, default_constitution: Constitution
+    ) -> None:
         server = create_mcp_server(default_constitution)
         tools = await _list_tools(server)
 
@@ -236,9 +238,7 @@ class TestValidateAction:
         assert result["agent_id"] == "custom-agent-42"
 
     @pytest.mark.asyncio
-    async def test_default_agent_id_is_mcp_client(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_default_agent_id_is_mcp_client(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "validate_action", {"action": "test"})
 
@@ -269,16 +269,16 @@ class TestValidateAction:
         """MCP call_tool temporarily disables strict mode so violations return data, not exceptions."""
         server = create_mcp_server(custom_constitution, strict=True)
         # Should not raise even with strict=True
-        result = await _call_tool(
-            server, "validate_action", {"action": "forbidden action"}
-        )
+        result = await _call_tool(server, "validate_action", {"action": "forbidden action"})
         assert result["valid"] is False
 
     @pytest.mark.asyncio
     async def test_unicode_action(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(
-            server, "validate_action", {"action": "action with unicode: cafe\u0301 \u2603 \U0001f600"}
+            server,
+            "validate_action",
+            {"action": "action with unicode: cafe\u0301 \u2603 \U0001f600"},
         )
         assert "valid" in result
 
@@ -299,9 +299,7 @@ class TestGetConstitution:
     """Tests for the get_constitution governance tool."""
 
     @pytest.mark.asyncio
-    async def test_returns_constitution_metadata(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_returns_constitution_metadata(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "get_constitution", {})
 
@@ -448,9 +446,7 @@ class TestCheckCompliance:
     @pytest.mark.asyncio
     async def test_non_compliant_text(self, custom_constitution: Constitution) -> None:
         server = create_mcp_server(custom_constitution)
-        result = await _call_tool(
-            server, "check_compliance", {"text": "this is forbidden"}
-        )
+        result = await _call_tool(server, "check_compliance", {"text": "this is forbidden"})
 
         assert result["compliant"] is False
         assert len(result["violations"]) > 0
@@ -490,14 +486,10 @@ class TestCheckCompliance:
         assert entries[0]["agent_id"] == "compliance-check"
 
     @pytest.mark.asyncio
-    async def test_strict_mode_does_not_raise(
-        self, custom_constitution: Constitution
-    ) -> None:
+    async def test_strict_mode_does_not_raise(self, custom_constitution: Constitution) -> None:
         """check_compliance temporarily disables strict mode."""
         server = create_mcp_server(custom_constitution, strict=True)
-        result = await _call_tool(
-            server, "check_compliance", {"text": "forbidden content here"}
-        )
+        result = await _call_tool(server, "check_compliance", {"text": "forbidden content here"})
         assert result["compliant"] is False
 
 
@@ -537,9 +529,7 @@ class TestGovernanceStats:
         assert result["compliance_rate"] == 0.5
 
     @pytest.mark.asyncio
-    async def test_stats_with_empty_constitution(
-        self, empty_constitution: Constitution
-    ) -> None:
+    async def test_stats_with_empty_constitution(self, empty_constitution: Constitution) -> None:
         server = create_mcp_server(empty_constitution)
         result = await _call_tool(server, "governance_stats", {})
 
@@ -556,9 +546,7 @@ class TestUnknownTool:
     """Tests for the unknown tool error path."""
 
     @pytest.mark.asyncio
-    async def test_unknown_tool_returns_error(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_unknown_tool_returns_error(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "nonexistent_tool", {})
 
@@ -567,9 +555,7 @@ class TestUnknownTool:
         assert "nonexistent_tool" in result["error"]
 
     @pytest.mark.asyncio
-    async def test_empty_tool_name_returns_error(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_empty_tool_name_returns_error(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "", {})
 
@@ -690,9 +676,7 @@ class TestCrossToolIntegration:
     """Tests verifying correct state across multiple tool calls."""
 
     @pytest.mark.asyncio
-    async def test_validate_then_audit_then_stats(
-        self, custom_constitution: Constitution
-    ) -> None:
+    async def test_validate_then_audit_then_stats(self, custom_constitution: Constitution) -> None:
         server = create_mcp_server(custom_constitution)
 
         # Validate a mix of compliant and non-compliant actions
@@ -711,9 +695,7 @@ class TestCrossToolIntegration:
         assert stats["audit_entries"] == 3
 
     @pytest.mark.asyncio
-    async def test_constitution_hash_consistency(
-        self, custom_constitution: Constitution
-    ) -> None:
+    async def test_constitution_hash_consistency(self, custom_constitution: Constitution) -> None:
         """The constitutional hash must be consistent across all tools."""
         server = create_mcp_server(custom_constitution)
 

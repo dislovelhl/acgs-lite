@@ -83,8 +83,7 @@ class CedarPolicyEngine:
     ) -> None:
         if not CEDAR_AVAILABLE:
             raise ImportError(
-                "cedarpy is required for Cedar policy engine. "
-                "Install with: pip install cedarpy"
+                "cedarpy is required for Cedar policy engine. Install with: pip install cedarpy"
             )
         self._policies = policies
         self._entities = entities or []
@@ -95,9 +94,7 @@ class CedarPolicyEngine:
         if schema is not None:
             validation = cedarpy.validate_policies(policies, schema)
             if validation.errors:
-                raise ValueError(
-                    f"Cedar policy validation failed: {validation.errors}"
-                )
+                raise ValueError(f"Cedar policy validation failed: {validation.errors}")
             if validation.warnings:
                 for w in validation.warnings:
                     logger.warning("Cedar policy warning: %s", w)
@@ -183,7 +180,9 @@ class CedarPolicyEngine:
 
             return AuthzResult(
                 allowed=allowed,
-                decision=result.decision.value if hasattr(result.decision, "value") else str(result.decision),
+                decision=result.decision.value
+                if hasattr(result.decision, "value")
+                else str(result.decision),
                 diagnostics=diagnostics,
                 latency_ms=latency_ms,
             )
@@ -233,11 +232,15 @@ class CedarPolicyEngine:
                 else:
                     self._stats["denied"] += 1
 
-                authz_results.append(AuthzResult(
-                    allowed=allowed,
-                    decision=result.decision.value if hasattr(result.decision, "value") else str(result.decision),
-                    latency_ms=per_request_latency,
-                ))
+                authz_results.append(
+                    AuthzResult(
+                        allowed=allowed,
+                        decision=result.decision.value
+                        if hasattr(result.decision, "value")
+                        else str(result.decision),
+                        latency_ms=per_request_latency,
+                    )
+                )
 
             return authz_results
 
@@ -245,7 +248,9 @@ class CedarPolicyEngine:
             self._stats["errors"] += len(requests)
             logger.error("Cedar batch evaluation failed: %s", type(exc).__name__)
             return [
-                AuthzResult(allowed=False, decision="Deny", diagnostics={"error": type(exc).__name__})
+                AuthzResult(
+                    allowed=False, decision="Deny", diagnostics={"error": type(exc).__name__}
+                )
                 for _ in requests
             ]
 

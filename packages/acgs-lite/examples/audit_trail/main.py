@@ -22,22 +22,40 @@ def demo_manual_audit() -> None:
     log = AuditLog()
 
     entries = [
-        AuditEntry(id="ev-001", type="validation", agent_id="agent-A",
-                   action="review_proposal", valid=True),
-        AuditEntry(id="ev-002", type="maci_check", agent_id="agent-B",
-                   action="validate_proposal", valid=True),
-        AuditEntry(id="ev-003", type="validation", agent_id="agent-C",
-                   action="execute_deployment", valid=True),
-        AuditEntry(id="ev-004", type="validation", agent_id="agent-A",
-                   action="harmful_request", valid=False,
-                   violations=["no-harmful-content"]),
+        AuditEntry(
+            id="ev-001", type="validation", agent_id="agent-A", action="review_proposal", valid=True
+        ),
+        AuditEntry(
+            id="ev-002",
+            type="maci_check",
+            agent_id="agent-B",
+            action="validate_proposal",
+            valid=True,
+        ),
+        AuditEntry(
+            id="ev-003",
+            type="validation",
+            agent_id="agent-C",
+            action="execute_deployment",
+            valid=True,
+        ),
+        AuditEntry(
+            id="ev-004",
+            type="validation",
+            agent_id="agent-A",
+            action="harmful_request",
+            valid=False,
+            violations=["no-harmful-content"],
+        ),
     ]
 
     for entry in entries:
         chain_hash = log.record(entry)
         icon = "✅" if entry.valid else "🚫"
-        print(f"  {icon}  {entry.id}  agent={entry.agent_id}  "
-              f"action={entry.action}  chain={chain_hash}")
+        print(
+            f"  {icon}  {entry.id}  agent={entry.agent_id}  "
+            f"action={entry.action}  chain={chain_hash}"
+        )
 
     # Verify chain integrity
     intact = log.verify_chain()
@@ -50,11 +68,15 @@ def demo_query_and_export() -> None:
     log = AuditLog()
 
     for i in range(5):
-        log.record(AuditEntry(
-            id=f"ev-{i:03d}", type="validation",
-            agent_id="agent-A" if i % 2 == 0 else "agent-B",
-            action=f"action-{i}", valid=(i != 2),
-        ))
+        log.record(
+            AuditEntry(
+                id=f"ev-{i:03d}",
+                type="validation",
+                agent_id="agent-A" if i % 2 == 0 else "agent-B",
+                action=f"action-{i}",
+                valid=(i != 2),
+            )
+        )
 
     # Filter by agent
     agent_a_entries = log.query(agent_id="agent-A")
@@ -84,28 +106,39 @@ def demo_governed_with_audit() -> None:
         name="demo-policy",
         version="1.0",
         rules=[
-            Rule(id="no-pii", text="Prevent SSN patterns",
-                 patterns=[r"\b\d{3}-\d{2}-\d{4}\b"],
-                 severity=Severity.HIGH),
+            Rule(
+                id="no-pii",
+                text="Prevent SSN patterns",
+                patterns=[r"\b\d{3}-\d{2}-\d{4}\b"],
+                severity=Severity.HIGH,
+            ),
         ],
     )
-    governed_fn = GovernedCallable(constitution=constitution)(
-        lambda prompt: f"answer: {prompt}"
-    )
+    governed_fn = GovernedCallable(constitution=constitution)(lambda prompt: f"answer: {prompt}")
 
     # Allowed call → record success
     result = governed_fn("What is 2+2?")
-    log.record(AuditEntry(id="g-001", type="validation", agent_id="ai_fn",
-                          action="math_question", valid=True))
+    log.record(
+        AuditEntry(
+            id="g-001", type="validation", agent_id="ai_fn", action="math_question", valid=True
+        )
+    )
     print(f"  Allowed call: {result}")
 
     # Blocked call → record violation
     try:
         governed_fn("My SSN is 123-45-6789")
     except ConstitutionalViolationError as exc:
-        log.record(AuditEntry(id="g-002", type="validation", agent_id="ai_fn",
-                              action="pii_request", valid=False,
-                              violations=[exc.rule_id]))
+        log.record(
+            AuditEntry(
+                id="g-002",
+                type="validation",
+                agent_id="ai_fn",
+                action="pii_request",
+                valid=False,
+                violations=[exc.rule_id],
+            )
+        )
         print(f"  Blocked: {exc.rule_id}")
 
     print(f"  Log entries : {len(log.entries)}")

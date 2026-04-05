@@ -235,9 +235,7 @@ def format_detailed_report() -> str:
             sections.append("")
             continue
         for hit in hits:
-            sections.append(
-                f"- `{hit.path}:{hit.line_number}` [{hit.category}] — {hit.line}"
-            )
+            sections.append(f"- `{hit.path}:{hit.line_number}` [{hit.category}] — {hit.line}")
         sections.append("")
     return "\n".join(sections)
 
@@ -285,9 +283,7 @@ def check_policy_violations() -> list[str]:
         if policy.disposition == "delete_after_coverage_regeneration" and non_coverage_active_hits:
             violations.append(
                 f"{policy.name}: expected only coverage/doc blockers, found non-coverage active references at "
-                + ", ".join(
-                    f"{hit.path}:{hit.line_number}" for hit in non_coverage_active_hits[:8]
-                )
+                + ", ".join(f"{hit.path}:{hit.line_number}" for hit in non_coverage_active_hits[:8])
             )
         if policy.disposition == "delete_after_coverage_regeneration" and not coverage_hits:
             violations.append(
@@ -312,9 +308,7 @@ def check_batch_readiness(batch: BatchName) -> list[str]:
         if non_coverage_active_hits:
             violations.append(
                 f"{wrapper_name}: non-coverage active callers remain at "
-                + ", ".join(
-                    f"{hit.path}:{hit.line_number}" for hit in non_coverage_active_hits[:8]
-                )
+                + ", ".join(f"{hit.path}:{hit.line_number}" for hit in non_coverage_active_hits[:8])
             )
     return violations
 

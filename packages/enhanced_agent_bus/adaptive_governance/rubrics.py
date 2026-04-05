@@ -98,7 +98,9 @@ def _format_rules(rules: list[dict[str, Any]]) -> str:
     for r in rules:
         keywords = ", ".join(r.get("keywords", []))
         kw_part = f" | keywords: [{keywords}]" if keywords else ""
-        lines.append(f"- [{r.get('id', '?')}] ({r.get('severity', '?')}): {r.get('text', '')}{kw_part}")
+        lines.append(
+            f"- [{r.get('id', '?')}] ({r.get('severity', '?')}): {r.get('text', '')}{kw_part}"
+        )
     return "\n".join(lines)
 
 
@@ -108,7 +110,9 @@ def _format_violations(violations: list[dict[str, Any]]) -> str:
         return "none (action was allowed)"
     lines = []
     for v in violations:
-        lines.append(f"- {v.get('rule_id', '?')} ({v.get('severity', '?')}): matched \"{v.get('matched_content', '')}\"")
+        lines.append(
+            f'- {v.get("rule_id", "?")} ({v.get("severity", "?")}): matched "{v.get("matched_content", "")}"'
+        )
     return "\n".join(lines)
 
 

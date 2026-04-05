@@ -322,9 +322,7 @@ class TestDerivedRole:
         assert derived.can_perform("validate") is False
 
     def test_composed_permissions(self):
-        derived = DerivedRole(
-            "senior", [MACIRole.PROPOSER, MACIRole.VALIDATOR]
-        )
+        derived = DerivedRole("senior", [MACIRole.PROPOSER, MACIRole.VALIDATOR])
         assert derived.can_perform("propose") is True
         assert derived.can_perform("validate") is True
 
@@ -358,9 +356,7 @@ class TestDerivedRole:
         assert "inherited:proposer" in result["source"]
 
     def test_check_denied_action(self):
-        derived = DerivedRole(
-            "test", [MACIRole.PROPOSER], deny_override={"draft"}
-        )
+        derived = DerivedRole("test", [MACIRole.PROPOSER], deny_override={"draft"})
         result = derived.check("draft")
         assert result["allowed"] is False
         assert "denied:override" in result["source"]
@@ -602,9 +598,7 @@ class TestDelegationRegistry:
 
     def test_revoke_single(self):
         reg = DelegationRegistry()
-        grant = reg.delegate(
-            grantor_id="admin", grantee_id="user1", scopes=["*"]
-        )
+        grant = reg.delegate(grantor_id="admin", grantee_id="user1", scopes=["*"])
         count = reg.revoke(grant.grant_id, reason="test")
         assert count == 1
         assert grant.revoked is True
@@ -628,9 +622,7 @@ class TestDelegationRegistry:
 
     def test_revoke_already_revoked_returns_zero(self):
         reg = DelegationRegistry()
-        grant = reg.delegate(
-            grantor_id="admin", grantee_id="user1", scopes=["*"]
-        )
+        grant = reg.delegate(grantor_id="admin", grantee_id="user1", scopes=["*"])
         reg.revoke(grant.grant_id)
         count = reg.revoke(grant.grant_id)
         assert count == 0

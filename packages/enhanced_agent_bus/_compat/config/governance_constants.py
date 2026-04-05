@@ -1,10 +1,10 @@
 """Shim for src.core.shared.config.governance_constants."""
+
 from __future__ import annotations
 
 try:
     from src.core.shared.config.governance_constants import *  # noqa: F403
 except ImportError:
-
     IMPACT_SCORER_CONFIG: dict[str, object] = {}
     RISK_THRESHOLDS: dict[str, float] = {
         "low": 0.3,

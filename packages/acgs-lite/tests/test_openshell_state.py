@@ -103,7 +103,10 @@ class TestOpenShellState:
             observability_hook=lambda event, **fields: events.append((event, fields)),
         )
 
-        assert ("loaded", {"backend_type": "JsonFileGovernanceStateBackend", "format_version": 2}) in events
+        assert (
+            "loaded",
+            {"backend_type": "JsonFileGovernanceStateBackend", "format_version": 2},
+        ) in events
         assert (
             "migrated",
             {

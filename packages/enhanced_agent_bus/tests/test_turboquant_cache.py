@@ -75,9 +75,7 @@ class TestRotationMatrix:
     def test_different_seeds_differ(self):
         R1 = _generate_rotation_matrix(8, seed=1)
         R2 = _generate_rotation_matrix(8, seed=2)
-        any_different = any(
-            R1[i][j] != R2[i][j] for i in range(8) for j in range(8)
-        )
+        any_different = any(R1[i][j] != R2[i][j] for i in range(8) for j in range(8))
         assert any_different
 
     def test_rotation_preserves_norm(self):

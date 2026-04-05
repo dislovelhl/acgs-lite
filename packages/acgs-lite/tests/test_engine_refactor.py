@@ -117,7 +117,9 @@ class TestNoopRecorder:
 class TestFastAuditLog:
     def test_record_and_entries(self) -> None:
         log = _FastAuditLog("hash123")
-        log.record_fast("req1", "agent1", "action1", True, [], "hash123", 1.0, "2025-01-01T00:00:00Z")
+        log.record_fast(
+            "req1", "agent1", "action1", True, [], "hash123", 1.0, "2025-01-01T00:00:00Z"
+        )
         assert len(log) == 1
         entries = log.entries
         assert len(entries) == 1
@@ -216,9 +218,7 @@ class TestValidateBatch:
 
     def test_batch_does_not_raise_in_strict(self, strict_engine: GovernanceEngine) -> None:
         """Even strict engines should not raise during validate_batch."""
-        results = strict_engine.validate_batch(
-            ["deploy model without safety review"]
-        )
+        results = strict_engine.validate_batch(["deploy model without safety review"])
         assert len(results) == 1
         # strict was temporarily disabled, so result has violations but no exception
         assert not results[0].valid or len(results[0].violations) > 0
@@ -237,19 +237,23 @@ class TestValidateBatchReport:
         assert "PASS" in report.summary
 
     def test_mixed_results(self, strict_engine: GovernanceEngine) -> None:
-        report = strict_engine.validate_batch_report([
-            "run safety test",
-            "deploy model without safety review",
-        ])
+        report = strict_engine.validate_batch_report(
+            [
+                "run safety test",
+                "deploy model without safety review",
+            ]
+        )
         assert report.total == 2
         assert report.denied >= 1
         assert "FAIL" in report.summary
         assert len(report.critical_rule_ids) >= 1
 
     def test_context_tuples(self, engine: GovernanceEngine) -> None:
-        report = engine.validate_batch_report([
-            ("run safety test", {"source": "test"}),
-        ])
+        report = engine.validate_batch_report(
+            [
+                ("run safety test", {"source": "test"}),
+            ]
+        )
         assert report.total == 1
 
 

@@ -351,9 +351,7 @@ async def _eval_explain(action: str, context: dict[str, Any]) -> dict[str, Any]:
         explanation = GovernanceDecisionExplainer(store_history=False).explain(
             decision_id=str(result.request_id or "x402-bundle-explain"),
             outcome=(
-                "deny"
-                if result.blocking_violations
-                else ("warn" if result.violations else "allow")
+                "deny" if result.blocking_violations else ("warn" if result.violations else "allow")
             ),
             triggered_rules=_build_triggered_rules(constitution, result),
             input_text=action,

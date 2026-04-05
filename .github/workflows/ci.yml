@@ -63,7 +63,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --extra dev --extra test
+        run: uv sync --frozen --all-extras
 
       - name: mypy (acgs-lite)
         run: |
@@ -88,7 +88,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --extra dev --extra test --extra anthropic
+        run: uv sync --frozen --all-extras
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust
@@ -125,7 +125,7 @@ jobs:
 
       - name: Install workspace + acgs-core
         run: |
-          uv sync --frozen --extra dev --extra test --extra anthropic --extra ml
+          uv sync --frozen --all-extras
           uv pip install -e packages/acgs-core --no-deps
 
       - name: pytest (acgs-core)
@@ -155,7 +155,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --extra dev --extra test --extra ml
+        run: uv sync --frozen --all-extras
 
       - name: MessageProcessor wrapper audit
         run: make health-bus-wrappers
@@ -188,7 +188,7 @@ jobs:
 
       - name: Install workspace + acgs-core
         run: |
-          uv sync --frozen --extra dev --extra test --extra anthropic --extra ml
+          uv sync --frozen --all-extras
           uv pip install -e packages/acgs-core --no-deps
 
       - name: Build Rust extension (optional)
@@ -236,7 +236,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --extra dev --extra test
+        run: uv sync --frozen --all-extras
 
       - name: Build wheel (acgs-lite)
         working-directory: packages/acgs-lite

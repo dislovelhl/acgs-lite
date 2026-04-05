@@ -42,7 +42,8 @@ def _add_observe_args(p: argparse.ArgumentParser) -> None:
         help="Service name in telemetry resource attributes (default: current directory)",
     )
     p.add_argument(
-        "--environment", default="production",
+        "--environment",
+        default="production",
         help="Deployment environment label (default: production)",
     )
     p.add_argument("--prometheus", action="store_true", help="Export Prometheus exposition format")
@@ -52,7 +53,9 @@ def _add_observe_args(p: argparse.ArgumentParser) -> None:
         "--interval", type=float, default=2.0, help="Seconds between watch snapshots (default: 2.0)"
     )
     p.add_argument(
-        "--iterations", type=int, default=0,
+        "--iterations",
+        type=int,
+        default=0,
         help="Stop after N watch snapshots (default: unlimited)",
     )
     p.add_argument(

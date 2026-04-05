@@ -363,8 +363,7 @@ class TestGovernanceTestSuiteAddCase:
     def test_add_case_max_exceeded(self) -> None:
         suite = GovernanceTestSuite()
         suite._cases = [
-            GovernanceTestCase(action=f"a{i}", expected_decision="allow")
-            for i in range(10_000)
+            GovernanceTestCase(action=f"a{i}", expected_decision="allow") for i in range(10_000)
         ]
         with pytest.raises(ValueError, match="max size"):
             suite.add_case(action="overflow", expected_decision="deny")
@@ -385,8 +384,7 @@ class TestGovernanceTestSuiteAddCases:
     def test_add_cases_overflow(self) -> None:
         suite = GovernanceTestSuite()
         suite._cases = [
-            GovernanceTestCase(action=f"a{i}", expected_decision="allow")
-            for i in range(9_999)
+            GovernanceTestCase(action=f"a{i}", expected_decision="allow") for i in range(9_999)
         ]
         cases = [
             GovernanceTestCase(action="x", expected_decision="deny"),
@@ -718,9 +716,10 @@ class TestGovernedGenAIInit:
         """Line 197 area: stats property."""
         from acgs_lite.integrations.google_genai import GovernedGenAI
 
-        with patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True), patch(
-            "acgs_lite.integrations.google_genai.GenAIClient"
-        ) as mock_client_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_client_cls,
+        ):
             mock_client_cls.return_value = MagicMock()
             client = GovernedGenAI(api_key="fake-key")
             stats = client.stats
@@ -732,9 +731,10 @@ class TestGovernedGenAIInit:
         """GovernedGenAI.generate_content delegates to models."""
         from acgs_lite.integrations.google_genai import GovernedGenAI
 
-        with patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True), patch(
-            "acgs_lite.integrations.google_genai.GenAIClient"
-        ) as mock_client_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_client_cls,
+        ):
             mock_instance = MagicMock()
             mock_response = MagicMock()
             mock_response.text = "hi"

@@ -19,7 +19,9 @@ class JudgmentScore:
     accuracy: float = 0.0  # Did the engine get the decision right?
     proportionality: float = 0.0  # Was the severity appropriate?
     reasoning_quality: float = 0.0  # Was the reasoning clear and complete?
-    missed_violations: list[str] = field(default_factory=list)  # Rule IDs the judge thinks should have fired
+    missed_violations: list[str] = field(
+        default_factory=list
+    )  # Rule IDs the judge thinks should have fired
     false_positives: list[str] = field(default_factory=list)  # Rule IDs that fired unnecessarily
 
 

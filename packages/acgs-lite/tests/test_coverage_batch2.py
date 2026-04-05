@@ -278,7 +278,11 @@ class TestPolicyRolloutPipeline:
         )
         pipe.evaluate("something harmless", agent_id="a1")
         report = pipe.impact_report()
-        assert "Safe to advance" in report["recommendation"] or "no rules matched" in report["recommendation"].lower() or "No decision flips" in report["recommendation"]
+        assert (
+            "Safe to advance" in report["recommendation"]
+            or "no rules matched" in report["recommendation"].lower()
+            or "No decision flips" in report["recommendation"]
+        )
 
     def test_flip_summary(self) -> None:
         from acgs_lite.constitution.rollout import PolicyRolloutPipeline
@@ -327,7 +331,12 @@ class TestSubsumption:
             {"id": "R1", "text": "No PII", "keywords": ["pii", "export"], "severity": "high"},
         ]
         candidate = [
-            {"id": "C1", "text": "Block PII export", "keywords": ["pii", "export"], "severity": "high"},
+            {
+                "id": "C1",
+                "text": "Block PII export",
+                "keywords": ["pii", "export"],
+                "severity": "high",
+            },
         ]
         checker = CrossConstitutionCompliance()
         report = checker.check_subsumption(reference, candidate, "ref", "cand")
@@ -353,7 +362,12 @@ class TestSubsumption:
         from acgs_lite.constitution.subsumption import CrossConstitutionCompliance
 
         reference = [
-            {"id": "R1", "text": "No PII export", "keywords": ["pii", "export", "data"], "severity": "high"},
+            {
+                "id": "R1",
+                "text": "No PII export",
+                "keywords": ["pii", "export", "data"],
+                "severity": "high",
+            },
         ]
         candidate = [
             {"id": "C1", "text": "Block PII", "keywords": ["pii"], "severity": "high"},
@@ -361,7 +375,9 @@ class TestSubsumption:
         checker = CrossConstitutionCompliance()
         report = checker.check_subsumption(reference, candidate)
         # Only 1/3 keywords match -> partial coverage
-        assert len(report.partially_covered) >= 0  # may be partial or uncovered depending on threshold
+        assert (
+            len(report.partially_covered) >= 0
+        )  # may be partial or uncovered depending on threshold
 
     def test_empty_reference(self) -> None:
         from acgs_lite.constitution.subsumption import CrossConstitutionCompliance
@@ -895,18 +911,24 @@ class TestPolicySandbox:
         assert report.compatibility_score == 1.0
         assert report.risk_score == 0.0
 
-    @pytest.mark.skip(reason="sandbox.py calls Rule.to_dict() which does not exist on Pydantic models")
+    @pytest.mark.skip(
+        reason="sandbox.py calls Rule.to_dict() which does not exist on Pydantic models"
+    )
     def test_test_rule_addition(self) -> None:
         from acgs_lite import GovernanceEngine
         from acgs_lite.constitution.sandbox import PolicySandbox
 
         prod = GovernanceEngine(_simple_constitution("prod"))
         sandbox = PolicySandbox(prod)
-        new_rules = [{"id": "NEW1", "text": "Block uploads", "keywords": ["upload"], "severity": "high"}]
+        new_rules = [
+            {"id": "NEW1", "text": "Block uploads", "keywords": ["upload"], "severity": "high"}
+        ]
         report = sandbox.test_rule_addition(new_rules, ["upload data", "safe action"])
         assert report.total_actions == 2
 
-    @pytest.mark.skip(reason="sandbox.py calls Rule.to_dict() which does not exist on Pydantic models")
+    @pytest.mark.skip(
+        reason="sandbox.py calls Rule.to_dict() which does not exist on Pydantic models"
+    )
     def test_test_rule_removal(self) -> None:
         from acgs_lite import GovernanceEngine
         from acgs_lite.constitution.sandbox import PolicySandbox
@@ -958,7 +980,9 @@ class TestRetentionManager:
         )
 
         mgr = RetentionManager()
-        mgr.add_policy(RetentionPolicy(category=RetentionCategory.AUDIT_LOG, max_retention_days=365))
+        mgr.add_policy(
+            RetentionPolicy(category=RetentionCategory.AUDIT_LOG, max_retention_days=365)
+        )
         assert mgr.remove_policy(RetentionCategory.AUDIT_LOG) is True
         assert mgr.remove_policy(RetentionCategory.AUDIT_LOG) is False
 
@@ -1039,11 +1063,13 @@ class TestRetentionManager:
         )
 
         mgr = RetentionManager()
-        mgr.add_policy(RetentionPolicy(
-            category=RetentionCategory.AUDIT_LOG,
-            max_retention_days=1,
-            auto_purge=True,
-        ))
+        mgr.add_policy(
+            RetentionPolicy(
+                category=RetentionCategory.AUDIT_LOG,
+                max_retention_days=1,
+                auto_purge=True,
+            )
+        )
         old_ts = time.time() - 200_000
         mgr.ingest("a1", RetentionCategory.AUDIT_LOG, timestamp=old_ts)
         records = mgr.purge_expired()
@@ -1059,11 +1085,13 @@ class TestRetentionManager:
         )
 
         mgr = RetentionManager()
-        mgr.add_policy(RetentionPolicy(
-            category=RetentionCategory.AUDIT_LOG,
-            max_retention_days=1,
-            auto_purge=False,
-        ))
+        mgr.add_policy(
+            RetentionPolicy(
+                category=RetentionCategory.AUDIT_LOG,
+                max_retention_days=1,
+                auto_purge=False,
+            )
+        )
         old_ts = time.time() - 200_000
         mgr.ingest("a1", RetentionCategory.AUDIT_LOG, timestamp=old_ts)
         records = mgr.purge_expired()
@@ -1077,11 +1105,13 @@ class TestRetentionManager:
         )
 
         mgr = RetentionManager()
-        mgr.add_policy(RetentionPolicy(
-            category=RetentionCategory.AUDIT_LOG,
-            max_retention_days=1,
-            archive_before_purge=True,
-        ))
+        mgr.add_policy(
+            RetentionPolicy(
+                category=RetentionCategory.AUDIT_LOG,
+                max_retention_days=1,
+                archive_before_purge=True,
+            )
+        )
         old_ts = time.time() - 200_000
         mgr.ingest("a1", RetentionCategory.AUDIT_LOG, timestamp=old_ts)
         records = mgr.purge_expired()
@@ -1217,7 +1247,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w = reg.request(rule_id="R1", action_pattern="x", requester="a", reason="r", expires_at=self._future_ts())
+        w = reg.request(
+            rule_id="R1",
+            action_pattern="x",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         reg.approve(w.waiver_id, approver="admin")
         with pytest.raises(ValueError, match="Cannot deny"):
             reg.deny(w.waiver_id, approver="admin")
@@ -1226,7 +1262,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w = reg.request(rule_id="R1", action_pattern="x", requester="a", reason="r", expires_at=self._future_ts())
+        w = reg.request(
+            rule_id="R1",
+            action_pattern="x",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         reg.deny(w.waiver_id, approver="admin")
         with pytest.raises(ValueError, match="Cannot approve"):
             reg.approve(w.waiver_id, approver="admin")
@@ -1235,7 +1277,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w = reg.request(rule_id="R1", action_pattern="x", requester="a", reason="r", expires_at=self._future_ts())
+        w = reg.request(
+            rule_id="R1",
+            action_pattern="x",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         reg.approve(w.waiver_id, approver="admin")
         revoked = reg.revoke(w.waiver_id, reason="policy change")
         assert revoked.status.value == "revoked"
@@ -1244,7 +1292,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w = reg.request(rule_id="R1", action_pattern="x", requester="a", reason="r", expires_at=self._future_ts())
+        w = reg.request(
+            rule_id="R1",
+            action_pattern="x",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         with pytest.raises(ValueError, match="Cannot revoke"):
             reg.revoke(w.waiver_id)
 
@@ -1267,8 +1321,16 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w1 = reg.request(rule_id="R1", action_pattern="a", requester="a", reason="r", expires_at=self._future_ts())
-        w2 = reg.request(rule_id="R2", action_pattern="b", requester="a", reason="r", expires_at=self._past_ts())
+        w1 = reg.request(
+            rule_id="R1",
+            action_pattern="a",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
+        w2 = reg.request(
+            rule_id="R2", action_pattern="b", requester="a", reason="r", expires_at=self._past_ts()
+        )
         reg.approve(w1.waiver_id, approver="admin")
         reg.approve(w2.waiver_id, approver="admin")
         assert len(reg.list_active()) == 1
@@ -1278,14 +1340,26 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        reg.request(rule_id="R1", action_pattern="a", requester="a", reason="r", expires_at=self._future_ts())
+        reg.request(
+            rule_id="R1",
+            action_pattern="a",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         assert len(reg.list_pending()) == 1
 
     def test_evidence_pack_all(self) -> None:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        reg.request(rule_id="R1", action_pattern="a", requester="a", reason="r", expires_at=self._future_ts())
+        reg.request(
+            rule_id="R1",
+            action_pattern="a",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         pack = reg.evidence_pack()
         assert pack["total_waivers"] == 1
         assert "waivers" in pack
@@ -1294,7 +1368,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w = reg.request(rule_id="R1", action_pattern="a", requester="a", reason="r", expires_at=self._future_ts())
+        w = reg.request(
+            rule_id="R1",
+            action_pattern="a",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         pack = reg.evidence_pack(waiver_id=w.waiver_id)
         assert pack["total_waivers"] == 1
 
@@ -1309,7 +1389,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        reg.request(rule_id="R1", action_pattern="a", requester="a", reason="r", expires_at=self._future_ts())
+        reg.request(
+            rule_id="R1",
+            action_pattern="a",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         s = reg.summary()
         assert s["total"] == 1
 
@@ -1317,7 +1403,13 @@ class TestWaivers:
         from acgs_lite.constitution.waivers import WaiverRegistry
 
         reg = WaiverRegistry()
-        w = reg.request(rule_id="R1", action_pattern="a", requester="a", reason="r", expires_at=self._future_ts())
+        w = reg.request(
+            rule_id="R1",
+            action_pattern="a",
+            requester="a",
+            reason="r",
+            expires_at=self._future_ts(),
+        )
         w.add_evidence("doc", "Uploaded NDA", url="https://example.com/nda.pdf")
         assert len(w.evidence) == 1
         assert w.evidence[0]["evidence_type"] == "doc"
@@ -1363,11 +1455,13 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(
-            name="allows safe",
-            input_text="safe text",
-            expected_decision="allow",
-        ))
+        suite.add_case(
+            GovernanceTestCase(
+                name="allows safe",
+                input_text="safe text",
+                expected_decision="allow",
+            )
+        )
         report = suite.run()
         assert report.ci_passed is True
         assert len(report.passed) == 1
@@ -1377,11 +1471,13 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(
-            name="should fail",
-            input_text="block this",
-            expected_decision="allow",  # wrong expectation
-        ))
+        suite.add_case(
+            GovernanceTestCase(
+                name="should fail",
+                input_text="block this",
+                expected_decision="allow",  # wrong expectation
+            )
+        )
         report = suite.run()
         assert report.ci_passed is False
         assert len(report.failed) == 1
@@ -1390,12 +1486,14 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(
-            name="skipped",
-            input_text="anything",
-            expected_decision="allow",
-            skip=True,
-        ))
+        suite.add_case(
+            GovernanceTestCase(
+                name="skipped",
+                input_text="anything",
+                expected_decision="allow",
+                skip=True,
+            )
+        )
         report = suite.run()
         assert len(report.skipped) == 1
         assert report.ci_passed is True
@@ -1416,8 +1514,12 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(name="a", input_text="x", expected_decision="allow", tags=["pii"]))
-        suite.add_case(GovernanceTestCase(name="b", input_text="y", expected_decision="allow", tags=["sql"]))
+        suite.add_case(
+            GovernanceTestCase(name="a", input_text="x", expected_decision="allow", tags=["pii"])
+        )
+        suite.add_case(
+            GovernanceTestCase(name="b", input_text="y", expected_decision="allow", tags=["sql"])
+        )
         report = suite.run(tags=["pii"])
         assert report.total == 1
 
@@ -1434,12 +1536,14 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(
-            name="check rules",
-            input_text="block this",
-            expected_decision="deny",
-            expected_rules_triggered=["BLOCK-1"],
-        ))
+        suite.add_case(
+            GovernanceTestCase(
+                name="check rules",
+                input_text="block this",
+                expected_decision="deny",
+                expected_rules_triggered=["BLOCK-1"],
+            )
+        )
         report = suite.run()
         assert report.ci_passed is True
 
@@ -1447,12 +1551,14 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(
-            name="check not triggered",
-            input_text="block this",
-            expected_decision="deny",
-            expected_rules_not_triggered=["BLOCK-1"],  # should fail
-        ))
+        suite.add_case(
+            GovernanceTestCase(
+                name="check not triggered",
+                input_text="block this",
+                expected_decision="deny",
+                expected_rules_not_triggered=["BLOCK-1"],  # should fail
+            )
+        )
         report = suite.run()
         assert report.ci_passed is False
 
@@ -1480,10 +1586,12 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test", fail_fast=True)
-        suite.add_cases([
-            GovernanceTestCase(name="fail", input_text="block", expected_decision="allow"),
-            GovernanceTestCase(name="skip-this", input_text="safe", expected_decision="allow"),
-        ])
+        suite.add_cases(
+            [
+                GovernanceTestCase(name="fail", input_text="block", expected_decision="allow"),
+                GovernanceTestCase(name="skip-this", input_text="safe", expected_decision="allow"),
+            ]
+        )
         report = suite.run()
         assert report.total == 1  # stopped after first failure
 
@@ -1491,7 +1599,9 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(name="test1", input_text="safe", expected_decision="allow"))
+        suite.add_case(
+            GovernanceTestCase(name="test1", input_text="safe", expected_decision="allow")
+        )
         baseline = suite.run()
 
         # Simulate regression by changing engine
@@ -1499,7 +1609,9 @@ class TestGovernanceTestSuite:
             return {"decision": "deny", "triggered_rules": []}
 
         suite2 = GovernanceTestSuite(engine=regressed_engine, name="test")
-        suite2.add_case(GovernanceTestCase(name="test1", input_text="safe", expected_decision="allow"))
+        suite2.add_case(
+            GovernanceTestCase(name="test1", input_text="safe", expected_decision="allow")
+        )
         current = suite2.run()
 
         regressions = suite.assert_no_regressions(baseline, current)
@@ -1509,10 +1621,12 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_cases([
-            GovernanceTestCase(name="pass", input_text="safe", expected_decision="allow"),
-            GovernanceTestCase(name="fail", input_text="block", expected_decision="allow"),
-        ])
+        suite.add_cases(
+            [
+                GovernanceTestCase(name="pass", input_text="safe", expected_decision="allow"),
+                GovernanceTestCase(name="fail", input_text="block", expected_decision="allow"),
+            ]
+        )
         report = suite.run()
         assert report.coverage_pct() == pytest.approx(0.5)
 
@@ -1529,7 +1643,9 @@ class TestGovernanceTestSuite:
         from acgs_lite.constitution.test_suite import GovernanceTestCase, GovernanceTestSuite
 
         suite = GovernanceTestSuite(engine=self._mock_engine, name="test")
-        suite.add_case(GovernanceTestCase(name="a", input_text="x", expected_decision="allow", tags=["pii"]))
+        suite.add_case(
+            GovernanceTestCase(name="a", input_text="x", expected_decision="allow", tags=["pii"])
+        )
         suite.add_case(GovernanceTestCase(name="b", input_text="y", expected_decision="allow"))
         assert len(suite.filter_cases(tags=["pii"])) == 1
         assert len(suite.filter_cases()) == 2
@@ -2371,12 +2487,14 @@ class TestRiskClassifier:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="cv-screener",
-            purpose="Screen CVs",
-            domain="employment",
-            employment=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="cv-screener",
+                purpose="Screen CVs",
+                domain="employment",
+                employment=True,
+            )
+        )
         assert result.is_high_risk is True
         assert len(result.obligations) > 0
         assert result.requires_article12_logging is True
@@ -2386,82 +2504,96 @@ class TestRiskClassifier:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="scorer",
-            purpose="Score citizens",
-            domain="governance",
-            social_scoring=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="scorer",
+                purpose="Score citizens",
+                domain="governance",
+                social_scoring=True,
+            )
+        )
         assert result.is_prohibited is True
 
     def test_unacceptable_subliminal(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="x",
-            domain="x",
-            subliminal_manipulation=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="x",
+                domain="x",
+                subliminal_manipulation=True,
+            )
+        )
         assert result.is_prohibited is True
 
     def test_unacceptable_vulnerability(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="x",
-            domain="x",
-            vulnerability_exploitation=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="x",
+                domain="x",
+                vulnerability_exploitation=True,
+            )
+        )
         assert result.is_prohibited is True
 
     def test_unacceptable_biometric_law_enforcement(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="x",
-            domain="security",
-            biometric_processing=True,
-            law_enforcement=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="x",
+                domain="security",
+                biometric_processing=True,
+                law_enforcement=True,
+            )
+        )
         assert result.is_prohibited is True
 
     def test_high_risk_domain_keyword(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="x",
-            domain="healthcare",
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="x",
+                domain="healthcare",
+            )
+        )
         assert result.is_high_risk is True
 
     def test_limited_risk_chatbot(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="Chatbot",
-            domain="chatbot",
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="Chatbot",
+                domain="chatbot",
+            )
+        )
         assert result.level.value == "limited_risk"
 
     def test_minimal_risk(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="Weather app",
-            domain="weather",
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="Weather app",
+                domain="weather",
+            )
+        )
         assert result.level.value == "minimal_risk"
         assert len(result.obligations) == 0
 
@@ -2469,21 +2601,25 @@ class TestRiskClassifier:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        results = classifier.classify_many([
-            SystemDescription(system_id="a", purpose="x", domain="weather"),
-            SystemDescription(system_id="b", purpose="y", domain="healthcare"),
-        ])
+        results = classifier.classify_many(
+            [
+                SystemDescription(system_id="a", purpose="x", domain="weather"),
+                SystemDescription(system_id="b", purpose="y", domain="healthcare"),
+            ]
+        )
         assert len(results) == 2
 
     def test_to_dict(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="x",
-            domain="weather",
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="x",
+                domain="weather",
+            )
+        )
         d = result.to_dict()
         assert "risk_level" in d
         assert "disclaimer" in d
@@ -2492,36 +2628,42 @@ class TestRiskClassifier:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="Face recognition",
-            domain="retail",
-            biometric_processing=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="Face recognition",
+                domain="retail",
+                biometric_processing=True,
+            )
+        )
         assert result.is_high_risk is True
 
     def test_high_risk_critical_infrastructure(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="Power grid",
-            domain="energy",
-            critical_infrastructure=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="Power grid",
+                domain="energy",
+                critical_infrastructure=True,
+            )
+        )
         assert result.is_high_risk is True
 
     def test_high_risk_education(self) -> None:
         from acgs_lite.eu_ai_act.risk_classification import RiskClassifier, SystemDescription
 
         classifier = RiskClassifier()
-        result = classifier.classify(SystemDescription(
-            system_id="x",
-            purpose="Grading",
-            domain="schools",
-            education=True,
-        ))
+        result = classifier.classify(
+            SystemDescription(
+                system_id="x",
+                purpose="Grading",
+                domain="schools",
+                education=True,
+            )
+        )
         assert result.is_high_risk is True
 
 

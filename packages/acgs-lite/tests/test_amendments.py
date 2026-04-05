@@ -25,6 +25,7 @@ from acgs_lite.constitution.amendments import (
 # Vote dataclass
 # ---------------------------------------------------------------------------
 
+
 class TestVote:
     """Tests for the Vote frozen dataclass."""
 
@@ -61,6 +62,7 @@ class TestVote:
 # ---------------------------------------------------------------------------
 # Amendment dataclass
 # ---------------------------------------------------------------------------
+
 
 class TestAmendment:
     """Tests for Amendment computed properties."""
@@ -175,6 +177,7 @@ class TestAmendment:
 # AmendmentStatus / AmendmentType enums
 # ---------------------------------------------------------------------------
 
+
 class TestEnums:
     def test_amendment_status_values(self) -> None:
         assert AmendmentStatus.draft == "draft"
@@ -192,6 +195,7 @@ class TestEnums:
 # ---------------------------------------------------------------------------
 # AmendmentProtocol
 # ---------------------------------------------------------------------------
+
 
 class TestAmendmentProtocol:
     """Tests for the full amendment lifecycle protocol."""
@@ -409,7 +413,9 @@ class TestAmendmentProtocol:
         type(mock_constitution).hash = PropertyMock(side_effect=["hash_before", "hash_after"])
         mock_constitution.update_rule.return_value = mock_constitution
 
-        result = proto.enforce(amd.amendment_id, executor_id="exec-1", constitution=mock_constitution)
+        result = proto.enforce(
+            amd.amendment_id, executor_id="exec-1", constitution=mock_constitution
+        )
         assert result is mock_constitution
         assert amd.status == AmendmentStatus.enforced
         assert amd.enforced_at != ""
@@ -545,6 +551,7 @@ class TestAmendmentProtocol:
 # _apply_changes static method
 # ---------------------------------------------------------------------------
 
+
 class TestApplyChanges:
     """Tests for _apply_changes delegation to Constitution."""
 
@@ -626,12 +633,15 @@ class TestApplyChanges:
 # Full lifecycle integration
 # ---------------------------------------------------------------------------
 
+
 class TestFullLifecycle:
     """Integration-style tests for end-to-end amendment workflows."""
 
     def test_happy_path_draft_to_close_voting(self) -> None:
         proto = AmendmentProtocol(quorum=2, approval_threshold=0.6)
-        amd = proto.draft(proposer_id="policy-agent", amendment_type="modify_severity", title="Elevate")
+        amd = proto.draft(
+            proposer_id="policy-agent", amendment_type="modify_severity", title="Elevate"
+        )
         proto.propose(amd.amendment_id, proposer_id="policy-agent")
         proto.open_voting(amd.amendment_id, proposer_id="policy-agent")
         proto.vote(amd.amendment_id, voter_id="val-1", approve=True)

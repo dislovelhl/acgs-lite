@@ -1,4 +1,5 @@
 """Shim for src.core.shared.auth.oidc_handler."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -7,7 +8,6 @@ try:
     from src.core.shared.auth.oidc_handler import *  # noqa: F403
     from src.core.shared.auth.oidc_handler import _normalize_secret_sentinel  # noqa: F401
 except ImportError:
-
     import re
 
     def _normalize_secret_sentinel(secret: str) -> str:

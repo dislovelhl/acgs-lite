@@ -525,8 +525,7 @@ class DomainRoleRegistry:
                 **base,
                 "allowed": False,
                 "reason": (
-                    f"role violation: {scoped.role.value!r} may only perform "
-                    f"{sorted(allowed)!r}"
+                    f"role violation: {scoped.role.value!r} may only perform {sorted(allowed)!r}"
                 ),
             }
 

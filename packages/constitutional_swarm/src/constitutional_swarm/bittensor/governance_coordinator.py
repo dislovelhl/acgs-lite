@@ -98,10 +98,12 @@ class CoordinatorConfig:
     case_config: CaseConfig = field(default_factory=CaseConfig)
     selection_policy: SelectionPolicy = field(default_factory=SelectionPolicy)
     audit_policy: AuditPolicy = field(default_factory=AuditPolicy)
-    trust_config: TrustConfig = field(default_factory=lambda: TrustConfig(
-        initial_score=0.9,
-        time_decay_rate=0.001,
-    ))
+    trust_config: TrustConfig = field(
+        default_factory=lambda: TrustConfig(
+            initial_score=0.9,
+            time_decay_rate=0.001,
+        )
+    )
     default_risk_tier: str = "medium"
     auto_audit: bool = False
 
@@ -205,12 +207,15 @@ class GovernanceCoordinator:
             metadata=metadata,
         )
         try:
-            self._trust_mgr.register(validator_id, TrustConfig(
-                initial_score=score,
-                time_decay_rate=self._config.trust_config.time_decay_rate,
-                trusted_threshold=self._config.trust_config.trusted_threshold,
-                monitored_threshold=self._config.trust_config.monitored_threshold,
-            ))
+            self._trust_mgr.register(
+                validator_id,
+                TrustConfig(
+                    initial_score=score,
+                    time_decay_rate=self._config.trust_config.time_decay_rate,
+                    trusted_threshold=self._config.trust_config.trusted_threshold,
+                    monitored_threshold=self._config.trust_config.monitored_threshold,
+                ),
+            )
         except ValueError:
             pass  # already registered, keep existing state
 
@@ -237,8 +242,12 @@ class GovernanceCoordinator:
         """
         tier = risk_tier or self._config.default_risk_tier
         return self._case_mgr.create(
-            action, domain=domain, risk_tier=tier,
-            case_id=case_id, metadata=metadata, _now=_now,
+            action,
+            domain=domain,
+            risk_tier=tier,
+            case_id=case_id,
+            metadata=metadata,
+            _now=_now,
         )
 
     def assign_miner(
@@ -362,9 +371,9 @@ class GovernanceCoordinator:
         _now: datetime | None = None,
     ) -> None:
         """Register a finalized case for spot-check auditing."""
-        submission_hash = proof_hash or hashlib.sha256(
-            f"{case_id}:{outcome}".encode()
-        ).hexdigest()[:16]
+        submission_hash = (
+            proof_hash or hashlib.sha256(f"{case_id}:{outcome}".encode()).hexdigest()[:16]
+        )
 
         self._auditor.register_completed(
             case_id=case_id,
@@ -397,6 +406,7 @@ class GovernanceCoordinator:
             # Default: agree with original (no spot-check disagreements)
             def _default_oracle(case_id: str, sub_hash: str) -> str:
                 return "approve"
+
             check_fn = _default_oracle
 
         # Run spot-checks
@@ -407,7 +417,9 @@ class GovernanceCoordinator:
 
         # Apply adjustments to trust manager
         applied = self._auditor.apply_adjustments(
-            self._trust_mgr, adjustments, _now=_now,
+            self._trust_mgr,
+            adjustments,
+            _now=_now,
         )
 
         # Sync trust scores back to validator pool
@@ -427,7 +439,9 @@ class GovernanceCoordinator:
     # ── Timeout management ───────────────────────────────────────────────
 
     def expire_stale_cases(
-        self, *, _now: datetime | None = None,
+        self,
+        *,
+        _now: datetime | None = None,
     ) -> list[str]:
         """Expire and optionally re-queue timed-out cases.
 

@@ -68,8 +68,10 @@ class TestComplianceSnapshot:
 
     def test_escalation_rate(self):
         s = ComplianceSnapshot(
-            total_decisions=1000, passed_decisions=970,
-            escalated_decisions=30, auto_resolved_decisions=20,
+            total_decisions=1000,
+            passed_decisions=970,
+            escalated_decisions=30,
+            auto_resolved_decisions=20,
             constitutional_hash=CONST_HASH,
         )
         assert s.escalation_rate == pytest.approx(0.03)

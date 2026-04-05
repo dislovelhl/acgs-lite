@@ -113,8 +113,11 @@ class TestBasicLifecycle:
         # Finalize
         votes = {vid: "approve" for vid in sel.selected}
         gc.finalize_case(
-            cid, accepted=True, validator_votes=votes,
-            proof_hash="abc123", _now=_ts(4),
+            cid,
+            accepted=True,
+            validator_votes=votes,
+            proof_hash="abc123",
+            _now=_ts(4),
         )
         assert gc.case(cid).state == CaseState.FINALIZED
 
@@ -209,20 +212,22 @@ class TestAuditCycle:
     def test_audit_cycle_detects_lazy_validators(self) -> None:
         """Spot-check disagrees → lazy validators penalized, dissenters rewarded."""
         # Use equal initial scores so trust deltas are directly comparable
-        gc = GovernanceCoordinator(CoordinatorConfig(
-            case_config=CaseConfig(
-                claim_timeout_minutes=60,
-                submission_timeout_minutes=120,
-                validation_timeout_minutes=480,
-            ),
-            selection_policy=SelectionPolicy(require_domain_match=True),
-            audit_policy=AuditPolicy(
-                sample_rate=1.0,
-                correct_dissent_bonus=0.05,
-                lazy_penalty=0.03,
-            ),
-            trust_config=TrustConfig(initial_score=0.9, time_decay_rate=0.001),
-        ))
+        gc = GovernanceCoordinator(
+            CoordinatorConfig(
+                case_config=CaseConfig(
+                    claim_timeout_minutes=60,
+                    submission_timeout_minutes=120,
+                    validation_timeout_minutes=480,
+                ),
+                selection_policy=SelectionPolicy(require_domain_match=True),
+                audit_policy=AuditPolicy(
+                    sample_rate=1.0,
+                    correct_dissent_bonus=0.05,
+                    lazy_penalty=0.03,
+                ),
+                trust_config=TrustConfig(initial_score=0.9, time_decay_rate=0.001),
+            )
+        )
         for i in range(10):
             gc.register_validator(
                 f"val-{i:03d}",
@@ -293,7 +298,9 @@ class TestMultiCase:
             sel = gc.select_and_begin_validation(cid, _now=_ts(i * 10 + 3))
             votes = {vid: "approve" for vid in sel.selected}
             gc.finalize_case(
-                cid, accepted=True, validator_votes=votes,
+                cid,
+                accepted=True,
+                validator_votes=votes,
                 _now=_ts(i * 10 + 4),
             )
             cases.append(cid)
@@ -328,7 +335,8 @@ class TestMultiCase:
         gc.submit_result(cid, "fast-miner", {"v": 1}, _now=_ts(135))
         sel = gc.select_and_begin_validation(cid, _now=_ts(140))
         gc.finalize_case(
-            cid, accepted=True,
+            cid,
+            accepted=True,
             validator_votes={vid: "approve" for vid in sel.selected},
             _now=_ts(145),
         )
@@ -352,14 +360,19 @@ class TestTrustFeedback:
         gc.assign_miner(cid, "m1", _now=_ts(1))
         gc.submit_result(cid, "m1", {}, _now=_ts(2))
         sel = gc.select_and_begin_validation(
-            cid, seed="ff" * 32, _now=_ts(3),
+            cid,
+            seed="ff" * 32,
+            _now=_ts(3),
         )
 
         # Check if val-000 was selected
         if "val-000" in sel.selected:
             votes = {vid: "approve" for vid in sel.selected}
             gc.finalize_case(
-                cid, accepted=True, validator_votes=votes, _now=_ts(4),
+                cid,
+                accepted=True,
+                validator_votes=votes,
+                _now=_ts(4),
             )
 
             # Oracle disagrees → val-000 was lazy
@@ -379,8 +392,11 @@ class TestTrustFeedback:
 
         # Directly record a domain-specific violation via trust manager
         gc.trust_manager.record_decision(
-            vid, compliant=False, severity="critical",
-            domain="finance", _now=_ts(0),
+            vid,
+            compliant=False,
+            severity="critical",
+            domain="finance",
+            _now=_ts(0),
         )
 
         fin_score = gc.validator_trust(vid, domain="finance", _now=_ts(0))

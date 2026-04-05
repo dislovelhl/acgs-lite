@@ -115,8 +115,7 @@ _AU_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
         "Protect personal information processed by the AI system in accordance "
         "with the Privacy Act 1988, Australian Privacy Principles, and data "
         "minimisation best practices.",
-        "Australia AI Ethics Framework, Principle 4 — Privacy; "
-        "Privacy Act 1988 (Cth)",
+        "Australia AI Ethics Framework, Principle 4 — Privacy; Privacy Act 1988 (Cth)",
         None,
         True,
     ),
@@ -274,8 +273,7 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "impact assessment obligations"
     ),
     "AU-AI P5-1": (
-        "acgs-lite GovernanceEngine — anomaly detection on unexpected or "
-        "out-of-scope behaviour"
+        "acgs-lite GovernanceEngine — anomaly detection on unexpected or out-of-scope behaviour"
     ),
     "AU-AI P5-2": (
         "acgs-lite GovernanceEngine — severity-based blocking defaults to "
@@ -376,10 +374,13 @@ class AustraliaAIEthicsFramework:
         return _build_assessment(self, checklist)
 
 
-def _build_assessment(fw: AustraliaAIEthicsFramework, checklist: list[ChecklistItem]) -> FrameworkAssessment:
+def _build_assessment(
+    fw: AustraliaAIEthicsFramework, checklist: list[ChecklistItem]
+) -> FrameworkAssessment:
     total = len(checklist)
     compliant = sum(
-        1 for item in checklist
+        1
+        for item in checklist
         if item.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
     )
     acgs_covered = sum(1 for item in checklist if item.acgs_lite_feature is not None)

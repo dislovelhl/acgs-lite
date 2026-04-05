@@ -38,9 +38,15 @@ def _make_record(
         votes_against=0,
         proof_root_hash="abc",
         escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
-        impact_vector=impact_vector or {
-            "safety": 0.1, "security": 0.8, "privacy": 0.2,
-            "fairness": 0.1, "reliability": 0.1, "transparency": 0.1, "efficiency": 0.1,
+        impact_vector=impact_vector
+        or {
+            "safety": 0.1,
+            "security": 0.8,
+            "privacy": 0.2,
+            "fairness": 0.1,
+            "reliability": 0.1,
+            "transparency": 0.1,
+            "efficiency": 0.1,
         },
         constitutional_hash=CONST_HASH,
         ambiguous_dimensions=ambiguous,
@@ -123,9 +129,13 @@ class TestEvidenceCollection:
         updater = BayesianThresholdUpdater()
         rec = _make_record(
             impact_vector={
-                "safety": 0.1, "security": 0.8, "privacy": 0.2,
-                "fairness": 0.1, "reliability": 0.1,
-                "transparency": 0.1, "efficiency": 0.1,
+                "safety": 0.1,
+                "security": 0.8,
+                "privacy": 0.2,
+                "fairness": 0.1,
+                "reliability": 0.1,
+                "transparency": 0.1,
+                "efficiency": 0.1,
             },
             ambiguous=("security",),
             grade=0.9,
@@ -143,18 +153,32 @@ class TestEvidenceCollection:
         # Confirmed: security score = 0.8
         r1 = _make_record(
             case_id="c1",
-            impact_vector={"security": 0.8, "safety": 0.1, "privacy": 0.1,
-                           "fairness": 0.1, "reliability": 0.1,
-                           "transparency": 0.1, "efficiency": 0.1},
-            ambiguous=("security",), grade=1.0,
+            impact_vector={
+                "security": 0.8,
+                "safety": 0.1,
+                "privacy": 0.1,
+                "fairness": 0.1,
+                "reliability": 0.1,
+                "transparency": 0.1,
+                "efficiency": 0.1,
+            },
+            ambiguous=("security",),
+            grade=1.0,
         )
         # Overblown: security score = 0.2
         r2 = _make_record(
             case_id="c2",
-            impact_vector={"security": 0.2, "safety": 0.1, "privacy": 0.1,
-                           "fairness": 0.1, "reliability": 0.1,
-                           "transparency": 0.1, "efficiency": 0.1},
-            ambiguous=("security",), grade=1.0,
+            impact_vector={
+                "security": 0.2,
+                "safety": 0.1,
+                "privacy": 0.1,
+                "fairness": 0.1,
+                "reliability": 0.1,
+                "transparency": 0.1,
+                "efficiency": 0.1,
+            },
+            ambiguous=("security",),
+            grade=1.0,
         )
         evidence = updater.collect_evidence([r1, r2])
         sec = next(e for e in evidence if e.dimension == "security")
@@ -167,9 +191,15 @@ class TestEvidenceCollection:
         updater = BayesianThresholdUpdater()
         # security is ambiguous, but safety is NOT in ambiguous_dimensions
         rec = _make_record(
-            impact_vector={"safety": 0.9, "security": 0.8, "privacy": 0.1,
-                           "fairness": 0.1, "reliability": 0.1,
-                           "transparency": 0.1, "efficiency": 0.1},
+            impact_vector={
+                "safety": 0.9,
+                "security": 0.8,
+                "privacy": 0.1,
+                "fairness": 0.1,
+                "reliability": 0.1,
+                "transparency": 0.1,
+                "efficiency": 0.1,
+            },
             ambiguous=("security",),  # safety NOT in ambiguous
         )
         evidence = updater.collect_evidence([rec])
@@ -185,9 +215,18 @@ class TestEvidenceCollection:
 class TestUpdateCycle:
     def test_update_no_evidence_unchanged(self):
         updater = BayesianThresholdUpdater(min_evidence_count=5)
-        evidence = [DimensionEvidence(d, "", 0, 0.0, 0.0) for d in
-                    ("safety", "security", "privacy", "fairness",
-                     "reliability", "transparency", "efficiency")]
+        evidence = [
+            DimensionEvidence(d, "", 0, 0.0, 0.0)
+            for d in (
+                "safety",
+                "security",
+                "privacy",
+                "fairness",
+                "reliability",
+                "transparency",
+                "efficiency",
+            )
+        ]
         cycle = updater.update(evidence, domain="test")
         # All zero evidence → no shifts
         for u in cycle.updates:
@@ -201,8 +240,15 @@ class TestUpdateCycle:
         )
         # 87% observation rate for security
         evidence = []
-        for dim in ("safety", "security", "privacy", "fairness",
-                    "reliability", "transparency", "efficiency"):
+        for dim in (
+            "safety",
+            "security",
+            "privacy",
+            "fairness",
+            "reliability",
+            "transparency",
+            "efficiency",
+        ):
             if dim == "security":
                 evidence.append(DimensionEvidence(dim, "", 47, 41.0, 6.0))
             else:
@@ -217,12 +263,17 @@ class TestUpdateCycle:
         assert sec.posterior > sec.prior
 
     def test_update_low_confirmation_decreases_weight(self):
-        updater = BayesianThresholdUpdater(
-            max_shift_per_cycle=0.08, min_evidence_count=1
-        )
+        updater = BayesianThresholdUpdater(max_shift_per_cycle=0.08, min_evidence_count=1)
         evidence = []
-        for dim in ("safety", "security", "privacy", "fairness",
-                    "reliability", "transparency", "efficiency"):
+        for dim in (
+            "safety",
+            "security",
+            "privacy",
+            "fairness",
+            "reliability",
+            "transparency",
+            "efficiency",
+        ):
             if dim == "privacy":
                 # 20% confirmed → concern overblown
                 evidence.append(DimensionEvidence(dim, "", 10, 2.0, 8.0))
@@ -236,22 +287,28 @@ class TestUpdateCycle:
 
     def test_weights_normalized_after_update(self):
         updater = BayesianThresholdUpdater(min_evidence_count=1)
-        evidence = [DimensionEvidence(d, "", 10, 8.0, 2.0)
-                    for d in ("safety", "security", "privacy", "fairness",
-                              "reliability", "transparency", "efficiency")]
+        evidence = [
+            DimensionEvidence(d, "", 10, 8.0, 2.0)
+            for d in (
+                "safety",
+                "security",
+                "privacy",
+                "fairness",
+                "reliability",
+                "transparency",
+                "efficiency",
+            )
+        ]
         cycle = updater.update(evidence)
         total = sum(cycle.posterior_weights.values())
         assert abs(total - 1.0) < 1e-9
 
     def test_max_shift_capped(self):
-        updater = BayesianThresholdUpdater(
-            max_shift_per_cycle=0.01, min_evidence_count=1
-        )
+        updater = BayesianThresholdUpdater(max_shift_per_cycle=0.01, min_evidence_count=1)
         # 100% confirmed -> raw_shift = (1.0 - 0.5) x 0.01 = 0.005 (not capped)
         # But if max_shift is very small, bigger obs rates get capped
         evidence = [DimensionEvidence("safety", "", 100, 100.0, 0.0)]
-        for dim in ("security", "privacy", "fairness", "reliability",
-                    "transparency", "efficiency"):
+        for dim in ("security", "privacy", "fairness", "reliability", "transparency", "efficiency"):
             evidence.append(DimensionEvidence(dim, "", 0, 0.0, 0.0))
         cycle = updater.update(evidence)
         safety = next(u for u in cycle.updates if u.dimension == "safety")
@@ -265,26 +322,36 @@ class TestUpdateCycle:
         )
         # 0% confirmed → drive weight to floor
         evidence = [DimensionEvidence("safety", "", 100, 0.0, 100.0)]
-        for dim in ("security", "privacy", "fairness", "reliability",
-                    "transparency", "efficiency"):
+        for dim in ("security", "privacy", "fairness", "reliability", "transparency", "efficiency"):
             evidence.append(DimensionEvidence(dim, "", 0, 0.0, 0.0))
         cycle = updater.update(evidence)
         safety = next(u for u in cycle.updates if u.dimension == "safety")
         from constitutional_swarm.bittensor.threshold_updater import _MIN_WEIGHT
+
         assert safety.posterior >= _MIN_WEIGHT
 
     def test_domain_isolated_weights(self):
         updater = BayesianThresholdUpdater(min_evidence_count=1)
         ev_high = [DimensionEvidence("security", "", 20, 18.0, 2.0)]
-        ev_high += [DimensionEvidence(d, "", 0, 0.0, 0.0)
-                    for d in ("safety", "privacy", "fairness", "reliability",
-                              "transparency", "efficiency")]
+        ev_high += [
+            DimensionEvidence(d, "", 0, 0.0, 0.0)
+            for d in ("safety", "privacy", "fairness", "reliability", "transparency", "efficiency")
+        ]
 
         updater.update(ev_high, domain="healthcare")
         updater.update(
-            [DimensionEvidence(d, "", 0, 0.0, 0.0)
-             for d in ("safety", "security", "privacy", "fairness",
-                       "reliability", "transparency", "efficiency")],
+            [
+                DimensionEvidence(d, "", 0, 0.0, 0.0)
+                for d in (
+                    "safety",
+                    "security",
+                    "privacy",
+                    "fairness",
+                    "reliability",
+                    "transparency",
+                    "efficiency",
+                )
+            ],
             domain="finance",
         )
         hc = updater.weights("healthcare")
@@ -295,9 +362,10 @@ class TestUpdateCycle:
         updater = BayesianThresholdUpdater(min_evidence_count=1)
         original = updater.weights("")
         ev = [DimensionEvidence("security", "", 20, 18.0, 2.0)]
-        ev += [DimensionEvidence(d, "", 0, 0.0, 0.0)
-               for d in ("safety", "privacy", "fairness", "reliability",
-                         "transparency", "efficiency")]
+        ev += [
+            DimensionEvidence(d, "", 0, 0.0, 0.0)
+            for d in ("safety", "privacy", "fairness", "reliability", "transparency", "efficiency")
+        ]
         updater.update(ev)
         updater.rollback()
         after_rollback = updater.weights("")
@@ -317,9 +385,10 @@ class TestUpdateCycle:
     def test_explanation_text_included(self):
         updater = BayesianThresholdUpdater(min_evidence_count=1)
         ev = [DimensionEvidence("security", "", 10, 8.0, 2.0)]
-        ev += [DimensionEvidence(d, "", 0, 0.0, 0.0)
-               for d in ("safety", "privacy", "fairness", "reliability",
-                         "transparency", "efficiency")]
+        ev += [
+            DimensionEvidence(d, "", 0, 0.0, 0.0)
+            for d in ("safety", "privacy", "fairness", "reliability", "transparency", "efficiency")
+        ]
         cycle = updater.update(ev)
         sec = next(u for u in cycle.updates if u.dimension == "security")
         assert "security" in sec.explanation

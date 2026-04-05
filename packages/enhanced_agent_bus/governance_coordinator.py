@@ -174,7 +174,9 @@ class GovernanceCoordinator:
                         )
                     ),
                     rule_hits=swarm_decision.rule_hits,
-                    peer_votes=(peer_validation.to_metadata() if peer_validation is not None else {}),
+                    peer_votes=(
+                        peer_validation.to_metadata() if peer_validation is not None else {}
+                    ),
                     trust_score=trust_score,
                     constitutional_hash=swarm_decision.constitutional_hash,
                     swarm_constitutional_hash=swarm_decision.swarm_constitutional_hash,
@@ -225,7 +227,9 @@ class GovernanceCoordinator:
                     "error": str(exc),
                 }
             else:
-                parity_status = "match" if legacy_decision.allowed == swarm_decision.allowed else "mismatch"
+                parity_status = (
+                    "match" if legacy_decision.allowed == swarm_decision.allowed else "mismatch"
+                )
                 if parity_status == "match":
                     self.shadow_matches += 1
                 else:

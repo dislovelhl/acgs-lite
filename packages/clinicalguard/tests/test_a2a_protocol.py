@@ -135,8 +135,10 @@ class TestA2AProtocol:
     def test_query_audit_trail_dispatched(self, client):
         # First create an audit entry
         mock_llm = LLMClinicalAssessment(
-            recommended_decision=CONDITIONAL, risk_tier=RISK_HIGH,
-            reasoning="Test.", llm_available=True,
+            recommended_decision=CONDITIONAL,
+            risk_tier=RISK_HIGH,
+            reasoning="Test.",
+            llm_available=True,
         )
         with patch(
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
@@ -156,9 +158,7 @@ class TestA2AProtocol:
         assert data["entries"][0]["id"] == audit_id
 
     def test_unknown_skill_returns_helpful_error(self, client):
-        resp = client.post(
-            "/", json=_make_a2a_body("do_something_unknown: please help")
-        )
+        resp = client.post("/", json=_make_a2a_body("do_something_unknown: please help"))
         result = resp.json()["result"]["result"]
         # Falls through to default validate skill or returns error with available skills
         assert "decision" in result or "available_skills" in result
@@ -167,8 +167,10 @@ class TestA2AProtocol:
 class TestAuth:
     def test_valid_api_key_accepted(self, client_with_auth):
         mock_llm = LLMClinicalAssessment(
-            recommended_decision=CONDITIONAL, risk_tier=RISK_HIGH,
-            reasoning="Test.", llm_available=True,
+            recommended_decision=CONDITIONAL,
+            risk_tier=RISK_HIGH,
+            reasoning="Test.",
+            llm_available=True,
         )
         with patch(
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
@@ -219,7 +221,5 @@ class TestHIPAAChecklist:
             ),
         )
         result = resp.json()["result"]["result"]
-        items_with_mitigation = [
-            i for i in result["checklist"] if i.get("mitigation")
-        ]
+        items_with_mitigation = [i for i in result["checklist"] if i.get("mitigation")]
         assert len(items_with_mitigation) > 0

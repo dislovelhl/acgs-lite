@@ -7,6 +7,7 @@ NOTE: Python resolves ``_compat.errors`` as this directory package (not the sibl
 ``_compat/errors.py`` flat module) once the directory exists, so we must replicate
 the flat module exports here.
 """
+
 from __future__ import annotations
 
 import traceback as _traceback
@@ -105,8 +106,15 @@ except ImportError:
         http_status_code = 403
         error_code = "CONSTITUTIONAL_VIOLATION"
 
-        def __init__(self, message: str, *, violations: list[str] | None = None,
-                     policy_id: str | None = None, action: str | None = None, **kw) -> None:  # type: ignore[override]
+        def __init__(
+            self,
+            message: str,
+            *,
+            violations: list[str] | None = None,
+            policy_id: str | None = None,
+            action: str | None = None,
+            **kw,
+        ) -> None:  # type: ignore[override]
             details = kw.pop("details", {}) or {}
             if violations:
                 details["violations"] = violations
@@ -168,7 +176,11 @@ except ImportError:
         try:
             from fastapi.responses import JSONResponse
         except ImportError:
+
             class JSONResponse:  # type: ignore[no-redef]
                 def __init__(self, **kw: object) -> None:
                     pass
-        return JSONResponse(status_code=429, content={"error": "Too Many Requests", "message": exc.message})
+
+        return JSONResponse(
+            status_code=429, content={"error": "Too Many Requests", "message": exc.message}
+        )

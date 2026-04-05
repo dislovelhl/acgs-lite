@@ -16,6 +16,7 @@ from acgs_lite.errors import ConstitutionalViolationError
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_rule(
     rule_id: str = "R-001",
     text: str = "Test rule",
@@ -66,8 +67,14 @@ def _simple_constitution(name: str = "test", rules: list[Rule] | None = None) ->
     if rules is None:
         rules = [
             _make_rule("R-001", "No secrets", keywords=["secret", "password"], category="security"),
-            _make_rule("R-002", "Audit trail", keywords=["audit", "log"], category="audit",
-                       severity=Severity.MEDIUM, workflow_action="warn"),
+            _make_rule(
+                "R-002",
+                "Audit trail",
+                keywords=["audit", "log"],
+                category="audit",
+                severity=Severity.MEDIUM,
+                workflow_action="warn",
+            ),
         ]
     return Constitution(name=name, rules=rules)
 
@@ -75,6 +82,7 @@ def _simple_constitution(name: str = "test", rules: list[Rule] | None = None) ->
 # ===========================================================================
 # from_yaml_str
 # ===========================================================================
+
 
 class TestFromYamlStr:
     def test_round_trip(self) -> None:
@@ -93,46 +101,51 @@ class TestFromYamlStr:
 # from_dict
 # ===========================================================================
 
+
 class TestFromDict:
     def test_minimal(self) -> None:
-        c = Constitution.from_dict({
-            "rules": [{"id": "X-1", "text": "Do stuff", "severity": "low", "keywords": ["stuff"]}]
-        })
+        c = Constitution.from_dict(
+            {"rules": [{"id": "X-1", "text": "Do stuff", "severity": "low", "keywords": ["stuff"]}]}
+        )
         assert c.name == "default"
         assert c.rules[0].id == "X-1"
         assert c.rules[0].severity == Severity.LOW
 
     def test_with_all_fields(self) -> None:
-        c = Constitution.from_dict({
-            "name": "full",
-            "version": "2.0.0",
-            "description": "Full test",
-            "permission_ceiling": "STRICT",
-            "version_name": "v2-rc1",
-            "metadata": {"env": "test"},
-            "rules": [{
-                "id": "F-1",
-                "text": "Full rule",
-                "severity": "critical",
-                "keywords": ["kw"],
-                "patterns": [r"\d+"],
-                "category": "security",
-                "subcategory": "test-sub",
-                "depends_on": [],
-                "enabled": True,
-                "workflow_action": "block",
-                "hardcoded": True,
-                "tags": ["compliance"],
-                "priority": 5,
-                "condition": {"env": "prod"},
-                "deprecated": False,
-                "replaced_by": "",
-                "valid_from": "2025-01-01",
-                "valid_until": "2027-12-31",
-                "embedding": [0.1, 0.2],
-                "metadata": {"source": "test"},
-            }],
-        })
+        c = Constitution.from_dict(
+            {
+                "name": "full",
+                "version": "2.0.0",
+                "description": "Full test",
+                "permission_ceiling": "STRICT",
+                "version_name": "v2-rc1",
+                "metadata": {"env": "test"},
+                "rules": [
+                    {
+                        "id": "F-1",
+                        "text": "Full rule",
+                        "severity": "critical",
+                        "keywords": ["kw"],
+                        "patterns": [r"\d+"],
+                        "category": "security",
+                        "subcategory": "test-sub",
+                        "depends_on": [],
+                        "enabled": True,
+                        "workflow_action": "block",
+                        "hardcoded": True,
+                        "tags": ["compliance"],
+                        "priority": 5,
+                        "condition": {"env": "prod"},
+                        "deprecated": False,
+                        "replaced_by": "",
+                        "valid_from": "2025-01-01",
+                        "valid_until": "2027-12-31",
+                        "embedding": [0.1, 0.2],
+                        "metadata": {"source": "test"},
+                    }
+                ],
+            }
+        )
         assert c.permission_ceiling == "strict"
         assert c.version_name == "v2-rc1"
         assert c.rules[0].hardcoded is True
@@ -149,6 +162,7 @@ class TestFromDict:
 # ===========================================================================
 # from_template — all domains
 # ===========================================================================
+
 
 class TestFromTemplate:
     @pytest.mark.parametrize("domain", ["gitlab", "healthcare", "finance", "security", "general"])
@@ -170,6 +184,7 @@ class TestFromTemplate:
 # default()
 # ===========================================================================
 
+
 class TestDefault:
     def test_default_has_core_rules(self) -> None:
         c = Constitution.default()
@@ -188,6 +203,7 @@ class TestDefault:
 # ===========================================================================
 # Properties and basic accessors
 # ===========================================================================
+
 
 class TestProperties:
     def test_hash_is_deterministic(self) -> None:
@@ -233,6 +249,7 @@ class TestProperties:
 # ===========================================================================
 # update_rule + rule_changelog + rule_version
 # ===========================================================================
+
 
 class TestUpdateRule:
     def test_basic_update(self) -> None:
@@ -283,6 +300,7 @@ class TestUpdateRule:
 # deprecated_rules / active_non_deprecated / active_rules_at
 # ===========================================================================
 
+
 class TestDeprecation:
     def test_deprecated_rules(self) -> None:
         rules = [
@@ -320,6 +338,7 @@ class TestDeprecation:
 # ===========================================================================
 # deprecation_report / deprecation_migration_report
 # ===========================================================================
+
 
 class TestDeprecationReports:
     def test_deprecation_report(self) -> None:
@@ -373,6 +392,7 @@ class TestDeprecationReports:
 # explain
 # ===========================================================================
 
+
 class TestExplain:
     def test_no_trigger(self) -> None:
         c = _simple_constitution()
@@ -409,8 +429,9 @@ class TestExplain:
     def test_blocking_with_warnings(self) -> None:
         rules = [
             _make_rule("R-1", keywords=["danger"], severity=Severity.CRITICAL),
-            _make_rule(rule_id="R-2", keywords=["danger"], severity=Severity.LOW,
-                       workflow_action="warn"),
+            _make_rule(
+                rule_id="R-2", keywords=["danger"], severity=Severity.LOW, workflow_action="warn"
+            ),
         ]
         c = Constitution(name="bw", rules=rules)
         result = c.explain("danger zone")
@@ -421,6 +442,7 @@ class TestExplain:
 # ===========================================================================
 # compare (static)
 # ===========================================================================
+
 
 class TestCompare:
     def test_identical(self) -> None:
@@ -522,6 +544,7 @@ class TestCompare:
 # diff (instance)
 # ===========================================================================
 
+
 class TestDiff:
     def test_same_constitution(self) -> None:
         c = _simple_constitution()
@@ -548,10 +571,24 @@ class TestDiff:
         assert result["severity_changes"][0]["new"] == "critical"
 
     def test_multiple_field_changes(self) -> None:
-        r1 = _make_rule("R-1", text="old", category="a", subcategory="s1",
-                         workflow_action="block", hardcoded=False, priority=0)
-        r2 = _make_rule("R-1", text="new", category="b", subcategory="s2",
-                         workflow_action="warn", hardcoded=True, priority=5)
+        r1 = _make_rule(
+            "R-1",
+            text="old",
+            category="a",
+            subcategory="s1",
+            workflow_action="block",
+            hardcoded=False,
+            priority=0,
+        )
+        r2 = _make_rule(
+            "R-1",
+            text="new",
+            category="b",
+            subcategory="s2",
+            workflow_action="warn",
+            hardcoded=True,
+            priority=5,
+        )
         c1 = Constitution(name="a", rules=[r1])
         c2 = Constitution(name="b", rules=[r2])
         result = c1.diff(c2)
@@ -568,6 +605,7 @@ class TestDiff:
 # ===========================================================================
 # validate_integrity
 # ===========================================================================
+
 
 class TestValidateIntegrity:
     def test_valid_constitution(self) -> None:
@@ -615,6 +653,7 @@ class TestValidateIntegrity:
 # subsumes (static)
 # ===========================================================================
 
+
 class TestSubsumes:
     def test_identical_subsumes(self) -> None:
         c = _simple_constitution()
@@ -659,6 +698,7 @@ class TestSubsumes:
 # counterfactual
 # ===========================================================================
 
+
 class TestCounterfactual:
     def test_no_rules_removed(self) -> None:
         c = Constitution.default()
@@ -693,6 +733,7 @@ class TestCounterfactual:
 # dependency_graph
 # ===========================================================================
 
+
 class TestDependencyGraph:
     def test_no_deps(self) -> None:
         c = _simple_constitution()
@@ -717,6 +758,7 @@ class TestDependencyGraph:
 # ===========================================================================
 # rule_dependencies (semantic)
 # ===========================================================================
+
 
 class TestRuleDependencies:
     def test_keyword_clusters(self) -> None:
@@ -749,6 +791,7 @@ class TestRuleDependencies:
 # detect_conflicts
 # ===========================================================================
 
+
 class TestDetectConflicts:
     def test_no_conflicts(self) -> None:
         rules = [
@@ -761,9 +804,12 @@ class TestDetectConflicts:
 
     def test_severity_conflict(self) -> None:
         rules = [
-            _make_rule("R-1", keywords=["danger"], severity=Severity.CRITICAL, workflow_action="block"),
-            _make_rule(rule_id="R-2", keywords=["danger"], severity=Severity.LOW,
-                       workflow_action="block"),
+            _make_rule(
+                "R-1", keywords=["danger"], severity=Severity.CRITICAL, workflow_action="block"
+            ),
+            _make_rule(
+                rule_id="R-2", keywords=["danger"], severity=Severity.LOW, workflow_action="block"
+            ),
         ]
         c = Constitution(name="c", rules=rules)
         result = c.detect_conflicts()
@@ -773,8 +819,9 @@ class TestDetectConflicts:
     def test_workflow_conflict(self) -> None:
         rules = [
             _make_rule("R-1", keywords=["danger"], severity=Severity.HIGH, workflow_action="block"),
-            _make_rule(rule_id="R-2", keywords=["danger"], severity=Severity.HIGH,
-                       workflow_action="warn"),
+            _make_rule(
+                rule_id="R-2", keywords=["danger"], severity=Severity.HIGH, workflow_action="warn"
+            ),
         ]
         c = Constitution(name="c", rules=rules)
         result = c.detect_conflicts()
@@ -787,12 +834,19 @@ class TestDetectConflicts:
 # to_yaml / to_bundle / from_bundle
 # ===========================================================================
 
+
 class TestSerialization:
     def test_to_yaml_includes_all_fields(self) -> None:
         rules = [
-            _make_rule("R-1", patterns=[r"\d+"], subcategory="sub1",
-                       tags=["gdpr"], hardcoded=True,
-                       priority=5, enabled=False),
+            _make_rule(
+                "R-1",
+                patterns=[r"\d+"],
+                subcategory="sub1",
+                tags=["gdpr"],
+                hardcoded=True,
+                priority=5,
+                enabled=False,
+            ),
         ]
         c = Constitution(name="t", rules=rules, metadata={"env": "test"})
         yaml_str = c.to_yaml()
@@ -812,9 +866,15 @@ class TestSerialization:
 
     def test_to_bundle_includes_condition_and_deprecated(self) -> None:
         rules = [
-            _make_rule("R-1", condition={"env": "prod"}, deprecated=True,
-                       replaced_by="R-2", valid_from="2025-01-01", valid_until="2026-01-01",
-                       metadata={"source": "test"}),
+            _make_rule(
+                "R-1",
+                condition={"env": "prod"},
+                deprecated=True,
+                replaced_by="R-2",
+                valid_from="2025-01-01",
+                valid_until="2026-01-01",
+                metadata={"source": "test"},
+            ),
         ]
         c = Constitution(name="t", rules=rules)
         bundle = c.to_bundle()
@@ -845,6 +905,7 @@ class TestSerialization:
 # json_schema / validate_yaml_schema
 # ===========================================================================
 
+
 class TestJsonSchema:
     def test_json_schema_structure(self) -> None:
         schema = Constitution.json_schema()
@@ -868,6 +929,7 @@ class TestJsonSchema:
 # ===========================================================================
 # merge (instance)
 # ===========================================================================
+
 
 class TestMerge:
     def test_no_conflicts(self) -> None:
@@ -951,6 +1013,7 @@ class TestMerge:
 # cascade
 # ===========================================================================
 
+
 class TestCascade:
     def test_parent_hardcoded_wins(self) -> None:
         parent_rule = _make_rule("R-1", text="parent", hardcoded=True)
@@ -985,10 +1048,12 @@ class TestCascade:
 # create_rule_from_template (static)
 # ===========================================================================
 
+
 class TestCreateRuleFromTemplate:
     def test_data_privacy_template(self) -> None:
         rule = Constitution.create_rule_from_template(
-            "data_privacy", "DP-001",
+            "data_privacy",
+            "DP-001",
             {"action": "collection", "data_type": "personal", "consent_type": "explicit"},
         )
         assert rule.id == "DP-001"
@@ -999,7 +1064,8 @@ class TestCreateRuleFromTemplate:
 
     def test_security_boundary_template(self) -> None:
         rule = Constitution.create_rule_from_template(
-            "security_boundary", "SB-001",
+            "security_boundary",
+            "SB-001",
             {"action": "transfer", "boundary_type": "network"},
         )
         assert rule.severity == Severity.CRITICAL
@@ -1007,21 +1073,24 @@ class TestCreateRuleFromTemplate:
 
     def test_compliance_audit_template(self) -> None:
         rule = Constitution.create_rule_from_template(
-            "compliance_audit", "CA-001",
+            "compliance_audit",
+            "CA-001",
             {"action": "delete", "asset_type": "records"},
         )
         assert rule.severity == Severity.MEDIUM
 
     def test_resource_limit_template(self) -> None:
         rule = Constitution.create_rule_from_template(
-            "resource_limit", "RL-001",
+            "resource_limit",
+            "RL-001",
             {"resource_type": "API", "limit": "100", "time_period": "hour", "user_type": "free"},
         )
         assert rule.severity == Severity.LOW
 
     def test_access_control_template(self) -> None:
         rule = Constitution.create_rule_from_template(
-            "access_control", "AC-001",
+            "access_control",
+            "AC-001",
             {"auth_method": "MFA", "action": "write", "resource_type": "database"},
         )
         assert rule.category == "security"
@@ -1032,7 +1101,8 @@ class TestCreateRuleFromTemplate:
 
     def test_template_metadata_recorded(self) -> None:
         rule = Constitution.create_rule_from_template(
-            "data_privacy", "DP-002",
+            "data_privacy",
+            "DP-002",
             {"action": "sharing", "data_type": "health", "consent_type": "informed"},
         )
         assert rule.metadata["template"] == "data_privacy"
@@ -1042,6 +1112,7 @@ class TestCreateRuleFromTemplate:
 # ===========================================================================
 # lifecycle management
 # ===========================================================================
+
 
 class TestLifecycle:
     def test_set_lifecycle_to_draft(self) -> None:
@@ -1101,6 +1172,7 @@ class TestLifecycle:
 # tenant management
 # ===========================================================================
 
+
 class TestTenantManagement:
     def test_set_rule_tenants(self) -> None:
         c = _simple_constitution()
@@ -1138,6 +1210,7 @@ class TestTenantManagement:
 # assess_decision_anomaly (static)
 # ===========================================================================
 
+
 class TestDecisionAnomaly:
     def test_zero_total(self) -> None:
         result = Constitution.assess_decision_anomaly()
@@ -1145,22 +1218,30 @@ class TestDecisionAnomaly:
         assert result["is_anomalous"] is False
 
     def test_normal_distribution(self) -> None:
-        result = Constitution.assess_decision_anomaly(allow_count=85, deny_count=10, escalate_count=5)
+        result = Constitution.assess_decision_anomaly(
+            allow_count=85, deny_count=10, escalate_count=5
+        )
         assert result["total"] == 100
         assert result["is_anomalous"] is False
 
     def test_high_deny_spike(self) -> None:
         result = Constitution.assess_decision_anomaly(
-            allow_count=10, deny_count=80, escalate_count=10,
-            baseline_deny_rate=0.15, spike_threshold=2.0,
+            allow_count=10,
+            deny_count=80,
+            escalate_count=10,
+            baseline_deny_rate=0.15,
+            spike_threshold=2.0,
         )
         assert result["is_anomalous"] is True
         assert any("high_deny_rate" in a for a in result["anomalies"])
 
     def test_high_escalate_spike(self) -> None:
         result = Constitution.assess_decision_anomaly(
-            allow_count=10, deny_count=10, escalate_count=80,
-            baseline_escalate_rate=0.10, spike_threshold=2.0,
+            allow_count=10,
+            deny_count=10,
+            escalate_count=80,
+            baseline_escalate_rate=0.10,
+            spike_threshold=2.0,
         )
         assert result["is_anomalous"] is True
         assert any("high_escalate_rate" in a for a in result["anomalies"])
@@ -1169,6 +1250,7 @@ class TestDecisionAnomaly:
 # ===========================================================================
 # check_governance_slo (static)
 # ===========================================================================
+
 
 class TestGovernanceSlo:
     def test_all_pass(self) -> None:
@@ -1206,6 +1288,7 @@ class TestGovernanceSlo:
 # ===========================================================================
 # list_categories / blast_radius / get_version_info
 # ===========================================================================
+
 
 class TestMiscAccessors:
     def test_list_categories(self) -> None:
@@ -1263,6 +1346,7 @@ class TestMiscAccessors:
 # find_similar_rules
 # ===========================================================================
 
+
 class TestFindSimilarRules:
     def test_high_overlap(self) -> None:
         rules = [
@@ -1295,10 +1379,15 @@ class TestFindSimilarRules:
 
     def test_recommendation_consolidate(self) -> None:
         rules = [
-            _make_rule("R-1", keywords=["secret", "password"], category="security",
-                       severity=Severity.HIGH),
-            _make_rule(rule_id="R-2", keywords=["secret", "password"], category="security",
-                       severity=Severity.HIGH),
+            _make_rule(
+                "R-1", keywords=["secret", "password"], category="security", severity=Severity.HIGH
+            ),
+            _make_rule(
+                rule_id="R-2",
+                keywords=["secret", "password"],
+                category="security",
+                severity=Severity.HIGH,
+            ),
         ]
         c = Constitution(name="s", rules=rules)
         results = c.find_similar_rules(threshold=0.5)
@@ -1306,10 +1395,15 @@ class TestFindSimilarRules:
 
     def test_recommendation_review(self) -> None:
         rules = [
-            _make_rule("R-1", keywords=["secret", "password"], category="security",
-                       severity=Severity.HIGH),
-            _make_rule(rule_id="R-2", keywords=["secret", "password"], category="audit",
-                       severity=Severity.LOW),
+            _make_rule(
+                "R-1", keywords=["secret", "password"], category="security", severity=Severity.HIGH
+            ),
+            _make_rule(
+                rule_id="R-2",
+                keywords=["secret", "password"],
+                category="audit",
+                severity=Severity.LOW,
+            ),
         ]
         c = Constitution(name="s", rules=rules)
         results = c.find_similar_rules(threshold=0.5)
@@ -1319,6 +1413,7 @@ class TestFindSimilarRules:
 # ===========================================================================
 # cosine_similar_rules
 # ===========================================================================
+
 
 class TestCosineSimilarRules:
     def test_with_embeddings(self) -> None:
@@ -1353,6 +1448,7 @@ class TestCosineSimilarRules:
 # ===========================================================================
 # semantic_search
 # ===========================================================================
+
 
 class TestSemanticSearch:
     def test_with_matching_embeddings(self) -> None:
@@ -1389,6 +1485,7 @@ class TestSemanticSearch:
 # health_score
 # ===========================================================================
 
+
 class TestHealthScore:
     def test_empty_constitution(self) -> None:
         c = Constitution(name="e", rules=[])
@@ -1415,6 +1512,7 @@ class TestHealthScore:
 # maturity_level
 # ===========================================================================
 
+
 class TestMaturityLevel:
     def test_basic_constitution(self) -> None:
         c = _simple_constitution()
@@ -1425,19 +1523,40 @@ class TestMaturityLevel:
 
     def test_high_maturity_constitution(self) -> None:
         rules = [
-            _make_rule("R-1", tags=["compliance"], priority=1,
-                       workflow_action="block", condition={"env": "prod"},
-                       valid_from="2025-01-01", embedding=[0.1, 0.2],
-                       deprecated=False, category="security"),
-            _make_rule(rule_id="R-2", tags=["audit"], severity=Severity.LOW,
-                       priority=2, workflow_action="warn", category="audit",
-                       depends_on=["R-1"]),
+            _make_rule(
+                "R-1",
+                tags=["compliance"],
+                priority=1,
+                workflow_action="block",
+                condition={"env": "prod"},
+                valid_from="2025-01-01",
+                embedding=[0.1, 0.2],
+                deprecated=False,
+                category="security",
+            ),
+            _make_rule(
+                rule_id="R-2",
+                tags=["audit"],
+                severity=Severity.LOW,
+                priority=2,
+                workflow_action="warn",
+                category="audit",
+                depends_on=["R-1"],
+            ),
         ]
         c = Constitution(
             name="mature",
             rules=rules,
             rule_history={"R-1": ["snap"]},
-            changelog=[{"operation": "create", "rule_id": "R-1", "timestamp": "t", "reason": "init", "actor": ""}],
+            changelog=[
+                {
+                    "operation": "create",
+                    "rule_id": "R-1",
+                    "timestamp": "t",
+                    "reason": "init",
+                    "actor": "",
+                }
+            ],
         )
         m = c.maturity_level()
         # Level 3 requires: dependencies, priorities, workflow_actions, conditions
@@ -1448,6 +1567,7 @@ class TestMaturityLevel:
 # ===========================================================================
 # coverage_gaps
 # ===========================================================================
+
 
 class TestCoverageGaps:
     def test_default_constitution(self) -> None:
@@ -1468,6 +1588,7 @@ class TestCoverageGaps:
 # ===========================================================================
 # dead_rules
 # ===========================================================================
+
 
 class TestDeadRules:
     def test_all_dead(self) -> None:
@@ -1512,6 +1633,7 @@ class TestDeadRules:
 # posture_score
 # ===========================================================================
 
+
 class TestPostureScore:
     def test_basic(self) -> None:
         c = Constitution.default()
@@ -1531,6 +1653,7 @@ class TestPostureScore:
 # ===========================================================================
 # get_governance_metrics
 # ===========================================================================
+
 
 class TestGovernanceMetrics:
     def test_metrics_structure(self) -> None:
@@ -1552,6 +1675,7 @@ class TestGovernanceMetrics:
 # ===========================================================================
 # active_rules_for_context
 # ===========================================================================
+
 
 class TestActiveRulesForContext:
     def test_no_conditions(self) -> None:
@@ -1575,6 +1699,7 @@ class TestActiveRulesForContext:
 # compliance_report
 # ===========================================================================
 
+
 class TestComplianceReport:
     def test_valid_framework(self) -> None:
         c = Constitution.default()
@@ -1593,6 +1718,7 @@ class TestComplianceReport:
 # ===========================================================================
 # full_report
 # ===========================================================================
+
 
 class TestFullReport:
     def test_structure(self) -> None:
@@ -1619,6 +1745,7 @@ class TestFullReport:
 # ===========================================================================
 # builder
 # ===========================================================================
+
 
 class TestBuilder:
     def test_builder_returns_builder(self) -> None:

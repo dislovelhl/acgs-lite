@@ -195,14 +195,10 @@ def _build_formalization_prompt(
     context: dict[str, Any] | None = None,
 ) -> str:
     """Ask Leanstral to auto-formalize governance rules into Lean 4 predicates."""
-    rules_block = "\n".join(
-        f"- Rule {r['id']}: {r['text']}" for r in rules
-    )
+    rules_block = "\n".join(f"- Rule {r['id']}: {r['text']}" for r in rules)
     context_block = ""
     if context:
-        context_block = "\nContext:\n" + "\n".join(
-            f"- {k}: {v}" for k, v in context.items()
-        )
+        context_block = "\nContext:\n" + "\n".join(f"- {k}: {v}" for k, v in context.items())
 
     return f"""You are a Lean 4 formalization expert. Convert these governance rules
 into Lean 4 predicates that can be used in theorem statements.
@@ -269,9 +265,7 @@ def _run_lean_check(lean_source: str, timeout_s: int = _LEAN_TIMEOUT_S) -> tuple
     if not LEAN_AVAILABLE:
         return False, ["lean not installed — proof not kernel-verified"]
 
-    with tempfile.NamedTemporaryFile(
-        mode="w", suffix=".lean", delete=False
-    ) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".lean", delete=False) as f:
         f.write(lean_source)
         f.flush()
         lean_file = Path(f.name)
@@ -313,7 +307,7 @@ def _parse_json_response(raw: str | None) -> dict[str, Any]:
     text = raw.strip()
     if text.startswith("```"):
         first_newline = text.index("\n") if "\n" in text else len(text)
-        text = text[first_newline + 1:]
+        text = text[first_newline + 1 :]
         if text.rstrip().endswith("```"):
             text = text.rstrip()[:-3].rstrip()
 
@@ -366,8 +360,7 @@ class LeanstralVerifier:
 
         if not MISTRAL_AVAILABLE:
             raise ImportError(
-                "mistralai package not installed. "
-                "Install with: pip install acgs-lite[mistral]"
+                "mistralai package not installed. Install with: pip install acgs-lite[mistral]"
             )
 
         import os
@@ -451,7 +444,9 @@ class LeanstralVerifier:
         for attempt in range(1, self._max_attempts + 1):
             # Generate proof
             prompt = _build_proof_prompt(
-                action, lean_source, theorem_statement,
+                action,
+                lean_source,
+                theorem_statement,
                 previous_errors=all_errors if attempt > 1 else None,
             )
             raw_proof = self._chat(
@@ -485,13 +480,13 @@ class LeanstralVerifier:
                 all_errors.extend(errors)
                 _log.info(
                     "Lean proof attempt %d/%d failed: %s",
-                    attempt, self._max_attempts, errors[:2],
+                    attempt,
+                    self._max_attempts,
+                    errors[:2],
                 )
             else:
                 # No kernel — accept the generated proof but mark as unverified
-                _log.info(
-                    "Lean not installed — proof generated but not kernel-verified"
-                )
+                _log.info("Lean not installed — proof generated but not kernel-verified")
                 return True, proof_body, ["lean not installed"], attempt
 
         return False, proof_body, all_errors, self._max_attempts
@@ -521,9 +516,13 @@ class LeanstralVerifier:
         """
         if not MISTRAL_AVAILABLE:
             return LeanVerifyResult(
-                proved=False, verified=False, certificate=None,
-                counterexample=None, lean_errors=[],
-                attempts=0, model_used=self._model,
+                proved=False,
+                verified=False,
+                certificate=None,
+                counterexample=None,
+                lean_errors=[],
+                attempts=0,
+                model_used=self._model,
                 verification_time_ms=0.0,
                 error="mistralai not installed",
             )
@@ -537,26 +536,30 @@ class LeanstralVerifier:
             if not predicates:
                 elapsed = (time.perf_counter() - start) * 1000
                 return LeanVerifyResult(
-                    proved=False, verified=True, certificate=None,
+                    proved=False,
+                    verified=True,
+                    certificate=None,
                     counterexample="Failed to formalize rules into Lean 4",
-                    lean_errors=[], attempts=0, model_used=self._model,
+                    lean_errors=[],
+                    attempts=0,
+                    model_used=self._model,
                     verification_time_ms=elapsed,
                 )
 
             # Phase 2: Build theorem statement
             rule_ids = list(predicates.keys())
-            conj_parts = " ∧ ".join(
-                f"{_lean_safe_name(rid)}_satisfied ctx" for rid in rule_ids
-            )
+            conj_parts = " ∧ ".join(f"{_lean_safe_name(rid)}_satisfied ctx" for rid in rule_ids)
             theorem = (
                 f"theorem action_compliant (ctx : ActionCtx) "
-                f"(h_action : ctx.action = \"{_lean_escape(action)}\") : "
+                f'(h_action : ctx.action = "{_lean_escape(action)}") : '
                 f"{conj_parts}"
             )
 
             # Phase 3-4: Generate proof with kernel feedback loop
             proved, proof_body, errors, attempts = self._generate_and_verify_proof(
-                action, lean_source, theorem,
+                action,
+                lean_source,
+                theorem,
             )
 
             elapsed = (time.perf_counter() - start) * 1000
@@ -573,25 +576,37 @@ class LeanstralVerifier:
                     verification_time_ms=elapsed,
                 )
                 return LeanVerifyResult(
-                    proved=True, verified=True, certificate=certificate,
-                    counterexample=None, lean_errors=errors,
-                    attempts=attempts, model_used=self._model,
+                    proved=True,
+                    verified=True,
+                    certificate=certificate,
+                    counterexample=None,
+                    lean_errors=errors,
+                    attempts=attempts,
+                    model_used=self._model,
                     verification_time_ms=elapsed,
                 )
             else:
                 return LeanVerifyResult(
-                    proved=False, verified=True, certificate=None,
+                    proved=False,
+                    verified=True,
+                    certificate=None,
                     counterexample=f"Proof failed after {attempts} attempts",
-                    lean_errors=errors, attempts=attempts,
-                    model_used=self._model, verification_time_ms=elapsed,
+                    lean_errors=errors,
+                    attempts=attempts,
+                    model_used=self._model,
+                    verification_time_ms=elapsed,
                 )
 
         except (ImportError, ValueError) as exc:
             elapsed = (time.perf_counter() - start) * 1000
             return LeanVerifyResult(
-                proved=False, verified=False, certificate=None,
-                counterexample=None, lean_errors=[],
-                attempts=0, model_used=self._model,
+                proved=False,
+                verified=False,
+                certificate=None,
+                counterexample=None,
+                lean_errors=[],
+                attempts=0,
+                model_used=self._model,
                 verification_time_ms=elapsed,
                 error=str(exc),
             )
@@ -599,9 +614,13 @@ class LeanstralVerifier:
             elapsed = (time.perf_counter() - start) * 1000
             _log.warning("Leanstral verification error: %s", exc)
             return LeanVerifyResult(
-                proved=False, verified=False, certificate=None,
-                counterexample=None, lean_errors=[str(exc)],
-                attempts=0, model_used=self._model,
+                proved=False,
+                verified=False,
+                certificate=None,
+                counterexample=None,
+                lean_errors=[str(exc)],
+                attempts=0,
+                model_used=self._model,
                 verification_time_ms=elapsed,
                 error=f"{type(exc).__name__}: {exc}",
             )

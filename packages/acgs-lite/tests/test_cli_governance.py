@@ -94,11 +94,15 @@ class TestCmdAssess:
         from acgs_lite.cli import build_parser, cmd_assess
 
         parser = build_parser()
-        args = parser.parse_args([
-            "assess",
-            "--jurisdiction", "european_union",
-            "--domain", "healthcare",
-        ])
+        args = parser.parse_args(
+            [
+                "assess",
+                "--jurisdiction",
+                "european_union",
+                "--domain",
+                "healthcare",
+            ]
+        )
         rc = cmd_assess(args)
         assert rc == 0
 
@@ -114,11 +118,15 @@ class TestCmdAssess:
         from acgs_lite.cli import build_parser, cmd_assess
 
         parser = build_parser()
-        args = parser.parse_args([
-            "assess",
-            "--jurisdiction", "united_states",
-            "--domain", "financial",
-        ])
+        args = parser.parse_args(
+            [
+                "assess",
+                "--jurisdiction",
+                "united_states",
+                "--domain",
+                "financial",
+            ]
+        )
         rc = cmd_assess(args)
         assert rc == 0
 
@@ -130,10 +138,13 @@ class TestCmdAssess:
         from acgs_lite.cli import build_parser, cmd_assess
 
         parser = build_parser()
-        args = parser.parse_args([
-            "assess",
-            "--framework", "gdpr",
-        ])
+        args = parser.parse_args(
+            [
+                "assess",
+                "--framework",
+                "gdpr",
+            ]
+        )
         rc = cmd_assess(args)
         assert rc == 0
 
@@ -172,11 +183,15 @@ class TestCmdReport:
         from acgs_lite.cli import build_parser, cmd_assess
 
         parser = build_parser()
-        args = parser.parse_args([
-            "assess",
-            "--jurisdiction", "european_union",
-            "--domain", "healthcare",
-        ])
+        args = parser.parse_args(
+            [
+                "assess",
+                "--jurisdiction",
+                "european_union",
+                "--domain",
+                "healthcare",
+            ]
+        )
         cmd_assess(args)
 
     def test_report_markdown(self, tmp_workdir: Path) -> None:
@@ -231,9 +246,14 @@ class TestCmdReport:
         from acgs_lite.cli import build_parser, cmd_report
 
         parser = build_parser()
-        args = parser.parse_args([
-            "report", "--markdown", "-o", "my_report.md",
-        ])
+        args = parser.parse_args(
+            [
+                "report",
+                "--markdown",
+                "-o",
+                "my_report.md",
+            ]
+        )
         rc = cmd_report(args)
         assert rc == 0
         assert (tmp_workdir / "my_report.md").exists()
@@ -260,11 +280,13 @@ class TestReportModule:
         from acgs_lite.compliance import MultiFrameworkAssessor
 
         assessor = MultiFrameworkAssessor()
-        report = assessor.assess({
-            "system_id": "test-system",
-            "jurisdiction": "european_union",
-            "domain": "healthcare",
-        })
+        report = assessor.assess(
+            {
+                "system_id": "test-system",
+                "jurisdiction": "european_union",
+                "domain": "healthcare",
+            }
+        )
         return report.to_dict()
 
     def test_generate_markdown_report(self) -> None:
@@ -340,7 +362,9 @@ class TestPackageMetadata:
         # In CI, the installed wheel may have a stale version baked in.
         # Skip gracefully rather than failing the entire suite.
         if acgs_lite.__version__ != expected:
-            pytest.skip(f"installed version {acgs_lite.__version__} != pyproject {expected} (stale wheel in CI)")
+            pytest.skip(
+                f"installed version {acgs_lite.__version__} != pyproject {expected} (stale wheel in CI)"
+            )
 
     def test_console_scripts_include_acgs_alias(self) -> None:
         pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
@@ -362,7 +386,9 @@ class TestCLIIntegration:
     def test_acgs_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "Constitutional governance" in result.stdout
@@ -370,7 +396,9 @@ class TestCLIIntegration:
     def test_acgs_init_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "init", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "--force" in result.stdout
@@ -378,7 +406,9 @@ class TestCLIIntegration:
     def test_acgs_assess_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "assess", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "jurisdiction" in result.stdout
@@ -386,7 +416,9 @@ class TestCLIIntegration:
     def test_acgs_eu_ai_act_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "eu-ai-act", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "--system-id" in result.stdout
@@ -395,7 +427,9 @@ class TestCLIIntegration:
     def test_acgs_lint_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "lint", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "rules" in result.stdout.lower()
@@ -403,7 +437,9 @@ class TestCLIIntegration:
     def test_acgs_test_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "test", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "fixtures" in result.stdout.lower()
@@ -411,7 +447,9 @@ class TestCLIIntegration:
     def test_acgs_lifecycle_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "lifecycle", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "--state-file" in result.stdout
@@ -420,7 +458,9 @@ class TestCLIIntegration:
     def test_acgs_refusal_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "refusal", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "action_text" in result.stdout
@@ -429,7 +469,9 @@ class TestCLIIntegration:
     def test_acgs_observe_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "observe", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "--prometheus" in result.stdout
@@ -439,7 +481,9 @@ class TestCLIIntegration:
     def test_acgs_otel_help(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "acgs_lite.cli", "otel", "--help"],
-            capture_output=True, text=True, timeout=10,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         assert result.returncode == 0
         assert "--service-name" in result.stdout
@@ -460,11 +504,15 @@ class TestCmdEuAiAct:
         from acgs_lite.cli import build_parser, cmd_eu_ai_act
 
         parser = build_parser()
-        args = parser.parse_args([
-            "eu-ai-act",
-            "--system-id", "test-system",
-            "--domain", "healthcare",
-        ])
+        args = parser.parse_args(
+            [
+                "eu-ai-act",
+                "--system-id",
+                "test-system",
+                "--domain",
+                "healthcare",
+            ]
+        )
         rc = cmd_eu_ai_act(args)
         assert rc == 0
 
@@ -475,11 +523,14 @@ class TestCmdEuAiAct:
         from acgs_lite.cli import build_parser, cmd_eu_ai_act
 
         parser = build_parser()
-        args = parser.parse_args([
-            "eu-ai-act",
-            "--system-id", "test-system",
-            "--markdown",
-        ])
+        args = parser.parse_args(
+            [
+                "eu-ai-act",
+                "--system-id",
+                "test-system",
+                "--markdown",
+            ]
+        )
         rc = cmd_eu_ai_act(args)
         assert rc == 0
 
@@ -490,12 +541,16 @@ class TestCmdEuAiAct:
         from acgs_lite.cli import build_parser, cmd_eu_ai_act
 
         parser = build_parser()
-        args = parser.parse_args([
-            "eu-ai-act",
-            "--system-id", "test-system",
-            "--domain", "healthcare",
-            "--markdown",
-        ])
+        args = parser.parse_args(
+            [
+                "eu-ai-act",
+                "--system-id",
+                "test-system",
+                "--domain",
+                "healthcare",
+                "--markdown",
+            ]
+        )
         rc = cmd_eu_ai_act(args)
         assert rc == 0
 
@@ -631,41 +686,47 @@ class TestCmdTest:
 class TestCmdLifecycle:
     """Tests for `acgs lifecycle`."""
 
-    def test_lifecycle_register_and_status(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_lifecycle_register_and_status(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         from acgs_lite.cli import build_parser, cmd_lifecycle
 
         parser = build_parser()
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v1"])) == 0
         capsys.readouterr()
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "status", "policy-v1", "--json"])
-        ) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "status", "policy-v1", "--json"])) == 0
 
         out = capsys.readouterr().out
         data = json.loads(out)
         assert data["policy_id"] == "policy-v1"
         assert data["state"] == "draft"
 
-    def test_lifecycle_full_promotion_persists(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_lifecycle_full_promotion_persists(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         from acgs_lite.cli import build_parser, cmd_lifecycle
 
         parser = build_parser()
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v2"])) == 0
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "approve", "policy-v2", "--actor", "alice"])
-        ) == 0
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "approve", "policy-v2", "--actor", "bob"])
-        ) == 0
+        assert (
+            cmd_lifecycle(
+                parser.parse_args(["lifecycle", "approve", "policy-v2", "--actor", "alice"])
+            )
+            == 0
+        )
+        assert (
+            cmd_lifecycle(
+                parser.parse_args(["lifecycle", "approve", "policy-v2", "--actor", "bob"])
+            )
+            == 0
+        )
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "lint-gate", "policy-v2"])) == 0
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "test-gate", "policy-v2"])) == 0
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "review", "policy-v2"])) == 0
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "stage", "policy-v2"])) == 0
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "activate", "policy-v2"])) == 0
         capsys.readouterr()
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "status", "policy-v2", "--json"])
-        ) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "status", "policy-v2", "--json"])) == 0
 
         out = capsys.readouterr().out
         status_json = json.loads(out)
@@ -688,17 +749,21 @@ class TestCmdLifecycle:
 
         parser = build_parser()
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "register", "policy-v4"])) == 0
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "approve", "policy-v4", "--actor", "alice"])
-        ) == 0
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "approve", "policy-v4", "--actor", "bob"])
-        ) == 0
+        assert (
+            cmd_lifecycle(
+                parser.parse_args(["lifecycle", "approve", "policy-v4", "--actor", "alice"])
+            )
+            == 0
+        )
+        assert (
+            cmd_lifecycle(
+                parser.parse_args(["lifecycle", "approve", "policy-v4", "--actor", "bob"])
+            )
+            == 0
+        )
         assert cmd_lifecycle(parser.parse_args(["lifecycle", "review", "policy-v4"])) == 0
         capsys.readouterr()
-        assert cmd_lifecycle(
-            parser.parse_args(["lifecycle", "audit", "policy-v4", "--json"])
-        ) == 0
+        assert cmd_lifecycle(parser.parse_args(["lifecycle", "audit", "policy-v4", "--json"])) == 0
 
         out = capsys.readouterr().out
         data = json.loads(out)
@@ -724,12 +789,14 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_observe(
-            parser.parse_args([
-                "observe",
-                "hello world",
-                "deploy a weapon to attack",
-                "--json",
-            ])
+            parser.parse_args(
+                [
+                    "observe",
+                    "hello world",
+                    "deploy a weapon to attack",
+                    "--json",
+                ]
+            )
         )
         assert rc == 0
         data = json.loads(capsys.readouterr().out)
@@ -748,12 +815,14 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_observe(
-            parser.parse_args([
-                "observe",
-                "hello world",
-                "deploy a weapon to attack",
-                "--prometheus",
-            ])
+            parser.parse_args(
+                [
+                    "observe",
+                    "hello world",
+                    "deploy a weapon to attack",
+                    "--prometheus",
+                ]
+            )
         )
         assert rc == 0
         out = capsys.readouterr().out
@@ -761,9 +830,7 @@ class TestCmdObserve:
         assert 'outcome="deny"' in out
         assert "governance_compliance_rate" in out
 
-    def test_otel_json_output(
-        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_otel_json_output(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         from acgs_lite.cli import build_parser, cmd_init, cmd_otel
 
         parser = build_parser()
@@ -771,11 +838,13 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_otel(
-            parser.parse_args([
-                "otel",
-                "hello world",
-                "deploy a weapon to attack",
-            ])
+            parser.parse_args(
+                [
+                    "otel",
+                    "hello world",
+                    "deploy a weapon to attack",
+                ]
+            )
         )
         assert rc == 0
         data = json.loads(capsys.readouterr().out)
@@ -783,9 +852,7 @@ class TestCmdObserve:
         assert "resourceSpans" in data
         assert data["resourceSpans"]
 
-    def test_otel_watch_mode(
-        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_otel_watch_mode(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         from acgs_lite.cli import build_parser, cmd_init, cmd_otel
 
         parser = build_parser()
@@ -793,16 +860,18 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_otel(
-            parser.parse_args([
-                "otel",
-                "hello world",
-                "deploy a weapon",
-                "--watch",
-                "--interval",
-                "0",
-                "--iterations",
-                "2",
-            ])
+            parser.parse_args(
+                [
+                    "otel",
+                    "hello world",
+                    "deploy a weapon",
+                    "--watch",
+                    "--interval",
+                    "0",
+                    "--iterations",
+                    "2",
+                ]
+            )
         )
         assert rc == 0
         lines = [line for line in capsys.readouterr().out.splitlines() if line.strip()]
@@ -825,12 +894,14 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_observe(
-            parser.parse_args([
-                "observe",
-                "--actions-file",
-                "actions.txt",
-                "--json",
-            ])
+            parser.parse_args(
+                [
+                    "observe",
+                    "--actions-file",
+                    "actions.txt",
+                    "--json",
+                ]
+            )
         )
         assert rc == 0
         data = json.loads(capsys.readouterr().out)
@@ -846,16 +917,18 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_observe(
-            parser.parse_args([
-                "observe",
-                "hello world",
-                "deploy a weapon",
-                "--watch",
-                "--interval",
-                "0",
-                "--iterations",
-                "2",
-            ])
+            parser.parse_args(
+                [
+                    "observe",
+                    "hello world",
+                    "deploy a weapon",
+                    "--watch",
+                    "--interval",
+                    "0",
+                    "--iterations",
+                    "2",
+                ]
+            )
         )
         assert rc == 0
         out = capsys.readouterr().out
@@ -873,27 +946,27 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_observe(
-            parser.parse_args([
-                "observe",
-                "hello world",
-                "deploy a weapon",
-                "--watch",
-                "--interval",
-                "0",
-                "--iterations",
-                "2",
-                "-o",
-                "observe-watch.txt",
-            ])
+            parser.parse_args(
+                [
+                    "observe",
+                    "hello world",
+                    "deploy a weapon",
+                    "--watch",
+                    "--interval",
+                    "0",
+                    "--iterations",
+                    "2",
+                    "-o",
+                    "observe-watch.txt",
+                ]
+            )
         )
         assert rc == 0
         out = (tmp_workdir / "observe-watch.txt").read_text()
         assert "Snapshot 1" in out
         assert "Snapshot 2" in out
 
-    def test_otel_bundle_dir(
-        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
-    ) -> None:
+    def test_otel_bundle_dir(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
         from acgs_lite.cli import build_parser, cmd_init, cmd_otel
 
         parser = build_parser()
@@ -901,15 +974,17 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_otel(
-            parser.parse_args([
-                "otel",
-                "hello world",
-                "deploy a weapon",
-                "--bundle-dir",
-                "bundle",
-                "-o",
-                "otel-export.json",
-            ])
+            parser.parse_args(
+                [
+                    "otel",
+                    "hello world",
+                    "deploy a weapon",
+                    "--bundle-dir",
+                    "bundle",
+                    "-o",
+                    "otel-export.json",
+                ]
+            )
         )
         assert rc == 0
         bundle = tmp_workdir / "bundle"
@@ -933,16 +1008,18 @@ class TestCmdObserve:
 
         with patch("acgs_lite.commands.observe._post_otlp_json", return_value=202) as mock_post:
             rc = cmd_otel(
-                parser.parse_args([
-                    "otel",
-                    "hello world",
-                    "--otlp-endpoint",
-                    "http://collector.test/v1/traces",
-                    "--otlp-header",
-                    "Authorization: Bearer demo-token",
-                    "-o",
-                    "otel-export.json",
-                ])
+                parser.parse_args(
+                    [
+                        "otel",
+                        "hello world",
+                        "--otlp-endpoint",
+                        "http://collector.test/v1/traces",
+                        "--otlp-header",
+                        "Authorization: Bearer demo-token",
+                        "-o",
+                        "otel-export.json",
+                    ]
+                )
             )
         assert rc == 0
         mock_post.assert_called_once()
@@ -961,18 +1038,20 @@ class TestCmdObserve:
         capsys.readouterr()
 
         rc = cmd_otel(
-            parser.parse_args([
-                "otel",
-                "hello world",
-                "deploy a weapon",
-                "--watch",
-                "--interval",
-                "0",
-                "--iterations",
-                "2",
-                "-o",
-                "otel-watch.ndjson",
-            ])
+            parser.parse_args(
+                [
+                    "otel",
+                    "hello world",
+                    "deploy a weapon",
+                    "--watch",
+                    "--interval",
+                    "0",
+                    "--iterations",
+                    "2",
+                    "-o",
+                    "otel-watch.ndjson",
+                ]
+            )
         )
         assert rc == 0
         lines = (tmp_workdir / "otel-watch.ndjson").read_text().splitlines()
@@ -991,7 +1070,9 @@ class TestCmdObserve:
 class TestCmdRefusal:
     """Tests for `acgs refusal`."""
 
-    def test_refusal_for_denied_action(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_refusal_for_denied_action(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         from acgs_lite.cli import build_parser, cmd_init, cmd_refusal
 
         parser = build_parser()
@@ -1009,7 +1090,9 @@ class TestCmdRefusal:
         assert len(data["reasons"]) >= 1
         assert len(data["suggestions"]) >= 1
 
-    def test_refusal_for_allowed_action(self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    def test_refusal_for_allowed_action(
+        self, tmp_workdir: Path, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         from acgs_lite.cli import build_parser, cmd_init, cmd_refusal
 
         parser = build_parser()

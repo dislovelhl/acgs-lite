@@ -63,7 +63,9 @@ def serialize_for_governance(value: Any, *, max_chars: int = _MAX_GOVERNANCE_PAY
     return _truncate_payload(payload, max_chars=max_chars)
 
 
-def iter_governance_payloads(*values: Any, max_chars: int = _MAX_GOVERNANCE_PAYLOAD_CHARS) -> list[str]:
+def iter_governance_payloads(
+    *values: Any, max_chars: int = _MAX_GOVERNANCE_PAYLOAD_CHARS
+) -> list[str]:
     """Collect non-empty governance payloads from positional or keyword values."""
     payloads: list[str] = []
     for value in values:

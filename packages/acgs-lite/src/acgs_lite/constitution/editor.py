@@ -128,11 +128,7 @@ class ConstitutionDiff:
     @property
     def is_empty(self) -> bool:
         """True when no changes were recorded."""
-        return (
-            len(self.added) == 0
-            and len(self.removed) == 0
-            and len(self.modified) == 0
-        )
+        return len(self.added) == 0 and len(self.removed) == 0 and len(self.modified) == 0
 
     def summary(self) -> str:
         """Human-readable diff summary."""
@@ -141,10 +137,7 @@ class ConstitutionDiff:
             ids = ", ".join(d.rule_id for d in self.added)
             parts.append(f"Added {len(self.added)} rule(s): {ids}")
         if self.removed:
-            parts.append(
-                f"Removed {len(self.removed)} rule(s): "
-                f"{', '.join(self.removed)}"
-            )
+            parts.append(f"Removed {len(self.removed)} rule(s): {', '.join(self.removed)}")
         if self.modified:
             for rule_id, changes in self.modified:
                 fields = ", ".join(sorted(changes.keys()))
@@ -158,10 +151,7 @@ class ConstitutionDiff:
         return {
             "added": [d.to_dict() for d in self.added],
             "removed": list(self.removed),
-            "modified": [
-                {"rule_id": rid, "changes": changes}
-                for rid, changes in self.modified
-            ],
+            "modified": [{"rule_id": rid, "changes": changes} for rid, changes in self.modified],
         }
 
 
@@ -229,9 +219,7 @@ class ConstitutionEditor:
             ValueError: If ``rule_id`` already exists.
         """
         if rule_id in self._drafts:
-            raise ValueError(
-                f"Rule '{rule_id}' already exists in the editor"
-            )
+            raise ValueError(f"Rule '{rule_id}' already exists in the editor")
         draft = RuleDraft(
             rule_id=rule_id,
             text=text,
@@ -253,9 +241,7 @@ class ConstitutionEditor:
         try:
             return self._drafts.pop(rule_id)
         except KeyError:
-            raise KeyError(
-                f"Rule '{rule_id}' not found in the editor"
-            ) from None
+            raise KeyError(f"Rule '{rule_id}' not found in the editor") from None
 
     def update_rule(
         self,
@@ -274,9 +260,7 @@ class ConstitutionEditor:
             KeyError: If ``rule_id`` is not found.
         """
         if rule_id not in self._drafts:
-            raise KeyError(
-                f"Rule '{rule_id}' not found in the editor"
-            )
+            raise KeyError(f"Rule '{rule_id}' not found in the editor")
         draft = self._drafts[rule_id]
         if text is not None:
             draft.text = text
@@ -297,9 +281,7 @@ class ConstitutionEditor:
         try:
             return self._drafts[rule_id]
         except KeyError:
-            raise KeyError(
-                f"Rule '{rule_id}' not found in the editor"
-            ) from None
+            raise KeyError(f"Rule '{rule_id}' not found in the editor") from None
 
     def list_rules(
         self,
@@ -325,10 +307,7 @@ class ConstitutionEditor:
         current_ids = set(self._drafts.keys())
         base_ids = set(base_by_id.keys())
 
-        added = [
-            self._drafts[rid]
-            for rid in sorted(current_ids - base_ids)
-        ]
+        added = [self._drafts[rid] for rid in sorted(current_ids - base_ids)]
         removed = sorted(base_ids - current_ids)
 
         modified: list[tuple[str, dict[str, Any]]] = []
@@ -399,20 +378,14 @@ class ConstitutionEditor:
             if not draft.rule_id.strip():
                 issues.append("Rule has empty ID")
             if not draft.text.strip():
-                issues.append(
-                    f"Rule '{draft.rule_id}' has empty text"
-                )
+                issues.append(f"Rule '{draft.rule_id}' has empty text")
             if not draft.category.strip():
-                issues.append(
-                    f"Rule '{draft.rule_id}' has empty category"
-                )
+                issues.append(f"Rule '{draft.rule_id}' has empty category")
         return issues
 
     def reset(self) -> None:
         """Revert to the base constitution state."""
-        self._drafts = {
-            r.id: RuleDraft.from_rule(r) for r in self._base.rules
-        }
+        self._drafts = {r.id: RuleDraft.from_rule(r) for r in self._base.rules}
 
     # -- Properties ---------------------------------------------------------
 
@@ -491,10 +464,7 @@ class ConstitutionVersionControl:
             IndexError: If *version* is out of range.
         """
         if version < 0 or version >= len(self._versions):
-            raise IndexError(
-                f"Version {version} out of range "
-                f"[0, {len(self._versions) - 1}]"
-            )
+            raise IndexError(f"Version {version} out of range [0, {len(self._versions) - 1}]")
         return self._versions[version]
 
     def get_constitution(self, version: int) -> Constitution:
@@ -504,10 +474,7 @@ class ConstitutionVersionControl:
             IndexError: If *version* is out of range.
         """
         if version < 0 or version >= len(self._constitutions):
-            raise IndexError(
-                f"Version {version} out of range "
-                f"[0, {len(self._constitutions) - 1}]"
-            )
+            raise IndexError(f"Version {version} out of range [0, {len(self._constitutions) - 1}]")
         return self._constitutions[version]
 
     def diff(
@@ -606,9 +573,7 @@ def merge_constitutions(
     base_by_id = {r.id: r for r in base.rules}
     theirs_by_id = {r.id: r for r in theirs.rules}
 
-    all_ids = dict.fromkeys(
-        [r.id for r in base.rules] + [r.id for r in theirs.rules]
-    )
+    all_ids = dict.fromkeys([r.id for r in base.rules] + [r.id for r in theirs.rules])
 
     merged_rules: list[Rule] = []
     for rid in all_ids:
@@ -629,8 +594,7 @@ def merge_constitutions(
                 merged_rules.append(base_rule)
             else:
                 raise ValueError(
-                    f"Conflict on rule '{rid}': strict mode "
-                    f"does not allow differing versions"
+                    f"Conflict on rule '{rid}': strict mode does not allow differing versions"
                 )
 
     return Constitution(
@@ -668,10 +632,7 @@ def _diff_constitutions(
     old_ids = set(old_by_id.keys())
     new_ids = set(new_by_id.keys())
 
-    added = [
-        RuleDraft.from_rule(new_by_id[rid])
-        for rid in sorted(new_ids - old_ids)
-    ]
+    added = [RuleDraft.from_rule(new_by_id[rid]) for rid in sorted(new_ids - old_ids)]
     removed = sorted(old_ids - new_ids)
 
     modified: list[tuple[str, dict[str, Any]]] = []

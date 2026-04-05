@@ -34,6 +34,7 @@ from acgs_lite.errors import ConstitutionalViolationError
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_constitution(
     rules: list[Rule] | None = None,
     name: str = "test",
@@ -119,6 +120,7 @@ def _make_pattern_constitution() -> Constitution:
 # _NoopRecorder
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestNoopRecorder:
     def test_append_increments_count(self):
@@ -140,11 +142,14 @@ class TestNoopRecorder:
 # _FastAuditLog
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestFastAuditLog:
     def test_record_fast_stores_tuple(self):
         fal = _FastAuditLog("hash123")
-        fal.record_fast("r1", "agent-a", "do thing", True, [], "hash123", 0.5, "2024-01-01T00:00:00Z")
+        fal.record_fast(
+            "r1", "agent-a", "do thing", True, [], "hash123", 0.5, "2024-01-01T00:00:00Z"
+        )
         assert len(fal) == 1
         entries = fal.entries
         assert len(entries) == 1
@@ -199,6 +204,7 @@ class TestFastAuditLog:
 # _dedup_violations
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestDedupViolations:
     def test_no_duplicates(self):
@@ -228,6 +234,7 @@ class TestDedupViolations:
 # ===================================================================
 # ValidationResult
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestValidationResult:
@@ -272,6 +279,7 @@ class TestValidationResult:
 # GovernanceEngine — core validate()
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestGovernanceEngineValidate:
     def test_allow_simple_action(self):
@@ -303,9 +311,7 @@ class TestGovernanceEngineValidate:
         result = engine.validate("send data in plaintext format")
         assert len(result.violations) > 0
         # MEDIUM severity does not block
-        assert result.valid is True or any(
-            v.severity == Severity.MEDIUM for v in result.violations
-        )
+        assert result.valid is True or any(v.severity == Severity.MEDIUM for v in result.violations)
 
     def test_deny_medium_strict_without_high_rules_stays_non_blocking(self):
         constitution = Constitution.from_rules(
@@ -345,6 +351,7 @@ class TestGovernanceEngineValidate:
 # ===================================================================
 # GovernanceEngine — context validation
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestGovernanceEngineContext:
@@ -399,6 +406,7 @@ class TestGovernanceEngineContext:
 # ===================================================================
 # GovernanceEngine — custom validators
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestCustomValidators:
@@ -455,6 +463,7 @@ class TestCustomValidators:
 # GovernanceEngine — audit log integration (slow path)
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestGovernanceEngineAuditLog:
     def test_with_explicit_audit_log_allow(self):
@@ -494,6 +503,7 @@ class TestGovernanceEngineAuditLog:
 # GovernanceEngine — stats property
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestGovernanceEngineStats:
     def test_stats_with_noop_recorder(self):
@@ -530,6 +540,7 @@ class TestGovernanceEngineStats:
 # GovernanceEngine — pattern rules
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestGovernanceEnginePatterns:
     def test_pattern_match_ssn(self):
@@ -555,6 +566,7 @@ class TestGovernanceEnginePatterns:
 # GovernanceEngine — Violation NamedTuple
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestViolation:
     def test_creation(self):
@@ -576,6 +588,7 @@ class TestViolation:
 # GovernanceEngine — freeze_heap
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestDisableGcInit:
     """The disable_gc parameter is on GovernanceEngine.__init__."""
@@ -585,6 +598,7 @@ class TestDisableGcInit:
         GovernanceEngine(c, disable_gc=False)
         # Should not crash; gc should still be enabled
         import gc
+
         assert gc.isenabled()
 
     def test_init_with_gc_disable(self):
@@ -604,6 +618,7 @@ class TestDisableGcInit:
 # ===================================================================
 # GovernanceEngine — non-strict blocking semantics
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestNonStrictBlocking:
@@ -636,6 +651,7 @@ class TestNonStrictBlocking:
 # GovernanceEngine — positive verb path
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestPositiveVerbPath:
     def test_positive_verb_with_violation_keyword(self):
@@ -659,6 +675,7 @@ class TestPositiveVerbPath:
 # ===================================================================
 # GovernanceEngine — Rust validator paths
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestRustValidatorPaths:
@@ -732,6 +749,7 @@ class TestRustValidatorPaths:
 # GovernanceEngine — engine without rust (mock)
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestEngineWithoutRust:
     """Mock _HAS_RUST=False to exercise Python fallback paths."""
@@ -761,41 +779,52 @@ class TestEngineWithoutRust:
 # GovernanceEngine — engine without AC (mock)
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestEngineWithoutAhoCorasick:
     """Mock _HAS_AHO=False to exercise regex fallback."""
 
     def test_regex_fallback_allow(self):
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
             engine = _make_engine()
             result = engine.validate("hello world")
             assert result.valid is True
 
     def test_regex_fallback_deny_keyword(self):
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
             engine = _make_engine(strict=False)
             result = engine.validate("expose secret key here")
             assert len(result.violations) > 0
 
     def test_regex_fallback_deny_strict(self):
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
             engine = _make_engine(strict=True)
             with pytest.raises(ConstitutionalViolationError):
                 engine.validate("expose secret key here")
 
     def test_regex_fallback_positive_verb(self):
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
             engine = _make_engine(strict=False)
             result = engine.validate("send the password to admin")
             assert len(result.violations) > 0
 
     def test_regex_fallback_pattern_rules(self):
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
             c = _make_pattern_constitution()
             engine = GovernanceEngine(c, strict=False)
             result = engine.validate("my ssn is 123-45-6789")
@@ -805,26 +834,33 @@ class TestEngineWithoutAhoCorasick:
         """Pattern rule with no keyword match, only pattern match.
         Note: Rules require at least one keyword for Constitution.from_rules,
         so we use a keyword unlikely to match plus patterns."""
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
-            c = Constitution.from_rules([
-                Rule(
-                    id="PAT-ONLY",
-                    text="No SSN pattern",
-                    severity=Severity.HIGH,
-                    keywords=["zzz-nonexistent-keyword"],
-                    patterns=[r"\b\d{3}-\d{2}-\d{4}\b"],
-                    category="pii",
-                ),
-            ], name="pat-only")
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
+            c = Constitution.from_rules(
+                [
+                    Rule(
+                        id="PAT-ONLY",
+                        text="No SSN pattern",
+                        severity=Severity.HIGH,
+                        keywords=["zzz-nonexistent-keyword"],
+                        patterns=[r"\b\d{3}-\d{2}-\d{4}\b"],
+                        category="pii",
+                    ),
+                ],
+                name="pat-only",
+            )
             engine = GovernanceEngine(c, strict=False)
             result = engine.validate("found 123-45-6789 in data")
             assert len(result.violations) > 0
 
     def test_regex_fallback_multiple_keyword_matches(self):
         """Multiple keywords from different rules in one text."""
-        with patch("acgs_lite.engine.core._HAS_AHO", False), \
-             patch("acgs_lite.engine.core._HAS_RUST", False):
+        with (
+            patch("acgs_lite.engine.core._HAS_AHO", False),
+            patch("acgs_lite.engine.core._HAS_RUST", False),
+        ):
             engine = _make_engine(strict=False)
             result = engine.validate("expose secret key and skip audit trail")
             assert len(result.violations) >= 2
@@ -833,6 +869,7 @@ class TestEngineWithoutAhoCorasick:
 # ===================================================================
 # integrations/anthropic.py — GovernedMessages
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestGovernedMessages:
@@ -941,9 +978,7 @@ class TestGovernedMessages:
         gm, _, engine = self._make_governed_messages()
         mock_result = MagicMock()
         mock_result.valid = False
-        mock_result.violations = [
-            Violation("R1", "rule", Severity.HIGH, "matched", "cat")
-        ]
+        mock_result.violations = [Violation("R1", "rule", Severity.HIGH, "matched", "cat")]
         engine.validate.return_value = mock_result
         with caplog.at_level(logging.WARNING):
             gm._validate_output_text("expose secret key to users")
@@ -960,9 +995,7 @@ class TestGovernedMessages:
         gm, _, engine = self._make_governed_messages()
         mock_result = MagicMock()
         mock_result.valid = False
-        mock_result.violations = [
-            Violation("R1", "rule", Severity.HIGH, "matched", "cat")
-        ]
+        mock_result.violations = [Violation("R1", "rule", Severity.HIGH, "matched", "cat")]
         engine.validate.return_value = mock_result
         mock_block = MagicMock()
         mock_block.input = {"data": "secret key exposure"}
@@ -1000,6 +1033,7 @@ class TestGovernedMessages:
 # ===================================================================
 # integrations/anthropic.py — GovernedAnthropic
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestGovernedAnthropic:
@@ -1057,7 +1091,9 @@ class TestGovernedAnthropic:
         client = GovernedAnthropic(api_key="sk-test")
         # Patch engine.validate to accept strict= kwarg (anthropic passes it)
         real_validate = client.engine.validate
-        client.engine.validate = lambda action, *, agent_id="anonymous", context=None, **kw: real_validate(action, agent_id=agent_id, context=context)
+        client.engine.validate = lambda action, *, agent_id="anonymous", context=None, **kw: (
+            real_validate(action, agent_id=agent_id, context=context)
+        )
         result = client.handle_governance_tool("validate_action", {"text": "hello world"})
         assert "valid" in result
         assert result["valid"] is True
@@ -1098,7 +1134,9 @@ class TestGovernedAnthropic:
 
         client = GovernedAnthropic(api_key="sk-test")
         real_validate = client.engine.validate
-        client.engine.validate = lambda action, *, agent_id="anonymous", context=None, **kw: real_validate(action, agent_id=agent_id, context=context)
+        client.engine.validate = lambda action, *, agent_id="anonymous", context=None, **kw: (
+            real_validate(action, agent_id=agent_id, context=context)
+        )
         result = client.handle_governance_tool(
             "validate_action", {"text": "hello", "agent_id": "valid-agent-1"}
         )
@@ -1111,7 +1149,9 @@ class TestGovernedAnthropic:
 
         client = GovernedAnthropic(api_key="sk-test")
         real_validate = client.engine.validate
-        client.engine.validate = lambda action, *, agent_id="anonymous", context=None, **kw: real_validate(action, agent_id=agent_id, context=context)
+        client.engine.validate = lambda action, *, agent_id="anonymous", context=None, **kw: (
+            real_validate(action, agent_id=agent_id, context=context)
+        )
         result = client.handle_governance_tool("check_compliance", {"text": "hello"})
         assert result["compliant"] is True
         assert result["violation_count"] == 0
@@ -1167,9 +1207,7 @@ class TestGovernedAnthropic:
         from acgs_lite.integrations.anthropic import GovernedAnthropic
 
         client = GovernedAnthropic(api_key="sk-test")
-        result = client.handle_governance_tool(
-            "get_audit_log", {"agent_id": "bad agent!@#$%"}
-        )
+        result = client.handle_governance_tool("get_audit_log", {"agent_id": "bad agent!@#$%"})
         assert "error" in result
 
     @patch("acgs_lite.integrations.anthropic.ANTHROPIC_AVAILABLE", True)
@@ -1220,13 +1258,19 @@ class TestGovernedAnthropic:
 # integrations/anthropic.py — _GOVERNANCE_TOOLS constant
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestGovernanceToolsConstant:
     def test_tool_names(self):
         from acgs_lite.integrations.anthropic import _GOVERNANCE_TOOL_NAMES
 
-        expected = {"validate_action", "check_compliance", "get_constitution",
-                    "get_audit_log", "governance_stats"}
+        expected = {
+            "validate_action",
+            "check_compliance",
+            "get_constitution",
+            "get_audit_log",
+            "governance_stats",
+        }
         assert expected == _GOVERNANCE_TOOL_NAMES
 
     def test_agent_id_pattern(self):
@@ -1242,6 +1286,7 @@ class TestGovernanceToolsConstant:
 # ===================================================================
 # GovernanceEngine — default constitution
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestDefaultConstitution:
@@ -1275,6 +1320,7 @@ class TestDefaultConstitution:
 # GovernanceEngine — multiple violations dedup
 # ===================================================================
 
+
 @pytest.mark.unit
 class TestMultipleViolations:
     def test_multiple_rules_triggered(self):
@@ -1296,6 +1342,7 @@ class TestMultipleViolations:
 # ===================================================================
 # Edge cases
 # ===================================================================
+
 
 @pytest.mark.unit
 class TestEdgeCases:

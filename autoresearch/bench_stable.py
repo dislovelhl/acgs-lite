@@ -19,6 +19,7 @@ Features:
   Checkpoint/resume: completed trials are saved to .bstable_*.json; ^C is recoverable
   Provenance:        spread statistics written alongside the median block
 """
+
 from __future__ import annotations
 
 import argparse
@@ -39,18 +40,23 @@ _METRIC_RE = re.compile(r"^(\w+):\s+([\d.]+)", re.MULTILINE)
 
 _INT_METRICS = {"scenarios_tested", "correct", "errors", "rules_checked"}
 _LOWER_IS_BETTER = {
-    "p50_latency_ms", "p95_latency_ms", "p99_latency_ms",
-    "mean_latency_ms", "false_positive_rate", "false_negative_rate",
+    "p50_latency_ms",
+    "p95_latency_ms",
+    "p99_latency_ms",
+    "mean_latency_ms",
+    "false_positive_rate",
+    "false_negative_rate",
 }
 
-DEFAULT_TRIAL_TIMEOUT = 30        # seconds; covers any realistic benchmark run
-_CASCADE_TIE_MULTIPLIER = 3       # abort if trial 1 composite is > 3× tie_band below best
-_DEFAULT_TIE_BAND = 0.005        # matches log_run.py COMPOSITE_TIE_BAND
+DEFAULT_TRIAL_TIMEOUT = 30  # seconds; covers any realistic benchmark run
+_CASCADE_TIE_MULTIPLIER = 3  # abort if trial 1 composite is > 3× tie_band below best
+_DEFAULT_TIE_BAND = 0.005  # matches log_run.py COMPOSITE_TIE_BAND
 
 
 # ---------------------------------------------------------------------------
 # Checkpoint / resume helpers
 # ---------------------------------------------------------------------------
+
 
 def _artifact_path(out_path: Path, trial_num: int) -> Path:
     """Deterministic path for a single trial's checkpoint file."""
@@ -89,6 +95,7 @@ def _cleanup_trials(out_path: Path, n_trials: int) -> None:
 # Cascade abort
 # ---------------------------------------------------------------------------
 
+
 def _cascade_check(t1: dict[str, float], tie_band: float = _DEFAULT_TIE_BAND) -> str | None:
     """Return a human-readable abort reason if remaining trials are pointless, else None.
 
@@ -114,6 +121,7 @@ def _cascade_check(t1: dict[str, float], tie_band: float = _DEFAULT_TIE_BAND) ->
             if _dir not in sys.path:
                 sys.path.insert(0, _dir)
             from results_utils import best_kept_row, load_rows
+
             rows = load_rows(_RESULTS_TSV)
             best = best_kept_row(rows, "hot-path")
             if best:
@@ -138,6 +146,7 @@ def _cascade_check(t1: dict[str, float], tie_band: float = _DEFAULT_TIE_BAND) ->
 # ---------------------------------------------------------------------------
 # Core trial execution
 # ---------------------------------------------------------------------------
+
 
 def _run_trial(
     trial_num: int,
@@ -182,6 +191,7 @@ def _run_trial(
 # Aggregation and formatting
 # ---------------------------------------------------------------------------
 
+
 def _median_metrics(trials: list[dict[str, float]]) -> dict[str, float]:
     all_keys = list(trials[0].keys())
     return {k: statistics.median(t[k] for t in trials if k in t) for k in all_keys}
@@ -202,8 +212,8 @@ def _variance_report(trials: list[dict[str, float]], medians: dict[str, float]) 
     print("\nVariance report (signal vs noise — spread should be < your target delta):")
     key_metrics = [
         ("composite_score", "higher better"),
-        ("p99_latency_ms",  "lower better"),
-        ("throughput_rps",  "higher better"),
+        ("p99_latency_ms", "lower better"),
+        ("throughput_rps", "higher better"),
     ]
     for key, direction in key_metrics:
         if key not in trials[0]:
@@ -222,6 +232,7 @@ def _variance_report(trials: list[dict[str, float]], medians: dict[str, float]) 
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Multi-trial jitter-defeating benchmark wrapper.",
@@ -235,23 +246,31 @@ Examples:
 """,
     )
     parser.add_argument(
-        "--trials", type=int, default=5,
+        "--trials",
+        type=int,
+        default=5,
         help="Number of trials. Odd numbers give a clean median (default: 5).",
     )
     parser.add_argument(
-        "--out", default="autoresearch/run.log",
+        "--out",
+        default="autoresearch/run.log",
         help="Output log path (default: autoresearch/run.log)",
     )
     parser.add_argument(
-        "--quiet", action="store_true",
+        "--quiet",
+        action="store_true",
         help="Suppress per-trial progress output",
     )
     parser.add_argument(
-        "--no-resume", action="store_true", dest="no_resume",
+        "--no-resume",
+        action="store_true",
+        dest="no_resume",
         help="Ignore cached trial checkpoints and start fresh",
     )
     parser.add_argument(
-        "--timeout", type=int, default=DEFAULT_TRIAL_TIMEOUT,
+        "--timeout",
+        type=int,
+        default=DEFAULT_TRIAL_TIMEOUT,
         help=f"Per-trial timeout in seconds (default: {DEFAULT_TRIAL_TIMEOUT})",
     )
     args = parser.parse_args()
@@ -291,7 +310,7 @@ Examples:
         result = _run_trial(i, args.quiet, args.timeout)
         if result is not None:
             trial_results[i] = result
-            _save_trial(out_path, i, result)   # checkpoint immediately
+            _save_trial(out_path, i, result)  # checkpoint immediately
 
             # Cascade abort: check after first fresh successful trial
             fresh_results = [trial_results[j] for j in sorted(trial_results)]
@@ -345,7 +364,7 @@ Examples:
         print("\n→ CASCADE ABORTED — no need to log_run this result.")
     else:
         print("\nLog with:")
-        print(f'  python3 autoresearch/log_run.py {args.out} \\')
+        print(f"  python3 autoresearch/log_run.py {args.out} \\")
         print('    --commit "$(git rev-parse --short HEAD)" \\')
         print('    --description "your hypothesis"')
 

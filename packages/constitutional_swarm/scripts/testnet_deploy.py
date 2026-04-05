@@ -71,9 +71,7 @@ def cmd_miner(args: argparse.Namespace) -> None:
     print(f"  Constitution: {args.constitution}")
     print(f"  Wallet: {wallet.name} / {wallet.hotkey_str}")
 
-    async def _deliberation_handler(
-        task: str, context: str, meta: dict
-    ) -> tuple[str, str]:
+    async def _deliberation_handler(task: str, context: str, meta: dict) -> tuple[str, str]:
         """Default AI-assisted deliberation handler.
 
         In production, replace with human-in-the-loop or
@@ -91,7 +89,9 @@ def cmd_miner(args: argparse.Namespace) -> None:
     config = MinerConfig(
         constitution_path=args.constitution,
         agent_id=wallet.hotkey_str,
-        capabilities=tuple(args.capabilities.split(",")) if args.capabilities else ("governance-judgment",),
+        capabilities=tuple(args.capabilities.split(","))
+        if args.capabilities
+        else ("governance-judgment",),
         domains=tuple(args.domains.split(",")) if args.domains else ("general",),
     )
 
@@ -224,10 +224,7 @@ def cmd_validator(args: argparse.Namespace) -> None:
             weights = validator.compute_emission_weights()
             if weights:
                 uids = list(range(metagraph.n))
-                weight_values = [
-                    weights.get(metagraph.hotkeys[uid], 0.0)
-                    for uid in uids
-                ]
+                weight_values = [weights.get(metagraph.hotkeys[uid], 0.0) for uid in uids]
                 subtensor.set_weights(
                     wallet=wallet,
                     netuid=args.netuid,

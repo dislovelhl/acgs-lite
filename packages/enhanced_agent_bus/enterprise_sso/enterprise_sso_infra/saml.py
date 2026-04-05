@@ -515,7 +515,9 @@ class SAML2Handler(BaseProtocolHandler):
         except _SAML_OPERATION_ERRORS as e:
             logger.exception(f"[{CONSTITUTIONAL_HASH}] SLO response validation error")
             logger.debug(f"[{CONSTITUTIONAL_HASH}] SLO response validation error detail: {e}")
-            return LogoutResult(success=False, error="Logout validation failed", error_code="VALIDATION_ERROR")
+            return LogoutResult(
+                success=False, error="Logout validation failed", error_code="VALIDATION_ERROR"
+            )
 
     async def handle_logout_request(self, request_data: JSONDict) -> LogoutRequestResult:
         """Handle IdP-initiated LogoutRequest."""

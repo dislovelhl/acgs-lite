@@ -363,7 +363,8 @@ class GovernanceMetricsMiddleware:
             span.set_attribute("acgs.rules_count", stats.get("rules_count", 0))
             span.set_attribute("acgs.compliance_score", stats.get("compliance_score", 0.0))
             span.set_attribute(
-                "acgs.audit_chain_valid", stats.get("audit_chain_valid", False),
+                "acgs.audit_chain_valid",
+                stats.get("audit_chain_valid", False),
             )
 
             await self._app(scope, receive, send)
@@ -395,8 +396,7 @@ def create_prometheus_app(
     """
     if not OTEL_AVAILABLE or not PROMETHEUS_AVAILABLE:
         logger.warning(
-            "OpenTelemetry or Prometheus exporter not installed; "
-            "/metrics endpoint will return 503",
+            "OpenTelemetry or Prometheus exporter not installed; /metrics endpoint will return 503",
         )
 
         async def _unavailable(scope: dict, receive: Any, send: Any) -> None:  # noqa: ARG001

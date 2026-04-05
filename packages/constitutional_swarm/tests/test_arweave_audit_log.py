@@ -199,9 +199,7 @@ class TestAuditBatch:
         assert batch.find_entry("missing") is None
 
     def test_compliance_rate(self):
-        entries = [
-            _entry(f"p{i}", compliance_passed=True) for i in range(8)
-        ] + [
+        entries = [_entry(f"p{i}", compliance_passed=True) for i in range(8)] + [
             _entry(f"f{i}", compliance_passed=False) for i in range(2)
         ]
         batch = AuditBatch("b1", CONST_HASH, entries)

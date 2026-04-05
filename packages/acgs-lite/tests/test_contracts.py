@@ -22,8 +22,21 @@ from acgs_lite.constitution.contracts import (
 # ---------------------------------------------------------------------------
 def _make_terms() -> list[ContractTerm]:
     return [
-        ContractTerm(term_id="T1", description="No PII sharing", category="data_protection", severity="critical"),
-        ContractTerm(term_id="T2", description="Latency < 500ms", category="sla", severity="medium", measurable=True, threshold=500.0, unit="ms"),
+        ContractTerm(
+            term_id="T1",
+            description="No PII sharing",
+            category="data_protection",
+            severity="critical",
+        ),
+        ContractTerm(
+            term_id="T2",
+            description="Latency < 500ms",
+            category="sla",
+            severity="medium",
+            measurable=True,
+            threshold=500.0,
+            unit="ms",
+        ),
     ]
 
 
@@ -50,7 +63,9 @@ class TestContractTerm:
         assert "measurable" not in d
 
     def test_to_dict_measurable(self):
-        t = ContractTerm(term_id="T1", description="d", category="c", measurable=True, threshold=10.0, unit="ms")
+        t = ContractTerm(
+            term_id="T1", description="d", category="c", measurable=True, threshold=10.0, unit="ms"
+        )
         d = t.to_dict()
         assert d["measurable"] is True
         assert d["threshold"] == 10.0
@@ -63,9 +78,13 @@ class TestContractTerm:
 class TestBreachRecord:
     def test_to_dict_unresolved(self):
         b = BreachRecord(
-            breach_id="b1", contract_id="c1", term_id="T1",
-            reported_by="alpha", evidence="proof",
-            severity=BreachSeverity.MAJOR, timestamp=datetime.now(timezone.utc),
+            breach_id="b1",
+            contract_id="c1",
+            term_id="T1",
+            reported_by="alpha",
+            evidence="proof",
+            severity=BreachSeverity.MAJOR,
+            timestamp=datetime.now(timezone.utc),
         )
         d = b.to_dict()
         assert d["resolved"] is False
@@ -73,11 +92,17 @@ class TestBreachRecord:
 
     def test_to_dict_resolved(self):
         b = BreachRecord(
-            breach_id="b1", contract_id="c1", term_id="T1",
-            reported_by="alpha", evidence="proof",
-            severity=BreachSeverity.MINOR, timestamp=datetime.now(timezone.utc),
-            resolved=True, resolution=DisputeResolution.WARNING,
-            resolved_by="admin", resolved_at=datetime.now(timezone.utc),
+            breach_id="b1",
+            contract_id="c1",
+            term_id="T1",
+            reported_by="alpha",
+            evidence="proof",
+            severity=BreachSeverity.MINOR,
+            timestamp=datetime.now(timezone.utc),
+            resolved=True,
+            resolution=DisputeResolution.WARNING,
+            resolved_by="admin",
+            resolved_at=datetime.now(timezone.utc),
             resolution_notes="noted",
         )
         d = b.to_dict()
@@ -206,7 +231,9 @@ class TestBreachesAndDisputes:
 
     def test_report_breach_explicit_severity(self):
         c = _make_contract(status=ContractStatus.ACTIVE)
-        breach = c.report_breach("T1", reported_by="beta", evidence="e", severity=BreachSeverity.MINOR)
+        breach = c.report_breach(
+            "T1", reported_by="beta", evidence="e", severity=BreachSeverity.MINOR
+        )
         assert breach.severity == BreachSeverity.MINOR
 
     def test_report_breach_unknown_term_raises(self):

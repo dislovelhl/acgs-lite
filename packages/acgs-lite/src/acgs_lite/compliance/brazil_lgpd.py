@@ -182,8 +182,7 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "rights to confirmation and access"
     ),
     "LGPD Art.18(VII)": (
-        "acgs-lite TransparencyDisclosure — legal basis and purposes disclosed "
-        "in system card"
+        "acgs-lite TransparencyDisclosure — legal basis and purposes disclosed in system card"
     ),
     "LGPD Art.20(1)": (
         "acgs-lite HumanOversightGateway — human review pathway enables "
@@ -213,7 +212,6 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "acgs-lite GovernanceEngine — governance rules formalized as "
         "documented good-practice policies with audit trail"
     ),
-
 }
 
 
@@ -272,10 +270,13 @@ class BrazilLGPDFramework:
         return _build_assessment(self, checklist)
 
 
-def _build_assessment(fw: BrazilLGPDFramework, checklist: list[ChecklistItem]) -> FrameworkAssessment:
+def _build_assessment(
+    fw: BrazilLGPDFramework, checklist: list[ChecklistItem]
+) -> FrameworkAssessment:
     total = len(checklist)
     compliant = sum(
-        1 for item in checklist
+        1
+        for item in checklist
         if item.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
     )
     acgs_covered = sum(1 for item in checklist if item.acgs_lite_feature is not None)

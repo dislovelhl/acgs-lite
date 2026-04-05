@@ -68,9 +68,9 @@ class TestPolicyBallot:
 
         b = PolicyBallot(voter_id="x", ranking=["a", "b"])
         # "c" is not in ranking
-        assert b.prefers("a", "c") == 1   # a in ranking, c not
+        assert b.prefers("a", "c") == 1  # a in ranking, c not
         assert b.prefers("c", "a") == -1  # c not in ranking, a is
-        assert b.prefers("c", "d") == 0   # neither in ranking
+        assert b.prefers("c", "d") == 0  # neither in ranking
 
     def test_to_dict(self) -> None:
         from acgs_lite.constitution.voting import PolicyBallot
@@ -574,9 +574,7 @@ class TestSLAManager:
         from acgs_lite.constitution.sla import SLAManager, SLAMetricType, SLATarget
 
         mgr = SLAManager()
-        mgr.define(
-            "api", SLATarget(metric=SLAMetricType.ERROR_RATE_MAX, threshold_rate=0.1)
-        )
+        mgr.define("api", SLATarget(metric=SLAMetricType.ERROR_RATE_MAX, threshold_rate=0.1))
         mgr.record("api", success=True)
         mgr.record("api", success=True)
         mgr.record("api", success=False)

@@ -329,6 +329,7 @@ def _disable_redis_rate_limiting(monkeypatch):
             pass
     except (ImportError, AttributeError) as exc:
         import warnings
+
         warnings.warn(f"Failed to patch EnhancedAgentBus: {exc}", stacklevel=2)
 
 

@@ -128,9 +128,7 @@ class EvidenceCollector(Protocol):
 # ---------------------------------------------------------------------------
 
 # Each entry: (import_path, description, [(framework_id, article_ref), ...], confidence)
-_COMPONENT_EVIDENCE: list[
-    tuple[str, str, list[tuple[str, str]], float]
-] = [
+_COMPONENT_EVIDENCE: list[tuple[str, str, list[tuple[str, str]], float]] = [
     (
         "acgs_lite.audit.AuditLog",
         "acgs-lite AuditLog — tamper-evident JSONL log with SHA-256 hash chaining",
@@ -285,9 +283,7 @@ _COMPONENT_EVIDENCE: list[
 # ---------------------------------------------------------------------------
 
 # Each entry: (glob_pattern, description, [(framework_id, ref), ...], confidence)
-_FILE_EVIDENCE: list[
-    tuple[str, str, list[tuple[str, str]], float]
-] = [
+_FILE_EVIDENCE: list[tuple[str, str, list[tuple[str, str]], float]] = [
     (
         "rules.yaml",
         "ACGS governance rules file — constitutionalised policy",
@@ -526,9 +522,7 @@ _FILE_EVIDENCE: list[
 # ---------------------------------------------------------------------------
 
 # Each entry: (env_var, value_hint, description, [(framework_id, ref), ...], confidence)
-_ENV_EVIDENCE: list[
-    tuple[str, str | None, str, list[tuple[str, str]], float]
-] = [
+_ENV_EVIDENCE: list[tuple[str, str | None, str, list[tuple[str, str]], float]] = [
     (
         "ACGS_AUDIT_ENABLED",
         "true",
@@ -691,6 +685,7 @@ class ACGSLiteImportCollector:
         module_path = parts[0]
         try:
             import importlib
+
             mod = importlib.import_module(module_path)
             if len(parts) == 2:
                 return hasattr(mod, parts[1])
@@ -817,21 +812,21 @@ class ComplianceEvidenceEngine:
 # Maps audit entry types to article references with confidence factors
 _AUDIT_TYPE_EVIDENCE: dict[str, list[tuple[str, str, float]]] = {
     "validation": [
-        ("eu_ai_act", "EU-AIA Art.9(1)", 0.85),   # Risk management
-        ("eu_ai_act", "EU-AIA Art.12(1)", 0.90),   # Automatic logging
+        ("eu_ai_act", "EU-AIA Art.9(1)", 0.85),  # Risk management
+        ("eu_ai_act", "EU-AIA Art.12(1)", 0.90),  # Automatic logging
         ("nist_ai_rmf", "NIST MEASURE 1.3", 0.80),
         ("iso_42001", "ISO 42001 §9.1", 0.80),
         ("dora", "DORA Art.8(6)", 0.80),
     ],
     "maci_check": [
-        ("eu_ai_act", "EU-AIA Art.14(5)", 0.90),   # Human oversight design
-        ("eu_ai_act", "EU-AIA Art.14(1)", 0.85),   # Effective oversight
+        ("eu_ai_act", "EU-AIA Art.14(5)", 0.90),  # Human oversight design
+        ("eu_ai_act", "EU-AIA Art.14(1)", 0.85),  # Effective oversight
         ("nist_ai_rmf", "NIST GOVERN 2.1", 0.80),
         ("iso_42001", "ISO 42001 §5.3", 0.80),
     ],
     "override": [
-        ("eu_ai_act", "EU-AIA Art.14(4)", 0.90),   # Intervention capability
-        ("gdpr", "GDPR Art.22(3)", 0.85),           # Right to contest
+        ("eu_ai_act", "EU-AIA Art.14(4)", 0.90),  # Intervention capability
+        ("gdpr", "GDPR Art.22(3)", 0.85),  # Right to contest
         ("nist_ai_rmf", "NIST MANAGE 1.2", 0.80),
     ],
 }
@@ -999,6 +994,7 @@ class EvidenceRecord:
 # EvidenceCollector in the new API is a Protocol; this concrete class provides
 # the old add()/records/records_for_ref()/summary()/clear() interface.
 # ---------------------------------------------------------------------------
+
 
 class _ConcreteEvidenceCollector:
     """Concrete evidence collector with add/retrieve/summary interface."""

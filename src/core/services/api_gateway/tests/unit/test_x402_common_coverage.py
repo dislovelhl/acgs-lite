@@ -48,9 +48,7 @@ class TestResolveAttestationSecret:
         monkeypatch.setenv("JWT_SECRET", "jwt-secret")
         assert resolve_attestation_secret() == "att-secret"
 
-    def test_empty_attestation_secret_falls_through(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_empty_attestation_secret_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """An empty string is falsy, so it should fall through to JWT_SECRET."""
         monkeypatch.setenv("ATTESTATION_SECRET", "")
         monkeypatch.setenv("JWT_SECRET", "jwt-backup")
@@ -69,9 +67,7 @@ class TestResolveAttestationSecret:
 class TestEnsureAttestationSecretConfig:
     """Cover production guard, staging guard, and dev passthrough."""
 
-    def test_raises_in_production_with_default_key(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_raises_in_production_with_default_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ATTESTATION_SECRET", raising=False)
         monkeypatch.delenv("JWT_SECRET", raising=False)
         monkeypatch.setenv("ENVIRONMENT", "production")
@@ -85,18 +81,14 @@ class TestEnsureAttestationSecretConfig:
         with pytest.raises(RuntimeError, match="production/staging"):
             ensure_attestation_secret_config()
 
-    def test_raises_in_staging_with_default_key(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_raises_in_staging_with_default_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ATTESTATION_SECRET", raising=False)
         monkeypatch.delenv("JWT_SECRET", raising=False)
         monkeypatch.setenv("ENVIRONMENT", "staging")
         with pytest.raises(RuntimeError, match="ATTESTATION_SECRET"):
             ensure_attestation_secret_config()
 
-    def test_production_with_real_secret_succeeds(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_production_with_real_secret_succeeds(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("ATTESTATION_SECRET", "supersecret-prod-key")
         monkeypatch.setenv("ENVIRONMENT", "production")
         result = ensure_attestation_secret_config()
@@ -135,9 +127,7 @@ class TestEnsureAttestationSecretConfig:
         with pytest.raises(RuntimeError):
             ensure_attestation_secret_config()
 
-    def test_staging_with_jwt_secret_succeeds(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_staging_with_jwt_secret_succeeds(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.delenv("ATTESTATION_SECRET", raising=False)
         monkeypatch.setenv("JWT_SECRET", "jwt-staging-secret")
         monkeypatch.setenv("ENVIRONMENT", "staging")
@@ -291,9 +281,7 @@ class TestConfigureMiddlewareEdgeCases:
             "x402.http.types": SimpleNamespace(
                 RouteConfig=_RouteConfig, PaymentOption=_PaymentOption
             ),
-            "x402.mechanisms.evm.exact": SimpleNamespace(
-                ExactEvmServerScheme=lambda: None
-            ),
+            "x402.mechanisms.evm.exact": SimpleNamespace(ExactEvmServerScheme=lambda: None),
             "x402.server": SimpleNamespace(
                 x402ResourceServer=lambda clients: _FakeResourceServer(clients)
             ),
@@ -327,9 +315,7 @@ class TestConfigureMiddlewareEdgeCases:
         assert "$0.99" in prices
         assert "$1.00" in prices
 
-    def test_default_network_and_facilitator_url(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_default_network_and_facilitator_url(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Verify defaults when X402_NETWORK and FACILITATOR_URL are not set."""
 
         captured_facilitator_url: list[str] = []
@@ -355,9 +341,7 @@ class TestConfigureMiddlewareEdgeCases:
             "x402.http.types": SimpleNamespace(
                 RouteConfig=lambda **kw: None, PaymentOption=lambda **kw: None
             ),
-            "x402.mechanisms.evm.exact": SimpleNamespace(
-                ExactEvmServerScheme=lambda: None
-            ),
+            "x402.mechanisms.evm.exact": SimpleNamespace(ExactEvmServerScheme=lambda: None),
             "x402.server": SimpleNamespace(
                 x402ResourceServer=lambda clients: _FakeResourceServer(clients)
             ),
@@ -384,9 +368,7 @@ class TestConfigureMiddlewareEdgeCases:
         assert captured_network == ["eip155:84532"]
         assert captured_facilitator_url == ["https://facilitator.xpay.sh"]
 
-    def test_import_error_chains_original_exception(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_import_error_chains_original_exception(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """RuntimeError should chain the original ImportError via __cause__."""
 
         def _raise_import(name: str) -> None:

@@ -194,7 +194,9 @@ class GovernedGenAI:
         **genai_kwargs: Any,
     ) -> None:
         if not GENAI_AVAILABLE:
-            raise ImportError("google-genai is required. Install with: pip install acgs-lite[google]")
+            raise ImportError(
+                "google-genai is required. Install with: pip install acgs-lite[google]"
+            )
 
         self._client = GenAIClient(api_key=api_key, **genai_kwargs)
         self.constitution = constitution or Constitution.default()

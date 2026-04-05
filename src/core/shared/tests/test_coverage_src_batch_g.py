@@ -502,7 +502,15 @@ class TestIsProductionEnvironment:
     def test_production_is_production(self):
         with (
             patch.object(ad_mod, "settings") as mock_settings,
-            patch.dict(os.environ, {"ENVIRONMENT": "", "APP_ENV": "", "ACGS2_ENV": "", "AGENT_RUNTIME_ENVIRONMENT": ""}),
+            patch.dict(
+                os.environ,
+                {
+                    "ENVIRONMENT": "",
+                    "APP_ENV": "",
+                    "ACGS2_ENV": "",
+                    "AGENT_RUNTIME_ENVIRONMENT": "",
+                },
+            ),
         ):
             mock_settings.env = "production"
             assert ad_mod._is_production_environment() is True

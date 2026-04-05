@@ -728,7 +728,9 @@ class FlywheelRunRecord:
             workload_key=str(metadata.get("workload_key", "")),
             constitutional_hash=saga.constitutional_hash,
             state=saga.state,
-            stage=FlywheelRunStage(str(metadata.get("stage", FlywheelRunStage.DATASET_BUILD.value))),
+            stage=FlywheelRunStage(
+                str(metadata.get("stage", FlywheelRunStage.DATASET_BUILD.value))
+            ),
             candidate_id=metadata.get("candidate_id") or None,
             dataset_snapshot_id=metadata.get("dataset_snapshot_id") or None,
             evidence_id=metadata.get("evidence_id") or None,

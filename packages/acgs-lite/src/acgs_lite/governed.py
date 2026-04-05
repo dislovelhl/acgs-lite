@@ -59,8 +59,7 @@ class CapabilityProfileProtocol(Protocol):
 class CapabilityRegistryProtocol(Protocol):
     """Minimal capability registry surface used by GovernedAgent."""
 
-    def get_all_profiles(self, active_only: bool = True) -> Iterable[CapabilityProfileProtocol]:
-        ...
+    def get_all_profiles(self, active_only: bool = True) -> Iterable[CapabilityProfileProtocol]: ...
 
 
 class GetCapabilityRegistryProtocol(Protocol):
@@ -273,7 +272,9 @@ class GovernedAgent:
             return profile
         return None
 
-    def _prepare_execution_kwargs(self, kwargs: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    def _prepare_execution_kwargs(
+        self, kwargs: dict[str, Any]
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
         execution_kwargs = dict(kwargs)
         explicit_profile = cast(
             CapabilityProfileProtocol | None,
@@ -358,20 +359,22 @@ class GovernedAgent:
                 if retries_remaining <= 0:
                     raise
                 # Audit the retry attempt
-                self.audit_log.record(AuditEntry(
-                    id=f"retry-{self.agent_id}-{attempt}-{uuid.uuid4().hex[:8]}",
-                    type="output_retry",
-                    agent_id=self.agent_id,
-                    action=f"retry:output_violation:{attempt}",
-                    valid=False,
-                    violations=[exc.rule_id or "UNKNOWN"],
-                    constitutional_hash=self.engine._const_hash,
-                    metadata={
-                        "attempt": attempt,
-                        "retries_after_this": retries_remaining - 1,
-                        "rule_id": exc.rule_id,
-                    },
-                ))
+                self.audit_log.record(
+                    AuditEntry(
+                        id=f"retry-{self.agent_id}-{attempt}-{uuid.uuid4().hex[:8]}",
+                        type="output_retry",
+                        agent_id=self.agent_id,
+                        action=f"retry:output_violation:{attempt}",
+                        valid=False,
+                        violations=[exc.rule_id or "UNKNOWN"],
+                        constitutional_hash=self.engine._const_hash,
+                        metadata={
+                            "attempt": attempt,
+                            "retries_after_this": retries_remaining - 1,
+                            "rule_id": exc.rule_id,
+                        },
+                    )
+                )
                 retry_prompt = self._build_retry_prompt(input, exc, attempt)
                 result = self._execute_agent(retry_prompt, **execution_kwargs)
 
@@ -435,20 +438,22 @@ class GovernedAgent:
                 retries_remaining = self.max_retries - attempt + 1
                 if retries_remaining <= 0:
                     raise
-                self.audit_log.record(AuditEntry(
-                    id=f"retry-{self.agent_id}-{attempt}-{uuid.uuid4().hex[:8]}",
-                    type="output_retry",
-                    agent_id=self.agent_id,
-                    action=f"retry:output_violation:{attempt}",
-                    valid=False,
-                    violations=[exc.rule_id or "UNKNOWN"],
-                    constitutional_hash=self.engine._const_hash,
-                    metadata={
-                        "attempt": attempt,
-                        "retries_after_this": retries_remaining - 1,
-                        "rule_id": exc.rule_id,
-                    },
-                ))
+                self.audit_log.record(
+                    AuditEntry(
+                        id=f"retry-{self.agent_id}-{attempt}-{uuid.uuid4().hex[:8]}",
+                        type="output_retry",
+                        agent_id=self.agent_id,
+                        action=f"retry:output_violation:{attempt}",
+                        valid=False,
+                        violations=[exc.rule_id or "UNKNOWN"],
+                        constitutional_hash=self.engine._const_hash,
+                        metadata={
+                            "attempt": attempt,
+                            "retries_after_this": retries_remaining - 1,
+                            "rule_id": exc.rule_id,
+                        },
+                    )
+                )
                 retry_prompt = self._build_retry_prompt(input, exc, attempt)
                 result = await self._aexecute_agent(retry_prompt, **execution_kwargs)
 

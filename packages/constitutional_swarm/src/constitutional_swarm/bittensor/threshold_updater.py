@@ -44,23 +44,28 @@ if TYPE_CHECKING:
     from constitutional_swarm.bittensor.precedent_store import PrecedentRecord
 
 _DIMENSIONS = (
-    "safety", "security", "privacy",
-    "fairness", "reliability", "transparency", "efficiency",
+    "safety",
+    "security",
+    "privacy",
+    "fairness",
+    "reliability",
+    "transparency",
+    "efficiency",
 )
 
 # Default weights matching the Q&A doc and impact_scorer.py
 DEFAULT_WEIGHTS: dict[str, float] = {
-    "safety":        0.20,
-    "security":      0.20,
-    "privacy":       0.15,
-    "fairness":      0.15,
-    "reliability":   0.10,
-    "transparency":  0.10,
-    "efficiency":    0.10,
+    "safety": 0.20,
+    "security": 0.20,
+    "privacy": 0.15,
+    "fairness": 0.15,
+    "reliability": 0.10,
+    "transparency": 0.10,
+    "efficiency": 0.10,
 }
 
-_MIN_WEIGHT = 0.02   # floor: no dimension can be ignored entirely
-_MAX_WEIGHT = 0.40   # ceiling: no dimension monopolizes scoring
+_MIN_WEIGHT = 0.02  # floor: no dimension can be ignored entirely
+_MAX_WEIGHT = 0.40  # ceiling: no dimension monopolizes scoring
 
 
 # ---------------------------------------------------------------------------
@@ -74,9 +79,9 @@ class DimensionEvidence:
 
     dimension: str
     domain: str
-    total_cases: int              # total precedents with this dim ambiguous
-    confirmed_count: float        # weighted sum of confirmed observations
-    overblown_count: float        # weighted sum of overblown observations
+    total_cases: int  # total precedents with this dim ambiguous
+    confirmed_count: float  # weighted sum of confirmed observations
+    overblown_count: float  # weighted sum of overblown observations
 
     @property
     def observation_rate(self) -> float:
@@ -121,7 +126,7 @@ class WeightUpdate:
     shift: float
     observation_rate: float
     evidence_cases: int
-    was_capped: bool        # True if shift was clamped by max_shift_per_cycle
+    was_capped: bool  # True if shift was clamped by max_shift_per_cycle
     explanation: str
 
     @property
@@ -145,7 +150,7 @@ class UpdateCycle:
     cycle_id: str
     domain: str
     prior_weights: dict[str, float]
-    posterior_weights: dict[str, float]   # normalized
+    posterior_weights: dict[str, float]  # normalized
     updates: list[WeightUpdate]
     evidence_summary: list[DimensionEvidence]
     ran_at: float = field(default_factory=time.time)
@@ -256,24 +261,24 @@ class BayesianThresholdUpdater:
             list of DimensionEvidence, one per governance dimension
         """
         filtered = [
-            p for p in precedents
+            p
+            for p in precedents
             if p.is_active
-            and (not domain or p.escalation_type.value.startswith(domain)
-                 or domain in p.judgment.lower()  # loose domain match
-                 or True)   # accept all for now; caller can pre-filter
+            and (
+                not domain
+                or p.escalation_type.value.startswith(domain)
+                or domain in p.judgment.lower()  # loose domain match
+                or True
+            )  # accept all for now; caller can pre-filter
         ]
         # domain filter: match on case_id prefix or accept all when domain empty
         if domain:
-            filtered = [
-                p for p in precedents
-                if p.is_active
-            ]
+            filtered = [p for p in precedents if p.is_active]
         else:
             filtered = [p for p in precedents if p.is_active]
 
         evidence: dict[str, dict] = {
-            d: {"total": 0, "confirmed": 0.0, "overblown": 0.0}
-            for d in _DIMENSIONS
+            d: {"total": 0, "confirmed": 0.0, "overblown": 0.0} for d in _DIMENSIONS
         }
 
         for rec in filtered:
@@ -329,21 +334,23 @@ class BayesianThresholdUpdater:
 
             if ev is None or ev.total_cases < self._min_evidence:
                 # Not enough evidence — keep prior
-                updates.append(WeightUpdate(
-                    dimension=dim,
-                    domain=domain,
-                    prior=prior_w,
-                    posterior=prior_w,
-                    shift=0.0,
-                    observation_rate=0.5,
-                    evidence_cases=ev.total_cases if ev else 0,
-                    was_capped=False,
-                    explanation=(
-                        f"{dim}: insufficient evidence "
-                        f"({ev.total_cases if ev else 0} < {self._min_evidence}), "
-                        "weight unchanged."
-                    ),
-                ))
+                updates.append(
+                    WeightUpdate(
+                        dimension=dim,
+                        domain=domain,
+                        prior=prior_w,
+                        posterior=prior_w,
+                        shift=0.0,
+                        observation_rate=0.5,
+                        evidence_cases=ev.total_cases if ev else 0,
+                        was_capped=False,
+                        explanation=(
+                            f"{dim}: insufficient evidence "
+                            f"({ev.total_cases if ev else 0} < {self._min_evidence}), "
+                            "weight unchanged."
+                        ),
+                    )
+                )
                 continue
 
             obs_rate = ev.observation_rate
@@ -355,22 +362,23 @@ class BayesianThresholdUpdater:
 
             pct = round(obs_rate * 100, 1)
             direction = "confirmed valid" if obs_rate >= 0.5 else "found overblown"
-            updates.append(WeightUpdate(
-                dimension=dim,
-                domain=domain,
-                prior=prior_w,
-                posterior=new_w,
-                shift=actual_shift,
-                observation_rate=obs_rate,
-                evidence_cases=ev.total_cases,
-                was_capped=capped,
-                explanation=(
-                    f"{dim}: {ev.total_cases} cases, {pct}% {direction}. "
-                    f"Weight {prior_w:.3f} → {new_w:.3f} "
-                    f"(shift={actual_shift:+.3f}"
-                    + (", capped" if capped else "") + ")."
-                ),
-            ))
+            updates.append(
+                WeightUpdate(
+                    dimension=dim,
+                    domain=domain,
+                    prior=prior_w,
+                    posterior=new_w,
+                    shift=actual_shift,
+                    observation_rate=obs_rate,
+                    evidence_cases=ev.total_cases,
+                    was_capped=capped,
+                    explanation=(
+                        f"{dim}: {ev.total_cases} cases, {pct}% {direction}. "
+                        f"Weight {prior_w:.3f} → {new_w:.3f} "
+                        f"(shift={actual_shift:+.3f}" + (", capped" if capped else "") + ")."
+                    ),
+                )
+            )
             raw_posterior[dim] = new_w
 
         # Normalize
@@ -426,8 +434,7 @@ class BayesianThresholdUpdater:
             "max_shift_per_cycle": self._max_shift,
             "min_evidence_count": self._min_evidence,
             "current_weights": {
-                d: self.weights(d)
-                for d in (list(self._domain_weights.keys()) or [""])
+                d: self.weights(d) for d in (list(self._domain_weights.keys()) or [""])
             },
         }
 

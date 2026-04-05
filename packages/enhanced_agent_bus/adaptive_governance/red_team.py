@@ -170,7 +170,9 @@ class GovernanceRedTeam:
         try:
             engine_result = self.engine_fn(attack.input_text, {})
             if isinstance(engine_result, dict):
-                decision = engine_result.get("decision", "allow" if engine_result.get("valid", True) else "deny")
+                decision = engine_result.get(
+                    "decision", "allow" if engine_result.get("valid", True) else "deny"
+                )
             else:
                 decision = "allow" if getattr(engine_result, "valid", True) else "deny"
         except Exception:
@@ -202,11 +204,13 @@ class GovernanceRedTeam:
         for line in response.strip().split("\n"):
             line = line.strip().lstrip("0123456789.-) ")
             if len(line) > 10:
-                attacks.append(RedTeamAttack(
-                    rule_id=rule_id,
-                    input_text=line,
-                    strategy=strategy,
-                ))
+                attacks.append(
+                    RedTeamAttack(
+                        rule_id=rule_id,
+                        input_text=line,
+                        strategy=strategy,
+                    )
+                )
         return attacks
 
 
@@ -217,7 +221,9 @@ class InMemoryRedTeamLLM:
         self.attack_texts = attack_texts or {}
         self.calls: list[dict[str, Any]] = []
 
-    async def evaluate(self, action: str, context: dict[str, Any], constitution: Any) -> LLMJudgment:
+    async def evaluate(
+        self, action: str, context: dict[str, Any], constitution: Any
+    ) -> LLMJudgment:
         self.calls.append({"action": action, "context": context})
         rule_id = context.get("rule_id", "")
         texts = self.attack_texts.get(rule_id, ["default attack input"])

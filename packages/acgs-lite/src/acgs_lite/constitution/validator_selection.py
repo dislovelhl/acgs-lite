@@ -357,7 +357,9 @@ class ValidatorPool:
             if v.trust_score < min_trust:
                 continue
             if (
-                domain and require_domain and v.domains
+                domain
+                and require_domain
+                and v.domains
                 and domain.lower() not in (d.lower() for d in v.domains)
             ):
                 continue
@@ -395,9 +397,7 @@ class ValidatorPool:
         if len(models) <= 1:
             diversity = 0.0
         else:
-            entropy = -sum(
-                (c / total) * math.log2(c / total) for c in models.values() if c > 0
-            )
+            entropy = -sum((c / total) * math.log2(c / total) for c in models.values() if c > 0)
             max_entropy = math.log2(len(models))
             diversity = entropy / max_entropy if max_entropy > 0 else 0.0
 
@@ -413,9 +413,7 @@ class ValidatorPool:
     def list_validators(self, *, active_only: bool = True) -> list[str]:
         """Return sorted validator IDs."""
         return sorted(
-            v.validator_id
-            for v in self._validators.values()
-            if not active_only or v.active
+            v.validator_id for v in self._validators.values() if not active_only or v.active
         )
 
     def __len__(self) -> int:
@@ -629,7 +627,7 @@ class ValidatorSelector:
             q = math.ceil(k * pol.q_fraction)
 
         # Compute base weights from trust scores
-        base_weights = [v.trust_score ** pol.trust_weight_exponent for v in eligible]
+        base_weights = [v.trust_score**pol.trust_weight_exponent for v in eligible]
 
         # Apply diversity bonus
         use_diversity = pol.diversity_bonus_factor > 0
@@ -716,9 +714,7 @@ class ValidatorSelector:
         if len(models) <= 1:
             return 0.0
         total = len(validators)
-        entropy = -sum(
-            (c / total) * math.log2(c / total) for c in models.values() if c > 0
-        )
+        entropy = -sum((c / total) * math.log2(c / total) for c in models.values() if c > 0)
         max_entropy = math.log2(len(models))
         return round(entropy / max_entropy, 4) if max_entropy > 0 else 0.0
 

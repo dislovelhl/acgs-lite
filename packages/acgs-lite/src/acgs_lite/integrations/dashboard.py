@@ -186,11 +186,7 @@ class GovernanceDashboard:
         by_severity: dict[str, int] = defaultdict(int)
         by_category: dict[str, int] = defaultdict(int)
         for rule in rules:
-            sev = (
-                rule.severity.value
-                if isinstance(rule.severity, Severity)
-                else str(rule.severity)
-            )
+            sev = rule.severity.value if isinstance(rule.severity, Severity) else str(rule.severity)
             by_severity[sev] += 1
             by_category[rule.category] += 1
 
@@ -226,9 +222,7 @@ class GovernanceDashboard:
             # In strict mode the engine raises on blocking violations.
             # Re-validate in non-strict mode to capture the full result.
             with self._engine.non_strict():
-                result = self._engine.validate(
-                    text, agent_id=agent_id
-                )
+                result = self._engine.validate(text, agent_id=agent_id)
         if result.violations:
             self._timeline.record_from_result(result)
         return result
@@ -241,11 +235,7 @@ class GovernanceDashboard:
         tags: set[str] = set()
         for rule in rules:
             categories.add(rule.category)
-            sev = (
-                rule.severity.value
-                if isinstance(rule.severity, Severity)
-                else str(rule.severity)
-            )
+            sev = rule.severity.value if isinstance(rule.severity, Severity) else str(rule.severity)
             severities.add(sev)
             if hasattr(rule, "tags"):
                 tags.update(rule.tags)
@@ -305,6 +295,7 @@ class GovernanceDashboard:
 
 
 # ── ASGI App ───────────────────────────────────────────────────────────
+
 
 def _json_response(
     data: Any,
@@ -442,7 +433,8 @@ def create_dashboard_asgi_app(
 
         if method != "GET":
             body, status, headers = _json_response(
-                {"error": "Method not allowed"}, 405,
+                {"error": "Method not allowed"},
+                405,
             )
         elif path == "/":
             body, status, headers = _html_response(_DASHBOARD_HTML)
@@ -473,11 +465,7 @@ def create_dashboard_asgi_app(
                                 else str(r.severity)
                             ),
                             "category": r.category,
-                            "tags": (
-                                r.tags
-                                if hasattr(r, "tags")
-                                else []
-                            ),
+                            "tags": (r.tags if hasattr(r, "tags") else []),
                             "enabled": r.enabled,
                         }
                         for r in rules
@@ -492,7 +480,8 @@ def create_dashboard_asgi_app(
             )
         else:
             body, status, headers = _json_response(
-                {"error": "Not found"}, 404,
+                {"error": "Not found"},
+                404,
             )
 
         await send(

@@ -42,9 +42,7 @@ def default_constitution() -> Constitution:
 @pytest.fixture
 def engine(default_constitution: Constitution) -> GovernanceEngine:
     audit = AuditLog()
-    return GovernanceEngine(
-        default_constitution, audit_log=audit, strict=False
-    )
+    return GovernanceEngine(default_constitution, audit_log=audit, strict=False)
 
 
 @pytest.fixture
@@ -213,9 +211,7 @@ class TestSOC2Collector:
         default_constitution: Constitution,
     ) -> None:
         c = SOC2EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         assert len(records) == 4
         control_ids = [r.control_id for r in records]
         assert "CC6.1" in control_ids
@@ -230,9 +226,7 @@ class TestSOC2Collector:
         default_constitution: Constitution,
     ) -> None:
         c = SOC2EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         cc61 = next(r for r in records if r.control_id == "CC6.1")
         assert cc61.status == "compliant"
         assert cc61.framework == "SOC2"
@@ -246,9 +240,7 @@ class TestSOC2Collector:
         default_constitution: Constitution,
     ) -> None:
         c = SOC2EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         cc66 = next(r for r in records if r.control_id == "CC6.6")
         assert cc66.status == "compliant"
         assert cc66.data["audit_entry_count"] == 3
@@ -261,9 +253,7 @@ class TestSOC2Collector:
         default_constitution: Constitution,
     ) -> None:
         c = SOC2EvidenceCollector()
-        records = c.collect_evidence(
-            engine, audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine, audit_log, default_constitution)
         cc66 = next(r for r in records if r.control_id == "CC6.6")
         assert cc66.status == "not_assessed"
 
@@ -275,9 +265,7 @@ class TestSOC2Collector:
     ) -> None:
         c = SOC2EvidenceCollector()
         # Engine with audit_log but no validations run
-        records = c.collect_evidence(
-            engine, audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine, audit_log, default_constitution)
         cc72 = next(r for r in records if r.control_id == "CC7.2")
         assert cc72.status == "not_assessed"
 
@@ -288,9 +276,7 @@ class TestSOC2Collector:
         default_constitution: Constitution,
     ) -> None:
         c = SOC2EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         cc81 = next(r for r in records if r.control_id == "CC8.1")
         assert cc81.status == "compliant"
         assert cc81.data["constitutional_hash"]
@@ -303,9 +289,7 @@ class TestSOC2Collector:
         default_constitution: Constitution,
     ) -> None:
         c = SOC2EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         assert all(r.framework == "SOC2" for r in records)
 
 
@@ -326,9 +310,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         assert len(records) == 4
         control_ids = [r.control_id for r in records]
         assert "A.8.2" in control_ids
@@ -343,9 +325,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         a82 = next(r for r in records if r.control_id == "A.8.2")
         assert a82.status == "compliant"
         assert a82.data["has_critical_rules"] is True
@@ -360,9 +340,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         a124 = next(r for r in records if r.control_id == "A.12.4")
         assert a124.status == "compliant"
         assert a124.data["chain_integrity"] is True
@@ -374,9 +352,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine, audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine, audit_log, default_constitution)
         a124 = next(r for r in records if r.control_id == "A.12.4")
         assert a124.status == "not_assessed"
 
@@ -387,9 +363,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         a142 = next(r for r in records if r.control_id == "A.14.2")
         assert a142.data["rules_count"] > 0
         assert "compliance_rate" in a142.data
@@ -401,9 +375,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         a181 = next(r for r in records if r.control_id == "A.18.1")
         assert a181.data["checks_total"] == 4
         assert a181.data["checks_passed"] >= 1
@@ -415,9 +387,7 @@ class TestISO27001Collector:
         default_constitution: Constitution,
     ) -> None:
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         assert all(r.framework == "ISO27001" for r in records)
 
     def test_a8_2_empty_constitution(
@@ -426,13 +396,9 @@ class TestISO27001Collector:
         audit_log: AuditLog,
         empty_constitution: Constitution,
     ) -> None:
-        empty_engine = GovernanceEngine(
-            empty_constitution, audit_log=audit_log, strict=False
-        )
+        empty_engine = GovernanceEngine(empty_constitution, audit_log=audit_log, strict=False)
         c = ISO27001EvidenceCollector()
-        records = c.collect_evidence(
-            empty_engine, audit_log, empty_constitution
-        )
+        records = c.collect_evidence(empty_engine, audit_log, empty_constitution)
         a82 = next(r for r in records if r.control_id == "A.8.2")
         assert a82.status == "non_compliant"
         assert a82.data["total_rules"] == 0
@@ -455,9 +421,7 @@ class TestGDPRCollector:
         default_constitution: Constitution,
     ) -> None:
         c = GDPREvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         assert len(records) == 3
         control_ids = [r.control_id for r in records]
         assert "Art.5" in control_ids
@@ -471,9 +435,7 @@ class TestGDPRCollector:
         default_constitution: Constitution,
     ) -> None:
         c = GDPREvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         art5 = next(r for r in records if r.control_id == "Art.5")
         assert "data_handling_rules" in art5.data
         assert "total_rules" in art5.data
@@ -492,12 +454,8 @@ class TestGDPRCollector:
                 ),
             ],
         )
-        engine = GovernanceEngine(
-            constitution, audit_log=AuditLog(), strict=False
-        )
-        records = c.collect_evidence(
-            engine, AuditLog(), constitution
-        )
+        engine = GovernanceEngine(constitution, audit_log=AuditLog(), strict=False)
+        records = c.collect_evidence(engine, AuditLog(), constitution)
         art5 = next(r for r in records if r.control_id == "Art.5")
         assert art5.status == "compliant"
         assert art5.data["data_handling_rules"] == 1
@@ -509,9 +467,7 @@ class TestGDPRCollector:
         default_constitution: Constitution,
     ) -> None:
         c = GDPREvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         art25 = next(r for r in records if r.control_id == "Art.25")
         assert art25.status == "compliant"
         assert art25.data["has_rules"] is True
@@ -525,9 +481,7 @@ class TestGDPRCollector:
         default_constitution: Constitution,
     ) -> None:
         c = GDPREvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         art30 = next(r for r in records if r.control_id == "Art.30")
         assert art30.status == "compliant"
         assert art30.data["audit_entry_count"] == 3
@@ -540,9 +494,7 @@ class TestGDPRCollector:
         default_constitution: Constitution,
     ) -> None:
         c = GDPREvidenceCollector()
-        records = c.collect_evidence(
-            engine, audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine, audit_log, default_constitution)
         art30 = next(r for r in records if r.control_id == "Art.30")
         assert art30.status == "not_assessed"
 
@@ -553,9 +505,7 @@ class TestGDPRCollector:
         default_constitution: Constitution,
     ) -> None:
         c = GDPREvidenceCollector()
-        records = c.collect_evidence(
-            engine_with_audit, populated_audit_log, default_constitution
-        )
+        records = c.collect_evidence(engine_with_audit, populated_audit_log, default_constitution)
         assert all(r.framework == "GDPR" for r in records)
 
 
@@ -569,9 +519,7 @@ class TestComplianceFrameworkProtocol:
         assert isinstance(SOC2EvidenceCollector(), ComplianceFramework)
 
     def test_iso27001_is_compliance_framework(self) -> None:
-        assert isinstance(
-            ISO27001EvidenceCollector(), ComplianceFramework
-        )
+        assert isinstance(ISO27001EvidenceCollector(), ComplianceFramework)
 
     def test_gdpr_is_compliance_framework(self) -> None:
         assert isinstance(GDPREvidenceCollector(), ComplianceFramework)
@@ -604,9 +552,7 @@ class TestComplianceFrameworkProtocol:
 
         custom = CustomCollector()
         assert isinstance(custom, ComplianceFramework)
-        records = custom.collect_evidence(
-            engine, audit_log, default_constitution
-        )
+        records = custom.collect_evidence(engine, audit_log, default_constitution)
         assert len(records) == 1
         assert records[0].framework == "CUSTOM"
 
@@ -617,52 +563,38 @@ class TestComplianceFrameworkProtocol:
 
 
 class TestEvidenceCollector:
-    def test_default_frameworks_registered(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_default_frameworks_registered(self, collector: EvidenceCollector) -> None:
         records = collector.collect_all()
         frameworks = {r.framework for r in records}
         assert "SOC2" in frameworks
         assert "ISO27001" in frameworks
         assert "GDPR" in frameworks
 
-    def test_collect_all_count(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_collect_all_count(self, collector: EvidenceCollector) -> None:
         records = collector.collect_all()
         # SOC2=4, ISO27001=4, GDPR=3
         assert len(records) == 11
 
-    def test_collect_framework_soc2(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_collect_framework_soc2(self, collector: EvidenceCollector) -> None:
         records = collector.collect_framework("SOC2")
         assert len(records) == 4
         assert all(r.framework == "SOC2" for r in records)
 
-    def test_collect_framework_iso27001(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_collect_framework_iso27001(self, collector: EvidenceCollector) -> None:
         records = collector.collect_framework("ISO27001")
         assert len(records) == 4
         assert all(r.framework == "ISO27001" for r in records)
 
-    def test_collect_framework_gdpr(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_collect_framework_gdpr(self, collector: EvidenceCollector) -> None:
         records = collector.collect_framework("GDPR")
         assert len(records) == 3
         assert all(r.framework == "GDPR" for r in records)
 
-    def test_collect_unknown_framework_raises(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_collect_unknown_framework_raises(self, collector: EvidenceCollector) -> None:
         with pytest.raises(KeyError, match="Unknown framework"):
             collector.collect_framework("HIPAA")
 
-    def test_register_framework(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_register_framework(self, collector: EvidenceCollector) -> None:
         class Stub:
             @property
             def framework_id(self) -> str:
@@ -713,9 +645,7 @@ class TestEvidenceCollector:
                     )
                 ]
 
-        c = EvidenceCollector(
-            engine, audit_log, default_constitution, frameworks=[Mini()]
-        )
+        c = EvidenceCollector(engine, audit_log, default_constitution, frameworks=[Mini()])
         records = c.collect_all()
         assert len(records) == 1
         assert records[0].framework == "MINI"
@@ -726,9 +656,7 @@ class TestEvidenceCollector:
         audit_log: AuditLog,
         default_constitution: Constitution,
     ) -> None:
-        c = EvidenceCollector(
-            engine, audit_log, default_constitution, frameworks=[]
-        )
+        c = EvidenceCollector(engine, audit_log, default_constitution, frameworks=[])
         records = c.collect_all()
         assert records == []
 
@@ -739,15 +667,11 @@ class TestEvidenceCollector:
 
 
 class TestComplianceScoring:
-    def test_overall_score_range(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_overall_score_range(self, collector: EvidenceCollector) -> None:
         score = collector.compliance_score()
         assert 0.0 <= score <= 1.0
 
-    def test_framework_score_range(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_framework_score_range(self, collector: EvidenceCollector) -> None:
         for fw in ("SOC2", "ISO27001", "GDPR"):
             score = collector.compliance_score(fw)
             assert 0.0 <= score <= 1.0
@@ -928,16 +852,12 @@ class TestComplianceScoring:
 
 
 class TestReportGeneration:
-    def test_report_has_summary(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_report_has_summary(self, collector: EvidenceCollector) -> None:
         report = collector.generate_report()
         assert "summary" in report
         assert "frameworks" in report
 
-    def test_report_summary_fields(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_report_summary_fields(self, collector: EvidenceCollector) -> None:
         summary = collector.generate_report()["summary"]
         assert "overall_score" in summary
         assert "framework_scores" in summary
@@ -946,31 +866,21 @@ class TestReportGeneration:
         assert "frameworks_assessed" in summary
         assert "collected_at" in summary
 
-    def test_report_overall_score_range(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_report_overall_score_range(self, collector: EvidenceCollector) -> None:
         summary = collector.generate_report()["summary"]
         assert 0.0 <= summary["overall_score"] <= 1.0
 
-    def test_report_framework_scores(
-        self, collector: EvidenceCollector
-    ) -> None:
-        scores = collector.generate_report()["summary"][
-            "framework_scores"
-        ]
+    def test_report_framework_scores(self, collector: EvidenceCollector) -> None:
+        scores = collector.generate_report()["summary"]["framework_scores"]
         assert "SOC2" in scores
         assert "ISO27001" in scores
         assert "GDPR" in scores
 
-    def test_report_total_records(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_report_total_records(self, collector: EvidenceCollector) -> None:
         summary = collector.generate_report()["summary"]
         assert summary["total_evidence_records"] == 11
 
-    def test_report_frameworks_section(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_report_frameworks_section(self, collector: EvidenceCollector) -> None:
         frameworks = collector.generate_report()["frameworks"]
         assert "SOC2" in frameworks
         assert "ISO27001" in frameworks
@@ -982,12 +892,8 @@ class TestReportGeneration:
                 assert "record_id" in rec_dict
                 assert "control_id" in rec_dict
 
-    def test_report_status_counts(
-        self, collector: EvidenceCollector
-    ) -> None:
-        counts = collector.generate_report()["summary"][
-            "status_counts"
-        ]
+    def test_report_status_counts(self, collector: EvidenceCollector) -> None:
+        counts = collector.generate_report()["summary"]["status_counts"]
         assert isinstance(counts, dict)
         total = sum(counts.values())
         assert total == 11
@@ -999,23 +905,17 @@ class TestReportGeneration:
 
 
 class TestJSONExport:
-    def test_export_returns_string(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_export_returns_string(self, collector: EvidenceCollector) -> None:
         result = collector.export_json()
         assert isinstance(result, str)
 
-    def test_export_valid_json(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_export_valid_json(self, collector: EvidenceCollector) -> None:
         result = collector.export_json()
         parsed = json.loads(result)
         assert "summary" in parsed
         assert "frameworks" in parsed
 
-    def test_export_to_file(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_export_to_file(self, collector: EvidenceCollector) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, "report.json")
             result = collector.export_json(path)
@@ -1026,17 +926,13 @@ class TestJSONExport:
             # Return value should match file content
             assert json.loads(result) == on_disk
 
-    def test_export_creates_parent_dirs(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_export_creates_parent_dirs(self, collector: EvidenceCollector) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = os.path.join(tmpdir, "sub", "dir", "report.json")
             collector.export_json(path)
             assert os.path.exists(path)
 
-    def test_export_no_path_returns_json(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_export_no_path_returns_json(self, collector: EvidenceCollector) -> None:
         result = collector.export_json()
         parsed = json.loads(result)
         assert isinstance(parsed["summary"]["overall_score"], float)
@@ -1066,9 +962,7 @@ class TestEdgeCases:
     ) -> None:
         """Collectors handle empty constitution."""
         empty = Constitution(name="empty", rules=[])
-        eng = GovernanceEngine(
-            empty, audit_log=audit_log, strict=False
-        )
+        eng = GovernanceEngine(empty, audit_log=audit_log, strict=False)
         c = EvidenceCollector(eng, audit_log, empty)
         records = c.collect_all()
         assert len(records) == 11
@@ -1079,9 +973,7 @@ class TestEdgeCases:
     ) -> None:
         """Evidence reflects actual validation activity."""
         log = AuditLog()
-        eng = GovernanceEngine(
-            default_constitution, audit_log=log, strict=False
-        )
+        eng = GovernanceEngine(default_constitution, audit_log=log, strict=False)
         eng.validate("safe action", agent_id="test-agent")
         eng.validate("another safe action", agent_id="test-agent")
 
@@ -1112,16 +1004,12 @@ class TestEdgeCases:
         score = c.compliance_score()
         assert 0.0 <= score <= 1.0
 
-    def test_report_is_json_serializable(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_report_is_json_serializable(self, collector: EvidenceCollector) -> None:
         report = collector.generate_report()
         # Must not raise
         json.dumps(report, default=str)
 
-    def test_concurrent_collect_calls(
-        self, collector: EvidenceCollector
-    ) -> None:
+    def test_concurrent_collect_calls(self, collector: EvidenceCollector) -> None:
         """Multiple collect calls return consistent results."""
         r1 = collector.collect_all()
         r2 = collector.collect_all()
@@ -1152,7 +1040,9 @@ class TestEdgeCases:
         # Add only invalid entries
         log.record(
             AuditEntry(
-                id="x1", type="validation", valid=False,
+                id="x1",
+                type="validation",
+                valid=False,
                 violations=["V1"],
             )
         )

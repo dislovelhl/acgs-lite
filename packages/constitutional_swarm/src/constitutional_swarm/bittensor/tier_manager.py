@@ -51,17 +51,17 @@ class TaskComplexity(Enum):
     the Elder-only CONSTITUTIONAL tier for amendment proposals.
     """
 
-    LOW            = "low"             # fully automated, any tier can deliberate
-    MEDIUM         = "medium"          # 15-min human window, Journeyman+
-    HIGH           = "high"            # blocks until approval, Master+
+    LOW = "low"  # fully automated, any tier can deliberate
+    MEDIUM = "medium"  # 15-min human window, Journeyman+
+    HIGH = "high"  # blocks until approval, Master+
     CONSTITUTIONAL = "constitutional"  # amendment proposals, Elder only
 
 
 # Minimum tier required to handle each complexity level
 _COMPLEXITY_MIN_TIER: dict[TaskComplexity, MinerTier] = {
-    TaskComplexity.LOW:            MinerTier.APPRENTICE,
-    TaskComplexity.MEDIUM:         MinerTier.JOURNEYMAN,
-    TaskComplexity.HIGH:           MinerTier.MASTER,
+    TaskComplexity.LOW: MinerTier.APPRENTICE,
+    TaskComplexity.MEDIUM: MinerTier.JOURNEYMAN,
+    TaskComplexity.HIGH: MinerTier.MASTER,
     TaskComplexity.CONSTITUTIONAL: MinerTier.ELDER,
 }
 
@@ -69,8 +69,8 @@ _COMPLEXITY_MIN_TIER: dict[TaskComplexity, MinerTier] = {
 _TIER_ORDER: dict[MinerTier, int] = {
     MinerTier.APPRENTICE: 0,
     MinerTier.JOURNEYMAN: 1,
-    MinerTier.MASTER:     2,
-    MinerTier.ELDER:      3,
+    MinerTier.MASTER: 2,
+    MinerTier.ELDER: 3,
 }
 
 
@@ -90,12 +90,12 @@ class MinerPerformance:
 
     miner_uid: str
     current_tier: MinerTier = MinerTier.APPRENTICE
-    judgments_validated: int = 0       # accepted by validators
-    judgments_rejected: int = 0        # rejected by validators
-    precedents_contributed: int = 0    # stored in PrecedentStore
-    reputation: float = 1.0            # from ConstitutionalMesh (default 1.0)
+    judgments_validated: int = 0  # accepted by validators
+    judgments_rejected: int = 0  # rejected by validators
+    precedents_contributed: int = 0  # stored in PrecedentStore
+    reputation: float = 1.0  # from ConstitutionalMesh (default 1.0)
     domains: set[str] = field(default_factory=set)
-    avg_authenticity: float = 0.0      # rolling average from AuthenticityDetector
+    avg_authenticity: float = 0.0  # rolling average from AuthenticityDetector
     first_seen_at: float = field(default_factory=time.time)
     last_active_at: float = field(default_factory=time.time)
 
@@ -274,9 +274,7 @@ class TierManager:
         if authenticity > 0:
             # Exponential moving average
             alpha = 0.2
-            perf.avg_authenticity = (
-                alpha * authenticity + (1 - alpha) * perf.avg_authenticity
-            )
+            perf.avg_authenticity = alpha * authenticity + (1 - alpha) * perf.avg_authenticity
 
         if reputation is not None:
             perf.reputation = reputation
@@ -322,8 +320,7 @@ class TierManager:
         min_order = _TIER_ORDER[min_tier]
 
         eligible = [
-            perf for perf in self._miners.values()
-            if _TIER_ORDER[perf.current_tier] >= min_order
+            perf for perf in self._miners.values() if _TIER_ORDER[perf.current_tier] >= min_order
         ]
 
         if not eligible:
@@ -367,10 +364,7 @@ class TierManager:
     ) -> list[MinerPerformance]:
         """Return all miners eligible for a given task complexity."""
         min_order = _TIER_ORDER[_COMPLEXITY_MIN_TIER[complexity]]
-        return [
-            p for p in self._miners.values()
-            if _TIER_ORDER[p.current_tier] >= min_order
-        ]
+        return [p for p in self._miners.values() if _TIER_ORDER[p.current_tier] >= min_order]
 
     # ------------------------------------------------------------------
     # Tier evaluation
@@ -379,7 +373,8 @@ class TierManager:
     def evaluate_all_tiers(self) -> list[TierPromotion]:
         """Re-evaluate every miner's tier. Returns all promotions/demotions."""
         return [
-            p for p in (self._evaluate_tier(perf) for perf in self._miners.values())
+            p
+            for p in (self._evaluate_tier(perf) for perf in self._miners.values())
             if p is not None
         ]
 
@@ -479,9 +474,11 @@ class TierManager:
             for domain in (perf.domains or {"general"})
         ]
         # Always include a generic capability
-        caps.append(Capability(
-            name="governance-judgment",
-            domain="general",
-            tags=(tier_tag,),
-        ))
+        caps.append(
+            Capability(
+                name="governance-judgment",
+                domain="general",
+                tags=(tier_tag,),
+            )
+        )
         self._registry.register(perf.miner_uid, caps)

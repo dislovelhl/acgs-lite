@@ -113,6 +113,8 @@ class TestGatewayAdminEvidenceMount:
             iat=1_700_000_000,
         )
 
-        response = client.get(f"/api/v1/admin/evolution/bounded-experiments/{seeded_evidence.evidence_id}")
+        response = client.get(
+            f"/api/v1/admin/evolution/bounded-experiments/{seeded_evidence.evidence_id}"
+        )
 
         assert response.status_code == 404

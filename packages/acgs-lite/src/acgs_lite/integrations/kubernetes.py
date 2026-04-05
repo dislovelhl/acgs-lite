@@ -139,7 +139,8 @@ class ConstitutionalPolicy:
 
     @classmethod
     def from_custom_resource(
-        cls, resource: dict[str, Any],
+        cls,
+        resource: dict[str, Any],
     ) -> ConstitutionalPolicy:
         """Deserialize from a Kubernetes custom resource dict."""
         metadata = resource.get("metadata", {})
@@ -150,7 +151,8 @@ class ConstitutionalPolicy:
             namespace=metadata.get("namespace", "default"),
             rules=spec.get("rules", []),
             constitutional_hash=spec.get(
-                "constitutionalHash", _CONSTITUTIONAL_HASH,
+                "constitutionalHash",
+                _CONSTITUTIONAL_HASH,
             ),
             enforcement_mode=spec.get("enforcementMode", "enforce"),
             created_at=annotations.get(
@@ -243,7 +245,8 @@ class GovernanceAdmissionWebhook:
     ) -> None:
         if isinstance(engine_or_constitution, Constitution):
             self._engine = GovernanceEngine(
-                engine_or_constitution, strict=False,
+                engine_or_constitution,
+                strict=False,
             )
         else:
             self._engine = engine_or_constitution
@@ -269,7 +272,8 @@ class GovernanceAdmissionWebhook:
         # Use non-strict mode to get a result instead of raising
         with self._engine.non_strict():
             result = self._engine.validate(
-                text, agent_id=self._agent_id,
+                text,
+                agent_id=self._agent_id,
             )
 
         enforcement = getattr(self, "_enforcement_mode", "enforce")
@@ -279,40 +283,43 @@ class GovernanceAdmissionWebhook:
 
         # Build violation summary
         violation_msgs = [
-            f"[{v.severity.value}] {v.rule_id}: {v.rule_text}"
-            for v in result.violations
+            f"[{v.severity.value}] {v.rule_id}: {v.rule_text}" for v in result.violations
         ]
-        message = (
-            "Constitutional violation(s) detected: "
-            + "; ".join(violation_msgs)
-        )
+        message = "Constitutional violation(s) detected: " + "; ".join(violation_msgs)
 
         if enforcement == "warn":
             logger.warning(
-                "Admission warning (warn mode): %s", message,
+                "Admission warning (warn mode): %s",
+                message,
             )
             return _admission_response(
-                uid, allowed=True, message=message,
+                uid,
+                allowed=True,
+                message=message,
             )
 
         if enforcement == "audit":
             logger.info("Admission audit: %s", message)
             return _admission_response(
-                uid, allowed=True, message=message,
+                uid,
+                allowed=True,
+                message=message,
             )
 
         # enforce mode — block
-        has_blocking = any(
-            v.severity.blocks() for v in result.violations
-        )
+        has_blocking = any(v.severity.blocks() for v in result.violations)
         if has_blocking:
             return _admission_response(
-                uid, allowed=False, message=message,
+                uid,
+                allowed=False,
+                message=message,
             )
 
         # Non-blocking violations in enforce mode still allow
         return _admission_response(
-            uid, allowed=True, message=message,
+            uid,
+            allowed=True,
+            message=message,
         )
 
     def create_webhook_config(
@@ -349,9 +356,7 @@ class GovernanceAdmissionWebhook:
                 "name": f"{service_name}-governance",
                 "labels": {
                     f"{_API_GROUP}/component": "admission-webhook",
-                    f"{_API_GROUP}/constitutional-hash": (
-                        self._engine.constitution.hash
-                    ),
+                    f"{_API_GROUP}/constitutional-hash": (self._engine.constitution.hash),
                 },
             },
             "webhooks": [
@@ -427,7 +432,8 @@ class PolicySyncController:
         self._last_sync: str | None = None
 
     def sync_from_config_map(
-        self, data: dict[str, str],
+        self,
+        data: dict[str, str],
     ) -> Constitution:
         """Parse ConfigMap data into a :class:`Constitution`.
 
@@ -459,7 +465,8 @@ class PolicySyncController:
                         rules_data.append(rule_dict)
                 except (json.JSONDecodeError, TypeError):
                     logger.warning(
-                        "Skipping non-JSON ConfigMap key: %s", key,
+                        "Skipping non-JSON ConfigMap key: %s",
+                        key,
                     )
             constitution = Constitution.from_dict({"rules": rules_data})
 
@@ -467,7 +474,8 @@ class PolicySyncController:
         return constitution
 
     def sync_to_config_map(
-        self, constitution: Constitution,
+        self,
+        constitution: Constitution,
     ) -> dict[str, Any]:
         """Serialize a :class:`Constitution` to ConfigMap format.
 
@@ -508,7 +516,8 @@ class PolicySyncController:
             },
             "data": {
                 "constitution.json": json.dumps(
-                    constitution_dict, indent=2,
+                    constitution_dict,
+                    indent=2,
                 ),
             },
         }
@@ -680,10 +689,7 @@ def create_crd_manifest() -> dict[str, Any]:
                                                     },
                                                     "severity": {
                                                         "type": "string",
-                                                        "enum": [
-                                                            s.value
-                                                            for s in Severity
-                                                        ],
+                                                        "enum": [s.value for s in Severity],
                                                     },
                                                     "keywords": {
                                                         "type": "array",
@@ -788,9 +794,7 @@ def create_deployment_manifest(
             "template": {
                 "metadata": {
                     "labels": {
-                        "app.kubernetes.io/name": (
-                            "acgs-governance-webhook"
-                        ),
+                        "app.kubernetes.io/name": ("acgs-governance-webhook"),
                         f"{_API_GROUP}/component": "admission-webhook",
                     },
                 },
@@ -836,9 +840,7 @@ def create_deployment_manifest(
                             "env": [
                                 {
                                     "name": "CONSTITUTION_PATH",
-                                    "value": (
-                                        "/etc/acgs/constitution.yaml"
-                                    ),
+                                    "value": ("/etc/acgs/constitution.yaml"),
                                 },
                             ],
                             "volumeMounts": [
@@ -865,9 +867,7 @@ def create_deployment_manifest(
                         {
                             "name": "tls-certs",
                             "secret": {
-                                "secretName": (
-                                    "acgs-governance-webhook-tls"
-                                ),
+                                "secretName": ("acgs-governance-webhook-tls"),
                             },
                         },
                     ],

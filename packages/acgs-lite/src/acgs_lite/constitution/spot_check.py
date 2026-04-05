@@ -350,10 +350,7 @@ class SpotCheckAuditor:
         Returns:
             List of case IDs selected for spot-checking.
         """
-        eligible = [
-            c for c in self._cases.values()
-            if not c.spot_checked
-        ]
+        eligible = [c for c in self._cases.values() if not c.spot_checked]
         if not eligible:
             return []
 
@@ -413,9 +410,8 @@ class SpotCheckAuditor:
             spot_outcome = check_fn(cid, case.submission_hash).lower()
             # Normalize: "approve"↔"approved", "reject"↔"rejected"
             _normalize = {"approved": "approve", "rejected": "reject"}
-            agrees = (
-                _normalize.get(spot_outcome, spot_outcome)
-                == _normalize.get(case.original_outcome, case.original_outcome)
+            agrees = _normalize.get(spot_outcome, spot_outcome) == _normalize.get(
+                case.original_outcome, case.original_outcome
             )
 
             # Assess each validator
@@ -613,14 +609,16 @@ class SpotCheckAuditor:
         result: list[dict[str, Any]] = []
         for profile in self._profiles.values():
             if profile.has_bias(self.policy.bias_threshold, self.policy.min_cases_for_bias):
-                result.append({
-                    "validator_id": profile.validator_id,
-                    "bias_direction": profile.bias_direction,
-                    "approve_rate": round(profile.approve_rate, 4),
-                    "reject_rate": round(profile.reject_rate, 4),
-                    "total_votes": profile.total_votes,
-                    "lazy_flags": profile.lazy_flags,
-                })
+                result.append(
+                    {
+                        "validator_id": profile.validator_id,
+                        "bias_direction": profile.bias_direction,
+                        "approve_rate": round(profile.approve_rate, 4),
+                        "reject_rate": round(profile.reject_rate, 4),
+                        "total_votes": profile.total_votes,
+                        "lazy_flags": profile.lazy_flags,
+                    }
+                )
         return sorted(result, key=lambda x: x["validator_id"])
 
     # ── Queries ──────────────────────────────────────────────────────────
@@ -649,12 +647,14 @@ class SpotCheckAuditor:
 
         total_assessments = sum(len(r.validator_assessments) for r in self._results)
         lazy_count = sum(
-            1 for r in self._results
+            1
+            for r in self._results
             for va in r.validator_assessments
             if va.assessment == "lazy_agree"
         )
         dissent_count = sum(
-            1 for r in self._results
+            1
+            for r in self._results
             for va in r.validator_assessments
             if va.assessment == "correct_dissent"
         )

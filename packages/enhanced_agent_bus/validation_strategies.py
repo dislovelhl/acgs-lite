@@ -253,9 +253,7 @@ class RustValidationStrategy:
         lambda self, message, *, error: self._handle_rust_validation_error(error),
         exceptions=_VALIDATION_OPERATION_ERRORS,
     )
-    async def _validate_with_rust_processor(
-        self, message: AgentMessage
-    ) -> tuple[bool, str | None]:
+    async def _validate_with_rust_processor(self, message: AgentMessage) -> tuple[bool, str | None]:
         # Attempt to use Rust processor's validation method
         # Check for validate_message method (preferred)
         if hasattr(self._rust_processor, "validate_message"):

@@ -126,9 +126,9 @@ def _build_action_constraints(
     solver.add(
         z3.Or(
             z3.And(data_destruction, production_write),  # C1: no prod destruction
-            secret_exposure,                              # C2: no secret exposure
-            auth_bypass,                                  # C3: no auth bypass
-            z3.And(financial_mutation, production_write), # C4: no direct prod finance writes
+            secret_exposure,  # C2: no secret exposure
+            auth_bypass,  # C3: no auth bypass
+            z3.And(financial_mutation, production_write),  # C4: no direct prod finance writes
             z3.And(system_escalation, production_write),  # C5: no prod privilege escalation
         )
     )

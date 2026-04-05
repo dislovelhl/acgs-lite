@@ -33,8 +33,9 @@ class TestRuleMetrics:
     """Unit tests for RuleMetrics precision/recall/F1 computation."""
 
     def test_perfect_score(self):
-        rm = RuleMetrics(rule_id="R1", true_positives=10, false_positives=0,
-                         false_negatives=0, true_negatives=5)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=10, false_positives=0, false_negatives=0, true_negatives=5
+        )
         assert rm.precision == 1.0
         assert rm.recall == 1.0
         assert rm.f1_score == 1.0
@@ -42,8 +43,9 @@ class TestRuleMetrics:
 
     def test_known_values(self):
         # TP=3, FP=1, FN=1, TN=5 → P=3/4=0.75, R=3/4=0.75, F1=0.75
-        rm = RuleMetrics(rule_id="R1", true_positives=3, false_positives=1,
-                         false_negatives=1, true_negatives=5)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=3, false_positives=1, false_negatives=1, true_negatives=5
+        )
         assert rm.precision == pytest.approx(0.75)
         assert rm.recall == pytest.approx(0.75)
         assert rm.f1_score == pytest.approx(0.75)
@@ -51,23 +53,26 @@ class TestRuleMetrics:
 
     def test_zero_positives(self):
         """Rule with no positive samples should not crash."""
-        rm = RuleMetrics(rule_id="R1", true_positives=0, false_positives=0,
-                         false_negatives=0, true_negatives=10)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=0, false_positives=0, false_negatives=0, true_negatives=10
+        )
         assert rm.precision == 0.0
         assert rm.recall == 0.0
         assert rm.f1_score == 0.0
         assert rm.support == 0
 
     def test_all_false_positives(self):
-        rm = RuleMetrics(rule_id="R1", true_positives=0, false_positives=5,
-                         false_negatives=0, true_negatives=0)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=0, false_positives=5, false_negatives=0, true_negatives=0
+        )
         assert rm.precision == 0.0
         assert rm.recall == 0.0
         assert rm.f1_score == 0.0
 
     def test_all_false_negatives(self):
-        rm = RuleMetrics(rule_id="R1", true_positives=0, false_positives=0,
-                         false_negatives=5, true_negatives=0)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=0, false_positives=0, false_negatives=5, true_negatives=0
+        )
         assert rm.precision == 0.0
         assert rm.recall == 0.0
         assert rm.f1_score == 0.0
@@ -75,14 +80,16 @@ class TestRuleMetrics:
 
     def test_high_precision_low_recall(self):
         # TP=1, FP=0, FN=9 → P=1.0, R=0.1
-        rm = RuleMetrics(rule_id="R1", true_positives=1, false_positives=0,
-                         false_negatives=9, true_negatives=0)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=1, false_positives=0, false_negatives=9, true_negatives=0
+        )
         assert rm.precision == 1.0
         assert rm.recall == pytest.approx(0.1)
 
     def test_to_dict(self):
-        rm = RuleMetrics(rule_id="R1", true_positives=3, false_positives=1,
-                         false_negatives=1, true_negatives=5)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=3, false_positives=1, false_negatives=1, true_negatives=5
+        )
         d = rm.to_dict()
         assert d["rule_id"] == "R1"
         assert d["precision"] == pytest.approx(0.75)
@@ -247,9 +254,9 @@ class TestComputeEvalReport:
             },
         )
         r1 = eval_report.rule_metrics["R1"]
-        assert r1.true_positives == 1   # c1: R1 fired and expected
+        assert r1.true_positives == 1  # c1: R1 fired and expected
         assert r1.false_negatives == 1  # c3: R1 not fired but expected
-        assert r1.true_negatives == 1   # c2: R1 not fired and not expected
+        assert r1.true_negatives == 1  # c2: R1 not fired and not expected
 
         assert eval_report.scenario_metrics.correct == 2
         assert eval_report.scenario_metrics.incorrect == 1
@@ -269,9 +276,7 @@ class TestComputeEvalReport:
             suite_name="test",
             results=[self._make_result("c1", TestOutcome.SKIP)],
         )
-        eval_report = compute_eval_report(
-            report, all_rule_ids=["R1"], expected_rules_map={}
-        )
+        eval_report = compute_eval_report(report, all_rule_ids=["R1"], expected_rules_map={})
         assert eval_report.scenario_metrics.skipped == 1
         assert eval_report.scenario_metrics.accuracy == 0.0
 
@@ -280,9 +285,7 @@ class TestComputeEvalReport:
             suite_name="test",
             results=[self._make_result("c1", TestOutcome.ERROR)],
         )
-        eval_report = compute_eval_report(
-            report, all_rule_ids=["R1"], expected_rules_map={}
-        )
+        eval_report = compute_eval_report(report, all_rule_ids=["R1"], expected_rules_map={})
         assert eval_report.scenario_metrics.errors == 1
 
 
@@ -291,8 +294,9 @@ class TestComputeEvalReport:
 
 class TestEvalReportOutput:
     def test_to_markdown(self):
-        rm = RuleMetrics(rule_id="R1", true_positives=5, false_positives=1,
-                         false_negatives=1, true_negatives=3)
+        rm = RuleMetrics(
+            rule_id="R1", true_positives=5, false_positives=1, false_negatives=1, true_negatives=3
+        )
         sm = ScenarioOutcomeMetrics(total=10, correct=9, incorrect=1)
         report = EvalReport(
             rule_metrics={"R1": rm},

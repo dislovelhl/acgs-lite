@@ -41,8 +41,12 @@ except ImportError:
 
 # Keys commonly used for text content in Haystack data dicts.
 _INPUT_TEXT_KEYS = (
-    "query", "queries", "questions",
-    "prompt", "text", "documents",
+    "query",
+    "queries",
+    "questions",
+    "prompt",
+    "text",
+    "documents",
 )
 _OUTPUT_TEXT_KEYS = ("replies", "answers", "documents")
 
@@ -119,13 +123,14 @@ class GovernedHaystackPipeline(GovernedBase):
     ) -> None:
         if not HAYSTACK_AVAILABLE:
             raise ImportError(
-                "haystack-ai is required. "
-                "Install with: pip install acgs-lite[haystack]"
+                "haystack-ai is required. Install with: pip install acgs-lite[haystack]"
             )
 
         self._pipeline = pipeline
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -155,7 +160,8 @@ class GovernedHaystackPipeline(GovernedBase):
         combined = " ".join(texts)
         if combined.strip():
             self.engine.validate(
-                combined, agent_id=self.agent_id,
+                combined,
+                agent_id=self.agent_id,
             )
 
     def _validate_output(self, result: dict[str, Any]) -> None:
@@ -164,31 +170,38 @@ class GovernedHaystackPipeline(GovernedBase):
         combined = " ".join(texts)
         if combined.strip():
             self._validate_nonstrict(
-                combined, label="Haystack pipeline output",
+                combined,
+                label="Haystack pipeline output",
             )
 
     def run(
-        self, data: dict[str, Any], **kwargs: Any,
+        self,
+        data: dict[str, Any],
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """Run the pipeline with governance validation."""
         self._validate_input(data)
 
         result: dict[str, Any] = self._pipeline.run(
-            data, **kwargs,
+            data,
+            **kwargs,
         )
 
         self._validate_output(result)
         return result
 
     async def arun(
-        self, data: dict[str, Any], **kwargs: Any,
+        self,
+        data: dict[str, Any],
+        **kwargs: Any,
     ) -> dict[str, Any]:
         """Async version of run() with governance validation."""
         self._validate_input(data)
 
         if hasattr(self._pipeline, "arun"):
             result: dict[str, Any] = await self._pipeline.arun(
-                data, **kwargs,
+                data,
+                **kwargs,
             )
         else:
             result = self._pipeline.run(data, **kwargs)
@@ -228,13 +241,14 @@ class GovernedComponent(GovernedBase):
     ) -> None:
         if not HAYSTACK_AVAILABLE:
             raise ImportError(
-                "haystack-ai is required. "
-                "Install with: pip install acgs-lite[haystack]"
+                "haystack-ai is required. Install with: pip install acgs-lite[haystack]"
             )
 
         self._component = component
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -264,14 +278,16 @@ class GovernedComponent(GovernedBase):
         combined = " ".join(texts)
         if combined.strip():
             self.engine.validate(
-                combined, agent_id=self.agent_id,
+                combined,
+                agent_id=self.agent_id,
             )
 
         result: dict[str, Any] = self._component.run(**kwargs)
 
         if isinstance(result, dict):
             out_texts = _extract_texts_from_dict(
-                result, _OUTPUT_TEXT_KEYS,
+                result,
+                _OUTPUT_TEXT_KEYS,
             )
             out_combined = " ".join(out_texts)
             if out_combined.strip():
@@ -317,7 +333,9 @@ class GovernanceComponent(GovernedBase):
         strict: bool = True,
     ) -> None:
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     def run(self, text: str) -> dict[str, Any]:
@@ -332,32 +350,22 @@ class GovernanceComponent(GovernedBase):
         was_strict = self.engine.strict
         with self.engine.non_strict():
             result = self.engine.validate(
-                text, agent_id=self.agent_id,
+                text,
+                agent_id=self.agent_id,
             )
 
-        violations = [
-            {"rule_id": v.rule_id, "rule_text": v.rule_text}
-            for v in result.violations
-        ]
+        violations = [{"rule_id": v.rule_id, "rule_text": v.rule_text} for v in result.violations]
 
         if not result.valid and was_strict:
             from acgs_lite.errors import (
                 ConstitutionalViolationError,
             )
 
-            first = (
-                result.violations[0]
-                if result.violations
-                else None
-            )
+            first = result.violations[0] if result.violations else None
             raise ConstitutionalViolationError(
                 f"Governance validation failed: {violations}",
-                rule_id=(
-                    first.rule_id if first else "unknown"
-                ),
-                severity=(
-                    first.severity.value if first else "high"
-                ),
+                rule_id=(first.rule_id if first else "unknown"),
+                severity=(first.severity.value if first else "high"),
                 action=text,
             )
 

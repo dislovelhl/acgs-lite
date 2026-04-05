@@ -45,8 +45,13 @@ if TYPE_CHECKING:
     from constitutional_swarm.bittensor.precedent_store import PrecedentRecord
 
 _DIMENSIONS = (
-    "safety", "security", "privacy",
-    "fairness", "reliability", "transparency", "efficiency",
+    "safety",
+    "security",
+    "privacy",
+    "fairness",
+    "reliability",
+    "transparency",
+    "efficiency",
 )
 
 
@@ -56,11 +61,11 @@ _DIMENSIONS = (
 
 
 class RuleCandidateStatus(Enum):
-    PENDING   = "pending"     # awaiting Governor approval
-    APPROVED  = "approved"    # Governor approved, not yet activated
-    ACTIVE    = "active"      # activated, has a new constitutional hash
-    REJECTED  = "rejected"    # Governor rejected
-    REVOKED   = "revoked"     # was active, Governor revoked
+    PENDING = "pending"  # awaiting Governor approval
+    APPROVED = "approved"  # Governor approved, not yet activated
+    ACTIVE = "active"  # activated, has a new constitutional hash
+    REJECTED = "rejected"  # Governor rejected
+    REVOKED = "revoked"  # was active, Governor revoked
 
 
 # ---------------------------------------------------------------------------
@@ -74,10 +79,10 @@ class PrecedentCluster:
 
     cluster_id: str
     precedent_ids: list[str]
-    centroid_vector: dict[str, float]        # mean of all impact vectors
-    dominant_dimensions: list[str]           # dims with centroid score > 0.5
-    majority_judgment: str                   # most common judgment text
-    validator_agreement: float               # mean validator_grade
+    centroid_vector: dict[str, float]  # mean of all impact vectors
+    dominant_dimensions: list[str]  # dims with centroid score > 0.5
+    majority_judgment: str  # most common judgment text
+    validator_agreement: float  # mean validator_grade
     escalation_type: str
     domain_hint: str = ""
     formed_at: float = field(default_factory=time.time)
@@ -113,9 +118,9 @@ class RuleCandidate:
 
     candidate_id: str
     cluster_id: str
-    rule_id: str               # e.g. "PREC-SEC-001"
+    rule_id: str  # e.g. "PREC-SEC-001"
     rule_text: str
-    severity: str              # critical | high | medium | low
+    severity: str  # critical | high | medium | low
     keywords: list[str]
     source_precedent_ids: list[str]
     validator_agreement: float
@@ -135,7 +140,7 @@ class RuleCandidate:
         keywords_str = "\n".join(f"      - {k}" for k in self.keywords)
         return (
             f"  - id: {self.rule_id}\n"
-            f"    text: \"{self.rule_text}\"\n"
+            f'    text: "{self.rule_text}"\n'
             f"    severity: {self.severity}\n"
             f"    hardcoded: false\n"
             f"    source: precedent_codification\n"
@@ -212,8 +217,7 @@ class RuleCodifier:
 
     @property
     def pending_candidates(self) -> list[RuleCandidate]:
-        return [c for c in self._candidates.values()
-                if c.status == RuleCandidateStatus.PENDING]
+        return [c for c in self._candidates.values() if c.status == RuleCandidateStatus.PENDING]
 
     @property
     def active_rules(self) -> list[RuleCandidate]:
@@ -264,14 +268,15 @@ class RuleCodifier:
                 n = len(clusters[best_idx]["members"])
                 for d in _DIMENSIONS:
                     clusters[best_idx]["centroid"][d] = (
-                        clusters[best_idx]["centroid"][d] * (n - 1) / n
-                        + vec.get(d, 0.0) / n
+                        clusters[best_idx]["centroid"][d] * (n - 1) / n + vec.get(d, 0.0) / n
                     )
             else:
-                clusters.append({
-                    "centroid": {d: vec.get(d, 0.0) for d in _DIMENSIONS},
-                    "members": [rec],
-                })
+                clusters.append(
+                    {
+                        "centroid": {d: vec.get(d, 0.0) for d in _DIMENSIONS},
+                        "members": [rec],
+                    }
+                )
 
         result: list[PrecedentCluster] = []
         for cl in clusters:
@@ -292,16 +297,18 @@ class RuleCodifier:
                     majority_j = m.judgment
                     break
 
-            result.append(PrecedentCluster(
-                cluster_id=uuid.uuid4().hex[:8],
-                precedent_ids=[m.precedent_id for m in members],
-                centroid_vector=centroid,
-                dominant_dimensions=dominant,
-                majority_judgment=majority_j,
-                validator_agreement=avg_grade,
-                escalation_type=majority_etype,
-                domain_hint=domain,
-            ))
+            result.append(
+                PrecedentCluster(
+                    cluster_id=uuid.uuid4().hex[:8],
+                    precedent_ids=[m.precedent_id for m in members],
+                    centroid_vector=centroid,
+                    dominant_dimensions=dominant,
+                    majority_judgment=majority_j,
+                    validator_agreement=avg_grade,
+                    escalation_type=majority_etype,
+                    domain_hint=domain,
+                )
+            )
 
         return result
 
@@ -346,6 +353,7 @@ class RuleCodifier:
         """
         c = self._get_candidate(candidate_id, RuleCandidateStatus.PENDING)
         import dataclasses
+
         updated = dataclasses.replace(
             c,
             status=RuleCandidateStatus.APPROVED,
@@ -358,6 +366,7 @@ class RuleCodifier:
         """Governor rejects a pending rule candidate."""
         c = self._get_candidate(candidate_id, RuleCandidateStatus.PENDING)
         import dataclasses
+
         updated = dataclasses.replace(
             c,
             status=RuleCandidateStatus.REJECTED,
@@ -384,6 +393,7 @@ class RuleCodifier:
         new_hash = hashlib.sha256(new_yaml.encode()).hexdigest()[:16]
 
         import dataclasses
+
         activated = dataclasses.replace(
             c,
             status=RuleCandidateStatus.ACTIVE,
@@ -408,15 +418,14 @@ class RuleCodifier:
         """
         c = self._get_candidate(candidate_id, RuleCandidateStatus.ACTIVE)
         import dataclasses
+
         revoked = dataclasses.replace(
             c,
             status=RuleCandidateStatus.REVOKED,
             revocation_reason=reason,
         )
         self._candidates[candidate_id] = revoked
-        self._activated_rules = [
-            r for r in self._activated_rules if r.candidate_id != candidate_id
-        ]
+        self._activated_rules = [r for r in self._activated_rules if r.candidate_id != candidate_id]
         return revoked
 
     # ------------------------------------------------------------------
@@ -477,8 +486,7 @@ class RuleCodifier:
         c = self._candidates[candidate_id]
         if c.status != expected_status:
             raise ValueError(
-                f"Candidate {candidate_id} is {c.status.value}, "
-                f"expected {expected_status.value}."
+                f"Candidate {candidate_id} is {c.status.value}, expected {expected_status.value}."
             )
         return c
 

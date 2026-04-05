@@ -43,13 +43,15 @@ def _make_governed_messages(*, strict: bool = True, engine: GovernanceEngine | N
     return gm, mock_client, engine
 
 
-def _make_mock_response(*, text_blocks: list[str] | None = None, tool_use_blocks: list[dict] | None = None):
+def _make_mock_response(
+    *, text_blocks: list[str] | None = None, tool_use_blocks: list[dict] | None = None
+):
     """Build a mock Anthropic response object."""
     content = []
-    for text in (text_blocks or []):
+    for text in text_blocks or []:
         block = SimpleNamespace(type="text", text=text)
         content.append(block)
-    for tool in (tool_use_blocks or []):
+    for tool in tool_use_blocks or []:
         block = SimpleNamespace(
             type="tool_use",
             name=tool.get("name", "test_tool"),
@@ -60,7 +62,12 @@ def _make_mock_response(*, text_blocks: list[str] | None = None, tool_use_blocks
     return SimpleNamespace(content=content)
 
 
-def _make_client(*, strict: bool = True, constitution: Constitution | None = None, agent_id: str = "anthropic-agent"):
+def _make_client(
+    *,
+    strict: bool = True,
+    constitution: Constitution | None = None,
+    agent_id: str = "anthropic-agent",
+):
     """Create a GovernedAnthropic with a mock Anthropic SDK client."""
     from acgs_lite.integrations.anthropic import GovernedAnthropic
 
@@ -853,9 +860,7 @@ class TestEdgeCases:
 
     def test_unicode_content(self):
         gm, client, _ = _make_governed_messages(strict=False)
-        client.messages.create.return_value = _make_mock_response(
-            text_blocks=["Bonjour le monde"]
-        )
+        client.messages.create.return_value = _make_mock_response(text_blocks=["Bonjour le monde"])
 
         result = gm.create(
             model="claude-sonnet-4-20250514",
@@ -867,10 +872,12 @@ class TestEdgeCases:
         """Tool input with JSON-special characters should serialize correctly."""
         gm, client, engine = _make_governed_messages(strict=False)
         response = _make_mock_response(
-            tool_use_blocks=[{
-                "name": "query",
-                "input": {"text": 'value with "quotes" and \\backslash'},
-            }]
+            tool_use_blocks=[
+                {
+                    "name": "query",
+                    "input": {"text": 'value with "quotes" and \\backslash'},
+                }
+            ]
         )
         client.messages.create.return_value = response
 
@@ -937,10 +944,12 @@ class TestEdgeCases:
 
         engine.validate = tracking_validate  # type: ignore[method-assign]
 
-        response = SimpleNamespace(content=[
-            SimpleNamespace(type="text", text="Here is the result"),
-            SimpleNamespace(type="tool_use", name="calculator", input={"expr": "1+1"}),
-        ])
+        response = SimpleNamespace(
+            content=[
+                SimpleNamespace(type="text", text="Here is the result"),
+                SimpleNamespace(type="tool_use", name="calculator", input={"expr": "1+1"}),
+            ]
+        )
         client.messages.create.return_value = response
 
         gm.create(

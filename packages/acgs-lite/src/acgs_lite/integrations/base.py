@@ -91,7 +91,8 @@ class GovernedBase:
             return None
         with self.engine.non_strict():
             result = self.engine.validate(
-                text, agent_id=f"{self.agent_id}:{label}",
+                text,
+                agent_id=f"{self.agent_id}:{label}",
             )
         if not result.valid:
             logger.warning(

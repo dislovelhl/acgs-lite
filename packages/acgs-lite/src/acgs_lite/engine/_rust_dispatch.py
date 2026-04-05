@@ -231,9 +231,7 @@ class RustDispatchMixin:
         fast_records: Any,
     ) -> ValidationResult | None:
         # exp271: Rust handles lowercasing internally
-        _decision, _violations, _blocking = self._rust_validator.validate_full(
-            action, ctx_pairs
-        )
+        _decision, _violations, _blocking = self._rust_validator.validate_full(action, ctx_pairs)
         if _decision == _RUST_ALLOW:
             if fast_records is not None:
                 fast_records.append(None)

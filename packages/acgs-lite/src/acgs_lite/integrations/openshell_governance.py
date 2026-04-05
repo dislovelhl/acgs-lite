@@ -662,7 +662,9 @@ def create_openshell_governance_router(
 
     router = APIRouter(prefix="/governance", tags=["governance"])
     router_audit_log = audit_log if audit_log is not None else AuditLog()
-    engine = GovernanceEngine(Constitution.default(), audit_log=router_audit_log, strict=False, audit_mode="full")
+    engine = GovernanceEngine(
+        Constitution.default(), audit_log=router_audit_log, strict=False, audit_mode="full"
+    )
     maci = MACIEnforcer(audit_log=router_audit_log)
     quorum = QuorumManager()
     backend = state_backend

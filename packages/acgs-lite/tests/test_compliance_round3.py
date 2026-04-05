@@ -436,29 +436,36 @@ class TestMultiFrameworkAssessorRound3:
 
     def test_india_full_assessment(self) -> None:
         assessor = MultiFrameworkAssessor()
-        report = assessor.assess({
-            "system_id": "india-test",
-            "jurisdiction": "india",
-            "domain": "general",
-        })
+        report = assessor.assess(
+            {
+                "system_id": "india-test",
+                "jurisdiction": "india",
+                "domain": "general",
+            }
+        )
         assert "india_dpdp" in report.frameworks_assessed
         assert isinstance(report, MultiFrameworkReport)
 
     def test_explicit_18_framework_run(self) -> None:
         assessor = MultiFrameworkAssessor()
-        report = assessor.assess({
-            "system_id": "global-test",
-            "jurisdiction": "nowhere",
-            "domain": "unknown",
-        })
+        report = assessor.assess(
+            {
+                "system_id": "global-test",
+                "jurisdiction": "nowhere",
+                "domain": "unknown",
+            }
+        )
         # Unknown jurisdiction → all 18 frameworks
         assert len(report.frameworks_assessed) == 18
 
     def test_cross_global_assessment_score_range(self) -> None:
         assessor = MultiFrameworkAssessor(
             frameworks=[
-                "india_dpdp", "australia_ai_ethics",
-                "brazil_lgpd", "china_ai", "ccpa_cpra",
+                "india_dpdp",
+                "australia_ai_ethics",
+                "brazil_lgpd",
+                "china_ai",
+                "ccpa_cpra",
             ]
         )
         report = assessor.assess({"system_id": "r3-test"})
@@ -475,21 +482,23 @@ class TestMultiFrameworkAssessorRound3:
 class TestComplianceReportExporter:
     @pytest.fixture
     def sample_report(self) -> MultiFrameworkReport:
-        assessor = MultiFrameworkAssessor(
-            frameworks=["nist_ai_rmf", "gdpr", "eu_ai_act"]
+        assessor = MultiFrameworkAssessor(frameworks=["nist_ai_rmf", "gdpr", "eu_ai_act"])
+        return assessor.assess(
+            {
+                "system_id": "exporter-test",
+                "risk_tier": "high",
+                "jurisdiction": "european_union",
+            }
         )
-        return assessor.assess({
-            "system_id": "exporter-test",
-            "risk_tier": "high",
-            "jurisdiction": "european_union",
-        })
 
     def test_to_text_contains_system_id(self, sample_report: MultiFrameworkReport) -> None:
         exporter = ComplianceReportExporter(sample_report)
         text = exporter.to_text()
         assert "exporter-test" in text
 
-    def test_to_text_contains_all_framework_names(self, sample_report: MultiFrameworkReport) -> None:
+    def test_to_text_contains_all_framework_names(
+        self, sample_report: MultiFrameworkReport
+    ) -> None:
         exporter = ComplianceReportExporter(sample_report)
         text = exporter.to_text()
         assert "NIST" in text
@@ -530,7 +539,9 @@ class TestComplianceReportExporter:
         assert "frameworks_assessed" in data
         assert "by_framework" in data
 
-    def test_to_json_includes_title_and_generated_at(self, sample_report: MultiFrameworkReport) -> None:
+    def test_to_json_includes_title_and_generated_at(
+        self, sample_report: MultiFrameworkReport
+    ) -> None:
         exporter = ComplianceReportExporter(sample_report, title="Test Report")
         data = json.loads(exporter.to_json())
         assert data["report_title"] == "Test Report"
@@ -570,31 +581,35 @@ class TestComplianceReportExporter:
             result = exporter.to_text_file(out)
             assert result.exists()
 
-    def test_framework_summary_text_static_method(self, sample_report: MultiFrameworkReport) -> None:
+    def test_framework_summary_text_static_method(
+        self, sample_report: MultiFrameworkReport
+    ) -> None:
         fa = sample_report.by_framework["nist_ai_rmf"]
         text = ComplianceReportExporter.framework_summary_text(fa)
         assert "NIST" in text
         assert "%" in text or "score" in text.lower()
 
-    def test_framework_summary_markdown_static_method(self, sample_report: MultiFrameworkReport) -> None:
+    def test_framework_summary_markdown_static_method(
+        self, sample_report: MultiFrameworkReport
+    ) -> None:
         fa = sample_report.by_framework["gdpr"]
         md = ComplianceReportExporter.framework_summary_markdown(fa)
         assert "GDPR" in md or "gdpr" in md.lower()
 
     def test_custom_title_appears_in_output(self, sample_report: MultiFrameworkReport) -> None:
-        exporter = ComplianceReportExporter(
-            sample_report, title="My Custom Compliance Report"
-        )
+        exporter = ComplianceReportExporter(sample_report, title="My Custom Compliance Report")
         assert "My Custom Compliance Report" in exporter.to_text()
         assert "My Custom Compliance Report" in exporter.to_markdown()
 
     def test_18_framework_exporter_smoke_test(self) -> None:
         assessor = MultiFrameworkAssessor()
-        report = assessor.assess({
-            "system_id": "global-all",
-            "jurisdiction": "unknown",
-            "domain": "unknown",
-        })
+        report = assessor.assess(
+            {
+                "system_id": "global-all",
+                "jurisdiction": "unknown",
+                "domain": "unknown",
+            }
+        )
         exporter = ComplianceReportExporter(report)
         text = exporter.to_text()
         md = exporter.to_markdown()

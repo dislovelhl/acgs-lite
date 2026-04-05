@@ -1,4 +1,5 @@
 """Shim for src.core.shared.feature_flags."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -6,7 +7,6 @@ from typing import Any
 try:
     from src.core.shared.feature_flags import *  # noqa: F403
 except ImportError:
-
     FEATURES: dict[str, bool] = {}
 
     def is_enabled(flag: str, default: bool = False) -> bool:

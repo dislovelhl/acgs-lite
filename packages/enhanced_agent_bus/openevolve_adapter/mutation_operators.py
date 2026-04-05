@@ -20,10 +20,17 @@ from enhanced_agent_bus.adaptive_governance.llm_judge import LLMGovernanceJudge
 FROZEN_FIELDS: frozenset[str] = frozenset({"id", "text", "category"})
 
 # Fields that evolution CAN modify
-EVOLVABLE_FIELDS: frozenset[str] = frozenset({
-    "keywords", "patterns", "severity", "workflow_action",
-    "tags", "priority", "condition",
-})
+EVOLVABLE_FIELDS: frozenset[str] = frozenset(
+    {
+        "keywords",
+        "patterns",
+        "severity",
+        "workflow_action",
+        "tags",
+        "priority",
+        "condition",
+    }
+)
 
 
 @dataclass(slots=True)
@@ -73,11 +80,11 @@ class KeywordMutator:
 
         if bypass_evidence:
             candidates = self._extract_from_evidence(bypass_evidence, old_keywords)
-            additions = candidates[:self.max_additions]
+            additions = candidates[: self.max_additions]
             new_keywords.extend(additions)
         elif self.llm:
             suggestions = await self._llm_suggest(rule)
-            new_keywords.extend(suggestions[:self.max_additions])
+            new_keywords.extend(suggestions[: self.max_additions])
         else:
             # Random removal (exploration)
             if new_keywords and self._rng.random() < 0.3:
@@ -94,10 +101,13 @@ class KeywordMutator:
         )
 
     def _extract_from_evidence(
-        self, evidence: list[str], existing: list[str],
+        self,
+        evidence: list[str],
+        existing: list[str],
     ) -> list[str]:
         """Extract frequent words from bypass evidence as keyword candidates."""
         from collections import Counter
+
         existing_lower = {k.lower() for k in existing}
         word_counts: Counter[str] = Counter()
         for text in evidence:
@@ -211,14 +221,65 @@ def verify_frozen_fields(original: dict[str, Any], mutated: dict[str, Any]) -> b
     return True
 
 
-_STOP_WORDS = frozenset({
-    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
-    "have", "has", "had", "do", "does", "did", "will", "would", "could",
-    "should", "may", "might", "can", "shall", "to", "of", "in", "for",
-    "on", "with", "at", "by", "from", "as", "into", "through", "during",
-    "before", "after", "and", "but", "or", "nor", "not", "no", "so",
-    "if", "then", "that", "this", "it", "its", "your", "their", "them",
-})
+_STOP_WORDS = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "can",
+        "shall",
+        "to",
+        "of",
+        "in",
+        "for",
+        "on",
+        "with",
+        "at",
+        "by",
+        "from",
+        "as",
+        "into",
+        "through",
+        "during",
+        "before",
+        "after",
+        "and",
+        "but",
+        "or",
+        "nor",
+        "not",
+        "no",
+        "so",
+        "if",
+        "then",
+        "that",
+        "this",
+        "it",
+        "its",
+        "your",
+        "their",
+        "them",
+    }
+)
 
 
 __all__ = [

@@ -106,7 +106,9 @@ def demo() -> None:
     print(f"  Rules loaded: {len(constitution.rules)}")
 
     print("\nDone. Constitution enforced with zero changes to my_ai_function.")
-    print("Inspect rules: python scripts/visualizer.py rules --constitution examples/basic_governance/constitution.yaml")
+    print(
+        "Inspect rules: python scripts/visualizer.py rules --constitution examples/basic_governance/constitution.yaml"
+    )
 
 
 if __name__ == "__main__":

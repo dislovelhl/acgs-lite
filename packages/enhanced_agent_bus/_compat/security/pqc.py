@@ -1,4 +1,5 @@
 """Shim for src.core.shared.security.pqc."""
+
 from __future__ import annotations
 
 try:

@@ -995,7 +995,9 @@ class TestVerifyToken:
         monkeypatch.delenv("JWT_PRIVATE_KEY", raising=False)
         monkeypatch.delenv("JWT_PUBLIC_KEY", raising=False)
         # Pass empty keys so both committed and working-tree _resolve_jwt_material raise ConfigurationError
-        monkeypatch.setattr(auth, "settings", _make_settings(jwt_algorithm="RS256", jwt_public_key=""))
+        monkeypatch.setattr(
+            auth, "settings", _make_settings(jwt_algorithm="RS256", jwt_public_key="")
+        )
 
         with pytest.raises(HTTPException) as exc_info:
             auth.verify_token("any-token")

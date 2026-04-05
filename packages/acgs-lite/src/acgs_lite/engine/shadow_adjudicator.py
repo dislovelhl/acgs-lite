@@ -264,7 +264,9 @@ class InMemoryShadowJudge:
         self.default_confidence = default_confidence
         self.calls: list[dict[str, Any]] = []
 
-    async def evaluate(self, action: str, context: dict[str, Any], constitution: Any) -> dict[str, Any]:
+    async def evaluate(
+        self, action: str, context: dict[str, Any], constitution: Any
+    ) -> dict[str, Any]:
         self.calls.append({"action": action})
         return {
             "decision": self.default_decision,

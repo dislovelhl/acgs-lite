@@ -50,7 +50,7 @@ class TestGovernanceSerialization:
 
     def test_truncates_large_payload(self) -> None:
         payload = serialize_for_governance({"blob": "x" * 128}, max_chars=40)
-        assert payload.endswith('… [truncated]')
+        assert payload.endswith("… [truncated]")
         assert len(payload) == 40
 
 
@@ -765,9 +765,7 @@ class TestGovernedAgentRetry:
                 return "password is hunter2"
             return "I cannot share credentials"
 
-        agent = GovernedAgent(
-            smart_agent, strict=True, validate_output=True, max_retries=2
-        )
+        agent = GovernedAgent(smart_agent, strict=True, validate_output=True, max_retries=2)
         result = agent.run("get credential")
         assert result == "I cannot share credentials"
         assert call_count == 2
@@ -781,9 +779,7 @@ class TestGovernedAgentRetry:
             call_count += 1
             return "password is hunter2"
 
-        agent = GovernedAgent(
-            stubborn_agent, strict=True, validate_output=True, max_retries=3
-        )
+        agent = GovernedAgent(stubborn_agent, strict=True, validate_output=True, max_retries=3)
         with pytest.raises(ConstitutionalViolationError):
             agent.run("get credential")
         # 1 original + 3 retries = 4 total calls, then stops
@@ -802,9 +798,7 @@ class TestGovernedAgentRetry:
                 return "password is hunter2"
             return "I cannot share that"
 
-        agent = GovernedAgent(
-            recording_agent, strict=True, validate_output=True, max_retries=1
-        )
+        agent = GovernedAgent(recording_agent, strict=True, validate_output=True, max_retries=1)
         agent.run("get credential")
         assert len(prompts_received) == 2
         retry_prompt = prompts_received[1]
@@ -817,15 +811,22 @@ class TestGovernedAgentRetry:
         def safe_agent(input: str) -> str:
             return "safe output"
 
-        rules = Constitution.from_rules([
-            Rule(
-                id="NO-CAT", text="No cats allowed",
-                severity=Severity.CRITICAL, keywords=["cat"],
-            ),
-        ])
+        rules = Constitution.from_rules(
+            [
+                Rule(
+                    id="NO-CAT",
+                    text="No cats allowed",
+                    severity=Severity.CRITICAL,
+                    keywords=["cat"],
+                ),
+            ]
+        )
         agent = GovernedAgent(
-            safe_agent, constitution=rules, strict=True,
-            validate_output=True, max_retries=3,
+            safe_agent,
+            constitution=rules,
+            strict=True,
+            validate_output=True,
+            max_retries=3,
         )
         with pytest.raises(ConstitutionalViolationError):
             agent.run("I love my cat")
@@ -841,9 +842,7 @@ class TestGovernedAgentRetry:
                 return "password is hunter2"
             return "safe response"
 
-        agent = GovernedAgent(
-            retry_agent, strict=True, validate_output=True, max_retries=1
-        )
+        agent = GovernedAgent(retry_agent, strict=True, validate_output=True, max_retries=1)
         agent.run("do something")
         # Audit log should have entries for the retry
         entries = agent.audit_log.entries
@@ -865,9 +864,7 @@ class TestGovernedAgentRetryAsync:
                 return "password is hunter2"
             return "I cannot share credentials"
 
-        agent = GovernedAgent(
-            smart_agent, strict=True, validate_output=True, max_retries=2
-        )
+        agent = GovernedAgent(smart_agent, strict=True, validate_output=True, max_retries=2)
         result = await agent.arun("get credential")
         assert result == "I cannot share credentials"
         assert call_count == 2
@@ -876,9 +873,7 @@ class TestGovernedAgentRetryAsync:
         async def stubborn(input: str) -> str:
             return "password is hunter2"
 
-        agent = GovernedAgent(
-            stubborn, strict=True, validate_output=True, max_retries=1
-        )
+        agent = GovernedAgent(stubborn, strict=True, validate_output=True, max_retries=1)
         with pytest.raises(ConstitutionalViolationError):
             await agent.arun("get credential")
 
@@ -888,11 +883,17 @@ class TestGovernedAgentRetryAsync:
         async def safe(input: str) -> str:
             return "safe"
 
-        rules = Constitution.from_rules([
-            Rule(id="NO-CAT", text="No cats", severity=Severity.CRITICAL, keywords=["cat"]),
-        ])
+        rules = Constitution.from_rules(
+            [
+                Rule(id="NO-CAT", text="No cats", severity=Severity.CRITICAL, keywords=["cat"]),
+            ]
+        )
         agent = GovernedAgent(
-            safe, constitution=rules, strict=True, validate_output=True, max_retries=3,
+            safe,
+            constitution=rules,
+            strict=True,
+            validate_output=True,
+            max_retries=3,
         )
         with pytest.raises(ConstitutionalViolationError):
             await agent.arun("I love my cat")
@@ -909,7 +910,10 @@ class TestGovernedAgentRetryAsync:
             return "safe response"
 
         agent = GovernedAgent(
-            retry_agent, strict=True, validate_output=True, max_retries=1,
+            retry_agent,
+            strict=True,
+            validate_output=True,
+            max_retries=1,
         )
         await agent.arun("do something")
         entries = agent.audit_log.entries
@@ -947,7 +951,10 @@ class TestGovernedAgentRetryEdgeCases:
             return "password is hunter2"
 
         agent = GovernedAgent(
-            leaky, strict=True, validate_output=False, max_retries=3,
+            leaky,
+            strict=True,
+            validate_output=False,
+            max_retries=3,
         )
         result = agent.run("anything")
         assert result == "password is hunter2"
@@ -965,7 +972,10 @@ class TestGovernedAgentRetryEdgeCases:
             return "safe response"
 
         agent = GovernedAgent(
-            agent_fn, strict=True, validate_output=True, max_retries=3,
+            agent_fn,
+            strict=True,
+            validate_output=True,
+            max_retries=3,
         )
         agent.run("do it")
         retry_entries = [e for e in agent.audit_log.entries if e.type == "output_retry"]
@@ -994,15 +1004,22 @@ class TestGovernedAgentRetryEdgeCases:
                 return "password is hunter2"
             return "safe"
 
-        rules = Constitution.from_rules([
-            Rule(
-                id="CRED-001", text="No credentials in output",
-                severity=Severity.CRITICAL, keywords=["password"],
-            ),
-        ])
+        rules = Constitution.from_rules(
+            [
+                Rule(
+                    id="CRED-001",
+                    text="No credentials in output",
+                    severity=Severity.CRITICAL,
+                    keywords=["password"],
+                ),
+            ]
+        )
         agent = GovernedAgent(
-            recording, constitution=rules, strict=True,
-            validate_output=True, max_retries=1,
+            recording,
+            constitution=rules,
+            strict=True,
+            validate_output=True,
+            max_retries=1,
         )
         agent.run("get info")
         retry_prompt = prompts[1]
@@ -1025,7 +1042,10 @@ class TestGovernedAgentRetryEdgeCases:
             return "safe"
 
         agent = GovernedAgent(
-            flaky, strict=True, validate_output=True, max_retries=1,
+            flaky,
+            strict=True,
+            validate_output=True,
+            max_retries=1,
         )
         agent.run("first")
         agent.run("second")

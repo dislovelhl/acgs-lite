@@ -804,6 +804,7 @@ class TestRiskScoring:
 
     def test_risk_level_categories(self) -> None:
         from acgs_lite.scoring import _risk_level
+
         assert _risk_level(0.0) == "low"
         assert _risk_level(0.29) == "low"
         assert _risk_level(0.3) == "medium"

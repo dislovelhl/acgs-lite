@@ -159,8 +159,17 @@ def _disable_rust_on_engine(engine: GovernanceEngine) -> None:
     """
     _h = engine._hot
     engine._hot = (
-        _h[0], _h[1], _h[2], _h[3], _h[4], _h[5],
-        _h[6], _h[7], _h[8], _h[9], None,
+        _h[0],
+        _h[1],
+        _h[2],
+        _h[3],
+        _h[4],
+        _h[5],
+        _h[6],
+        _h[7],
+        _h[8],
+        _h[9],
+        None,
     )
     engine._rust_validator = None
 
@@ -173,11 +182,17 @@ def _disable_ac_on_engine(engine: GovernanceEngine) -> None:
     """
     _h = engine._hot
     engine._hot = (
-        None,       # [0] ac_iter
-        _h[1], _h[2], _h[3], _h[4], _h[5],
-        _h[6], _h[7],
-        False,      # [8] has_ac
-        _h[9], _h[10],
+        None,  # [0] ac_iter
+        _h[1],
+        _h[2],
+        _h[3],
+        _h[4],
+        _h[5],
+        _h[6],
+        _h[7],
+        False,  # [8] has_ac
+        _h[9],
+        _h[10],
     )
     engine._ac_iter = None
 
@@ -298,15 +313,17 @@ class TestRustGovContext:
     @pytest.mark.skipif(not _HAS_RUST, reason="Rust extension not available")
     def test_gov_context_merged_bitmask_with_blocking(self):
         """Context violations with blocking severity raise in strict mode."""
-        c = _make_constitution(rules=[
-            Rule(
-                id="BLK-HIGH",
-                text="Must have audit",
-                severity=Severity.HIGH,
-                keywords=["skip audit"],
-                category="audit",
-            ),
-        ])
+        c = _make_constitution(
+            rules=[
+                Rule(
+                    id="BLK-HIGH",
+                    text="Must have audit",
+                    severity=Severity.HIGH,
+                    keywords=["skip audit"],
+                    category="audit",
+                ),
+            ]
+        )
         engine = GovernanceEngine(c, strict=True)
         with pytest.raises(ConstitutionalViolationError):
             engine.validate(
@@ -405,22 +422,24 @@ class TestRustFullContext:
     def test_full_context_blocking_strict(self):
         """Full context with blocking violation in strict mode raises."""
         audit = AuditLog()
-        c = _make_constitution(rules=[
-            Rule(
-                id="FC-HIGH",
-                text="Must audit",
-                severity=Severity.HIGH,
-                keywords=["skip audit"],
-                category="audit",
-            ),
-            Rule(
-                id="FC-CRIT",
-                text="No secrets",
-                severity=Severity.CRITICAL,
-                keywords=["secret key"],
-                category="security",
-            ),
-        ])
+        c = _make_constitution(
+            rules=[
+                Rule(
+                    id="FC-HIGH",
+                    text="Must audit",
+                    severity=Severity.HIGH,
+                    keywords=["skip audit"],
+                    category="audit",
+                ),
+                Rule(
+                    id="FC-CRIT",
+                    text="No secrets",
+                    severity=Severity.CRITICAL,
+                    keywords=["secret key"],
+                    category="security",
+                ),
+            ]
+        )
         engine = GovernanceEngine(c, audit_log=audit, strict=True)
         with pytest.raises(ConstitutionalViolationError):
             engine.validate(
@@ -449,15 +468,17 @@ class TestPythonACFallback:
     @pytest.mark.skipif(not _HAS_AHO, reason="Aho-Corasick not available")
     def test_ac_positive_verb_deny_critical(self):
         """Positive verb path with negative-indicator critical keyword triggers raise."""
-        c = _make_constitution(rules=[
-            Rule(
-                id="AC-CRIT",
-                text="No hiding secrets",
-                severity=Severity.CRITICAL,
-                keywords=["hide secrets", "bypass security"],
-                category="security",
-            ),
-        ])
+        c = _make_constitution(
+            rules=[
+                Rule(
+                    id="AC-CRIT",
+                    text="No hiding secrets",
+                    severity=Severity.CRITICAL,
+                    keywords=["hide secrets", "bypass security"],
+                    category="security",
+                ),
+            ]
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         with pytest.raises(ConstitutionalViolationError):
@@ -564,15 +585,17 @@ class TestPythonRegexFallback:
 
     def test_regex_positive_verb_critical_raises(self):
         """Positive verb with critical negative-indicator keyword in strict mode raises."""
-        c = _make_constitution(rules=[
-            Rule(
-                id="RX-CRIT",
-                text="No bypassing security",
-                severity=Severity.CRITICAL,
-                keywords=["bypass security"],
-                category="security",
-            ),
-        ])
+        c = _make_constitution(
+            rules=[
+                Rule(
+                    id="RX-CRIT",
+                    text="No bypassing security",
+                    severity=Severity.CRITICAL,
+                    keywords=["bypass security"],
+                    category="security",
+                ),
+            ]
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -591,16 +614,19 @@ class TestPythonRegexFallback:
 
     def test_regex_positive_verb_with_neg_keyword_and_pattern(self):
         """Positive verb regex path with negative keyword + pattern match."""
-        c = Constitution.from_rules([
-            Rule(
-                id="RPAT-NEG",
-                text="No hiding deploy data",
-                severity=Severity.HIGH,
-                keywords=["hide data"],
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-pat-neg")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPAT-NEG",
+                    text="No hiding deploy data",
+                    severity=Severity.HIGH,
+                    keywords=["hide data"],
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-pat-neg",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -841,11 +867,10 @@ class TestCustomValidatorsSlowPath:
 
     def test_custom_validator_on_python_path(self):
         """Custom validator fires on Python fallback path."""
+
         def forbidden_validator(action: str, ctx: dict) -> list[Violation]:
             if "forbidden" in action.lower():
-                return [
-                    Violation("CUSTOM-F", "Forbidden", Severity.HIGH, action[:200], "custom")
-                ]
+                return [Violation("CUSTOM-F", "Forbidden", Severity.HIGH, action[:200], "custom")]
             return []
 
         engine = _make_engine(strict=False, custom_validators=[forbidden_validator])
@@ -856,6 +881,7 @@ class TestCustomValidatorsSlowPath:
 
     def test_custom_validator_exception_on_python_path(self):
         """Custom validator exception caught on Python path."""
+
         def bad_validator(action: str, ctx: dict) -> list[Violation]:
             raise ValueError("boom")
 
@@ -945,9 +971,7 @@ class TestDedupEdgeCases:
         engine = _make_engine(strict=False)
         _disable_rust_on_engine(engine)
         # Action with multiple keyword hits for the same rule
-        result = engine.validate(
-            "secret key password credential all exposed"
-        )
+        result = engine.validate("secret key password credential all exposed")
         rule_ids = [v.rule_id for v in result.violations]
         assert len(rule_ids) == len(set(rule_ids)), "Violations should be deduped by rule_id"
 
@@ -1017,16 +1041,19 @@ class TestHyphenSuffixAnchor:
 
     def test_hyphen_anchor_pattern(self):
         """Rule with \b{w1}.{w2}\b style pattern uses hyphen anchor."""
-        c = Constitution.from_rules([
-            Rule(
-                id="HYPH-1",
-                text="No age-based discrimination",
-                severity=Severity.HIGH,
-                keywords=["discrimination"],
-                patterns=[r"\bage.based\b"],
-                category="fairness",
-            ),
-        ], name="hyphen-test")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="HYPH-1",
+                    text="No age-based discrimination",
+                    severity=Severity.HIGH,
+                    keywords=["discrimination"],
+                    patterns=[r"\bage.based\b"],
+                    category="fairness",
+                ),
+            ],
+            name="hyphen-test",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         result = engine.validate("apply age-based discrimination policy")
@@ -1044,16 +1071,19 @@ class TestBigramAnchor:
 
     def test_bigram_anchor_pattern(self):
         r"""Rule with \b{w1}\s+{w2}\b pattern uses bigram anchor."""
-        c = Constitution.from_rules([
-            Rule(
-                id="BIG-1",
-                text="No appeal denied",
-                severity=Severity.HIGH,
-                keywords=["rejected"],
-                patterns=[r"\bno\s+appeal\b"],
-                category="process",
-            ),
-        ], name="bigram-test")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="BIG-1",
+                    text="No appeal denied",
+                    severity=Severity.HIGH,
+                    keywords=["rejected"],
+                    patterns=[r"\bno\s+appeal\b"],
+                    category="process",
+                ),
+            ],
+            name="bigram-test",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         result = engine.validate("no appeal for rejected applicants")
@@ -1073,32 +1103,35 @@ def _make_type2_constitution() -> Constitution:
     special-case bigram/hyphen/single-word anchor extraction, so the first 3+ char
     word becomes the anchor -- which equals the keyword.
     """
-    return Constitution.from_rules([
-        Rule(
-            id="T2-CRIT",
-            text="No overriding security",
-            severity=Severity.CRITICAL,
-            keywords=["override"],
-            patterns=[r"\boverride\s*[-:]\s*security\b"],
-            category="security",
-        ),
-        Rule(
-            id="T2-HIGH",
-            text="No skipping checks",
-            severity=Severity.HIGH,
-            keywords=["skip"],
-            patterns=[r"\bskip\s*[-:]\s*review\b"],
-            category="process",
-        ),
-        Rule(
-            id="T2-MED",
-            text="No hiding data",
-            severity=Severity.MEDIUM,
-            keywords=["hide"],
-            patterns=[r"\bhide\s*[-:]\s*records\b"],
-            category="data",
-        ),
-    ], name="type2-test")
+    return Constitution.from_rules(
+        [
+            Rule(
+                id="T2-CRIT",
+                text="No overriding security",
+                severity=Severity.CRITICAL,
+                keywords=["override"],
+                patterns=[r"\boverride\s*[-:]\s*security\b"],
+                category="security",
+            ),
+            Rule(
+                id="T2-HIGH",
+                text="No skipping checks",
+                severity=Severity.HIGH,
+                keywords=["skip"],
+                patterns=[r"\bskip\s*[-:]\s*review\b"],
+                category="process",
+            ),
+            Rule(
+                id="T2-MED",
+                text="No hiding data",
+                severity=Severity.MEDIUM,
+                keywords=["hide"],
+                patterns=[r"\bhide\s*[-:]\s*records\b"],
+                category="data",
+            ),
+        ],
+        name="type2-test",
+    )
 
 
 @pytest.mark.unit
@@ -1155,16 +1188,19 @@ class TestACAnchorDispatchCritical:
         This covers lines 984-986: anchor hit (type 1) -> pattern match -> critical raise.
         The anchor 'deploy' is NOT a keyword, so it's type-1 (anchor-only).
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="APC-CRIT",
-                text="No unsafe deploy",
-                severity=Severity.CRITICAL,
-                keywords=["unsafe deploy"],
-                patterns=[r"\bdeploy\s*[-:]\s*unsafe\b"],
-                category="ops",
-            ),
-        ], name="anchor-crit-pos")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="APC-CRIT",
+                    text="No unsafe deploy",
+                    severity=Severity.CRITICAL,
+                    keywords=["unsafe deploy"],
+                    patterns=[r"\bdeploy\s*[-:]\s*unsafe\b"],
+                    category="ops",
+                ),
+            ],
+            name="anchor-crit-pos",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         with pytest.raises(ConstitutionalViolationError):
@@ -1175,16 +1211,19 @@ class TestACAnchorDispatchCritical:
 
         This covers lines 1070-1071: anchor hit -> pattern match -> critical raise.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="APC-CRIT2",
-                text="No unsafe deploy",
-                severity=Severity.CRITICAL,
-                keywords=["unsafe deploy"],
-                patterns=[r"\bdeploy\s*[-:]\s*unsafe\b"],
-                category="ops",
-            ),
-        ], name="anchor-crit-npos")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="APC-CRIT2",
+                    text="No unsafe deploy",
+                    severity=Severity.CRITICAL,
+                    keywords=["unsafe deploy"],
+                    patterns=[r"\bdeploy\s*[-:]\s*unsafe\b"],
+                    category="ops",
+                ),
+            ],
+            name="anchor-crit-npos",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         with pytest.raises(ConstitutionalViolationError):
@@ -1196,23 +1235,26 @@ class TestACAnchorDispatchCritical:
 
         This covers lines 1086-1087: no-anchor critical raise path.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="NAP-CRIT2",
-                text="No large numbers exposed",
-                severity=Severity.CRITICAL,
-                keywords=["expose numbers"],
-                patterns=[r"\b\d{10,}\b"],
-                category="pii",
-            ),
-            Rule(
-                id="NAP-OTHER",
-                text="Some other rule",
-                severity=Severity.LOW,
-                keywords=["something"],
-                category="misc",
-            ),
-        ], name="no-anchor-crit-npos")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="NAP-CRIT2",
+                    text="No large numbers exposed",
+                    severity=Severity.CRITICAL,
+                    keywords=["expose numbers"],
+                    patterns=[r"\b\d{10,}\b"],
+                    category="pii",
+                ),
+                Rule(
+                    id="NAP-OTHER",
+                    text="Some other rule",
+                    severity=Severity.LOW,
+                    keywords=["something"],
+                    category="misc",
+                ),
+            ],
+            name="no-anchor-crit-npos",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         with pytest.raises(ConstitutionalViolationError):
@@ -1230,24 +1272,27 @@ def _make_no_anchor_pattern_constitution() -> Constitution:
     Pattern uses only regex metacharacters / short words, so no anchor can be
     extracted, forcing the no-anchor dispatch path.
     """
-    return Constitution.from_rules([
-        Rule(
-            id="NAP-CRIT",
-            text="No numeric IDs exposed",
-            severity=Severity.CRITICAL,
-            keywords=["expose id"],
-            patterns=[r"\b\d{10,}\b"],
-            category="pii",
-        ),
-        Rule(
-            id="NAP-MED",
-            text="Advisory on short codes",
-            severity=Severity.MEDIUM,
-            keywords=["short code"],
-            patterns=[r"\b[A-Z]{2}\d{3}\b"],
-            category="ops",
-        ),
-    ], name="no-anchor-pat")
+    return Constitution.from_rules(
+        [
+            Rule(
+                id="NAP-CRIT",
+                text="No numeric IDs exposed",
+                severity=Severity.CRITICAL,
+                keywords=["expose id"],
+                patterns=[r"\b\d{10,}\b"],
+                category="pii",
+            ),
+            Rule(
+                id="NAP-MED",
+                text="Advisory on short codes",
+                severity=Severity.MEDIUM,
+                keywords=["short code"],
+                patterns=[r"\b[A-Z]{2}\d{3}\b"],
+                category="ops",
+            ),
+        ],
+        name="no-anchor-pat",
+    )
 
 
 @pytest.mark.unit
@@ -1303,23 +1348,26 @@ class TestRegexPositiveVerbPatternFallback:
         This covers lines 1130-1144: after neg-keyword fires for one rule,
         iterate _pattern_rule_idxs and fire for a different rule's pattern.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RKP-KW",
-                text="No bypassing",
-                severity=Severity.HIGH,
-                keywords=["bypass"],
-                category="ops",
-            ),
-            Rule(
-                id="RKP-PAT",
-                text="No deploy to prod",
-                severity=Severity.MEDIUM,
-                keywords=["override"],
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-kw-pat")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RKP-KW",
+                    text="No bypassing",
+                    severity=Severity.HIGH,
+                    keywords=["bypass"],
+                    category="ops",
+                ),
+                Rule(
+                    id="RKP-PAT",
+                    text="No deploy to prod",
+                    severity=Severity.MEDIUM,
+                    keywords=["override"],
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-kw-pat",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1333,16 +1381,19 @@ class TestRegexPositiveVerbPatternFallback:
         The neg_findall returns empty (no neg-indicator keywords in text)
         but patterns exist and match.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RPO-1",
-                text="No deploy to prod",
-                severity=Severity.MEDIUM,
-                keywords=["bypass"],  # Has neg indicator but won't match
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-pat-only3")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPO-1",
+                    text="No deploy to prod",
+                    severity=Severity.MEDIUM,
+                    keywords=["bypass"],  # Has neg indicator but won't match
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-pat-only3",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1355,16 +1406,19 @@ class TestRegexPositiveVerbPatternFallback:
 
         This covers the strict+is_crit path at lines 1134-1141 and 1150-1157.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RPC-1",
-                text="No bypassing security",
-                severity=Severity.CRITICAL,
-                keywords=["bypass"],
-                patterns=[r"\bbypass\s*[-:]\s*security\b"],
-                category="security",
-            ),
-        ], name="regex-crit-pat")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPC-1",
+                    text="No bypassing security",
+                    severity=Severity.CRITICAL,
+                    keywords=["bypass"],
+                    patterns=[r"\bbypass\s*[-:]\s*security\b"],
+                    category="security",
+                ),
+            ],
+            name="regex-crit-pat",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1376,16 +1430,19 @@ class TestRegexPositiveVerbPatternFallback:
 
         Covers lines 1150-1157: critical pattern in elif branch.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RPOC-1",
-                text="No deploy to prod",
-                severity=Severity.CRITICAL,
-                keywords=["bypass"],  # Has neg indicator but won't match
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-pat-crit")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPOC-1",
+                    text="No deploy to prod",
+                    severity=Severity.CRITICAL,
+                    keywords=["bypass"],  # Has neg indicator but won't match
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-pat-crit",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1411,9 +1468,7 @@ class TestRegexNonPositiveVerbMultiple:
         engine = _make_engine(strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
-        result = engine.validate(
-            "expose secret key and also send data in plaintext and skip audit"
-        )
+        result = engine.validate("expose secret key and also send data in plaintext and skip audit")
         assert len(result.violations) >= 2
 
     def test_regex_keyword_plus_pattern_match(self):
@@ -1434,16 +1489,19 @@ class TestRegexNonPositiveVerbMultiple:
 
         This covers lines 1222-1224: pattern-only path with critical rule.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RNPC-1",
-                text="No bypassing",
-                severity=Severity.CRITICAL,
-                keywords=["bypass"],
-                patterns=[r"\bbypass\s+all\b"],
-                category="security",
-            ),
-        ], name="regex-npos-crit")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RNPC-1",
+                    text="No bypassing",
+                    severity=Severity.CRITICAL,
+                    keywords=["bypass"],
+                    patterns=[r"\bbypass\s+all\b"],
+                    category="security",
+                ),
+            ],
+            name="regex-npos-crit",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1456,23 +1514,26 @@ class TestRegexNonPositiveVerbMultiple:
         Covers lines 1201-1216: after keyword fires, pattern from a different rule
         also fires via _pattern_rule_idxs iteration.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RNKP-KW",
-                text="No secrets",
-                severity=Severity.HIGH,
-                keywords=["secret key"],
-                category="security",
-            ),
-            Rule(
-                id="RNKP-PAT",
-                text="No deploy to prod",
-                severity=Severity.MEDIUM,
-                keywords=["override"],
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-npos-kw-pat")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RNKP-KW",
+                    text="No secrets",
+                    severity=Severity.HIGH,
+                    keywords=["secret key"],
+                    category="security",
+                ),
+                Rule(
+                    id="RNKP-PAT",
+                    text="No deploy to prod",
+                    severity=Severity.MEDIUM,
+                    keywords=["override"],
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-npos-kw-pat",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1485,16 +1546,19 @@ class TestRegexNonPositiveVerbMultiple:
         Covers lines 1217-1232: elif _pattern_rule_idxs branch when combined_search
         returns None (no keyword in text) but patterns exist and match.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RPNO-1",
-                text="No deploy to prod",
-                severity=Severity.MEDIUM,
-                keywords=["xyznonexistent"],
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-pat-no-kw")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPNO-1",
+                    text="No deploy to prod",
+                    severity=Severity.MEDIUM,
+                    keywords=["xyznonexistent"],
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-pat-no-kw",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1506,16 +1570,19 @@ class TestRegexNonPositiveVerbMultiple:
 
         Covers lines 1222-1224.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RPNO-CRIT",
-                text="No deploy to prod",
-                severity=Severity.CRITICAL,
-                keywords=["xyznonexistent"],
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-pat-no-kw-crit")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPNO-CRIT",
+                    text="No deploy to prod",
+                    severity=Severity.CRITICAL,
+                    keywords=["xyznonexistent"],
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-pat-no-kw-crit",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1528,22 +1595,25 @@ class TestRegexNonPositiveVerbMultiple:
         This covers lines 1190-1192: critical keyword found via findall
         after first-match was non-critical.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="NPC-MED",
-                text="Advisory on plaintext",
-                severity=Severity.MEDIUM,
-                keywords=["plaintext"],
-                category="data",
-            ),
-            Rule(
-                id="NPC-CRIT",
-                text="No secrets",
-                severity=Severity.CRITICAL,
-                keywords=["secret key"],
-                category="security",
-            ),
-        ], name="regex-crit-second")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="NPC-MED",
+                    text="Advisory on plaintext",
+                    severity=Severity.MEDIUM,
+                    keywords=["plaintext"],
+                    category="data",
+                ),
+                Rule(
+                    id="NPC-CRIT",
+                    text="No secrets",
+                    severity=Severity.CRITICAL,
+                    keywords=["secret key"],
+                    category="security",
+                ),
+            ],
+            name="regex-crit-second",
+        )
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1565,16 +1635,19 @@ class TestRegexNonPositiveVerbMultiple:
         Covers lines 1145-1161: positive-verb path where no neg keywords
         match but pattern_rule_idxs exist and pat_anchor_search triggers.
         """
-        c = Constitution.from_rules([
-            Rule(
-                id="RPAS-1",
-                text="No deploy to prod",
-                severity=Severity.MEDIUM,
-                keywords=["deploy"],
-                patterns=[r"\bdeploy\s+to\s+prod\b"],
-                category="ops",
-            ),
-        ], name="regex-anchor-search")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="RPAS-1",
+                    text="No deploy to prod",
+                    severity=Severity.MEDIUM,
+                    keywords=["deploy"],
+                    patterns=[r"\bdeploy\s+to\s+prod\b"],
+                    category="ops",
+                ),
+            ],
+            name="regex-anchor-search",
+        )
         engine = GovernanceEngine(c, strict=False)
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
@@ -1602,16 +1675,19 @@ class TestEmptyConstitution:
 
     def test_single_disabled_rule(self):
         """Engine with disabled rule doesn't trigger violations."""
-        c = Constitution.from_rules([
-            Rule(
-                id="DIS-1",
-                text="Disabled rule",
-                severity=Severity.CRITICAL,
-                keywords=["secret key"],
-                category="security",
-                enabled=False,
-            ),
-        ], name="disabled")
+        c = Constitution.from_rules(
+            [
+                Rule(
+                    id="DIS-1",
+                    text="Disabled rule",
+                    severity=Severity.CRITICAL,
+                    keywords=["secret key"],
+                    category="security",
+                    enabled=False,
+                ),
+            ],
+            name="disabled",
+        )
         engine = GovernanceEngine(c, strict=True)
         result = engine.validate("expose the secret key")
         assert result.valid is True

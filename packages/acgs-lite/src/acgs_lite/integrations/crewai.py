@@ -70,13 +70,13 @@ class GovernedCrewAgent(GovernedBase):
         strict: bool = True,
     ) -> None:
         if not CREWAI_AVAILABLE:
-            raise ImportError(
-                "crewai is required. Install with: pip install acgs-lite[crewai]"
-            )
+            raise ImportError("crewai is required. Install with: pip install acgs-lite[crewai]")
 
         self._agent = agent
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -90,7 +90,10 @@ class GovernedCrewAgent(GovernedBase):
     ) -> GovernedCrewAgent:
         """Wrap a CrewAI Agent with governance."""
         return cls(
-            agent, constitution=constitution, agent_id=agent_id, strict=strict,
+            agent,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     def __getattr__(self, name: str) -> Any:
@@ -149,13 +152,13 @@ class GovernedTask(GovernedBase):
         strict: bool = True,
     ) -> None:
         if not CREWAI_AVAILABLE:
-            raise ImportError(
-                "crewai is required. Install with: pip install acgs-lite[crewai]"
-            )
+            raise ImportError("crewai is required. Install with: pip install acgs-lite[crewai]")
 
         self._task = task
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
         # Validate task description at construction time
@@ -166,9 +169,7 @@ class GovernedTask(GovernedBase):
         # Validate expected_output if present
         expected_output = getattr(task, "expected_output", "")
         if expected_output:
-            self.engine.validate(
-                str(expected_output), agent_id=f"{self.agent_id}:expected_output"
-            )
+            self.engine.validate(str(expected_output), agent_id=f"{self.agent_id}:expected_output")
 
     @classmethod
     def wrap(
@@ -181,7 +182,10 @@ class GovernedTask(GovernedBase):
     ) -> GovernedTask:
         """Wrap a CrewAI Task with governance."""
         return cls(
-            task, constitution=constitution, agent_id=agent_id, strict=strict,
+            task,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     def __getattr__(self, name: str) -> Any:
@@ -222,13 +226,13 @@ class GovernedCrew(GovernedBase):
         strict: bool = True,
     ) -> None:
         if not CREWAI_AVAILABLE:
-            raise ImportError(
-                "crewai is required. Install with: pip install acgs-lite[crewai]"
-            )
+            raise ImportError("crewai is required. Install with: pip install acgs-lite[crewai]")
 
         self._crew = crew
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -242,7 +246,10 @@ class GovernedCrew(GovernedBase):
     ) -> GovernedCrew:
         """Wrap a CrewAI Crew with governance."""
         return cls(
-            crew, constitution=constitution, agent_id=agent_id, strict=strict,
+            crew,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     def __getattr__(self, name: str) -> Any:
@@ -255,9 +262,7 @@ class GovernedCrew(GovernedBase):
         for task in tasks:
             description = getattr(task, "description", "")
             if description:
-                self.engine.validate(
-                    str(description), agent_id=f"{self.agent_id}:task"
-                )
+                self.engine.validate(str(description), agent_id=f"{self.agent_id}:task")
 
     def _validate_output(self, output: Any) -> None:
         """Validate crew output without raising (log warnings only)."""

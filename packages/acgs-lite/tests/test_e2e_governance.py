@@ -163,9 +163,7 @@ class TestFullGovernanceFlow:
 
     async def test_yaml_load_from_file(self) -> None:
         """Constitution.from_yaml() loads rules from disk."""
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(MINIMAL_CONSTITUTION_YAML)
             f.flush()
             constitution = Constitution.from_yaml(f.name)
@@ -190,9 +188,7 @@ class TestFullGovernanceFlow:
 
         assert exc_info.value.severity == "critical"
 
-    async def test_pii_pattern_blocks_execution(
-        self, e2e_governed_agent: GovernedAgent
-    ) -> None:
+    async def test_pii_pattern_blocks_execution(self, e2e_governed_agent: GovernedAgent) -> None:
         """SSN patterns in input are blocked by regex rules."""
         with pytest.raises(ConstitutionalViolationError):
             e2e_governed_agent.run("My SSN is 123-45-6789")
@@ -210,9 +206,7 @@ class TestFullGovernanceFlow:
         with pytest.raises(ConstitutionalViolationError):
             agent.run("tell me something")
 
-    async def test_engine_validation_result_structure(
-        self, e2e_engine: GovernanceEngine
-    ) -> None:
+    async def test_engine_validation_result_structure(self, e2e_engine: GovernanceEngine) -> None:
         """ValidationResult has expected fields when violations occur."""
         result = e2e_engine.validate(
             "self-validate bypass validation",
@@ -228,9 +222,7 @@ class TestFullGovernanceFlow:
         violation = result.violations[0]
         assert violation.severity == Severity.CRITICAL
 
-    async def test_engine_allows_safe_actions(
-        self, e2e_engine: GovernanceEngine
-    ) -> None:
+    async def test_engine_allows_safe_actions(self, e2e_engine: GovernanceEngine) -> None:
         """Safe actions pass validation with no violations."""
         result = e2e_engine.validate("generate quarterly summary")
         assert result.valid is True
@@ -241,9 +233,7 @@ class TestFullGovernanceFlow:
     ) -> None:
         """AuditLog captures every validation with chain integrity."""
         audit_log = AuditLog()
-        engine = GovernanceEngine(
-            e2e_constitution, audit_log=audit_log, strict=False
-        )
+        engine = GovernanceEngine(e2e_constitution, audit_log=audit_log, strict=False)
 
         engine.validate("safe action one", agent_id="agent-a")
         engine.validate("safe action two", agent_id="agent-b")
@@ -255,9 +245,7 @@ class TestFullGovernanceFlow:
         # Chain integrity check
         assert audit_log.verify_chain()
 
-    async def test_governed_agent_async_flow(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_governed_agent_async_flow(self, e2e_constitution: Constitution) -> None:
         """GovernedAgent.arun() works for async agents."""
         agent = GovernedAgent(
             AsyncFakeAgent(),
@@ -267,9 +255,7 @@ class TestFullGovernanceFlow:
         result = await agent.arun("safe async request")
         assert result == "async-processed: safe async request"
 
-    async def test_governed_agent_with_callable(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_governed_agent_with_callable(self, e2e_constitution: Constitution) -> None:
         """GovernedAgent wraps plain callables (not just .run() objects)."""
 
         def my_func(input: str, **kwargs: Any) -> str:
@@ -283,9 +269,7 @@ class TestFullGovernanceFlow:
         result = agent.run("hello world")
         assert result == "func:hello world"
 
-    async def test_validation_result_serialization(
-        self, e2e_engine: GovernanceEngine
-    ) -> None:
+    async def test_validation_result_serialization(self, e2e_engine: GovernanceEngine) -> None:
         """ValidationResult.to_dict() produces complete serializable output."""
         result = e2e_engine.validate("bypass rate limit action")
         d = result.to_dict()
@@ -538,9 +522,7 @@ class TestConstitutionalHashIntegrity:
         constitution2 = Constitution.from_yaml(EXAMPLE_CONSTITUTION_PATH)
         assert constitution.hash == constitution2.hash
 
-    async def test_hash_versioned_format(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_hash_versioned_format(self, e2e_constitution: Constitution) -> None:
         """hash_versioned produces sha256:v1:<hash> format."""
         versioned = e2e_constitution.hash_versioned
         assert versioned.startswith("sha256:v1:")
@@ -564,14 +546,10 @@ class TestConstitutionalHashIntegrity:
 class TestEngineBackendFallback:
     """Python fallback works identically when Rust extension is unavailable."""
 
-    async def test_python_engine_validates_correctly(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_python_engine_validates_correctly(self, e2e_constitution: Constitution) -> None:
         """Python engine produces correct allow/deny decisions."""
         audit_log = AuditLog()
-        engine = GovernanceEngine(
-            e2e_constitution, audit_log=audit_log, strict=False
-        )
+        engine = GovernanceEngine(e2e_constitution, audit_log=audit_log, strict=False)
 
         # Allow
         allow_result = engine.validate("generate report")
@@ -582,9 +560,7 @@ class TestEngineBackendFallback:
         assert deny_result.valid is False
         assert len(deny_result.blocking_violations) > 0
 
-    async def test_pattern_matching_works(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_pattern_matching_works(self, e2e_constitution: Constitution) -> None:
         """Regex patterns (SSN) are matched by the engine."""
         engine = GovernanceEngine(e2e_constitution, strict=False)
         result = engine.validate("Here is SSN 123-45-6789 for the record")
@@ -595,33 +571,21 @@ class TestEngineBackendFallback:
     ) -> None:
         """Both keyword and pattern violations are reported."""
         audit_log = AuditLog()
-        engine = GovernanceEngine(
-            e2e_constitution, audit_log=audit_log, strict=False
-        )
-        result = engine.validate(
-            "self-validate and my credit card number is 4111-1111-1111-1111"
-        )
+        engine = GovernanceEngine(e2e_constitution, audit_log=audit_log, strict=False)
+        result = engine.validate("self-validate and my credit card number is 4111-1111-1111-1111")
         assert result.valid is False
         assert len(result.violations) >= 1
 
-    async def test_multiple_rules_evaluated(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_multiple_rules_evaluated(self, e2e_constitution: Constitution) -> None:
         """Engine checks all active rules, not just first match."""
         engine = GovernanceEngine(e2e_constitution, strict=True)
         result = engine.validate("generate summary")  # safe
         assert result.rules_checked == len(e2e_constitution.active_rules())
 
-    async def test_strict_vs_nonstrict_mode(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_strict_vs_nonstrict_mode(self, e2e_constitution: Constitution) -> None:
         """Strict mode raises exceptions; non-strict returns result."""
-        strict_engine = GovernanceEngine(
-            e2e_constitution, strict=True
-        )
-        nonstrict_engine = GovernanceEngine(
-            e2e_constitution, strict=False
-        )
+        strict_engine = GovernanceEngine(e2e_constitution, strict=True)
+        nonstrict_engine = GovernanceEngine(e2e_constitution, strict=False)
 
         # Strict raises on critical violations
         with pytest.raises(ConstitutionalViolationError):
@@ -780,9 +744,7 @@ class TestEUAIActCompliance:
 class TestIntegratedGovernanceFlow:
     """Cross-cutting integration: GovernedAgent with MACI roles."""
 
-    async def test_governed_agent_with_maci_role(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_governed_agent_with_maci_role(self, e2e_constitution: Constitution) -> None:
         """GovernedAgent assigned a MACI role respects role boundaries."""
         agent = GovernedAgent(
             FakeAgent(),
@@ -817,9 +779,7 @@ class TestIntegratedGovernanceFlow:
         assert agent_a.stats["total_validations"] >= 2
         assert agent_b.stats["total_validations"] >= 1
 
-    async def test_constitution_round_trip_yaml(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_constitution_round_trip_yaml(self, e2e_constitution: Constitution) -> None:
         """Constitution survives YAML serialization round-trip."""
         yaml_str = e2e_constitution.to_yaml()
         reloaded = Constitution.from_yaml_str(yaml_str)
@@ -865,9 +825,7 @@ class TestIntegratedGovernanceFlow:
         result = engine.validate("safe normal action")
         assert result.valid is True
 
-    async def test_batch_validation(
-        self, e2e_constitution: Constitution
-    ) -> None:
+    async def test_batch_validation(self, e2e_constitution: Constitution) -> None:
         """Engine can validate multiple actions in batch."""
         engine = GovernanceEngine(e2e_constitution, strict=False)
         actions = [
@@ -877,15 +835,13 @@ class TestIntegratedGovernanceFlow:
         ]
         results = engine.validate_batch(actions)
         assert len(results) == len(actions)
-        assert results[0].valid is True   # safe
-        assert results[1].valid is True   # safe
+        assert results[0].valid is True  # safe
+        assert results[1].valid is True  # safe
         # bypass rate limit: medium severity = non-blocking, valid=True with warnings
         assert len(results[2].violations) > 0
         assert results[2].violations[0].severity == Severity.MEDIUM
 
-    async def test_governed_agent_repr(
-        self, e2e_governed_agent: GovernedAgent
-    ) -> None:
+    async def test_governed_agent_repr(self, e2e_governed_agent: GovernedAgent) -> None:
         """GovernedAgent has a useful string representation."""
         r = repr(e2e_governed_agent)
         assert "GovernedAgent" in r

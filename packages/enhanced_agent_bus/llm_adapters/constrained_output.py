@@ -33,7 +33,9 @@ def _schema_name(constitution: ResponseSchemaProvider) -> str:
 
 def _supports_structured_output(capability_profile: ProviderCapabilityProfile) -> bool:
     capability = capability_profile.get_capability(CapabilityDimension.STRUCTURED_OUTPUT)
-    return isinstance(capability.value, CapabilityLevel) and capability.value != CapabilityLevel.NONE
+    return (
+        isinstance(capability.value, CapabilityLevel) and capability.value != CapabilityLevel.NONE
+    )
 
 
 def _build_response_format(

@@ -50,7 +50,9 @@ class VerificationCoordinator:
         processing_strategy: object,
         handlers: JSONDict,
         attach_governance_metadata: Callable[[MessageProcessingContext, ValidationResult], None],
-        handle_successful_processing: Callable[[AgentMessage, ValidationResult, str, float], Awaitable[None]],
+        handle_successful_processing: Callable[
+            [AgentMessage, ValidationResult, str, float], Awaitable[None]
+        ],
         handle_failed_processing: Callable[..., Coroutine[object, object, None]],
     ) -> None:
         self._verification_orchestrator = verification_orchestrator

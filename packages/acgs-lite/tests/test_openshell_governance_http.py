@@ -229,9 +229,7 @@ class TestOpenShellGovernanceHttp:
         redis_client = self._FakeRedisClient()
 
         with TestClient(
-            create_openshell_governance_app(
-                state_backend=RedisGovernanceStateBackend(redis_client)
-            )
+            create_openshell_governance_app(state_backend=RedisGovernanceStateBackend(redis_client))
         ) as client:
             evaluated = client.post("/governance/evaluate-action", json=_evaluate_payload()).json()
             client.post(
@@ -246,9 +244,7 @@ class TestOpenShellGovernanceHttp:
             )
 
         with TestClient(
-            create_openshell_governance_app(
-                state_backend=RedisGovernanceStateBackend(redis_client)
-            )
+            create_openshell_governance_app(state_backend=RedisGovernanceStateBackend(redis_client))
         ) as client:
             reviewed = client.post(
                 "/governance/review-approval",
@@ -296,7 +292,10 @@ class TestOpenShellGovernanceHttp:
         ):
             pass
 
-        assert ("loaded", {"backend_type": "JsonFileGovernanceStateBackend", "format_version": 2}) in events
+        assert (
+            "loaded",
+            {"backend_type": "JsonFileGovernanceStateBackend", "format_version": 2},
+        ) in events
         assert (
             "migrated",
             {

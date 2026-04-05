@@ -26,9 +26,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 
-_audit_log_path = Path(
-    os.environ.get("CLINICALGUARD_AUDIT_LOG", "/tmp/clinicalguard_audit.json")
-)
+_audit_log_path = Path(os.environ.get("CLINICALGUARD_AUDIT_LOG", "/tmp/clinicalguard_audit.json"))
 
 app = create_app(audit_log_path=_audit_log_path)
 

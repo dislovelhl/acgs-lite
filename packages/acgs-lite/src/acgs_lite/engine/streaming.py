@@ -123,9 +123,7 @@ class StreamingValidator:
         self._engine = engine
         self._window_size = max(1, window_size)
         self._flush_interval = max(1, flush_interval_chars)
-        self._blocking_sevs: set[str] = (
-            blocking_severities or set()
-        )
+        self._blocking_sevs: set[str] = blocking_severities or set()
         self._audit_log = audit_log
         self._window: list[str] = []
         self._pending_chars: int = 0
@@ -173,7 +171,9 @@ class StreamingValidator:
         """
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
-            None, self.feed, chunk,
+            None,
+            self.feed,
+            chunk,
         )
 
     def flush(self) -> StreamChunkResult:
@@ -233,11 +233,7 @@ class StreamingValidator:
             self._stats.violations_detected += len(violations)
             passed = False
             for v in violations:
-                sev_val = (
-                    v.severity.value
-                    if isinstance(v.severity, Severity)
-                    else str(v.severity)
-                )
+                sev_val = v.severity.value if isinstance(v.severity, Severity) else str(v.severity)
                 if sev_val in self._blocking_sevs:
                     should_halt = True
                 log.warning(
@@ -250,7 +246,10 @@ class StreamingValidator:
             self._stats.halted = True
 
         self._record_audit(
-            window_text, violations, passed, elapsed_ms,
+            window_text,
+            violations,
+            passed,
+            elapsed_ms,
         )
 
         return StreamChunkResult(
@@ -263,7 +262,8 @@ class StreamingValidator:
         )
 
     def _validate_nonstrict(
-        self, text: str,
+        self,
+        text: str,
     ) -> ValidationResult:
         """Run validation in non-strict mode."""
         with self._engine.non_strict():
@@ -295,10 +295,7 @@ class StreamingValidator:
 # -------------------------------------------------------------------
 
 
-_HALT_MESSAGE = (
-    "[GOVERNANCE] Stream terminated due to "
-    "constitutional violation."
-)
+_HALT_MESSAGE = "[GOVERNANCE] Stream terminated due to constitutional violation."
 
 
 class GovernedStreamWrapper:
@@ -319,7 +316,10 @@ class GovernedStreamWrapper:
     """
 
     __slots__ = (
-        "_stream", "_validator", "_halt_message", "_stats",
+        "_stream",
+        "_validator",
+        "_halt_message",
+        "_stats",
     )
 
     def __init__(
@@ -343,9 +343,7 @@ class GovernedStreamWrapper:
     def __iter__(self) -> Iterator[str]:
         stream = self._stream
         if not isinstance(stream, Iterator):
-            raise TypeError(
-                "Wrapped stream is not a sync Iterator"
-            )
+            raise TypeError("Wrapped stream is not a sync Iterator")
         for chunk in stream:
             result = self._validator.feed(chunk)
             if result.should_halt:
@@ -365,9 +363,7 @@ class GovernedStreamWrapper:
     async def _aiter_impl(self) -> AsyncIterator[str]:
         stream = self._stream
         if not isinstance(stream, AsyncIterator):
-            raise TypeError(
-                "Wrapped stream is not an AsyncIterator"
-            )
+            raise TypeError("Wrapped stream is not an AsyncIterator")
         async for chunk in stream:
             result = await self._validator.afeed(chunk)
             if result.should_halt:

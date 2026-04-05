@@ -116,9 +116,7 @@ class TokenAuditLog:
                 self._structlog_available = True
             except ImportError:
                 self._structlog_available = False
-                logger.warning(
-                    "structlog not installed — falling back to stdlib logging for audit"
-                )
+                logger.warning("structlog not installed — falling back to stdlib logging for audit")
         else:
             self._structlog_available = False
 
@@ -222,9 +220,7 @@ class TokenAuditLog:
     ) -> TokenAccessAuditEntry:
         """Record a CIBA step-up completion (approved or denied)."""
         outcome = (
-            TokenAccessOutcome.STEP_UP_APPROVED
-            if approved
-            else TokenAccessOutcome.STEP_UP_DENIED
+            TokenAccessOutcome.STEP_UP_APPROVED if approved else TokenAccessOutcome.STEP_UP_DENIED
         )
         return self._append(
             TokenAccessAuditEntry(

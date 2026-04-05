@@ -41,7 +41,9 @@ class ResultFinalizer:
         clone_validation_result: Callable[[ValidationResult], ValidationResult],
         processed_counter_increment: Callable[[], None],
         schedule_governance_audit_event: Callable[[AgentMessage, ValidationResult], None],
-        persist_flywheel_decision_event: Callable[[AgentMessage, ValidationResult], Awaitable[None]],
+        persist_flywheel_decision_event: Callable[
+            [AgentMessage, ValidationResult], Awaitable[None]
+        ],
         requires_independent_validation: Callable[[AgentMessage], bool],
         record_agent_workflow_event: Callable[..., None],
         metering_hooks: object | None,
@@ -83,7 +85,9 @@ class ResultFinalizer:
         failure_stage: str,
         extract_rejection_reason: Callable[[ValidationResult], str],
         schedule_governance_audit_event: Callable[[AgentMessage, ValidationResult], None],
-        persist_flywheel_decision_event: Callable[[AgentMessage, ValidationResult], Awaitable[None]],
+        persist_flywheel_decision_event: Callable[
+            [AgentMessage, ValidationResult], Awaitable[None]
+        ],
         record_agent_workflow_event: Callable[..., None],
         send_to_dlq: Callable[[AgentMessage, ValidationResult], Awaitable[None]],
         schedule_background_task_fn: BackgroundTaskScheduler,

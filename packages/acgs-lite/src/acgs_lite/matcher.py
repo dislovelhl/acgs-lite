@@ -141,6 +141,7 @@ class _BloomFilter:
     def _hashes(self, item: str) -> list[int]:
         """Generate k hash positions using double-hashing with deterministic SHA-256."""
         import hashlib
+
         data = item.encode()
         h1 = int.from_bytes(hashlib.sha256(data).digest()[:4], "little") % self._size
         h2 = int.from_bytes(hashlib.sha256(data + b"\x00").digest()[:4], "little") % self._size

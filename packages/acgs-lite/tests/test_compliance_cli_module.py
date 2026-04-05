@@ -52,8 +52,15 @@ class TestFrameworksCmd:
     def test_lists_all_known_ids_in_text_output(self):
         code, out = run(["frameworks"])
         assert code == 0
-        for fw_id in ("nist_ai_rmf", "eu_ai_act", "gdpr", "india_dpdp",
-                      "brazil_lgpd", "china_ai", "ccpa_cpra"):
+        for fw_id in (
+            "nist_ai_rmf",
+            "eu_ai_act",
+            "gdpr",
+            "india_dpdp",
+            "brazil_lgpd",
+            "china_ai",
+            "ccpa_cpra",
+        ):
             assert fw_id in out, f"'{fw_id}' not found in frameworks output"
 
     def test_json_flag_returns_valid_json(self):
@@ -111,19 +118,31 @@ class TestAssessCmd:
         assert "#" in out  # markdown headers
 
     def test_framework_flag_restricts_to_single_framework(self):
-        code, out = run([
-            "assess", "--format", "json", "--framework", "gdpr",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--format",
+                "json",
+                "--framework",
+                "gdpr",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         assert data["frameworks_assessed"] == ["gdpr"]
 
     def test_multiple_framework_flags(self):
-        code, out = run([
-            "assess", "--format", "json",
-            "--framework", "gdpr",
-            "--framework", "nist_ai_rmf",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--format",
+                "json",
+                "--framework",
+                "gdpr",
+                "--framework",
+                "nist_ai_rmf",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         assessed = set(data["frameworks_assessed"])
@@ -131,10 +150,17 @@ class TestAssessCmd:
         assert "nist_ai_rmf" in assessed
 
     def test_risk_tier_high_flag(self):
-        code, out = run([
-            "assess", "--framework", "eu_ai_act", "--risk-tier", "high",
-            "--format", "json",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--framework",
+                "eu_ai_act",
+                "--risk-tier",
+                "high",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         fw = data["by_framework"]["eu_ai_act"]
@@ -142,54 +168,81 @@ class TestAssessCmd:
         assert len(fw["items"]) > 3
 
     def test_risk_tier_minimal_has_fewer_items(self):
-        _, out_high = run(["assess", "--framework", "eu_ai_act", "--risk-tier", "high", "--format", "json"])
-        _, out_min = run(["assess", "--framework", "eu_ai_act", "--risk-tier", "minimal", "--format", "json"])
+        _, out_high = run(
+            ["assess", "--framework", "eu_ai_act", "--risk-tier", "high", "--format", "json"]
+        )
+        _, out_min = run(
+            ["assess", "--framework", "eu_ai_act", "--risk-tier", "minimal", "--format", "json"]
+        )
         high_items = json.loads(out_high)["by_framework"]["eu_ai_act"]["items"]
         min_items = json.loads(out_min)["by_framework"]["eu_ai_act"]["items"]
         assert len(high_items) > len(min_items)
 
     def test_domain_chatbot_infers_limited_tier(self):
-        code, out = run([
-            "assess", "--framework", "eu_ai_act", "--domain", "chatbot",
-            "--format", "json",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--framework",
+                "eu_ai_act",
+                "--domain",
+                "chatbot",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         items = data["by_framework"]["eu_ai_act"]["items"]
         # limited tier → fewer items (only Art.5 + Art.50)
         refs = {i["ref"] for i in items}
-        assert all(
-            r.startswith("EU-AIA Art.5") or r.startswith("EU-AIA Art.50")
-            for r in refs
-        )
+        assert all(r.startswith("EU-AIA Art.5") or r.startswith("EU-AIA Art.50") for r in refs)
 
     def test_domain_hiring_infers_high_tier(self):
-        code, out = run([
-            "assess", "--framework", "eu_ai_act", "--domain", "hiring",
-            "--format", "json",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--framework",
+                "eu_ai_act",
+                "--domain",
+                "hiring",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         refs = {i["ref"] for i in data["by_framework"]["eu_ai_act"]["items"]}
         assert "EU-AIA Art.9(1)" in refs
 
     def test_is_gpai_flag_adds_art53(self):
-        code, out = run([
-            "assess", "--framework", "eu_ai_act",
-            "--risk-tier", "high", "--is-gpai",
-            "--format", "json",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--framework",
+                "eu_ai_act",
+                "--risk-tier",
+                "high",
+                "--is-gpai",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         refs = {i["ref"] for i in json.loads(out)["by_framework"]["eu_ai_act"]["items"]}
         assert "EU-AIA Art.53(1)" in refs
 
     def test_is_significant_entity_flag_propagates(self):
         """DORA TLPT item should NOT be N/A when --is-significant-entity is set."""
-        code, out = run([
-            "assess", "--framework", "dora",
-            "--is-significant-entity",
-            "--format", "json",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--framework",
+                "dora",
+                "--is-significant-entity",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         dora_items = data["by_framework"]["dora"]["items"]
@@ -199,11 +252,16 @@ class TestAssessCmd:
 
     def test_is_significant_data_fiduciary_flag_propagates(self):
         """India DPDP SDF items should not be N/A when flag is set."""
-        code, out = run([
-            "assess", "--framework", "india_dpdp",
-            "--is-significant-data-fiduciary",
-            "--format", "json",
-        ])
+        code, out = run(
+            [
+                "assess",
+                "--framework",
+                "india_dpdp",
+                "--is-significant-data-fiduciary",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         data = json.loads(out)
         items = data["by_framework"]["india_dpdp"]["items"]
@@ -291,12 +349,15 @@ class TestEvidenceCmd:
 
 
 class TestHelpOutput:
-    @pytest.mark.parametrize("cmd", [
-        ["--help"],
-        ["assess", "--help"],
-        ["frameworks", "--help"],
-        ["evidence", "--help"],
-    ])
+    @pytest.mark.parametrize(
+        "cmd",
+        [
+            ["--help"],
+            ["assess", "--help"],
+            ["frameworks", "--help"],
+            ["evidence", "--help"],
+        ],
+    )
     def test_help_exits_cleanly(self, cmd: list[str]):
         with pytest.raises(SystemExit) as exc_info:
             main(cmd)

@@ -511,7 +511,9 @@ class ConstitutionalZ3Verifier:
             constraints, find_multiple=find_multiple
         )
         if not verification_result.is_sat:
-            constraints = await self.llm_adapter.refine_constraints(constraints, verification_result)
+            constraints = await self.llm_adapter.refine_constraints(
+                constraints, verification_result
+            )
             verification_result = await self.llm_adapter.verify_policy_constraints(
                 constraints, find_multiple=find_multiple
             )
@@ -535,7 +537,9 @@ class ConstitutionalZ3Verifier:
 
     def get_verification_stats(self) -> JSONDict:
         total_policies = len(self.verified_policies)
-        verified_policies = sum(1 for policy in self.verified_policies.values() if policy.is_verified)
+        verified_policies = sum(
+            1 for policy in self.verified_policies.values() if policy.is_verified
+        )
         return {
             "total_policies": total_policies,
             "verified_policies": verified_policies,

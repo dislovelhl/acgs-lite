@@ -306,7 +306,11 @@ class ConstitutionalAuth0AI:
             async def audited_wrapper(*args: Any, **kwargs: Any) -> Any:
                 agent_id, role = (get_agent_context or _default_agent_context_fn)()
                 uid = user_id()
-                bm = binding_message(*args, **kwargs) if callable(binding_message) else binding_message
+                bm = (
+                    binding_message(*args, **kwargs)
+                    if callable(binding_message)
+                    else binding_message
+                )
                 try:
                     import inspect
 

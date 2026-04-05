@@ -46,9 +46,7 @@ class TestHeuristicBackend:
             severity=acgs.Severity.HIGH,
             keywords=["blocked"],
         )
-        engine = acgs.GovernanceEngine(
-            acgs.Constitution.from_rules([rule]), strict=False
-        )
+        engine = acgs.GovernanceEngine(acgs.Constitution.from_rules([rule]), strict=False)
         backend = HeuristicBackend(engine)
         decision = backend.evaluate("do blocked action")
         assert decision.allowed is False

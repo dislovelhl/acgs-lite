@@ -43,7 +43,8 @@ class FakePredictionWithCompletions:
     """Mock Prediction that exposes a completions dict."""
 
     def __init__(
-        self, completions: dict[str, Any] | list[Any],
+        self,
+        completions: dict[str, Any] | list[Any],
     ) -> None:
         self.completions = completions
 
@@ -166,9 +167,7 @@ class TestGovernedDSPyModule:
 
         module = FakeModule()
         governed = GovernedDSPyModule(module)
-        text = governed._extract_input_text(
-            {"passages": ["first passage", "second passage"]}
-        )
+        text = governed._extract_input_text({"passages": ["first passage", "second passage"]})
         assert "first passage" in text
         assert "second passage" in text
 
@@ -180,7 +179,8 @@ class TestGovernedDSPyModule:
         module = FakeModule()
         governed = GovernedDSPyModule(module)
         prediction = FakePrediction(
-            answer="the answer", rationale="because",
+            answer="the answer",
+            rationale="because",
         )
         text = governed._extract_output_text(prediction)
         assert "the answer" in text
@@ -279,7 +279,8 @@ class TestGovernedDSPyModule:
 
         module = FakeModule()
         governed = GovernedDSPyModule.wrap(
-            module, agent_id="wrapped-agent",
+            module,
+            agent_id="wrapped-agent",
         )
         assert governed.agent_id == "wrapped-agent"
         result = governed(question="What is governance?")
@@ -302,7 +303,9 @@ class TestGovernedDSPyModule:
         )
         module = FakeModule()
         governed = GovernedDSPyModule(
-            module, constitution=constitution, strict=True,
+            module,
+            constitution=constitution,
+            strict=True,
         )
 
         result = governed(question="Research databases")
@@ -318,7 +321,8 @@ class TestGovernedDSPyModule:
 
         module = FakeModule()
         governed = GovernedDSPyModule(
-            module, agent_id="my-dspy-module",
+            module,
+            agent_id="my-dspy-module",
         )
         assert governed.agent_id == "my-dspy-module"
         assert governed.stats["agent_id"] == "my-dspy-module"
@@ -424,7 +428,8 @@ class TestGovernedPredict:
 
         predict = FakePredict()
         governed = GovernedPredict.wrap(
-            predict, agent_id="custom-predict",
+            predict,
+            agent_id="custom-predict",
         )
         assert governed.agent_id == "custom-predict"
         result = governed(question="What is governance?")
@@ -498,7 +503,8 @@ class TestDSPyImportGuard:
                 False,
             ),
             pytest.raises(
-                ImportError, match="dspy is required",
+                ImportError,
+                match="dspy is required",
             ),
         ):
             GovernedDSPyModule(MagicMock())
@@ -514,7 +520,8 @@ class TestDSPyImportGuard:
                 False,
             ),
             pytest.raises(
-                ImportError, match="dspy is required",
+                ImportError,
+                match="dspy is required",
             ),
         ):
             GovernedPredict(MagicMock())

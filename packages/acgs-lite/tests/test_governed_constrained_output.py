@@ -34,7 +34,9 @@ def _constitution() -> Constitution:
     )
 
 
-def _profile(*, structured_output: CapabilityLevel = CapabilityLevel.FULL) -> ProviderCapabilityProfile:
+def _profile(
+    *, structured_output: CapabilityLevel = CapabilityLevel.FULL
+) -> ProviderCapabilityProfile:
     return ProviderCapabilityProfile(
         provider_id="openai-test",
         model_id="gpt-4o",
@@ -46,7 +48,9 @@ def _profile(*, structured_output: CapabilityLevel = CapabilityLevel.FULL) -> Pr
 
 def test_governed_agent_injects_response_format_for_structured_output() -> None:
     agent = RecordingAgent()
-    governed = GovernedAgent(agent, constitution=_constitution(), strict=False, validate_output=True)
+    governed = GovernedAgent(
+        agent, constitution=_constitution(), strict=False, validate_output=True
+    )
 
     governed.run("safe input", capability_profile=_profile())
 
@@ -57,7 +61,9 @@ def test_governed_agent_injects_response_format_for_structured_output() -> None:
 
 def test_governed_agent_skips_response_format_when_capability_is_missing() -> None:
     agent = RecordingAgent()
-    governed = GovernedAgent(agent, constitution=_constitution(), strict=False, validate_output=True)
+    governed = GovernedAgent(
+        agent, constitution=_constitution(), strict=False, validate_output=True
+    )
 
     governed.run(
         "safe input",

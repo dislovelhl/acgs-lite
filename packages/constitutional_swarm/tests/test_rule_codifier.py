@@ -19,12 +19,22 @@ from constitutional_swarm.bittensor.rule_codifier import (
 CONST_HASH = "608508a9bd224290"
 
 _PRIVACY_VEC = {
-    "safety": 0.1, "security": 0.2, "privacy": 0.9,
-    "fairness": 0.3, "reliability": 0.1, "transparency": 0.6, "efficiency": 0.1,
+    "safety": 0.1,
+    "security": 0.2,
+    "privacy": 0.9,
+    "fairness": 0.3,
+    "reliability": 0.1,
+    "transparency": 0.6,
+    "efficiency": 0.1,
 }
 _SECURITY_VEC = {
-    "safety": 0.8, "security": 0.9, "privacy": 0.2,
-    "fairness": 0.1, "reliability": 0.7, "transparency": 0.3, "efficiency": 0.5,
+    "safety": 0.8,
+    "security": 0.9,
+    "privacy": 0.2,
+    "fairness": 0.1,
+    "reliability": 0.7,
+    "transparency": 0.3,
+    "efficiency": 0.5,
 }
 
 
@@ -158,6 +168,7 @@ class TestClustering:
     def test_revoked_excluded_from_clustering(self):
         codifier = RuleCodifier(CONST_HASH)
         import dataclasses
+
         r = _make_rec("c1")
         revoked = dataclasses.replace(r, is_active=False)
         clusters = codifier.find_clusters([revoked])
@@ -211,8 +222,9 @@ class TestProposeRules:
         assert candidates[0].status == RuleCandidateStatus.PENDING
 
     def test_rule_id_has_prefix(self):
-        codifier = RuleCodifier(CONST_HASH, min_cluster_size=1, min_validator_agreement=0.5,
-                                rule_id_prefix="TEST")
+        codifier = RuleCodifier(
+            CONST_HASH, min_cluster_size=1, min_validator_agreement=0.5, rule_id_prefix="TEST"
+        )
         candidates = codifier.propose_rules([_make_cluster(size=5, agreement=0.91)])
         assert candidates[0].rule_id.startswith("TEST-")
 

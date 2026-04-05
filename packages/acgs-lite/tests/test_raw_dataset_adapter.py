@@ -17,6 +17,7 @@ try:
         adapt_dataset_rows,
         synthesize_governance_cases,
     )
+
     _AUTORESEARCH_AVAILABLE = True
 except ImportError:
     _AUTORESEARCH_AVAILABLE = False

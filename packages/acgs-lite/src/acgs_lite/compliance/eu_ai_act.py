@@ -394,8 +394,7 @@ class EUAIActFramework:
         articles; non-GPAI systems skip Arts. 53/55.
         """
         risk_tier = (
-            system_description.get("risk_tier")
-            or infer_risk_tier(system_description)
+            system_description.get("risk_tier") or infer_risk_tier(system_description)
         ).lower()
         is_gpai = system_description.get("is_gpai", False)
 
@@ -405,15 +404,25 @@ class EUAIActFramework:
             if ref in ("EU-AIA Art.53(1)", "EU-AIA Art.53(2)", "EU-AIA Art.55(1)") and not is_gpai:
                 continue
             # For "unacceptable" tier, skip all non-Art.5 items entirely
-            if risk_tier == "unacceptable" and not (ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50")):
+            if risk_tier == "unacceptable" and not (
+                ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50")
+            ):
                 continue
 
             # Determine if this item is applicable for the risk tier
             applicable = True
-            if risk_tier in ("minimal", "limited") and not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
+            if (
+                risk_tier in ("minimal", "limited")
+                and not ref.startswith("EU-AIA Art.5")
+                and not ref.startswith("EU-AIA Art.50")
+            ):
                 # Skip entirely — keeps list shorter than "high" (tier ordering tests)
                 continue
-            elif risk_tier == "low" and not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
+            elif (
+                risk_tier == "low"
+                and not ref.startswith("EU-AIA Art.5")
+                and not ref.startswith("EU-AIA Art.50")
+            ):
                 # Include as NOT_APPLICABLE (allows na_items count tests to pass)
                 applicable = False
             item = ChecklistItem(
@@ -490,8 +499,7 @@ def _generate_recommendations(checklist: list[ChecklistItem]) -> tuple[str, ...]
                 )
             elif "Art.11" in item.ref:
                 recs.append(
-                    f"{item.ref}: Produce Annex IV technical documentation "
-                    f"before market placement."
+                    f"{item.ref}: Produce Annex IV technical documentation before market placement."
                 )
             elif "Art.14" in item.ref or "Art.15" in item.ref:
                 recs.append(
@@ -504,6 +512,8 @@ def _generate_recommendations(checklist: list[ChecklistItem]) -> tuple[str, ...]
                     f"(FRIA) before deploying in high-impact domains."
                 )
     return tuple(recs)
+
+
 _HIGH_RISK_DOMAINS: frozenset[str] = frozenset(
     {
         # Annex III point 1 — Biometrics
@@ -606,5 +616,3 @@ def infer_risk_tier(system_description: dict[str, Any]) -> str:
 
     # 4. Conservative default
     return "high"
-
-

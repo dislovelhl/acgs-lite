@@ -34,4 +34,3 @@ def build_workload_key(
 
 
 __all__ = ["build_workload_key", "normalize_workload_segment"]
-

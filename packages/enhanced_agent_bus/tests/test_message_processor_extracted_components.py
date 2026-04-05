@@ -126,8 +126,12 @@ async def test_result_finalizer_schedules_non_governance_failure_audit_directly(
 
 
 @pytest.mark.asyncio
-async def test_verification_coordinator_execute_attaches_governance_metadata_without_facade_wrapper() -> None:
-    verification_result = SimpleNamespace(sdpc_metadata={"sdpc": "ok"}, pqc_metadata={}, pqc_result=None)
+async def test_verification_coordinator_execute_attaches_governance_metadata_without_facade_wrapper() -> (
+    None
+):
+    verification_result = SimpleNamespace(
+        sdpc_metadata={"sdpc": "ok"}, pqc_metadata={}, pqc_result=None
+    )
     verification_orchestrator = SimpleNamespace(verify=AsyncMock(return_value=verification_result))
     strategy = SimpleNamespace(
         process=AsyncMock(return_value=ValidationResult(is_valid=True, metadata={})),

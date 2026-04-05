@@ -1,4 +1,5 @@
 """Shim for src.core.shared.agent_workflow_metrics."""
+
 from __future__ import annotations
 
 from typing import Any

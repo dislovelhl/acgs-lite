@@ -104,7 +104,9 @@ class CedarBackend(PolicyBackend):
             violations = []
             if not allowed and hasattr(result, "diagnostics") and result.diagnostics:
                 if hasattr(result.diagnostics, "errors") and result.diagnostics.errors:
-                    violations = [{"type": "cedar_deny", "detail": str(e)} for e in result.diagnostics.errors]
+                    violations = [
+                        {"type": "cedar_deny", "detail": str(e)} for e in result.diagnostics.errors
+                    ]
 
             return PolicyDecision(
                 allowed=allowed,

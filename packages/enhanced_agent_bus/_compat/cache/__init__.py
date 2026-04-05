@@ -1,4 +1,5 @@
 """Shim package for src.core.shared.cache."""
+
 from __future__ import annotations
 
 try:

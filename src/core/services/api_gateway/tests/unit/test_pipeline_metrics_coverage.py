@@ -30,6 +30,7 @@ from src.core.services.api_gateway.routes.pipeline_metrics import (
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def pipeline_app() -> FastAPI:
     """Standalone FastAPI app with only the pipeline router."""
@@ -47,6 +48,7 @@ def pipeline_client(pipeline_app: FastAPI) -> TestClient:
 # Module-level constants
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestConstants:
     def test_constitutional_hash_value(self) -> None:
@@ -62,6 +64,7 @@ class TestConstants:
 # ---------------------------------------------------------------------------
 # Pydantic model construction
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestPydanticModels:
@@ -158,6 +161,7 @@ class TestPydanticModels:
 # _jitter helper
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestJitter:
     def test_jitter_returns_float(self) -> None:
@@ -196,6 +200,7 @@ class TestJitter:
 # _status_for helper
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestStatusFor:
     def test_healthy_when_ratio_below_0_7(self) -> None:
@@ -226,6 +231,7 @@ class TestStatusFor:
 # ---------------------------------------------------------------------------
 # GET /metrics endpoint
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestPipelineMetricsEndpoint:
@@ -340,6 +346,7 @@ class TestPipelineMetricsEndpoint:
 # SLA status logic via controlled jitter
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestSlaStatusLogic:
     def _get_metrics_with_fixed_random(
@@ -415,6 +422,7 @@ class TestSlaStatusLogic:
 # SLA status branch coverage via endpoint with patched jitter
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestSlaStatusBranches:
     """Test sla_status computation branches in pipeline_metrics() directly."""
@@ -463,6 +471,7 @@ class TestSlaStatusBranches:
 # Multiple requests return independent jitter
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.unit
 class TestJitterVariation:
     def test_two_requests_may_differ(self, pipeline_client: TestClient) -> None:
@@ -479,6 +488,7 @@ class TestJitterVariation:
 # ---------------------------------------------------------------------------
 # Edge: latency sample counts are positive integers
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestSampleCounts:
@@ -498,6 +508,7 @@ class TestSampleCounts:
 # ---------------------------------------------------------------------------
 # Throughput bounds
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.unit
 class TestThroughputBounds:

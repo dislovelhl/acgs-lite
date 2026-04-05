@@ -46,8 +46,13 @@ MEDIUM_JUDGMENT = (
 )
 
 _PRIVACY_VEC = {
-    "safety": 0.1, "security": 0.2, "privacy": 0.9,
-    "fairness": 0.3, "reliability": 0.1, "transparency": 0.6, "efficiency": 0.1,
+    "safety": 0.1,
+    "security": 0.2,
+    "privacy": 0.9,
+    "fairness": 0.3,
+    "reliability": 0.1,
+    "transparency": 0.6,
+    "efficiency": 0.1,
 }
 
 
@@ -126,8 +131,9 @@ class TestAuthenticityDetectorBasic:
         det = AuthenticityDetector()
         score = det.score(GOOD_JUDGMENT, GOOD_REASONING)
         # Good judgment has constitutional refs and tradeoff language
-        assert any("constitutional" in f or "tradeoff" in f or "stakeholder" in f
-                   for f in score.flags)
+        assert any(
+            "constitutional" in f or "tradeoff" in f or "stakeholder" in f for f in score.flags
+        )
 
     def test_as_dict_structure(self):
         det = AuthenticityDetector()
@@ -147,7 +153,8 @@ class TestAuthenticityDetectorBasic:
 class TestReasoningDepth:
     def _get_dim(self, score: AuthenticityScore) -> DimensionScore:
         return next(
-            ds for ds in score.dimension_scores
+            ds
+            for ds in score.dimension_scores
             if ds.dimension == AuthenticityDimension.REASONING_DEPTH
         )
 
@@ -181,7 +188,8 @@ class TestReasoningDepth:
 class TestStakeholderCoverage:
     def _get_dim(self, score: AuthenticityScore) -> DimensionScore:
         return next(
-            ds for ds in score.dimension_scores
+            ds
+            for ds in score.dimension_scores
             if ds.dimension == AuthenticityDimension.STAKEHOLDER_COVERAGE
         )
 
@@ -204,7 +212,8 @@ class TestStakeholderCoverage:
 class TestConstitutionalConsistency:
     def _get_dim(self, score: AuthenticityScore) -> DimensionScore:
         return next(
-            ds for ds in score.dimension_scores
+            ds
+            for ds in score.dimension_scores
             if ds.dimension == AuthenticityDimension.CONSTITUTIONAL_CONSISTENCY
         )
 
@@ -226,16 +235,21 @@ class TestConstitutionalConsistency:
 class TestDeliberativeAuthenticity:
     def _get_dim(self, score: AuthenticityScore) -> DimensionScore:
         return next(
-            ds for ds in score.dimension_scores
+            ds
+            for ds in score.dimension_scores
             if ds.dimension == AuthenticityDimension.DELIBERATIVE_AUTHENTICITY
         )
 
     def test_first_person_boosts_score(self):
         det = AuthenticityDetector()
-        fp = det.score("In my judgment, privacy is paramount. My assessment is that "
-                       "the data subject's rights outweigh the controller's interests.")
-        no_fp = det.score("Privacy is paramount. The data subject's rights outweigh "
-                          "the controller's interests. The decision is to deny.")
+        fp = det.score(
+            "In my judgment, privacy is paramount. My assessment is that "
+            "the data subject's rights outweigh the controller's interests."
+        )
+        no_fp = det.score(
+            "Privacy is paramount. The data subject's rights outweigh "
+            "the controller's interests. The decision is to deny."
+        )
         assert self._get_dim(fp).score >= self._get_dim(no_fp).score
 
     def test_ai_bullet_list_penalized(self):
@@ -252,23 +266,23 @@ class TestDeliberativeAuthenticity:
 
     def test_ai_bullet_list_flag(self):
         det = AuthenticityDetector()
-        score = det.score(
-            "Analysis:\n- Point A\n- Point B\n- Point C\n- Point D\n- Point E"
-        )
+        score = det.score("Analysis:\n- Point A\n- Point B\n- Point C\n- Point D\n- Point E")
         assert "ai_list_pattern" in score.flags
 
     def test_formulaic_opener_penalized(self):
         det = AuthenticityDetector()
         formulaic = det.score("Certainly! I'll help analyze this governance decision.")
-        normal = det.score("In my judgment, this decision requires careful analysis "
-                           "of the privacy implications.")
+        normal = det.score(
+            "In my judgment, this decision requires careful analysis of the privacy implications."
+        )
         assert self._get_dim(formulaic).score <= self._get_dim(normal).score
 
 
 class TestPrecedentCompatibility:
     def _get_dim(self, score: AuthenticityScore) -> DimensionScore:
         return next(
-            ds for ds in score.dimension_scores
+            ds
+            for ds in score.dimension_scores
             if ds.dimension == AuthenticityDimension.PRECEDENT_COMPATIBILITY
         )
 
@@ -290,10 +304,13 @@ class TestPrecedentCompatibility:
         det = AuthenticityDetector()
         store = PrecedentStore(CONST_HASH, min_votes_for_precedent=1)
         rec = PrecedentRecord.create(
-            case_id="c1", task_id="t1", miner_uid="m",
+            case_id="c1",
+            task_id="t1",
+            miner_uid="m",
             judgment="Privacy takes precedence",
             reasoning="ECHR applies",
-            votes_for=2, votes_against=0,
+            votes_for=2,
+            votes_against=0,
             proof_root_hash="abc",
             escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
             impact_vector=_PRIVACY_VEC,
@@ -311,18 +328,20 @@ class TestPrecedentCompatibility:
         det = AuthenticityDetector()
         store = PrecedentStore(CONST_HASH, min_votes_for_precedent=1)
         rec = PrecedentRecord.create(
-            case_id="c1", task_id="t1", miner_uid="m",
+            case_id="c1",
+            task_id="t1",
+            miner_uid="m",
             judgment="Privacy wins",
             reasoning="reason",
-            votes_for=2, votes_against=0,
+            votes_for=2,
+            votes_against=0,
             proof_root_hash="abc",
             escalation_type=EscalationType.CONSTITUTIONAL_CONFLICT,
             impact_vector=_PRIVACY_VEC,
             constitutional_hash=CONST_HASH,
         )
         store.add(rec)
-        score = det.score(GOOD_JUDGMENT, precedent_store=store,
-                          query_vector=_PRIVACY_VEC)
+        score = det.score(GOOD_JUDGMENT, precedent_store=store, query_vector=_PRIVACY_VEC)
         dim = self._get_dim(score)
         if dim.score >= 0.85:
             assert any("precedent_match" in f for f in score.flags)

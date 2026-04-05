@@ -138,14 +138,20 @@ class TestEUAIActChecklistByTier:
         items = fw.get_checklist(system_description)
         # Only include items that are applicable (not NOT_APPLICABLE)
         from acgs_lite.compliance.base import ChecklistStatus
+
         return {item.ref for item in items if item.status != ChecklistStatus.NOT_APPLICABLE}
 
     def test_high_risk_includes_arts_9_through_26(self):
         refs = self._checklist_refs({"risk_tier": "high"})
         high_risk_arts = [
-            "EU-AIA Art.9(1)", "EU-AIA Art.10(2)", "EU-AIA Art.11(1)",
-            "EU-AIA Art.12(1)", "EU-AIA Art.13(1)", "EU-AIA Art.14(1)",
-            "EU-AIA Art.15(1)", "EU-AIA Art.26(1)",
+            "EU-AIA Art.9(1)",
+            "EU-AIA Art.10(2)",
+            "EU-AIA Art.11(1)",
+            "EU-AIA Art.12(1)",
+            "EU-AIA Art.13(1)",
+            "EU-AIA Art.14(1)",
+            "EU-AIA Art.15(1)",
+            "EU-AIA Art.26(1)",
         ]
         for ref in high_risk_arts:
             assert ref in refs, f"{ref} missing from high-risk checklist"
@@ -154,15 +160,20 @@ class TestEUAIActChecklistByTier:
         refs = self._checklist_refs({"risk_tier": "minimal"})
         # Only Art.5 and Art.50 should be present
         assert all(
-            ref.startswith("EU-AIA Art.5") or ref.startswith("EU-AIA Art.50")
-            for ref in refs
-        ), f"Unexpected refs in minimal checklist: {refs - {'EU-AIA Art.5(1)', 'EU-AIA Art.5(2)', 'EU-AIA Art.50(1)', 'EU-AIA Art.50(4)'}}"
+            ref.startswith("EU-AIA Art.5") or ref.startswith("EU-AIA Art.50") for ref in refs
+        ), (
+            f"Unexpected refs in minimal checklist: {refs - {'EU-AIA Art.5(1)', 'EU-AIA Art.5(2)', 'EU-AIA Art.50(1)', 'EU-AIA Art.50(4)'}}"
+        )
 
     def test_limited_risk_same_as_minimal_no_high_risk_arts(self):
         refs = self._checklist_refs({"risk_tier": "limited"})
         high_risk_refs = {
-            "EU-AIA Art.9(1)", "EU-AIA Art.10(2)", "EU-AIA Art.11(1)",
-            "EU-AIA Art.12(1)", "EU-AIA Art.14(1)", "EU-AIA Art.15(1)",
+            "EU-AIA Art.9(1)",
+            "EU-AIA Art.10(2)",
+            "EU-AIA Art.11(1)",
+            "EU-AIA Art.12(1)",
+            "EU-AIA Art.14(1)",
+            "EU-AIA Art.15(1)",
         }
         assert not refs.intersection(high_risk_refs), (
             f"High-risk articles leaked into limited checklist: {refs & high_risk_refs}"
@@ -228,5 +239,6 @@ class TestEUAIActAssessWithTierInference:
 
     def test_infer_risk_tier_exported_from_compliance_init(self):
         from acgs_lite.compliance import infer_risk_tier as exported_fn
+
         assert callable(exported_fn)
         assert exported_fn({"domain": "healthcare"}) == "high"

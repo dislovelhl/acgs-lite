@@ -62,7 +62,7 @@ class MockLLMAdapter(BaseLLMAdapter):
             content=self.expected_response,
             metadata=CompletionMetadata(model="test-model", provider="test"),
             usage=TokenUsage(),
-            cost=CostEstimate()
+            cost=CostEstimate(),
         )
 
     async def acomplete(self, messages, **kwargs):
@@ -71,15 +71,26 @@ class MockLLMAdapter(BaseLLMAdapter):
             content=self.expected_response,
             metadata=CompletionMetadata(model="test-model", provider="test"),
             usage=TokenUsage(),
-            cost=CostEstimate()
+            cost=CostEstimate(),
         )
 
-    def stream(self, messages, **kwargs): pass
-    async def astream(self, messages, **kwargs): pass
-    def count_tokens(self, messages): return 0
-    def estimate_cost(self, p, c): return CostEstimate()
-    async def health_check(self): pass
-    def validate_constitutional_compliance(self, response, **kwargs): return True
+    def stream(self, messages, **kwargs):
+        pass
+
+    async def astream(self, messages, **kwargs):
+        pass
+
+    def count_tokens(self, messages):
+        return 0
+
+    def estimate_cost(self, p, c):
+        return CostEstimate()
+
+    async def health_check(self):
+        pass
+
+    def validate_constitutional_compliance(self, response, **kwargs):
+        return True
 
 
 # ---------------------------------------------------------------------------
@@ -775,6 +786,7 @@ class TestAdapterLLMRefiner:
         assert result == "LLM Refined Response"
         assert len(adapter.calls) == 1
 
+
 class TestAdapterConstitutionalCorrector:
     def test_correct_with_adapter(self):
         adapter = MockLLMAdapter(expected_response="Constitutional Corrected Response")
@@ -790,6 +802,7 @@ class TestAdapterConstitutionalCorrector:
         result = await corrector.correct_async("test", violations=["harmful"])
         assert result == "Constitutional Corrected Response"
         assert len(adapter.calls) == 1
+
 
 class TestResponseRefiner:
     @pytest.fixture()

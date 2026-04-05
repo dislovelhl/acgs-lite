@@ -8,6 +8,7 @@ Usage:
     result = client.explore("Using grep: find all files that import from acgs_lite.engine")
     cost = client.last_cost  # float, dollars
 """
+
 from __future__ import annotations
 
 import json
@@ -50,6 +51,7 @@ class VibeClient:
         env_file = Path.home() / ".vibe/.env"
         if env_file.exists():
             from dotenv import load_dotenv
+
             load_dotenv(env_file)
 
         from vibe.core.config import VibeConfig
@@ -58,10 +60,12 @@ class VibeClient:
         init_harness_files_manager(Path.home() / ".vibe")
 
         config = VibeConfig.load()
-        self._config = config.model_copy(update={
-            "include_commit_signature": False,
-            "include_model_info": False,
-        })
+        self._config = config.model_copy(
+            update={
+                "include_commit_signature": False,
+                "include_model_info": False,
+            }
+        )
         self._initialized = True
 
     def _run(self, prompt: str, agent: str = "explore", max_turns: int = 10) -> VibeResult:
@@ -74,6 +78,7 @@ class VibeClient:
 
         try:
             from vibe.core.programmatic import run_programmatic
+
             start = time.time()
             response = run_programmatic(
                 config=self._config,

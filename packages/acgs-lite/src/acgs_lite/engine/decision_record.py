@@ -22,7 +22,12 @@ class TriggeredRule:
     category: str = ""
 
     def to_dict(self) -> dict[str, str]:
-        return {"id": self.id, "text": self.text, "severity": self.severity, "category": self.category}
+        return {
+            "id": self.id,
+            "text": self.text,
+            "severity": self.severity,
+            "category": self.category,
+        }
 
 
 @dataclass(slots=True)

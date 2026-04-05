@@ -10,9 +10,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCENARIOS_DIR = REPO_ROOT / "autoresearch" / "scenarios"
-REAL_USE_CASE_FIXTURE = (
-    Path(__file__).resolve().parent / "fixtures" / "real_use_case_datasets.json"
-)
+REAL_USE_CASE_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "real_use_case_datasets.json"
 CANDIDATE_SCENARIOS = (
     REPO_ROOT / "autoresearch" / "candidate_scenarios" / "sourced_real_use_case_candidates.json"
 )
@@ -74,9 +72,7 @@ def test_real_use_case_fixture_is_mostly_novel_relative_to_frozen_benchmark_corp
         for scenario_file in sorted(SCENARIOS_DIR.glob("*.json"))
         for row in _load_rows(scenario_file)
     }
-    real_use_case_actions = {
-        str(row["action"]) for row in _load_rows(REAL_USE_CASE_FIXTURE)
-    }
+    real_use_case_actions = {str(row["action"]) for row in _load_rows(REAL_USE_CASE_FIXTURE)}
 
     overlap = benchmark_actions & real_use_case_actions
 

@@ -54,7 +54,6 @@ _DORA_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
         "GovernanceEngine — automated governance control framework",
         True,
     ),
-
     (
         "DORA Art.6(1)",
         "Have in place an internal governance and control framework ensuring "
@@ -272,7 +271,6 @@ _ACGS_LITE_MAP: dict[str, str] = {
         "acgs-lite GovernanceEngine — automated governance and ICT risk "
         "management control framework with constitutional enforcement"
     ),
-
     "DORA Art.6(1)": (
         "acgs-lite GovernanceEngine — provides constitutional governance "
         "framework implementing prudent ICT risk management and oversight"

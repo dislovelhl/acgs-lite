@@ -81,8 +81,11 @@ class TestToText:
 
     def test_contains_disclaimer(self, exporter):
         out = exporter.to_text()
-        assert "legal advice" in out.lower() or "disclaimer" in out.lower() or \
-               "indicative" in out.lower()
+        assert (
+            "legal advice" in out.lower()
+            or "disclaimer" in out.lower()
+            or "indicative" in out.lower()
+        )
 
     def test_no_trailing_exception(self, exporter):
         """Should not raise."""
@@ -137,8 +140,14 @@ class TestToJson:
 
     def test_required_top_level_keys(self, exporter):
         data = json.loads(exporter.to_json())
-        for key in ("system_id", "overall_score", "frameworks_assessed",
-                    "by_framework", "report_title", "generated_at"):
+        for key in (
+            "system_id",
+            "overall_score",
+            "frameworks_assessed",
+            "by_framework",
+            "report_title",
+            "generated_at",
+        ):
             assert key in data, f"Missing key: {key}"
 
     def test_system_id_correct(self, exporter):
@@ -263,17 +272,17 @@ class TestEUAIActUnacceptableTier:
     def _checklist_refs(self, system_description: dict) -> set[str]:
         fw = EUAIActFramework()
         from acgs_lite.compliance.base import ChecklistStatus
+
         return {
-            i.ref for i in fw.get_checklist(system_description)
+            i.ref
+            for i in fw.get_checklist(system_description)
             if i.status != ChecklistStatus.NOT_APPLICABLE
         }
 
     def test_unacceptable_only_art5(self):
         refs = self._checklist_refs({"risk_tier": "unacceptable"})
         non_art5 = {r for r in refs if not r.startswith("EU-AIA Art.5")}
-        assert non_art5 == set(), (
-            f"Non-Art.5 refs leaked into unacceptable checklist: {non_art5}"
-        )
+        assert non_art5 == set(), f"Non-Art.5 refs leaked into unacceptable checklist: {non_art5}"
 
     def test_unacceptable_includes_all_art5_items(self):
         refs = self._checklist_refs({"risk_tier": "unacceptable"})
@@ -384,8 +393,7 @@ class TestEvidenceIntegration:
         assessor = MultiFrameworkAssessor(frameworks=["nist_ai_rmf"])
         baseline = assessor.assess({"system_id": "ev-test2"})
         compliant_items = [
-            i for i in baseline.by_framework["nist_ai_rmf"].items
-            if i["status"] == "compliant"
+            i for i in baseline.by_framework["nist_ai_rmf"].items if i["status"] == "compliant"
         ]
         if not compliant_items:
             pytest.skip("No COMPLIANT NIST items in baseline")
@@ -394,14 +402,14 @@ class TestEvidenceIntegration:
         bundle = EvidenceBundle(
             system_id="ev-test2",
             collected_at="2026-03-29T00:00:00+00:00",
-            items=(
-                EvidenceItem("nist_ai_rmf", (ref,), "test", "already compliant", 0.8),
-            ),
+            items=(EvidenceItem("nist_ai_rmf", (ref,), "test", "already compliant", 0.8),),
         )
         enriched = assessor.assess({"system_id": "ev-test2", "_evidence": bundle})
         # Score should be unchanged (already compliant)
-        assert enriched.by_framework["nist_ai_rmf"].compliance_score == \
-               baseline.by_framework["nist_ai_rmf"].compliance_score
+        assert (
+            enriched.by_framework["nist_ai_rmf"].compliance_score
+            == baseline.by_framework["nist_ai_rmf"].compliance_score
+        )
 
     def test_no_evidence_key_unchanged_behaviour(self):
         """Omitting _evidence must not change existing assess() behaviour."""
@@ -409,16 +417,20 @@ class TestEvidenceIntegration:
         desc = {"system_id": "no-ev"}
         r1 = assessor.assess(desc)
         r2 = assessor.assess(desc)
-        assert r1.by_framework["oecd_ai"].compliance_score == \
-               r2.by_framework["oecd_ai"].compliance_score
+        assert (
+            r1.by_framework["oecd_ai"].compliance_score
+            == r2.by_framework["oecd_ai"].compliance_score
+        )
 
     def test_none_evidence_unchanged(self):
         """Explicitly passing _evidence=None must behave identically to omitting it."""
         assessor = MultiFrameworkAssessor(frameworks=["oecd_ai"])
         r_no_ev = assessor.assess({"system_id": "x"})
         r_none_ev = assessor.assess({"system_id": "x", "_evidence": None})
-        assert r_no_ev.by_framework["oecd_ai"].compliance_score == \
-               r_none_ev.by_framework["oecd_ai"].compliance_score
+        assert (
+            r_no_ev.by_framework["oecd_ai"].compliance_score
+            == r_none_ev.by_framework["oecd_ai"].compliance_score
+        )
 
     def test_wildcard_evidence_applies_to_all_frameworks(self):
         """Evidence with framework_id='*' should apply to every framework."""
@@ -445,15 +457,10 @@ class TestEvidenceIntegration:
         bundle = EvidenceBundle(
             system_id="wc-test",
             collected_at="2026-03-29T00:00:00+00:00",
-            items=(
-                EvidenceItem("*", (pending_ref,), "test:wildcard", "wildcard evidence", 0.7),
-            ),
+            items=(EvidenceItem("*", (pending_ref,), "test:wildcard", "wildcard evidence", 0.7),),
         )
         enriched = assessor.assess({"system_id": "wc-test", "_evidence": bundle})
-        target = next(
-            i for i in enriched.by_framework[pending_fw].items
-            if i["ref"] == pending_ref
-        )
+        target = next(i for i in enriched.by_framework[pending_fw].items if i["ref"] == pending_ref)
         assert target["status"] == "compliant"
 
     def test_collect_evidence_integrates_with_assessor(self, tmp_path):
@@ -471,5 +478,7 @@ class TestEvidenceIntegration:
         with_ev = assessor.assess({"system_id": "pipeline-test", "_evidence": bundle})
 
         # Score should be same or better with evidence
-        assert with_ev.by_framework["nist_ai_rmf"].compliance_score >= \
-               without_ev.by_framework["nist_ai_rmf"].compliance_score
+        assert (
+            with_ev.by_framework["nist_ai_rmf"].compliance_score
+            >= without_ev.by_framework["nist_ai_rmf"].compliance_score
+        )

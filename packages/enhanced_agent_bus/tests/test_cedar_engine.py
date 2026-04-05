@@ -52,9 +52,7 @@ class TestCedarPolicyEngineBasic:
 
     def test_no_matching_policy_denies(self):
         # Cedar default-deny: no matching permit = deny
-        engine = CedarPolicyEngine(
-            'permit(principal == User::"bob", action, resource);'
-        )
+        engine = CedarPolicyEngine('permit(principal == User::"bob", action, resource);')
         result = engine.authorize(
             principal='User::"alice"',
             action='Action::"read"',

@@ -68,9 +68,9 @@ def _assert_rejected_or_flagged(result: dict, *expected_rule_ids: str) -> None:
     violations = result.get("violations", [])
     rule_ids = {violation["rule_id"] for violation in violations}
 
-    assert (
-        decision == REJECTED or violations
-    ), f"Expected rejected or flagged result, got decision={decision!r} violations={rule_ids!r}"
+    assert decision == REJECTED or violations, (
+        f"Expected rejected or flagged result, got decision={decision!r} violations={rule_ids!r}"
+    )
 
     for rule_id in expected_rule_ids:
         assert rule_id in rule_ids, f"Expected {rule_id} in {rule_ids!r}"
@@ -113,9 +113,7 @@ def _decode_json_response(response) -> dict:
 @pytest.fixture
 def engine() -> GovernanceEngine:
     """Create a GovernanceEngine backed by the healthcare constitution."""
-    constitution_path = (
-        Path(__file__).parent.parent / "constitution" / "healthcare_v1.yaml"
-    )
+    constitution_path = Path(__file__).parent.parent / "constitution" / "healthcare_v1.yaml"
     constitution = Constitution.from_yaml(str(constitution_path))
     return GovernanceEngine(constitution, strict=False)
 
@@ -447,9 +445,7 @@ class TestInputValidation:
     async def test_oversized_payload_is_rejected(self, guard):
         """Reject action text that exceeds the configured per-request character limit."""
         body = json.dumps(
-            _make_a2a_body(
-                "validate_clinical_action: SYNTH-301 " + ("A" * 11000)
-            )
+            _make_a2a_body("validate_clinical_action: SYNTH-301 " + ("A" * 11000))
         ).encode("utf-8")
         request = _build_request(
             body=body,
@@ -521,10 +517,7 @@ class TestInputValidation:
     async def test_malformed_json_rpc_shape_is_rejected(self, guard):
         """Reject malformed JSON-RPC envelopes with non-object params."""
         request = _build_request(
-            body=(
-                b'{"jsonrpc":"2.0","method":"tasks/send","id":"req-bad-shape",'
-                b'"params":[]}'
-            ),
+            body=(b'{"jsonrpc":"2.0","method":"tasks/send","id":"req-bad-shape","params":[]}'),
             headers={"content-type": "application/json"},
         )
         response = await guard.handle_a2a(request)

@@ -24,6 +24,7 @@ from enhanced_agent_bus.openevolve_adapter.mutation_operators import (
 
 # --- Fixtures ---
 
+
 def _make_rules() -> list[dict]:
     return [
         {
@@ -52,6 +53,7 @@ def _make_eval_fn(*, base_f1: float = 0.8, base_fpr: float = 0.1):
 
     Returns slightly better scores when keywords are added (simulating improvement).
     """
+
     def eval_fn(rules: list[dict]) -> dict:
         total_keywords = sum(len(r.get("keywords", [])) for r in rules)
         # More keywords = slightly better F1, slightly worse FPR
@@ -60,10 +62,12 @@ def _make_eval_fn(*, base_f1: float = 0.8, base_fpr: float = 0.1):
             "f1": min(1.0, base_f1 + bonus),
             "false_positive_rate": min(1.0, base_fpr + bonus * 0.5),
         }
+
     return eval_fn
 
 
 # --- Mutation Operator Tests ---
+
 
 class TestKeywordMutator:
     @pytest.mark.asyncio
@@ -142,8 +146,12 @@ class TestApplyMutation:
     def test_apply_evolvable_field(self):
         rule = _make_rules()[0]
         mutation = MutationResult(
-            rule_id="NO-PII", operator="test", field_changed="keywords",
-            old_value=["ssn"], new_value=["ssn", "social"], description="test",
+            rule_id="NO-PII",
+            operator="test",
+            field_changed="keywords",
+            old_value=["ssn"],
+            new_value=["ssn", "social"],
+            description="test",
         )
         new_rule = apply_mutation(rule, mutation)
         assert new_rule["keywords"] == ["ssn", "social"]
@@ -152,8 +160,12 @@ class TestApplyMutation:
     def test_reject_frozen_field(self):
         rule = _make_rules()[0]
         mutation = MutationResult(
-            rule_id="NO-PII", operator="test", field_changed="id",
-            old_value="NO-PII", new_value="CHANGED", description="test",
+            rule_id="NO-PII",
+            operator="test",
+            field_changed="id",
+            old_value="NO-PII",
+            new_value="CHANGED",
+            description="test",
         )
         with pytest.raises(ValueError, match="frozen"):
             apply_mutation(rule, mutation)
@@ -161,8 +173,12 @@ class TestApplyMutation:
     def test_reject_text_mutation(self):
         rule = _make_rules()[0]
         mutation = MutationResult(
-            rule_id="NO-PII", operator="test", field_changed="text",
-            old_value="old", new_value="new", description="test",
+            rule_id="NO-PII",
+            operator="test",
+            field_changed="text",
+            old_value="old",
+            new_value="new",
+            description="test",
         )
         with pytest.raises(ValueError, match="frozen"):
             apply_mutation(rule, mutation)
@@ -200,6 +216,7 @@ class TestVerifyFrozenFields:
 
 # --- Fitness Score Tests ---
 
+
 class TestFitnessScore:
     def test_weighted_total(self):
         score = FitnessScore(f1=0.8, leniency=0.9, stability=1.0)
@@ -217,13 +234,18 @@ class TestFitnessScore:
 
 # --- Evolution Engine Tests ---
 
+
 class TestConstitutionalEvolutionEngine:
     @pytest.mark.asyncio
     async def test_basic_evolution_run(self):
         rules = _make_rules()
         eval_fn = _make_eval_fn()
         engine = ConstitutionalEvolutionEngine(
-            rules, eval_fn, population_size=4, max_generations=3, seed=42,
+            rules,
+            eval_fn,
+            population_size=4,
+            max_generations=3,
+            seed=42,
         )
         report = await engine.evolve(max_generations=3)
 
@@ -238,8 +260,12 @@ class TestConstitutionalEvolutionEngine:
         rules = _make_rules()
         eval_fn = _make_eval_fn()
         engine = ConstitutionalEvolutionEngine(
-            rules, eval_fn, population_size=4, max_generations=5,
-            mutation_rate=0.8, seed=42,
+            rules,
+            eval_fn,
+            population_size=4,
+            max_generations=5,
+            mutation_rate=0.8,
+            seed=42,
         )
         report = await engine.evolve()
 
@@ -249,8 +275,9 @@ class TestConstitutionalEvolutionEngine:
             baseline = baseline_by_id.get(rule["id"])
             if baseline:
                 for field_name in FROZEN_FIELDS:
-                    assert rule[field_name] == baseline[field_name], \
+                    assert rule[field_name] == baseline[field_name], (
                         f"Frozen field {field_name} was modified in rule {rule['id']}"
+                    )
 
     @pytest.mark.asyncio
     async def test_improvement_possible(self):
@@ -258,8 +285,12 @@ class TestConstitutionalEvolutionEngine:
         rules = _make_rules()
         eval_fn = _make_eval_fn(base_f1=0.6, base_fpr=0.05)
         engine = ConstitutionalEvolutionEngine(
-            rules, eval_fn, population_size=6, max_generations=10,
-            mutation_rate=0.5, seed=42,
+            rules,
+            eval_fn,
+            population_size=6,
+            max_generations=10,
+            mutation_rate=0.5,
+            seed=42,
         )
         report = await engine.evolve(
             bypass_evidence={
@@ -276,7 +307,10 @@ class TestConstitutionalEvolutionEngine:
         rules = _make_rules()
         eval_fn = _make_eval_fn()
         engine = ConstitutionalEvolutionEngine(
-            rules, eval_fn, population_size=2, seed=42,
+            rules,
+            eval_fn,
+            population_size=2,
+            seed=42,
         )
         report = await engine.evolve(max_generations=1)
         assert report.generations_completed == 1
@@ -286,7 +320,11 @@ class TestConstitutionalEvolutionEngine:
         rules = _make_rules()
         eval_fn = _make_eval_fn()
         engine = ConstitutionalEvolutionEngine(
-            rules, eval_fn, population_size=2, max_generations=2, seed=42,
+            rules,
+            eval_fn,
+            population_size=2,
+            max_generations=2,
+            seed=42,
         )
         report = await engine.evolve()
         s = report.summary()
@@ -300,8 +338,12 @@ class TestAmendmentProposals:
         rules = _make_rules()
         eval_fn = _make_eval_fn(base_f1=0.5)
         engine = ConstitutionalEvolutionEngine(
-            rules, eval_fn, population_size=4, max_generations=5,
-            mutation_rate=0.8, seed=42,
+            rules,
+            eval_fn,
+            population_size=4,
+            max_generations=5,
+            mutation_rate=0.8,
+            seed=42,
         )
         report = await engine.evolve(
             bypass_evidence={"NO-PII": ["personal data", "identity info"]},

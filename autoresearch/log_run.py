@@ -259,10 +259,14 @@ def main() -> int:
     updated_rows = load_rows(RESULTS_TSV)
     tightness = ceiling_tightness(updated_rows, args.scope)
     if tightness == "tight":
-        print(f"\n⚠  CEILING in {args.scope} (TIGHT): composite spread < 0.0001 — true measurement floor.")
+        print(
+            f"\n⚠  CEILING in {args.scope} (TIGHT): composite spread < 0.0001 — true measurement floor."
+        )
         print("   → Pivot: try a different experiment family (matcher/rust/constitution/warmup).")
     elif tightness == "loose":
-        print(f"\n⚠  CEILING in {args.scope} (LOOSE): composite spread ≥ 0.0001 — noise may be masking signal.")
+        print(
+            f"\n⚠  CEILING in {args.scope} (LOOSE): composite spread ≥ 0.0001 — noise may be masking signal."
+        )
         print("   → Run bench_stable.py --trials 7 to confirm before pivoting.")
 
     return 0

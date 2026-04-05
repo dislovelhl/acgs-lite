@@ -49,17 +49,17 @@ from typing import Any
 
 
 class NMCSessionState(Enum):
-    OPEN       = "open"        # accepting commitments
-    REVEALING  = "revealing"   # commit phase closed; accepting reveals
-    SYNTHESIZED = "synthesized" # consensus produced
-    TIMED_OUT  = "timed_out"   # deadline passed without full consensus
-    FAILED     = "failed"      # too few reveals to synthesize
+    OPEN = "open"  # accepting commitments
+    REVEALING = "revealing"  # commit phase closed; accepting reveals
+    SYNTHESIZED = "synthesized"  # consensus produced
+    TIMED_OUT = "timed_out"  # deadline passed without full consensus
+    FAILED = "failed"  # too few reveals to synthesize
 
 
 class SynthesisMethod(Enum):
-    MAJORITY_VOTE  = "majority_vote"   # most common judgment text wins
-    WEIGHTED_VOTE  = "weighted_vote"   # weight by miner-provided weight (tier)
-    UNANIMOUS      = "unanimous"       # all miners must agree (strictest)
+    MAJORITY_VOTE = "majority_vote"  # most common judgment text wins
+    WEIGHTED_VOTE = "weighted_vote"  # weight by miner-provided weight (tier)
+    UNANIMOUS = "unanimous"  # all miners must agree (strictest)
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +76,7 @@ class NMCCommitment:
 
     commitment_id: str
     miner_uid: str
-    commitment_hash: str   # SHA-256(judgment + ":" + nonce)
+    commitment_hash: str  # SHA-256(judgment + ":" + nonce)
     submitted_at: float
 
     def to_dict(self) -> dict[str, Any]:
@@ -97,9 +97,9 @@ class NMCReveal:
 
     reveal_id: str
     miner_uid: str
-    judgment_text: str     # the actual governance decision
-    nonce: str             # random nonce used in commitment
-    weight: float          # voting weight (e.g. tier TAO multiplier)
+    judgment_text: str  # the actual governance decision
+    nonce: str  # random nonce used in commitment
+    weight: float  # voting weight (e.g. tier TAO multiplier)
     revealed_at: float
 
     def verify_commitment(self, commitment_hash: str) -> bool:
@@ -131,9 +131,9 @@ class SybilFlag:
 
     flag_id: str
     flagged_miner: str
-    reference_miner: str   # the miner whose judgment was copied
-    judgment_hash: str     # SHA-256 of the duplicated judgment
-    confidence: float      # 1.0 = exact match; <1.0 = near-match (future use)
+    reference_miner: str  # the miner whose judgment was copied
+    judgment_hash: str  # SHA-256 of the duplicated judgment
+    confidence: float  # 1.0 = exact match; <1.0 = near-match (future use)
     reason: str
 
     @property
@@ -163,10 +163,10 @@ class ConsensusJudgment:
     session_id: str
     case_id: str
     judgment_text: str
-    confidence: float        # 0.0-1.0 (fraction agreeing)
+    confidence: float  # 0.0-1.0 (fraction agreeing)
     method: SynthesisMethod
-    committed_count: int     # how many miners committed
-    reveal_count: int        # how many miners revealed
+    committed_count: int  # how many miners committed
+    reveal_count: int  # how many miners revealed
     valid_reveal_count: int  # after excluding Sybils
     sybil_flags: tuple[SybilFlag, ...]
     excluded_miners: tuple[str, ...]
@@ -243,8 +243,8 @@ class NMCSession:
         self._deadline_at = time.time() + deadline_seconds
         self._exclude_sybils = exclude_sybils
 
-        self._commitments: dict[str, NMCCommitment] = {}   # miner_uid → commitment
-        self._reveals: dict[str, NMCReveal] = {}           # miner_uid → reveal
+        self._commitments: dict[str, NMCCommitment] = {}  # miner_uid → commitment
+        self._reveals: dict[str, NMCReveal] = {}  # miner_uid → reveal
         self._state = NMCSessionState.OPEN
         self._consensus: ConsensusJudgment | None = None
 
@@ -295,9 +295,7 @@ class NMCSession:
         or if the miner already committed.
         """
         if self._state != NMCSessionState.OPEN:
-            raise ValueError(
-                f"Session {self.session_id} is {self._state.value}, not OPEN"
-            )
+            raise ValueError(f"Session {self.session_id} is {self._state.value}, not OPEN")
         if self._is_deadline_passed():
             self._state = NMCSessionState.TIMED_OUT
             raise ValueError(f"Session {self.session_id} deadline passed")
@@ -347,9 +345,7 @@ class NMCSession:
           - commitment hash doesn't match
         """
         if self._state not in (NMCSessionState.REVEALING,):
-            raise ValueError(
-                f"Session {self.session_id} is {self._state.value}, not REVEALING"
-            )
+            raise ValueError(f"Session {self.session_id} is {self._state.value}, not REVEALING")
         if miner_uid not in self._commitments:
             raise ValueError(f"Miner {miner_uid} never committed")
         if miner_uid in self._reveals:
@@ -365,9 +361,7 @@ class NMCSession:
         )
         # Verify commitment
         if not rev.verify_commitment(self._commitments[miner_uid].commitment_hash):
-            raise ValueError(
-                f"Miner {miner_uid} reveal does not match commitment"
-            )
+            raise ValueError(f"Miner {miner_uid} reveal does not match commitment")
         self._reveals[miner_uid] = rev
         return True
 
@@ -387,14 +381,10 @@ class NMCSession:
           - fewer than min_reveals valid reveals
         """
         if self._state not in (NMCSessionState.REVEALING, NMCSessionState.SYNTHESIZED):
-            raise ValueError(
-                f"Cannot synthesize: session is {self._state.value}"
-            )
+            raise ValueError(f"Cannot synthesize: session is {self._state.value}")
         if require_min_reveals and len(self._reveals) < self._min_reveals:
             self._state = NMCSessionState.FAILED
-            raise ValueError(
-                f"Insufficient reveals: {len(self._reveals)} < {self._min_reveals}"
-            )
+            raise ValueError(f"Insufficient reveals: {len(self._reveals)} < {self._min_reveals}")
 
         reveals = list(self._reveals.values())
         sybil_flags = self._detect_sybils(reveals)
@@ -495,17 +485,18 @@ class NMCSession:
                 # First miner is the "reference" — rest are flagged
                 reference = miners[0]
                 for flagged in miners[1:]:
-                    flags.append(SybilFlag(
-                        flag_id=uuid.uuid4().hex[:8],
-                        flagged_miner=flagged,
-                        reference_miner=reference,
-                        judgment_hash=j_hash,
-                        confidence=1.0,
-                        reason=(
-                            f"Exact duplicate of {reference}'s judgment "
-                            f"after blind commitment"
-                        ),
-                    ))
+                    flags.append(
+                        SybilFlag(
+                            flag_id=uuid.uuid4().hex[:8],
+                            flagged_miner=flagged,
+                            reference_miner=reference,
+                            judgment_hash=j_hash,
+                            confidence=1.0,
+                            reason=(
+                                f"Exact duplicate of {reference}'s judgment after blind commitment"
+                            ),
+                        )
+                    )
         return flags
 
     def _is_deadline_passed(self) -> bool:
@@ -583,9 +574,7 @@ class NMCCoordinator:
         Raises ValueError if a session for case_id already exists.
         """
         if case_id in self._sessions:
-            raise ValueError(
-                f"NMC session for case {case_id!r} already exists"
-            )
+            raise ValueError(f"NMC session for case {case_id!r} already exists")
         session = NMCSession(
             case_id=case_id,
             required_miners=required_miners,
@@ -617,26 +606,23 @@ class NMCCoordinator:
         report: list[dict[str, Any]] = []
         for session in self._sessions.values():
             if session.consensus and session.consensus.has_sybil_activity:
-                report.append({
-                    "case_id": session.case_id,
-                    "session_id": session.session_id,
-                    "flags": [f.to_dict() for f in session.consensus.sybil_flags],
-                })
+                report.append(
+                    {
+                        "case_id": session.case_id,
+                        "session_id": session.session_id,
+                        "flags": [f.to_dict() for f in session.consensus.sybil_flags],
+                    }
+                )
         return report
 
     def summary(self) -> dict[str, Any]:
         total = len(self._sessions)
         synthesized = sum(
-            1 for s in self._sessions.values()
-            if s.state == NMCSessionState.SYNTHESIZED
+            1 for s in self._sessions.values() if s.state == NMCSessionState.SYNTHESIZED
         )
-        timed_out = sum(
-            1 for s in self._sessions.values()
-            if s.state == NMCSessionState.TIMED_OUT
-        )
+        timed_out = sum(1 for s in self._sessions.values() if s.state == NMCSessionState.TIMED_OUT)
         sybil_cases = sum(
-            1 for s in self._sessions.values()
-            if s.consensus and s.consensus.has_sybil_activity
+            1 for s in self._sessions.values() if s.consensus and s.consensus.has_sybil_activity
         )
         return {
             "total_sessions": total,

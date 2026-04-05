@@ -69,14 +69,13 @@ class GovernedDSPyModule(GovernedBase):
         strict: bool = True,
     ) -> None:
         if not DSPY_AVAILABLE:
-            raise ImportError(
-                "dspy is required. "
-                "Install with: pip install acgs-lite[dspy]"
-            )
+            raise ImportError("dspy is required. Install with: pip install acgs-lite[dspy]")
 
         self._module = module
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -97,7 +96,8 @@ class GovernedDSPyModule(GovernedBase):
         )
 
     def _extract_input_text(
-        self, kwargs: dict[str, Any],
+        self,
+        kwargs: dict[str, Any],
     ) -> str:
         """Extract text from input kwargs."""
         parts: list[str] = []
@@ -124,27 +124,16 @@ class GovernedDSPyModule(GovernedBase):
         if hasattr(result, "completions"):
             completions = result.completions
             if isinstance(completions, dict):
-                parts = [
-                    str(v)
-                    for v in completions.values()
-                    if v is not None
-                ]
+                parts = [str(v) for v in completions.values() if v is not None]
                 return " ".join(parts)
             if isinstance(completions, list):
-                return " ".join(
-                    str(c) for c in completions
-                    if c is not None
-                )
+                return " ".join(str(c) for c in completions if c is not None)
 
         # Generic attribute scanning for Prediction-like objects
         if hasattr(result, "keys") and callable(result.keys):
             parts: list[str] = []
             for key in result.keys():  # noqa: SIM118
-                val = (
-                    getattr(result, key, None)
-                    if not isinstance(result, dict)
-                    else result[key]
-                )
+                val = getattr(result, key, None) if not isinstance(result, dict) else result[key]
                 if isinstance(val, str):
                     parts.append(val)
             if parts:
@@ -152,7 +141,11 @@ class GovernedDSPyModule(GovernedBase):
 
         # Fallback: check common output attributes
         for attr in (
-            "answer", "output", "response", "text", "content",
+            "answer",
+            "output",
+            "response",
+            "text",
+            "content",
         ):
             val = getattr(result, attr, None)
             if isinstance(val, str):
@@ -218,14 +211,13 @@ class GovernedPredict(GovernedBase):
         strict: bool = True,
     ) -> None:
         if not DSPY_AVAILABLE:
-            raise ImportError(
-                "dspy is required. "
-                "Install with: pip install acgs-lite[dspy]"
-            )
+            raise ImportError("dspy is required. Install with: pip install acgs-lite[dspy]")
 
         self._predict = predict
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -246,7 +238,8 @@ class GovernedPredict(GovernedBase):
         )
 
     def _extract_input_text(
-        self, kwargs: dict[str, Any],
+        self,
+        kwargs: dict[str, Any],
     ) -> str:
         """Extract text from input kwargs."""
         parts: list[str] = []
@@ -263,33 +256,26 @@ class GovernedPredict(GovernedBase):
         if hasattr(result, "completions"):
             completions = result.completions
             if isinstance(completions, dict):
-                parts = [
-                    str(v)
-                    for v in completions.values()
-                    if v is not None
-                ]
+                parts = [str(v) for v in completions.values() if v is not None]
                 return " ".join(parts)
             if isinstance(completions, list):
-                return " ".join(
-                    str(c) for c in completions
-                    if c is not None
-                )
+                return " ".join(str(c) for c in completions if c is not None)
 
         if hasattr(result, "keys") and callable(result.keys):
             parts: list[str] = []
             for key in result.keys():  # noqa: SIM118
-                val = (
-                    getattr(result, key, None)
-                    if not isinstance(result, dict)
-                    else result[key]
-                )
+                val = getattr(result, key, None) if not isinstance(result, dict) else result[key]
                 if isinstance(val, str):
                     parts.append(val)
             if parts:
                 return " ".join(parts)
 
         for attr in (
-            "answer", "output", "response", "text", "content",
+            "answer",
+            "output",
+            "response",
+            "text",
+            "content",
         ):
             val = getattr(result, attr, None)
             if isinstance(val, str):

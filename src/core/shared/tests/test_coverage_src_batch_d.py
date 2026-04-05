@@ -57,7 +57,11 @@ class TestAllowDegradedMode:
         mock_settings.env = "test"
         assert _allow_degraded_mode_without_redis() is True
 
-    @patch.dict(os.environ, {"OAUTH_STATE_ALLOW_DEGRADED_MODE": "", "ENVIRONMENT": "", "APP_ENV": "", "ACGS2_ENV": ""}, clear=False)
+    @patch.dict(
+        os.environ,
+        {"OAUTH_STATE_ALLOW_DEGRADED_MODE": "", "ENVIRONMENT": "", "APP_ENV": "", "ACGS2_ENV": ""},
+        clear=False,
+    )
     @patch("src.core.shared.security.oauth_state_manager.settings")
     def test_production_env(self, mock_settings):
         mock_settings.env = "production"

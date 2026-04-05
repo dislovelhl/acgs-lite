@@ -54,22 +54,23 @@ def _resolve_compliance_certificate_secret(secret_key: str | None) -> str:
         f"{COMPLIANCE_CERTIFICATE_SECRET_ENV_KEY}."
     )
 
+
 # ---------------------------------------------------------------------------
 # Certificate types and status
 # ---------------------------------------------------------------------------
 
 
 class ProofType(Enum):
-    HMAC_SHA256 = "hmac_sha256"   # current — HMAC signed, no ZKP
-    ZKP_NOIR    = "zkp_noir"      # future — Noir ZK-SNARK
-    ZKP_CIRCOM  = "zkp_circom"    # future — circom/snarkjs
+    HMAC_SHA256 = "hmac_sha256"  # current — HMAC signed, no ZKP
+    ZKP_NOIR = "zkp_noir"  # future — Noir ZK-SNARK
+    ZKP_CIRCOM = "zkp_circom"  # future — circom/snarkjs
 
 
 class CertificateStatus(Enum):
-    VALID     = "valid"
-    EXPIRED   = "expired"
-    REVOKED   = "revoked"
-    PENDING   = "pending"
+    VALID = "valid"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
+    PENDING = "pending"
 
 
 # ---------------------------------------------------------------------------
@@ -83,7 +84,7 @@ class AuditPeriod:
 
     start_at: float
     end_at: float
-    label: str = ""      # e.g. "Q1-2026", "2026-03"
+    label: str = ""  # e.g. "Q1-2026", "2026-03"
 
     @property
     def duration_days(self) -> float:
@@ -97,6 +98,7 @@ class AuditPeriod:
     @classmethod
     def current_month(cls) -> AuditPeriod:
         import datetime
+
         now = datetime.datetime.now(datetime.UTC)
         start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return cls(
@@ -124,7 +126,7 @@ class ComplianceSnapshot:
     escalated_decisions: int
     auto_resolved_decisions: int
     constitutional_hash: str
-    framework: str = "general"          # e.g. "eu_ai_act", "nist_ai_rmf"
+    framework: str = "general"  # e.g. "eu_ai_act", "nist_ai_rmf"
 
     @property
     def compliance_rate(self) -> float:
@@ -174,12 +176,12 @@ class ComplianceCertificate:
     issued_at: float
     expires_at: float
     issuer_id: str
-    subject_id: str           # enterprise/client being certified
+    subject_id: str  # enterprise/client being certified
     period: AuditPeriod
     snapshot: ComplianceSnapshot
     proof_type: ProofType
-    proof: str                # HMAC hex or ZKP proof blob
-    threshold: float          # compliance_rate must be ≥ this
+    proof: str  # HMAC hex or ZKP proof blob
+    threshold: float  # compliance_rate must be ≥ this
     status: CertificateStatus = CertificateStatus.VALID
 
     @property
@@ -307,9 +309,7 @@ class ZKPStubProver:
         constitutional_hash: str,
     ) -> str:
         # Deterministic stub: hash of circuit inputs (not a real ZKP)
-        payload = (
-            f"zkp_stub:{constitutional_hash}:{snapshot.compliance_rate:.6f}:{threshold:.4f}"
-        )
+        payload = f"zkp_stub:{constitutional_hash}:{snapshot.compliance_rate:.6f}:{threshold:.4f}"
         return "zkp_stub:" + hashlib.sha256(payload.encode()).hexdigest()
 
     def verify(
@@ -430,10 +430,9 @@ class CertificateIssuer:
         self._revoked.add(cert_id)
         if cert_id in self._issued:
             import dataclasses
+
             cert = self._issued[cert_id]
-            self._issued[cert_id] = dataclasses.replace(
-                cert, status=CertificateStatus.REVOKED
-            )
+            self._issued[cert_id] = dataclasses.replace(cert, status=CertificateStatus.REVOKED)
 
     def get(self, cert_id: str) -> ComplianceCertificate | None:
         return self._issued.get(cert_id)

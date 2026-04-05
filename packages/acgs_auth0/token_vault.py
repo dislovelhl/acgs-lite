@@ -161,9 +161,7 @@ class ConstitutionalTokenVault:
 
         self._domain = auth0_domain or os.environ.get("AUTH0_DOMAIN", "")
         self._client_id = auth0_client_id or os.environ.get("AUTH0_CLIENT_ID", "")
-        self._client_secret = auth0_client_secret or os.environ.get(
-            "AUTH0_CLIENT_SECRET", ""
-        )
+        self._client_secret = auth0_client_secret or os.environ.get("AUTH0_CLIENT_SECRET", "")
 
         # Lazy-initialised auth0-ai client
         self._auth0_ai: Any = None
@@ -314,8 +312,7 @@ class ConstitutionalTokenVault:
             "client_secret": self._client_secret,
             "subject_token": request.refresh_token,
             "grant_type": (
-                "urn:auth0:params:oauth:grant-type:"
-                "token-exchange:federated-connection-access-token"
+                "urn:auth0:params:oauth:grant-type:token-exchange:federated-connection-access-token"
             ),
             "subject_token_type": "urn:ietf:params:oauth:token-type:refresh_token",
             "requested_token_type": (
@@ -358,9 +355,7 @@ class ConstitutionalTokenVault:
         )
 
     def _build_step_up_message(self, request: TokenVaultRequest) -> str:
-        high_risk = self.policy.get_rule(
-            connection=request.connection, role=request.role
-        )
+        high_risk = self.policy.get_rule(connection=request.connection, role=request.role)
         step_up = high_risk.step_up_scopes(request.scopes) if high_risk else request.scopes
         return (
             f"Agent '{request.agent_id}' (role={request.role}) requests "
@@ -368,9 +363,7 @@ class ConstitutionalTokenVault:
             "Please approve or deny."
         )
 
-    def _log_denial(
-        self, request: TokenVaultRequest, result: PolicyValidationResult
-    ) -> None:
+    def _log_denial(self, request: TokenVaultRequest, result: PolicyValidationResult) -> None:
         if isinstance(result.error, MACIRoleNotPermittedError):
             reason = "role_not_permitted"
         else:
@@ -435,9 +428,7 @@ class ConnectionTokenVaultWrapper:
                 import concurrent.futures
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
-                    future = pool.submit(
-                        asyncio.run, wrapper_self._execute(tool_fn, args, kwargs)
-                    )
+                    future = pool.submit(asyncio.run, wrapper_self._execute(tool_fn, args, kwargs))
                     return future.result()
             return asyncio.run(wrapper_self._execute(tool_fn, args, kwargs))
 
@@ -447,9 +438,7 @@ class ConnectionTokenVaultWrapper:
             return async_wrapper
         return sync_wrapper
 
-    async def _execute(
-        self, tool_fn: Callable, args: tuple, kwargs: dict
-    ) -> Any:
+    async def _execute(self, tool_fn: Callable, args: tuple, kwargs: dict) -> Any:
         """Run the full governed token retrieval + tool execution pipeline."""
         agent_id, role = self._get_agent_context()
         refresh_token = self._get_refresh_token()
@@ -480,6 +469,7 @@ class ConnectionTokenVaultWrapper:
 # ------------------------------------------------------------------
 # Default context resolvers (read from LangChain runnable config)
 # ------------------------------------------------------------------
+
 
 def _default_agent_context() -> tuple[str, str]:
     """Read agent_id and role from LangChain runnable config."""

@@ -165,10 +165,30 @@ class EmissionEvolver:
     def initialize_islands(self) -> None:
         """Create 4 islands with family-biased initial populations."""
         families = {
-            "reputation_heavy": {"rep": (0.6, 0.9), "tier": (0.1, 0.3), "prec": (0.0, 0.2), "auth": (0.0, 0.2)},
-            "tier_heavy": {"rep": (0.1, 0.3), "tier": (1.5, 3.0), "prec": (0.1, 0.3), "auth": (0.1, 0.3)},
-            "precedent_heavy": {"rep": (0.1, 0.3), "tier": (0.5, 1.0), "prec": (0.3, 0.8), "auth": (0.1, 0.3)},
-            "balanced": {"rep": (0.2, 0.5), "tier": (0.5, 1.5), "prec": (0.1, 0.4), "auth": (0.2, 0.5)},
+            "reputation_heavy": {
+                "rep": (0.6, 0.9),
+                "tier": (0.1, 0.3),
+                "prec": (0.0, 0.2),
+                "auth": (0.0, 0.2),
+            },
+            "tier_heavy": {
+                "rep": (0.1, 0.3),
+                "tier": (1.5, 3.0),
+                "prec": (0.1, 0.3),
+                "auth": (0.1, 0.3),
+            },
+            "precedent_heavy": {
+                "rep": (0.1, 0.3),
+                "tier": (0.5, 1.0),
+                "prec": (0.3, 0.8),
+                "auth": (0.1, 0.3),
+            },
+            "balanced": {
+                "rep": (0.2, 0.5),
+                "tier": (0.5, 1.5),
+                "prec": (0.1, 0.4),
+                "auth": (0.2, 0.5),
+            },
         }
 
         for family_name, ranges in families.items():
@@ -202,9 +222,7 @@ class EmissionEvolver:
             return 0.0
 
         predicted = [
-            genome.compute_weight(
-                o.reputation, o.tier, o.precedent_contributions, o.manifold_trust
-            )
+            genome.compute_weight(o.reputation, o.tier, o.precedent_contributions, o.manifold_trust)
             for o in observations
         ]
         actual = [o.consensus_quality for o in observations]
@@ -217,9 +235,7 @@ class EmissionEvolver:
     ) -> Island:
         """One generation: evaluate, select, crossover, mutate, replace."""
         # Evaluate all genomes
-        scored = [
-            (g, self.evaluate_genome(g, observations)) for g in island.population
-        ]
+        scored = [(g, self.evaluate_genome(g, observations)) for g in island.population]
         scored.sort(key=lambda p: p[1], reverse=True)
 
         best_genome, best_fitness = scored[0]
@@ -290,13 +306,15 @@ class EmissionEvolver:
         # Replace last (worst after sorting is maintained)
         to_pop[-1] = migrant
 
-        self._migrations.append(MigrationEvent(
-            genome=migrant,
-            from_island=from_island.identity.island_id,
-            to_island=to_island.identity.island_id,
-            trigger="ceiling_detected",
-            timestamp=0.0,
-        ))
+        self._migrations.append(
+            MigrationEvent(
+                genome=migrant,
+                from_island=from_island.identity.island_id,
+                to_island=to_island.identity.island_id,
+                trigger="ceiling_detected",
+                timestamp=0.0,
+            )
+        )
 
         new_to = Island(
             identity=to_island.identity,
@@ -320,10 +338,7 @@ class EmissionEvolver:
             self._islands[island_id] = self.evolve_island(island, observations)
 
         # Check ceilings and migrate
-        stagnant = [
-            iid for iid, island in self._islands.items()
-            if self.check_ceiling(island)
-        ]
+        stagnant = [iid for iid, island in self._islands.items() if self.check_ceiling(island)]
 
         if stagnant:
             # Find best non-stagnant island (or global best)
@@ -411,7 +426,9 @@ class EmissionEvolver:
         return EmissionGenome(
             genome_id=uuid.uuid4().hex[:8],
             reputation_weight=max(0.0, genome.reputation_weight + self._rng.gauss(0, s)),
-            tier_multiplier_scale=max(0.0, genome.tier_multiplier_scale + self._rng.gauss(0, s * 2)),
+            tier_multiplier_scale=max(
+                0.0, genome.tier_multiplier_scale + self._rng.gauss(0, s * 2)
+            ),
             precedent_bonus=max(0.0, genome.precedent_bonus + self._rng.gauss(0, s)),
             authenticity_weight=max(0.0, genome.authenticity_weight + self._rng.gauss(0, s)),
             generation=generation,
@@ -426,8 +443,18 @@ class EmissionEvolver:
     ) -> EmissionGenome:
         """Single-point crossover between two genomes."""
         point = self._rng.randint(0, 3)
-        params_a = [a.reputation_weight, a.tier_multiplier_scale, a.precedent_bonus, a.authenticity_weight]
-        params_b = [b.reputation_weight, b.tier_multiplier_scale, b.precedent_bonus, b.authenticity_weight]
+        params_a = [
+            a.reputation_weight,
+            a.tier_multiplier_scale,
+            a.precedent_bonus,
+            a.authenticity_weight,
+        ]
+        params_b = [
+            b.reputation_weight,
+            b.tier_multiplier_scale,
+            b.precedent_bonus,
+            b.authenticity_weight,
+        ]
         child_params = params_a[:point] + params_b[point:]
         return EmissionGenome(
             genome_id=uuid.uuid4().hex[:8],

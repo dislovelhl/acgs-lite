@@ -1,4 +1,5 @@
 """Shim for src.core.shared.resilience.retry."""
+
 from __future__ import annotations
 
 import functools

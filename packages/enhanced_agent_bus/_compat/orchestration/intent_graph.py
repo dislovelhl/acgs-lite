@@ -1,4 +1,5 @@
 """Shim for src.core.shared.orchestration.intent_graph."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

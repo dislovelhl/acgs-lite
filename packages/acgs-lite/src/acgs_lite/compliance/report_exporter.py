@@ -308,6 +308,7 @@ class ComplianceReportExporter:
 # Private helpers
 # ---------------------------------------------------------------------------
 
+
 def _text_framework_section(fa: FrameworkAssessment) -> list[str]:
     lines: list[str] = [
         f"  ┌─ {fa.framework_name}",

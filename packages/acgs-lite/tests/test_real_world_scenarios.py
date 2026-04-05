@@ -137,8 +137,7 @@ def _constitution(domain: str) -> Constitution:
             },
         }
         if domain in fallback_templates and (
-            "no keywords defined" in str(exc)
-            or "Constitution validation failed" in str(exc)
+            "no keywords defined" in str(exc) or "Constitution validation failed" in str(exc)
         ):
             return Constitution.from_dict(fallback_templates[domain])
         raise

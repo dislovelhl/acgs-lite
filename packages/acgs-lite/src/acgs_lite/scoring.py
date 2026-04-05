@@ -351,9 +351,7 @@ class ConstitutionalImpactScorer:
                 p in content_lower for p in ["harm", "damage", "destroy", "attack"]
             ),
             "accountability": "log" in content_lower or "audit" in content_lower,
-            "fairness": not any(
-                p in content_lower for p in ["discriminate", "bias", "unfair"]
-            ),
+            "fairness": not any(p in content_lower for p in ["discriminate", "bias", "unfair"]),
         }
         alignment_score = sum(assessments.values()) / len(assessments)
         return {

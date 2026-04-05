@@ -89,7 +89,9 @@ class TestGovernanceMetricsWithOTel:
     """Tests when OTEL_AVAILABLE = True (mocked SDK)."""
 
     def test_validate_records_counter_allow(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, mock_counter, _hist, _gauge = _make_metrics(engine, audit_log)
 
@@ -97,11 +99,14 @@ class TestGovernanceMetricsWithOTel:
 
         assert result.valid is True
         mock_counter.add.assert_any_call(
-            1, attributes={"agent_id": "test-agent", "decision": "allow"},
+            1,
+            attributes={"agent_id": "test-agent", "decision": "allow"},
         )
 
     def test_validate_records_counter_deny(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, mock_counter, _hist, _gauge = _make_metrics(engine, audit_log)
 
@@ -109,11 +114,14 @@ class TestGovernanceMetricsWithOTel:
 
         assert result.valid is False
         mock_counter.add.assert_any_call(
-            1, attributes={"agent_id": "bad-agent", "decision": "deny"},
+            1,
+            attributes={"agent_id": "bad-agent", "decision": "deny"},
         )
 
     def test_validate_records_latency_histogram(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, _counter, mock_histogram, _gauge = _make_metrics(engine, audit_log)
 
@@ -126,7 +134,9 @@ class TestGovernanceMetricsWithOTel:
         assert call_args[1]["attributes"] == {"agent_id": "agent-1"}
 
     def test_validate_records_violations_counter(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, mock_counter, _hist, _gauge = _make_metrics(engine, audit_log)
 
@@ -134,9 +144,7 @@ class TestGovernanceMetricsWithOTel:
 
         assert result.valid is False
         violation_calls = [
-            c
-            for c in mock_counter.add.call_args_list
-            if c[1].get("attributes", {}).get("severity")
+            c for c in mock_counter.add.call_args_list if c[1].get("attributes", {}).get("severity")
         ]
         assert len(violation_calls) >= 1
         for call in violation_calls:
@@ -146,7 +154,9 @@ class TestGovernanceMetricsWithOTel:
             assert "rule_id" in attrs
 
     def test_compliance_gauge_updates(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, _counter, _hist, mock_gauge = _make_metrics(engine, audit_log)
 
@@ -161,7 +171,9 @@ class TestGovernanceMetricsWithOTel:
         assert len(compliance_calls) >= 1
 
     def test_audit_chain_valid_gauge(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, _counter, _hist, mock_gauge = _make_metrics(engine, audit_log)
 
@@ -170,9 +182,9 @@ class TestGovernanceMetricsWithOTel:
         # Find chain_valid gauge call -- it should be 1 (valid chain)
         all_set_calls = mock_gauge.set.call_args_list
         chain_calls = [
-            c for c in all_set_calls
-            if c[0][0] in (0, 1)
-            and c[1].get("attributes", {}).get("agent_id") == "chain-check"
+            c
+            for c in all_set_calls
+            if c[0][0] in (0, 1) and c[1].get("attributes", {}).get("agent_id") == "chain-check"
         ]
         assert len(chain_calls) >= 1
         # Fresh audit log chain should be valid
@@ -180,21 +192,22 @@ class TestGovernanceMetricsWithOTel:
         assert chain_value == 1
 
     def test_rules_count_gauge_set_on_init(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         _gm, _counter, _hist, mock_gauge = _make_metrics(engine, audit_log)
 
         # rules_count gauge is set during __init__
-        init_calls = [
-            c for c in mock_gauge.set.call_args_list
-            if c[1].get("attributes") is None
-        ]
+        init_calls = [c for c in mock_gauge.set.call_args_list if c[1].get("attributes") is None]
         assert len(init_calls) >= 1
         rules_count = init_calls[0][0][0]
         assert rules_count > 0
 
     def test_stats_property(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, _counter, _hist, _gauge = _make_metrics(engine, audit_log)
 
@@ -210,7 +223,9 @@ class TestGovernanceMetricsWithOTel:
         assert "rules_count" in stats
 
     def test_validate_increments_internal_counts(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, _counter, _hist, _gauge = _make_metrics(engine, audit_log)
 
@@ -220,19 +235,25 @@ class TestGovernanceMetricsWithOTel:
         assert gm.stats["validation_count"] == 2
 
     def test_engine_property(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, *_ = _make_metrics(engine, audit_log)
         assert gm.engine is engine
 
     def test_audit_log_property(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, *_ = _make_metrics(engine, audit_log)
         assert gm.audit_log is audit_log
 
     def test_violation_count_increments(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         gm, *_ = _make_metrics(engine, audit_log)
 
@@ -249,7 +270,9 @@ class TestGovernanceMetricsFallback:
     """Tests when OTEL_AVAILABLE = False (noop stubs)."""
 
     def test_validate_works_without_otel(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
             from acgs_lite.integrations.otel import GovernanceMetrics
@@ -260,7 +283,9 @@ class TestGovernanceMetricsFallback:
         assert result.valid is True
 
     def test_stats_reports_otel_unavailable(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
             from acgs_lite.integrations.otel import GovernanceMetrics
@@ -300,7 +325,9 @@ class TestGovernanceMetricsFallback:
         assert isinstance(span, _NoopSpan)
 
     def test_fallback_deny_still_records(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
             from acgs_lite.integrations.otel import GovernanceMetrics
@@ -321,7 +348,9 @@ class TestGovernanceMetricsStrictMode:
     """Verify metrics are recorded even when validate() raises."""
 
     def test_strict_violation_records_metrics_then_raises(
-        self, strict_engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        strict_engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         mock_meter = MagicMock()
         mock_counter = MagicMock()
@@ -362,7 +391,9 @@ class TestGovernanceMetricsMiddleware:
 
     @pytest.mark.asyncio()
     async def test_middleware_adds_span_for_http(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         mock_tracer = MagicMock()
         mock_span = MagicMock()
@@ -382,7 +413,9 @@ class TestGovernanceMetricsMiddleware:
             gm = GovernanceMetrics(engine, audit_log)
             inner_app = AsyncMock()
             middleware = GovernanceMetricsMiddleware(
-                inner_app, gm, tracer_provider=mock_tracer_provider,
+                inner_app,
+                gm,
+                tracer_provider=mock_tracer_provider,
             )
 
         scope = {"type": "http", "path": "/api/test"}
@@ -393,13 +426,16 @@ class TestGovernanceMetricsMiddleware:
 
         mock_tracer.start_as_current_span.assert_called_once_with("acgs.governance.request")
         mock_span.set_attribute.assert_any_call(
-            "acgs.constitutional_hash", engine.constitution.hash,
+            "acgs.constitutional_hash",
+            engine.constitution.hash,
         )
         inner_app.assert_called_once_with(scope, receive, send)
 
     @pytest.mark.asyncio()
     async def test_middleware_skips_non_http(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
             from acgs_lite.integrations.otel import (
@@ -420,7 +456,9 @@ class TestGovernanceMetricsMiddleware:
         inner_app.assert_called_once_with(scope, receive, send)
 
     def test_middleware_uses_noop_tracer_when_otel_unavailable(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", False):
             from acgs_lite.integrations.otel import (
@@ -437,7 +475,9 @@ class TestGovernanceMetricsMiddleware:
 
     @pytest.mark.asyncio()
     async def test_middleware_attaches_compliance_score(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         mock_tracer = MagicMock()
         mock_span = MagicMock()
@@ -457,13 +497,16 @@ class TestGovernanceMetricsMiddleware:
             gm = GovernanceMetrics(engine, audit_log)
             inner_app = AsyncMock()
             middleware = GovernanceMetricsMiddleware(
-                inner_app, gm, tracer_provider=mock_tracer_provider,
+                inner_app,
+                gm,
+                tracer_provider=mock_tracer_provider,
             )
 
         await middleware({"type": "http"}, AsyncMock(), AsyncMock())
 
         mock_span.set_attribute.assert_any_call(
-            "acgs.compliance_score", gm.stats["compliance_score"],
+            "acgs.compliance_score",
+            gm.stats["compliance_score"],
         )
 
 

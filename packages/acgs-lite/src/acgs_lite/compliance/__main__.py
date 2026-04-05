@@ -104,6 +104,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
 
     if fmt == "markdown":
         from acgs_lite.compliance import ComplianceReportExporter
+
         exporter = ComplianceReportExporter(report)
         output = getattr(args, "output", None)
         if output:
@@ -170,6 +171,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
     output = getattr(args, "output", None)
     if output:
         from acgs_lite.compliance import ComplianceReportExporter
+
         out_path = Path(output)
         suffix = out_path.suffix.lower()
         exporter = ComplianceReportExporter(report)
@@ -299,51 +301,90 @@ def _build_parser() -> argparse.ArgumentParser:
         "assess",
         help="Run multi-framework compliance assessment",
     )
-    p_assess.add_argument("--system-id", dest="system_id", default=None,
-                          help="System identifier (default: current dir name)")
-    p_assess.add_argument("--jurisdiction", default=None,
-                          help="Jurisdiction: european_union, united_states, "
-                               "canada, united_kingdom, singapore, india, "
-                               "australia, brazil, china, california, international")
-    p_assess.add_argument("--domain", default=None,
-                          help="Domain: healthcare, hiring, financial, lending, "
-                               "education, chatbot, content_generation, ...")
-    p_assess.add_argument("--framework", action="append", default=None, dest="framework",
-                          help="Specific framework ID (repeatable)")
-    p_assess.add_argument("-o", "--output", default=None,
-                          help="Write report to file (.md / .json / .txt)")
-    p_assess.add_argument("--format", choices=["text", "markdown", "json"],
-                          default="text", help="Output format (default: text)")
+    p_assess.add_argument(
+        "--system-id",
+        dest="system_id",
+        default=None,
+        help="System identifier (default: current dir name)",
+    )
+    p_assess.add_argument(
+        "--jurisdiction",
+        default=None,
+        help="Jurisdiction: european_union, united_states, "
+        "canada, united_kingdom, singapore, india, "
+        "australia, brazil, china, california, international",
+    )
+    p_assess.add_argument(
+        "--domain",
+        default=None,
+        help="Domain: healthcare, hiring, financial, lending, "
+        "education, chatbot, content_generation, ...",
+    )
+    p_assess.add_argument(
+        "--framework",
+        action="append",
+        default=None,
+        dest="framework",
+        help="Specific framework ID (repeatable)",
+    )
+    p_assess.add_argument(
+        "-o", "--output", default=None, help="Write report to file (.md / .json / .txt)"
+    )
+    p_assess.add_argument(
+        "--format",
+        choices=["text", "markdown", "json"],
+        default="text",
+        help="Output format (default: text)",
+    )
 
     # EU AI Act flags
     eu_group = p_assess.add_argument_group("EU AI Act")
-    eu_group.add_argument("--risk-tier", dest="risk_tier",
-                          choices=["unacceptable", "high", "limited", "minimal"],
-                          default=None,
-                          help="Override risk tier (default: auto-inferred from domain)")
-    eu_group.add_argument("--is-gpai", dest="is_gpai", action="store_true",
-                          help="System is a General-Purpose AI model (Arts. 53/55)")
+    eu_group.add_argument(
+        "--risk-tier",
+        dest="risk_tier",
+        choices=["unacceptable", "high", "limited", "minimal"],
+        default=None,
+        help="Override risk tier (default: auto-inferred from domain)",
+    )
+    eu_group.add_argument(
+        "--is-gpai",
+        dest="is_gpai",
+        action="store_true",
+        help="System is a General-Purpose AI model (Arts. 53/55)",
+    )
 
     # DORA flags
     dora_group = p_assess.add_argument_group("DORA")
-    dora_group.add_argument("--is-significant-entity", dest="is_significant_entity",
-                             action="store_true",
-                             help="Significant financial entity (TLPT Art.25 applies)")
+    dora_group.add_argument(
+        "--is-significant-entity",
+        dest="is_significant_entity",
+        action="store_true",
+        help="Significant financial entity (TLPT Art.25 applies)",
+    )
 
     # India DPDP flags
     dpdp_group = p_assess.add_argument_group("India DPDP")
-    dpdp_group.add_argument("--is-significant-data-fiduciary",
-                             dest="is_significant_data_fiduciary", action="store_true",
-                             help="System is a Significant Data Fiduciary (§16 applies)")
-    dpdp_group.add_argument("--processes-children-data",
-                             dest="processes_children_data", action="store_true",
-                             help="System processes children's personal data (§9 applies)")
+    dpdp_group.add_argument(
+        "--is-significant-data-fiduciary",
+        dest="is_significant_data_fiduciary",
+        action="store_true",
+        help="System is a Significant Data Fiduciary (§16 applies)",
+    )
+    dpdp_group.add_argument(
+        "--processes-children-data",
+        dest="processes_children_data",
+        action="store_true",
+        help="System processes children's personal data (§9 applies)",
+    )
 
     # China AI flags
     china_group = p_assess.add_argument_group("China AI")
-    china_group.add_argument("--is-generative-ai", dest="is_generative_ai",
-                              action="store_true",
-                              help="System provides generative AI (GenAI regs apply)")
+    china_group.add_argument(
+        "--is-generative-ai",
+        dest="is_generative_ai",
+        action="store_true",
+        help="System provides generative AI (GenAI regs apply)",
+    )
 
     # ---- frameworks ----
     p_fws = sub.add_parser(
@@ -357,14 +398,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "evidence",
         help="Collect runtime / filesystem / environment evidence",
     )
-    p_ev.add_argument("--system-id", dest="system_id", default=None,
-                      help="System identifier")
-    p_ev.add_argument("--jurisdiction", default=None,
-                      help="Jurisdiction (for context)")
-    p_ev.add_argument("--search-root", dest="search_root", default=None,
-                      help="Directory to scan for artefacts (default: cwd)")
-    p_ev.add_argument("--framework", default=None,
-                      help="Show detailed items for this framework ID")
+    p_ev.add_argument("--system-id", dest="system_id", default=None, help="System identifier")
+    p_ev.add_argument("--jurisdiction", default=None, help="Jurisdiction (for context)")
+    p_ev.add_argument(
+        "--search-root",
+        dest="search_root",
+        default=None,
+        help="Directory to scan for artefacts (default: cwd)",
+    )
+    p_ev.add_argument("--framework", default=None, help="Show detailed items for this framework ID")
     p_ev.add_argument("--json", action="store_true", help="JSON output")
 
     return parser

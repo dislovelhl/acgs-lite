@@ -113,4 +113,3 @@ def _coerce_optional_string(value: object) -> str | None:
 
 
 __all__ = ["build_decision_event", "build_feedback_event"]
-

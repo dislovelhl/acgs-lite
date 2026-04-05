@@ -85,9 +85,7 @@ def _make_request(
 
 
 class TestConstitutionalTokenVaultValidate:
-    def test_permitted_request_passes(
-        self, vault: ConstitutionalTokenVault
-    ) -> None:
+    def test_permitted_request_passes(self, vault: ConstitutionalTokenVault) -> None:
         result = vault.validate(_make_request(role="EXECUTIVE", scopes=["repo:read"]))
         assert result.permitted is True
 
@@ -128,9 +126,7 @@ class TestConstitutionalTokenVaultExchange:
                 scope=mock_response["scope"],
                 issued_token_type=mock_response["issued_token_type"],
             )
-            response = await vault.exchange(
-                _make_request(role="EXECUTIVE", scopes=["repo:read"])
-            )
+            response = await vault.exchange(_make_request(role="EXECUTIVE", scopes=["repo:read"]))
 
         assert response.access_token == "gha_test_token"
         mock_call.assert_called_once()
@@ -142,9 +138,7 @@ class TestConstitutionalTokenVaultExchange:
         self, vault: ConstitutionalTokenVault, audit_log: TokenAuditLog
     ) -> None:
         with pytest.raises(ConstitutionalScopeViolation):
-            await vault.exchange(
-                _make_request(role="EXECUTIVE", scopes=["repo:write"])
-            )
+            await vault.exchange(_make_request(role="EXECUTIVE", scopes=["repo:write"]))
         denied = audit_log.get_entries(outcome=TokenAccessOutcome.DENIED_SCOPE_VIOLATION)
         assert len(denied) == 1
 
@@ -152,12 +146,8 @@ class TestConstitutionalTokenVaultExchange:
         self, vault: ConstitutionalTokenVault, audit_log: TokenAuditLog
     ) -> None:
         with pytest.raises(MACIRoleNotPermittedError):
-            await vault.exchange(
-                _make_request(role="JUDICIAL", scopes=["read:user"])
-            )
-        denied = audit_log.get_entries(
-            outcome=TokenAccessOutcome.DENIED_ROLE_NOT_PERMITTED
-        )
+            await vault.exchange(_make_request(role="JUDICIAL", scopes=["read:user"]))
+        denied = audit_log.get_entries(outcome=TokenAccessOutcome.DENIED_ROLE_NOT_PERMITTED)
         assert len(denied) == 1
 
     async def test_high_risk_scope_triggers_step_up(
@@ -324,9 +314,7 @@ class TestGetTokenVaultCredentials:
     def test_returns_credentials_inside_context(self) -> None:
         from acgs_auth0.token_vault import _token_vault_credentials_ctx
 
-        token = _token_vault_credentials_ctx.set(
-            {"access_token": "abc", "token_type": "Bearer"}
-        )
+        token = _token_vault_credentials_ctx.set({"access_token": "abc", "token_type": "Bearer"})
         try:
             creds = get_token_vault_credentials()
             assert creds["access_token"] == "abc"

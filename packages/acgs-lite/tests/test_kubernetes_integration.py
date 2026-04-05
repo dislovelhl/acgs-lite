@@ -111,7 +111,8 @@ class TestConstitutionalPolicy:
     def test_invalid_enforcement_mode_raises(self) -> None:
         with pytest.raises(ValueError, match="enforcement_mode"):
             ConstitutionalPolicy(
-                name="bad-policy", enforcement_mode="invalid",
+                name="bad-policy",
+                enforcement_mode="invalid",
             )
 
     def test_to_custom_resource_structure(self) -> None:
@@ -233,7 +234,8 @@ class TestGovernanceAdmissionWebhook:
         assert response["response"]["allowed"] is True
 
     def test_admission_response_uid_preserved(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         request = _make_admission_request(uid="specific-uid-456")
@@ -241,11 +243,13 @@ class TestGovernanceAdmissionWebhook:
         assert response["response"]["uid"] == "specific-uid-456"
 
     def test_webhook_config_generation(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         config = webhook.create_webhook_config(
-            "acgs-webhook", "acgs-system",
+            "acgs-webhook",
+            "acgs-system",
         )
 
         assert config["kind"] == "ValidatingWebhookConfiguration"
@@ -257,17 +261,21 @@ class TestGovernanceAdmissionWebhook:
         assert webhooks[0]["failurePolicy"] == "Fail"
 
     def test_webhook_config_with_ca_bundle(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         config = webhook.create_webhook_config(
-            "svc", "ns", ca_bundle="base64data",
+            "svc",
+            "ns",
+            ca_bundle="base64data",
         )
         client_config = config["webhooks"][0]["clientConfig"]
         assert client_config["caBundle"] == "base64data"
 
     def test_webhook_config_without_ca_bundle(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         config = webhook.create_webhook_config("svc", "ns")
@@ -275,7 +283,8 @@ class TestGovernanceAdmissionWebhook:
         assert "caBundle" not in client_config
 
     def test_webhook_config_service_path(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         config = webhook.create_webhook_config("my-svc", "my-ns")
@@ -285,7 +294,8 @@ class TestGovernanceAdmissionWebhook:
         assert service["path"] == "/validate"
 
     def test_webhook_config_labels_include_hash(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         config = webhook.create_webhook_config("svc", "ns")
@@ -303,7 +313,8 @@ class TestEnforcementModes:
     """Test that enforcement_mode attr on webhook changes behavior."""
 
     def test_warn_mode_allows_with_message(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         webhook._enforcement_mode = "warn"  # type: ignore[attr-defined]
@@ -317,7 +328,8 @@ class TestEnforcementModes:
         assert response["response"]["allowed"] is True
 
     def test_audit_mode_allows_with_message(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         webhook._enforcement_mode = "audit"  # type: ignore[attr-defined]
@@ -329,7 +341,8 @@ class TestEnforcementModes:
         assert response["response"]["allowed"] is True
 
     def test_enforce_mode_default(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         # Default has no _enforcement_mode attr, defaults to "enforce"
@@ -361,7 +374,8 @@ class TestExtractAdmissionText:
 
     def test_extracts_name_and_namespace(self) -> None:
         request = _make_admission_request(
-            name="my-pod", namespace="production",
+            name="my-pod",
+            namespace="production",
         )
         text = _extract_admission_text(request)
         assert "my-pod" in text
@@ -421,13 +435,17 @@ class TestPolicySyncController:
 
     def test_init_custom(self, engine: GovernanceEngine) -> None:
         sync = PolicySyncController(
-            engine, namespace="prod", config_map_name="my-constitution",
+            engine,
+            namespace="prod",
+            config_map_name="my-constitution",
         )
         assert sync._namespace == "prod"
         assert sync._config_map_name == "my-constitution"
 
     def test_sync_to_config_map(
-        self, engine: GovernanceEngine, constitution: Constitution,
+        self,
+        engine: GovernanceEngine,
+        constitution: Constitution,
     ) -> None:
         sync = PolicySyncController(engine)
         cm = sync.sync_to_config_map(constitution)
@@ -444,7 +462,9 @@ class TestPolicySyncController:
         assert len(parsed["rules"]) > 0
 
     def test_sync_to_config_map_labels(
-        self, engine: GovernanceEngine, constitution: Constitution,
+        self,
+        engine: GovernanceEngine,
+        constitution: Constitution,
     ) -> None:
         sync = PolicySyncController(engine)
         cm = sync.sync_to_config_map(constitution)
@@ -453,7 +473,9 @@ class TestPolicySyncController:
         assert labels["acgs.ai/component"] == "constitution"
 
     def test_sync_from_config_map_json(
-        self, engine: GovernanceEngine, constitution: Constitution,
+        self,
+        engine: GovernanceEngine,
+        constitution: Constitution,
     ) -> None:
         sync = PolicySyncController(engine)
         # Round-trip: write then read
@@ -464,7 +486,9 @@ class TestPolicySyncController:
         assert restored.name == constitution.name
 
     def test_sync_from_config_map_yaml(
-        self, engine: GovernanceEngine, constitution: Constitution,
+        self,
+        engine: GovernanceEngine,
+        constitution: Constitution,
     ) -> None:
         sync = PolicySyncController(engine)
         yaml_str = constitution.to_yaml()
@@ -473,44 +497,54 @@ class TestPolicySyncController:
         assert len(restored.rules) == len(constitution.rules)
 
     def test_sync_from_config_map_individual_rules(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         sync = PolicySyncController(engine)
         data = {
-            "rule-001": json.dumps({
-                "id": "K8S-001",
-                "text": "No unvetted images",
-                "severity": "high",
-                "keywords": ["image", "unvetted"],
-            }),
-            "rule-002": json.dumps({
-                "id": "K8S-002",
-                "text": "Require resource limits",
-                "severity": "medium",
-                "keywords": ["limits", "resources"],
-            }),
+            "rule-001": json.dumps(
+                {
+                    "id": "K8S-001",
+                    "text": "No unvetted images",
+                    "severity": "high",
+                    "keywords": ["image", "unvetted"],
+                }
+            ),
+            "rule-002": json.dumps(
+                {
+                    "id": "K8S-002",
+                    "text": "Require resource limits",
+                    "severity": "medium",
+                    "keywords": ["limits", "resources"],
+                }
+            ),
         }
         restored = sync.sync_from_config_map(data)
         assert len(restored.rules) == 2
 
     def test_sync_from_config_map_skips_invalid_json(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         sync = PolicySyncController(engine)
         data = {
-            "good-rule": json.dumps({
-                "id": "K8S-003",
-                "text": "Valid rule",
-                "severity": "low",
-                "keywords": ["valid"],
-            }),
+            "good-rule": json.dumps(
+                {
+                    "id": "K8S-003",
+                    "text": "Valid rule",
+                    "severity": "low",
+                    "keywords": ["valid"],
+                }
+            ),
             "bad-rule": "not-json{{{",
         }
         restored = sync.sync_from_config_map(data)
         assert len(restored.rules) == 1
 
     def test_get_policy_status(
-        self, engine: GovernanceEngine, constitution: Constitution,
+        self,
+        engine: GovernanceEngine,
+        constitution: Constitution,
     ) -> None:
         sync = PolicySyncController(engine, namespace="staging")
         status = sync.get_policy_status()
@@ -521,7 +555,9 @@ class TestPolicySyncController:
         assert status["last_sync"] is None
 
     def test_get_policy_status_after_sync(
-        self, engine: GovernanceEngine, constitution: Constitution,
+        self,
+        engine: GovernanceEngine,
+        constitution: Constitution,
     ) -> None:
         sync = PolicySyncController(engine)
         sync.sync_to_config_map(constitution)
@@ -537,14 +573,18 @@ class TestPolicySyncController:
 @pytest.mark.integration
 class TestGovernanceHealthCheck:
     def test_liveness_healthy(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         health = GovernanceHealthCheck(engine, audit_log)
         result = health.liveness()
         assert result["status"] == "ok"
 
     def test_readiness_healthy(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         health = GovernanceHealthCheck(engine, audit_log)
         result = health.readiness()
@@ -554,11 +594,14 @@ class TestGovernanceHealthCheck:
         assert result["chain_valid"] is True
 
     def test_readiness_invalid_chain(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         health = GovernanceHealthCheck(engine, audit_log)
         # Tamper with the audit log chain
         from acgs_lite.audit import AuditEntry
+
         audit_log.record(AuditEntry(id="1", type="validation"))
         audit_log._chain_hashes[-1] = "tampered"
 
@@ -567,7 +610,9 @@ class TestGovernanceHealthCheck:
         assert result["reason"] == "audit_chain_invalid"
 
     def test_startup_healthy(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         health = GovernanceHealthCheck(engine, audit_log)
         result = health.startup()
@@ -578,7 +623,9 @@ class TestGovernanceHealthCheck:
     def test_startup_no_rules(self, audit_log: AuditLog) -> None:
         empty_constitution = Constitution(name="empty", rules=[])
         engine = GovernanceEngine(
-            empty_constitution, audit_log=audit_log, strict=False,
+            empty_constitution,
+            audit_log=audit_log,
+            strict=False,
         )
         health = GovernanceHealthCheck(engine, audit_log)
         result = health.startup()
@@ -586,23 +633,31 @@ class TestGovernanceHealthCheck:
         assert result["reason"] == "no_rules_loaded"
 
     def test_liveness_error_handling(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         health = GovernanceHealthCheck(engine, audit_log)
         # Simulate engine failure by replacing validate method
         with patch.object(
-            engine, "validate", side_effect=RuntimeError("broken"),
+            engine,
+            "validate",
+            side_effect=RuntimeError("broken"),
         ):
             result = health.liveness()
         assert result["status"] == "error"
         assert result["reason"] == "RuntimeError"
 
     def test_readiness_engine_down(
-        self, engine: GovernanceEngine, audit_log: AuditLog,
+        self,
+        engine: GovernanceEngine,
+        audit_log: AuditLog,
     ) -> None:
         health = GovernanceHealthCheck(engine, audit_log)
         with patch.object(
-            engine, "validate", side_effect=RuntimeError("down"),
+            engine,
+            "validate",
+            side_effect=RuntimeError("down"),
         ):
             result = health.readiness()
         assert result["status"] == "not_ready"
@@ -743,14 +798,16 @@ class TestEdgeCases:
         assert cr["spec"]["rules"] == []
 
     def test_sync_empty_config_map(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         sync = PolicySyncController(engine)
         result = sync.sync_from_config_map({})
         assert len(result.rules) == 0
 
     def test_admission_webhook_missing_object(
-        self, engine: GovernanceEngine,
+        self,
+        engine: GovernanceEngine,
     ) -> None:
         webhook = GovernanceAdmissionWebhook(engine)
         request: dict[str, Any] = {"uid": "no-object"}
@@ -761,7 +818,8 @@ class TestEdgeCases:
     def test_all_enforcement_modes_valid(self) -> None:
         for mode in ("enforce", "audit", "warn"):
             policy = ConstitutionalPolicy(
-                name=f"mode-{mode}", enforcement_mode=mode,
+                name=f"mode-{mode}",
+                enforcement_mode=mode,
             )
             assert policy.enforcement_mode == mode
 

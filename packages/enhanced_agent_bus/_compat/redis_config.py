@@ -1,4 +1,5 @@
 """Shim for src.core.shared.redis_config."""
+
 from __future__ import annotations
 
 from typing import Any

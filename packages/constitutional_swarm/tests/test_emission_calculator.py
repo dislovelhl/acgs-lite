@@ -28,8 +28,11 @@ class TestEmissionWeights:
     def test_invalid_weights_raise(self):
         with pytest.raises(ValueError, match=r"sum to 1\.0"):
             EmissionWeights(
-                manifold_trust=0.5, reputation=0.5, tier=0.5,
-                precedent=0.5, authenticity=0.5,
+                manifold_trust=0.5,
+                reputation=0.5,
+                tier=0.5,
+                precedent=0.5,
+                authenticity=0.5,
             )
 
     def test_custom_valid_weights(self):
@@ -81,9 +84,15 @@ class TestEmissionCalculatorBasic:
 
     def test_single_miner_gets_full_weight(self):
         calc = EmissionCalculator()
-        inputs = [MinerEmissionInput("m1", tier=MinerTier.MASTER,
-                                    manifold_trust=0.8, reputation=1.5,
-                                    avg_authenticity=0.7)]
+        inputs = [
+            MinerEmissionInput(
+                "m1",
+                tier=MinerTier.MASTER,
+                manifold_trust=0.8,
+                reputation=1.5,
+                avg_authenticity=0.7,
+            )
+        ]
         cycle = calc.compute(inputs)
         assert len(cycle.emissions) == 1
         assert cycle.emissions[0].emission_weight == pytest.approx(1.0)
@@ -91,9 +100,12 @@ class TestEmissionCalculatorBasic:
     def test_weights_sum_to_one(self):
         calc = EmissionCalculator()
         inputs = [
-            MinerEmissionInput(f"m{i}", tier=MinerTier.JOURNEYMAN,
-                               manifold_trust=float(i) * 0.1,
-                               reputation=1.2 + i * 0.1)
+            MinerEmissionInput(
+                f"m{i}",
+                tier=MinerTier.JOURNEYMAN,
+                manifold_trust=float(i) * 0.1,
+                reputation=1.2 + i * 0.1,
+            )
             for i in range(5)
         ]
         cycle = calc.compute(inputs)
@@ -106,10 +118,12 @@ class TestEmissionCalculatorBasic:
     def test_inactive_miner_gets_zero_weight(self):
         calc = EmissionCalculator()
         inputs = [
-            MinerEmissionInput("active", tier=MinerTier.JOURNEYMAN,
-                               manifold_trust=0.8, is_active=True),
-            MinerEmissionInput("inactive", tier=MinerTier.MASTER,
-                               manifold_trust=0.9, is_active=False),
+            MinerEmissionInput(
+                "active", tier=MinerTier.JOURNEYMAN, manifold_trust=0.8, is_active=True
+            ),
+            MinerEmissionInput(
+                "inactive", tier=MinerTier.MASTER, manifold_trust=0.9, is_active=False
+            ),
         ]
         cycle = calc.compute(inputs)
         inactive = next(e for e in cycle.emissions if e.miner_uid == "inactive")
@@ -118,10 +132,8 @@ class TestEmissionCalculatorBasic:
     def test_below_min_tier_gets_zero_weight(self):
         calc = EmissionCalculator(minimum_tier=MinerTier.JOURNEYMAN)
         inputs = [
-            MinerEmissionInput("apprentice", tier=MinerTier.APPRENTICE,
-                               manifold_trust=0.9),
-            MinerEmissionInput("journeyman", tier=MinerTier.JOURNEYMAN,
-                               manifold_trust=0.5),
+            MinerEmissionInput("apprentice", tier=MinerTier.APPRENTICE, manifold_trust=0.9),
+            MinerEmissionInput("journeyman", tier=MinerTier.JOURNEYMAN, manifold_trust=0.5),
         ]
         cycle = calc.compute(inputs)
         appr = next(e for e in cycle.emissions if e.miner_uid == "apprentice")
@@ -144,37 +156,65 @@ class TestEmissionOrdering:
         """
         calc = EmissionCalculator()
         inputs = [
-            MinerEmissionInput("master", tier=MinerTier.MASTER,
-                               manifold_trust=0.5, reputation=1.5,
-                               avg_authenticity=0.7),
-            MinerEmissionInput("apprentice", tier=MinerTier.APPRENTICE,
-                               manifold_trust=0.5, reputation=1.5,
-                               avg_authenticity=0.7),
+            MinerEmissionInput(
+                "master",
+                tier=MinerTier.MASTER,
+                manifold_trust=0.5,
+                reputation=1.5,
+                avg_authenticity=0.7,
+            ),
+            MinerEmissionInput(
+                "apprentice",
+                tier=MinerTier.APPRENTICE,
+                manifold_trust=0.5,
+                reputation=1.5,
+                avg_authenticity=0.7,
+            ),
             # Filler miners absorb cap redistribution without swamping the result
-            MinerEmissionInput("filler-a", tier=MinerTier.JOURNEYMAN,
-                               manifold_trust=0.5, reputation=1.3, avg_authenticity=0.7),
-            MinerEmissionInput("filler-b", tier=MinerTier.JOURNEYMAN,
-                               manifold_trust=0.5, reputation=1.3, avg_authenticity=0.7),
+            MinerEmissionInput(
+                "filler-a",
+                tier=MinerTier.JOURNEYMAN,
+                manifold_trust=0.5,
+                reputation=1.3,
+                avg_authenticity=0.7,
+            ),
+            MinerEmissionInput(
+                "filler-b",
+                tier=MinerTier.JOURNEYMAN,
+                manifold_trust=0.5,
+                reputation=1.3,
+                avg_authenticity=0.7,
+            ),
         ]
         cycle = calc.compute(inputs)
         master_w = next(e.emission_weight for e in cycle.emissions if e.miner_uid == "master")
-        appr_w   = next(e.emission_weight for e in cycle.emissions if e.miner_uid == "apprentice")
+        appr_w = next(e.emission_weight for e in cycle.emissions if e.miner_uid == "apprentice")
         assert master_w > appr_w
 
     def test_more_precedents_more_weight(self):
         """More precedents = higher weight (other signals equal)."""
         calc = EmissionCalculator()
         inputs = [
-            MinerEmissionInput("high", tier=MinerTier.MASTER,
-                               manifold_trust=0.6, reputation=1.5,
-                               precedent_contributions=50, avg_authenticity=0.7),
-            MinerEmissionInput("low", tier=MinerTier.MASTER,
-                               manifold_trust=0.6, reputation=1.5,
-                               precedent_contributions=0, avg_authenticity=0.7),
+            MinerEmissionInput(
+                "high",
+                tier=MinerTier.MASTER,
+                manifold_trust=0.6,
+                reputation=1.5,
+                precedent_contributions=50,
+                avg_authenticity=0.7,
+            ),
+            MinerEmissionInput(
+                "low",
+                tier=MinerTier.MASTER,
+                manifold_trust=0.6,
+                reputation=1.5,
+                precedent_contributions=0,
+                avg_authenticity=0.7,
+            ),
         ]
         cycle = calc.compute(inputs)
         high_w = next(e.emission_weight for e in cycle.emissions if e.miner_uid == "high")
-        low_w  = next(e.emission_weight for e in cycle.emissions if e.miner_uid == "low")
+        low_w = next(e.emission_weight for e in cycle.emissions if e.miner_uid == "low")
         assert high_w >= low_w
 
     def test_tier_multiplier_recorded(self):
@@ -194,12 +234,18 @@ class TestFloorAndCap:
         calc = EmissionCalculator(max_weight_fraction=0.40)
         # One dominant miner with all signals maxed
         inputs = [
-            MinerEmissionInput("dominant", tier=MinerTier.ELDER,
-                               manifold_trust=1.0, reputation=2.0,
-                               precedent_contributions=1000, avg_authenticity=1.0),
+            MinerEmissionInput(
+                "dominant",
+                tier=MinerTier.ELDER,
+                manifold_trust=1.0,
+                reputation=2.0,
+                precedent_contributions=1000,
+                avg_authenticity=1.0,
+            ),
         ] + [
-            MinerEmissionInput(f"weak-{i}", tier=MinerTier.APPRENTICE,
-                               manifold_trust=0.01, reputation=1.0)
+            MinerEmissionInput(
+                f"weak-{i}", tier=MinerTier.APPRENTICE, manifold_trust=0.01, reputation=1.0
+            )
             for i in range(5)
         ]
         cycle = calc.compute(inputs)
@@ -209,11 +255,16 @@ class TestFloorAndCap:
     def test_floor_applied_to_small_miners(self):
         calc = EmissionCalculator(min_weight_fraction=0.10)
         inputs = [
-            MinerEmissionInput("big", tier=MinerTier.ELDER,
-                               manifold_trust=1.0, reputation=2.0,
-                               precedent_contributions=500),
-            MinerEmissionInput("tiny", tier=MinerTier.APPRENTICE,
-                               manifold_trust=0.001, reputation=1.0),
+            MinerEmissionInput(
+                "big",
+                tier=MinerTier.ELDER,
+                manifold_trust=1.0,
+                reputation=2.0,
+                precedent_contributions=500,
+            ),
+            MinerEmissionInput(
+                "tiny", tier=MinerTier.APPRENTICE, manifold_trust=0.001, reputation=1.0
+            ),
         ]
         cycle = calc.compute(inputs)
         tiny = next(e for e in cycle.emissions if e.miner_uid == "tiny")
@@ -230,9 +281,9 @@ class TestEmissionCycle:
     def _cycle(self) -> EmissionCycle:
         calc = EmissionCalculator()
         inputs = [
-            MinerEmissionInput(f"m{i}", tier=MinerTier.JOURNEYMAN,
-                               manifold_trust=float(i) * 0.2,
-                               reputation=1.2)
+            MinerEmissionInput(
+                f"m{i}", tier=MinerTier.JOURNEYMAN, manifold_trust=float(i) * 0.2, reputation=1.2
+            )
             for i in range(5)
         ]
         return calc.compute(inputs)

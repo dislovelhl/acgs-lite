@@ -186,19 +186,15 @@ class MinerQualityGrid:
         """True when last N challenges produced no improvements globally."""
         if len(self._challenge_log) < self._ceiling_window:
             return False
-        recent = self._challenge_log[-self._ceiling_window:]
+        recent = self._challenge_log[-self._ceiling_window :]
         return not any(replaced for _, replaced, _ in recent)
 
     def ceiling_for_cell(self, coord: CellCoordinate) -> bool:
         """True when last N challenges to this specific cell had no improvement."""
-        cell_challenges = [
-            (replaced, ts)
-            for c, replaced, ts in self._challenge_log
-            if c == coord
-        ]
+        cell_challenges = [(replaced, ts) for c, replaced, ts in self._challenge_log if c == coord]
         if len(cell_challenges) < self._ceiling_window:
             return False
-        recent = cell_challenges[-self._ceiling_window:]
+        recent = cell_challenges[-self._ceiling_window :]
         return not any(replaced for replaced, _ in recent)
 
     def top_miners(self, n: int = 5) -> list[MinerApproach]:
@@ -215,9 +211,7 @@ class MinerQualityGrid:
             "ceiling_detected": self.ceiling_detected(),
             "total_challenges": len(self._challenge_log),
             "unique_miners": len({a.miner_uid for a in self._grid.values()}),
-            "domain_coverage": {
-                d.value: self.domain_coverage(d) for d in GovernanceDomain
-            },
+            "domain_coverage": {d.value: self.domain_coverage(d) for d in GovernanceDomain},
         }
 
     def exploration_bonus(self, miner_uid: str, multiplier: float = 1.1) -> float:
@@ -226,9 +220,7 @@ class MinerQualityGrid:
         Miners that occupy cells with low challenge counts or that
         have contributed to empty-cell-adjacent domains get a bonus.
         """
-        cells_held = sum(
-            1 for a in self._grid.values() if a.miner_uid == miner_uid
-        )
+        cells_held = sum(1 for a in self._grid.values() if a.miner_uid == miner_uid)
         if cells_held == 0:
             return multiplier  # New miner — maximum exploration incentive
         # Bonus decreases as miner occupies more cells (diminishing returns)

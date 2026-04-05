@@ -36,9 +36,11 @@ from clinicalguard.skills.validate_clinical import (
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def constitution():
     from pathlib import Path
+
     yaml_path = Path(__file__).parent.parent / "constitution" / "healthcare_v1.yaml"
     return Constitution.from_yaml(str(yaml_path))
 
@@ -46,6 +48,7 @@ def constitution():
 @pytest.fixture
 def engine(constitution):
     from acgs_lite.engine import GovernanceEngine
+
     return GovernanceEngine(constitution, strict=False)
 
 
@@ -55,6 +58,7 @@ def audit_log():
 
 
 # Mock LLM responses for each scenario
+
 
 def _mock_warfarin_aspirin() -> LLMClinicalAssessment:
     """Scenario 1: Major interaction, CRITICAL → REJECTED."""
@@ -146,6 +150,7 @@ def _mock_adalimumab_no_step_therapy() -> LLMClinicalAssessment:
 
 # ── Scenario 1: Warfarin + Aspirin → REJECTED, CRITICAL ──────────────────────
 
+
 class TestScenario1WarfarinAspirin:
     """Demo scenario 1: catch a major drug interaction before it reaches a patient."""
 
@@ -160,9 +165,7 @@ class TestScenario1WarfarinAspirin:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_aspirin(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert result["decision"] == REJECTED, f"Expected REJECTED, got {result['decision']}"
 
     @pytest.mark.asyncio
@@ -171,9 +174,7 @@ class TestScenario1WarfarinAspirin:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_aspirin(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert result["risk_tier"] == RISK_CRITICAL
 
     @pytest.mark.asyncio
@@ -182,9 +183,7 @@ class TestScenario1WarfarinAspirin:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_aspirin(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert len(result["drug_interactions"]) >= 1
         major = [i for i in result["drug_interactions"] if i["severity"] == "MAJOR"]
         assert major, "Expected at least one MAJOR interaction"
@@ -195,9 +194,7 @@ class TestScenario1WarfarinAspirin:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_aspirin(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert result["audit_id"].startswith("HC-")
         assert result["constitutional_hash"]
         assert result["appeal_path"]  # rejected decisions must have appeal path
@@ -208,9 +205,7 @@ class TestScenario1WarfarinAspirin:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_aspirin(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         # Verify the entry is in the audit log
         entries = [e for e in audit_log.entries if e.id == result["audit_id"]]
         assert len(entries) == 1
@@ -218,6 +213,7 @@ class TestScenario1WarfarinAspirin:
 
 
 # ── Scenario 2: Warfarin + Clopidogrel → CONDITIONAL, HIGH ───────────────────
+
 
 class TestScenario2WarfarinClopidogrel:
     """Demo scenario 2: moderate interaction with conditions."""
@@ -233,9 +229,7 @@ class TestScenario2WarfarinClopidogrel:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_clopidogrel(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert result["decision"] == CONDITIONAL
 
     @pytest.mark.asyncio
@@ -244,9 +238,7 @@ class TestScenario2WarfarinClopidogrel:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_warfarin_clopidogrel(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert len(result["conditions"]) >= 1, "CONDITIONAL must have at least one condition"
 
     @pytest.mark.asyncio
@@ -264,6 +256,7 @@ class TestScenario2WarfarinClopidogrel:
 
 # ── Scenario 3: Adalimumab without step therapy → CONDITIONAL ────────────────
 
+
 class TestScenario3StepTherapy:
     """Demo scenario 3: biologic proposed without documented first-line therapy."""
 
@@ -279,9 +272,7 @@ class TestScenario3StepTherapy:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_adalimumab_no_step_therapy(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         assert result["decision"] == CONDITIONAL
 
     @pytest.mark.asyncio
@@ -290,9 +281,7 @@ class TestScenario3StepTherapy:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_adalimumab_no_step_therapy(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         condition_text = " ".join(result["conditions"]).lower()
         assert any(
             kw in condition_text for kw in ["step therapy", "mtx", "hc-004", "methotrexate"]
@@ -306,9 +295,7 @@ class TestScenario3StepTherapy:
             "clinicalguard.skills.validate_clinical.get_llm_assessment",
             return_value=_mock_adalimumab_no_step_therapy(),
         ):
-            result = await validate_clinical_action(
-                self.ACTION, engine=engine, audit_log=audit_log
-            )
+            result = await validate_clinical_action(self.ACTION, engine=engine, audit_log=audit_log)
         # HC-004 keywords: "no prior treatment" → should fire
         rule_ids = [v["rule_id"] for v in result.get("violations", [])]
         assert "HC-004" in rule_ids, (
@@ -334,9 +321,7 @@ class TestScenario3StepTherapy:
                 "clinicalguard.skills.validate_clinical.get_llm_assessment",
                 return_value=mock_llm,
             ):
-                result = await validate_clinical_action(
-                    action, engine=engine, audit_log=audit_log
-                )
+                result = await validate_clinical_action(action, engine=engine, audit_log=audit_log)
                 audit_ids.append(result["audit_id"])
 
         # Chain must be valid after 3 entries
@@ -348,6 +333,7 @@ class TestScenario3StepTherapy:
 
         # All entries queryable
         from clinicalguard.skills.audit_query import query_audit_trail
+
         for aid in audit_ids:
             response = query_audit_trail(audit_log, audit_id=aid)
             assert response["found"] is True

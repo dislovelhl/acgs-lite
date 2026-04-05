@@ -1,4 +1,5 @@
 """Shim for src.core.shared.policy.unified_generator."""
+
 from __future__ import annotations
 
 from typing import Any

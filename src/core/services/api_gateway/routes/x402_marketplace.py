@@ -198,7 +198,9 @@ def _evaluate_governance_action(
 def _build_triggered_rules(constitution: Any, result: Any) -> list[dict[str, Any]]:
     triggered_rules: list[dict[str, Any]] = []
     for violation in result.violations:
-        rule = constitution.get_rule(violation.rule_id) if hasattr(constitution, "get_rule") else None
+        rule = (
+            constitution.get_rule(violation.rule_id) if hasattr(constitution, "get_rule") else None
+        )
         triggered_rules.append(
             {
                 "id": violation.rule_id,
@@ -912,9 +914,7 @@ async def explain_decision(request: Request, body: ExplainRequest) -> dict[str, 
         explanation = explainer.explain(
             decision_id=str(result.request_id or "x402-explain"),
             outcome=(
-                "deny"
-                if result.blocking_violations
-                else ("warn" if result.violations else "allow")
+                "deny" if result.blocking_violations else ("warn" if result.violations else "allow")
             ),
             triggered_rules=_build_triggered_rules(constitution, result),
             input_text=body.action,

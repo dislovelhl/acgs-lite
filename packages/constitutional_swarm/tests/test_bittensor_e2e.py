@@ -694,10 +694,7 @@ class TestConcurrentAccess:
             except Exception as exc:
                 errors.append(exc)
 
-        threads = [
-            threading.Thread(target=_validate, args=(f"miner-{i}",))
-            for i in range(5)
-        ]
+        threads = [threading.Thread(target=_validate, args=(f"miner-{i}",)) for i in range(5)]
         for t in threads:
             t.start()
         for t in threads:

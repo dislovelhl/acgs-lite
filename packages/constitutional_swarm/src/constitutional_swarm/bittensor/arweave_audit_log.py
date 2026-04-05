@@ -46,11 +46,11 @@ from typing import Any, Protocol
 
 
 class AuditDecisionType(Enum):
-    AUTO_PASS    = "auto_pass"
-    AUTO_REJECT  = "auto_reject"  # constitutional violation, hard reject
-    ESCALATED    = "escalated"    # sent to human miners
-    INFRA_ERROR  = "infra_error"  # timeout, missing data, service failure
-    PRECEDENT    = "precedent"    # auto-resolved via PrecedentStore
+    AUTO_PASS = "auto_pass"
+    AUTO_REJECT = "auto_reject"  # constitutional violation, hard reject
+    ESCALATED = "escalated"  # sent to human miners
+    INFRA_ERROR = "infra_error"  # timeout, missing data, service failure
+    PRECEDENT = "precedent"  # auto-resolved via PrecedentStore
 
 
 # ---------------------------------------------------------------------------
@@ -501,9 +501,7 @@ class ArweaveAuditLogger:
             "pending": self._pending_count_safe(),
             "total_flushed": sum(r.entry_count for r in self._receipts),
             "batches_stored": len(self._receipts),
-            "latest_block": (
-                self._receipts[-1].block_height if self._receipts else None
-            ),
+            "latest_block": (self._receipts[-1].block_height if self._receipts else None),
         }
 
     def _pending_count_safe(self) -> int:

@@ -46,16 +46,15 @@ from constitutional_swarm.bittensor.protocol import TIER_TAO_MULTIPLIER, MinerTi
 class EmissionWeights:
     """Relative importance of each signal in the emission formula."""
 
-    manifold_trust: float   = 0.30
-    reputation:     float   = 0.25
-    tier:           float   = 0.20
-    precedent:      float   = 0.15
-    authenticity:   float   = 0.10
+    manifold_trust: float = 0.30
+    reputation: float = 0.25
+    tier: float = 0.20
+    precedent: float = 0.15
+    authenticity: float = 0.10
 
     def __post_init__(self) -> None:
         total = (
-            self.manifold_trust + self.reputation + self.tier
-            + self.precedent + self.authenticity
+            self.manifold_trust + self.reputation + self.tier + self.precedent + self.authenticity
         )
         if abs(total - 1.0) > 1e-6:
             raise ValueError(f"EmissionWeights must sum to 1.0, got {total:.6f}")
@@ -75,11 +74,11 @@ class MinerEmissionInput:
 
     miner_uid: str
     tier: MinerTier = MinerTier.APPRENTICE
-    manifold_trust: float = 0.0        # from GovernanceManifold column sum
-    reputation: float = 1.0            # from ConstitutionalMesh
-    precedent_contributions: int = 0   # from PrecedentStore
-    avg_authenticity: float = 0.0      # from AuthenticityDetector rolling avg
-    is_active: bool = True             # inactive miners get zero weight
+    manifold_trust: float = 0.0  # from GovernanceManifold column sum
+    reputation: float = 1.0  # from ConstitutionalMesh
+    precedent_contributions: int = 0  # from PrecedentStore
+    avg_authenticity: float = 0.0  # from AuthenticityDetector rolling avg
+    is_active: bool = True  # inactive miners get zero weight
 
 
 # ---------------------------------------------------------------------------
@@ -92,8 +91,8 @@ class MinerEmission:
     """Computed emission for one miner."""
 
     miner_uid: str
-    raw_score: float          # before normalization + clamping
-    emission_weight: float    # final normalized weight (0.0 - 1.0)
+    raw_score: float  # before normalization + clamping
+    emission_weight: float  # final normalized weight (0.0 - 1.0)
     tier_multiplier: float
     was_floor_applied: bool
     was_cap_applied: bool
@@ -141,8 +140,7 @@ class EmissionCycle:
             "weight_sum": round(self.weight_sum, 9),
             "max_weight": round(self.max_weight, 6),
             "top_3": [
-                {"miner": e.miner_uid, "weight": round(e.emission_weight, 6)}
-                for e in self.top_k(3)
+                {"miner": e.miner_uid, "weight": round(e.emission_weight, 6)} for e in self.top_k(3)
             ],
         }
 
@@ -204,36 +202,40 @@ class EmissionCalculator:
 
         Returns EmissionCycle with all MinerEmission records.
         """
-        active = [inp for inp in inputs if inp.is_active
-                  and _TIER_ORDER[inp.tier] >= self._min_tier_order]
+        active = [
+            inp for inp in inputs if inp.is_active and _TIER_ORDER[inp.tier] >= self._min_tier_order
+        ]
 
         if not active:
             return EmissionCycle(
-                emissions=[MinerEmission(
-                    miner_uid=inp.miner_uid,
-                    raw_score=0.0,
-                    emission_weight=0.0,
-                    tier_multiplier=TIER_TAO_MULTIPLIER[inp.tier],
-                    was_floor_applied=False,
-                    was_cap_applied=False,
-                ) for inp in inputs],
+                emissions=[
+                    MinerEmission(
+                        miner_uid=inp.miner_uid,
+                        raw_score=0.0,
+                        emission_weight=0.0,
+                        tier_multiplier=TIER_TAO_MULTIPLIER[inp.tier],
+                        was_floor_applied=False,
+                        was_cap_applied=False,
+                    )
+                    for inp in inputs
+                ],
                 total_miners=len(inputs),
                 active_miners=0,
                 weights=self._weights,
             )
 
         # --- Step 2: normalize each signal across active miners ---
-        trust_vals    = [inp.manifold_trust for inp in active]
-        rep_vals      = [inp.reputation     for inp in active]
-        prec_vals     = [float(inp.precedent_contributions) for inp in active]
-        auth_vals     = [inp.avg_authenticity for inp in active]
-        tier_vals     = [TIER_TAO_MULTIPLIER[inp.tier] for inp in active]
+        trust_vals = [inp.manifold_trust for inp in active]
+        rep_vals = [inp.reputation for inp in active]
+        prec_vals = [float(inp.precedent_contributions) for inp in active]
+        auth_vals = [inp.avg_authenticity for inp in active]
+        tier_vals = [TIER_TAO_MULTIPLIER[inp.tier] for inp in active]
 
-        n_trust  = _normalize_vec(trust_vals)
-        n_rep    = _normalize_vec(rep_vals)
-        n_prec   = _normalize_vec(prec_vals)
-        n_auth   = _normalize_vec(auth_vals)
-        n_tier   = _normalize_vec(tier_vals)
+        n_trust = _normalize_vec(trust_vals)
+        n_rep = _normalize_vec(rep_vals)
+        n_prec = _normalize_vec(prec_vals)
+        n_auth = _normalize_vec(auth_vals)
+        n_tier = _normalize_vec(tier_vals)
 
         # --- Step 3+4: raw score ---
         w = self._weights
@@ -241,9 +243,9 @@ class EmissionCalculator:
         for i, inp in enumerate(active):
             score = (
                 w.manifold_trust * n_trust[i]
-                + w.reputation   * n_rep[i]
-                + w.tier         * n_tier[i]
-                + w.precedent    * n_prec[i]
+                + w.reputation * n_rep[i]
+                + w.tier * n_tier[i]
+                + w.precedent * n_prec[i]
                 + w.authenticity * n_auth[i]
             )
             # Tier multiplier boosts relative score
@@ -256,20 +258,22 @@ class EmissionCalculator:
         # --- Step 6: floor and cap (iterative until stable) ---
         n = len(active)
         floor = self._min_frac / n if n > 0 else 0.0
-        cap   = self._max_frac
+        cap = self._max_frac
         final = _apply_floor_cap(raw_weights, floor, cap)
 
         # --- Build results ---
         emissions_active = []
         for i, inp in enumerate(active):
-            emissions_active.append(MinerEmission(
-                miner_uid=inp.miner_uid,
-                raw_score=raw[i],
-                emission_weight=final[i],
-                tier_multiplier=TIER_TAO_MULTIPLIER[inp.tier],
-                was_floor_applied=(final[i] > raw_weights[i] and raw_weights[i] < floor + 1e-9),
-                was_cap_applied=(final[i] < raw_weights[i] - 1e-9),
-            ))
+            emissions_active.append(
+                MinerEmission(
+                    miner_uid=inp.miner_uid,
+                    raw_score=raw[i],
+                    emission_weight=final[i],
+                    tier_multiplier=TIER_TAO_MULTIPLIER[inp.tier],
+                    was_floor_applied=(final[i] > raw_weights[i] and raw_weights[i] < floor + 1e-9),
+                    was_cap_applied=(final[i] < raw_weights[i] - 1e-9),
+                )
+            )
 
         # Zero weight for inactive / below-tier miners
         active_uids = {inp.miner_uid for inp in active}
@@ -282,7 +286,8 @@ class EmissionCalculator:
                 was_floor_applied=False,
                 was_cap_applied=False,
             )
-            for inp in inputs if inp.miner_uid not in active_uids
+            for inp in inputs
+            if inp.miner_uid not in active_uids
         ]
 
         return EmissionCycle(
@@ -301,8 +306,8 @@ class EmissionCalculator:
 _TIER_ORDER: dict[MinerTier, int] = {
     MinerTier.APPRENTICE: 0,
     MinerTier.JOURNEYMAN: 1,
-    MinerTier.MASTER:     2,
-    MinerTier.ELDER:      3,
+    MinerTier.MASTER: 2,
+    MinerTier.ELDER: 3,
 }
 
 
@@ -346,10 +351,7 @@ def _apply_floor_cap(
             break
 
         # Redistribute excess proportionally to uncapped miners
-        w = [
-            v + excess * (v / uncapped_sum) if v < cap - 1e-9 else v
-            for v in locked
-        ]
+        w = [v + excess * (v / uncapped_sum) if v < cap - 1e-9 else v for v in locked]
 
     # Final normalize
     return _safe_normalize(w)

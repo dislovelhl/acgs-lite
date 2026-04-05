@@ -30,6 +30,7 @@ from acgs_lite.constitution.core import Constitution, Rule, Severity
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _rule(
     rid: str,
     text: str = "test rule",
@@ -330,10 +331,12 @@ class TestResolveConflicts:
     def test_severity_precedence(self):
         from acgs_lite.constitution.conflict_resolution import resolve_conflicts
 
-        c = _const([
-            _rule("R1", severity=Severity.CRITICAL),
-            _rule("R2", severity=Severity.LOW),
-        ])
+        c = _const(
+            [
+                _rule("R1", severity=Severity.CRITICAL),
+                _rule("R2", severity=Severity.LOW),
+            ]
+        )
         conflicts = [{"rule_a": "R1", "rule_b": "R2"}]
         result = resolve_conflicts(c, conflicts)
         assert len(result["resolutions"]) == 1
@@ -343,10 +346,12 @@ class TestResolveConflicts:
     def test_specificity_precedence(self):
         from acgs_lite.constitution.conflict_resolution import resolve_conflicts
 
-        c = _const([
-            _rule("R1", keywords=["a", "b", "c"]),
-            _rule("R2", keywords=["a"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["a", "b", "c"]),
+                _rule("R2", keywords=["a"]),
+            ]
+        )
         conflicts = [{"rule_a": "R1", "rule_b": "R2"}]
         result = resolve_conflicts(c, conflicts)
         assert result["resolutions"][0]["winner"] == "R1"
@@ -355,10 +360,12 @@ class TestResolveConflicts:
     def test_hardcoded_precedence(self):
         from acgs_lite.constitution.conflict_resolution import resolve_conflicts
 
-        c = _const([
-            _rule("R1", keywords=["a"], hardcoded=True),
-            _rule("R2", keywords=["a"], hardcoded=False),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["a"], hardcoded=True),
+                _rule("R2", keywords=["a"], hardcoded=False),
+            ]
+        )
         conflicts = [{"rule_a": "R1", "rule_b": "R2"}]
         result = resolve_conflicts(c, conflicts)
         assert result["resolutions"][0]["winner"] == "R1"
@@ -367,10 +374,12 @@ class TestResolveConflicts:
     def test_unresolved_when_equal(self):
         from acgs_lite.constitution.conflict_resolution import resolve_conflicts
 
-        c = _const([
-            _rule("R1", keywords=["a"]),
-            _rule("R2", keywords=["b"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["a"]),
+                _rule("R2", keywords=["b"]),
+            ]
+        )
         conflicts = [{"rule_a": "R1", "rule_b": "R2"}]
         result = resolve_conflicts(c, conflicts)
         assert len(result["unresolved"]) == 1
@@ -405,10 +414,12 @@ class TestDetectSemanticConflicts:
         from acgs_lite.constitution.conflict_resolution import detect_semantic_conflicts
 
         emb = [1.0, 0.0, 0.0]
-        c = _const([
-            _rule("R1", embedding=emb, severity=Severity.HIGH),
-            _rule("R2", embedding=emb, severity=Severity.HIGH),
-        ])
+        c = _const(
+            [
+                _rule("R1", embedding=emb, severity=Severity.HIGH),
+                _rule("R2", embedding=emb, severity=Severity.HIGH),
+            ]
+        )
         result = detect_semantic_conflicts(c)
         assert result["has_conflicts"] is False
 
@@ -416,10 +427,12 @@ class TestDetectSemanticConflicts:
         from acgs_lite.constitution.conflict_resolution import detect_semantic_conflicts
 
         emb = [1.0, 0.0, 0.0]
-        c = _const([
-            _rule("R1", embedding=emb, severity=Severity.HIGH),
-            _rule("R2", embedding=emb, severity=Severity.LOW),
-        ])
+        c = _const(
+            [
+                _rule("R1", embedding=emb, severity=Severity.HIGH),
+                _rule("R2", embedding=emb, severity=Severity.LOW),
+            ]
+        )
         result = detect_semantic_conflicts(c)
         assert result["has_conflicts"] is True
         assert result["conflict_count"] == 1
@@ -428,10 +441,12 @@ class TestDetectSemanticConflicts:
         from acgs_lite.constitution.conflict_resolution import detect_semantic_conflicts
 
         emb = [1.0, 0.0, 0.0]
-        c = _const([
-            _rule("R1", embedding=emb, workflow_action="block"),
-            _rule("R2", embedding=emb, workflow_action="warn"),
-        ])
+        c = _const(
+            [
+                _rule("R1", embedding=emb, workflow_action="block"),
+                _rule("R2", embedding=emb, workflow_action="warn"),
+            ]
+        )
         result = detect_semantic_conflicts(c)
         assert result["has_conflicts"] is True
 
@@ -625,10 +640,12 @@ class TestFilter:
     def test_filter_by_severity(self):
         from acgs_lite.constitution.filtering import filter
 
-        c = _const([
-            _rule("R1", severity=Severity.HIGH),
-            _rule("R2", severity=Severity.LOW),
-        ])
+        c = _const(
+            [
+                _rule("R1", severity=Severity.HIGH),
+                _rule("R2", severity=Severity.LOW),
+            ]
+        )
         result = filter(c, severity="high")
         assert len(result.rules) == 1
         assert result.rules[0].id == "R1"
@@ -636,11 +653,13 @@ class TestFilter:
     def test_filter_by_min_severity(self):
         from acgs_lite.constitution.filtering import filter
 
-        c = _const([
-            _rule("R1", severity=Severity.CRITICAL),
-            _rule("R2", severity=Severity.LOW),
-            _rule("R3", severity=Severity.HIGH),
-        ])
+        c = _const(
+            [
+                _rule("R1", severity=Severity.CRITICAL),
+                _rule("R2", severity=Severity.LOW),
+                _rule("R3", severity=Severity.HIGH),
+            ]
+        )
         result = filter(c, min_severity="high")
         ids = [r.id for r in result.rules]
         assert "R1" in ids
@@ -650,20 +669,24 @@ class TestFilter:
     def test_filter_by_category(self):
         from acgs_lite.constitution.filtering import filter
 
-        c = _const([
-            _rule("R1", category="safety"),
-            _rule("R2", category="privacy"),
-        ])
+        c = _const(
+            [
+                _rule("R1", category="safety"),
+                _rule("R2", category="privacy"),
+            ]
+        )
         result = filter(c, category="safety")
         assert len(result.rules) == 1
 
     def test_filter_by_tag(self):
         from acgs_lite.constitution.filtering import filter
 
-        c = _const([
-            _rule("R1", tags=["gdpr"]),
-            _rule("R2", tags=["sox"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", tags=["gdpr"]),
+                _rule("R2", tags=["sox"]),
+            ]
+        )
         result = filter(c, tag="gdpr")
         assert len(result.rules) == 1
         assert result.rules[0].id == "R1"
@@ -671,20 +694,24 @@ class TestFilter:
     def test_filter_by_workflow_action(self):
         from acgs_lite.constitution.filtering import filter
 
-        c = _const([
-            _rule("R1", workflow_action="block"),
-            _rule("R2", workflow_action="warn"),
-        ])
+        c = _const(
+            [
+                _rule("R1", workflow_action="block"),
+                _rule("R2", workflow_action="warn"),
+            ]
+        )
         result = filter(c, workflow_action="block")
         assert len(result.rules) == 1
 
     def test_filter_enabled_only(self):
         from acgs_lite.constitution.filtering import filter
 
-        c = _const([
-            _rule("R1", enabled=True),
-            _rule("R2", enabled=False),
-        ])
+        c = _const(
+            [
+                _rule("R1", enabled=True),
+                _rule("R2", enabled=False),
+            ]
+        )
         result = filter(c, enabled_only=True)
         assert len(result.rules) == 1
 
@@ -1249,11 +1276,14 @@ class TestGraduatedEnforcer:
         )
 
         ge = GraduatedEnforcer()
-        ge.set_policy("R1", EscalationPolicy(
-            warn_threshold=1,
-            throttle_threshold=3,
-            block_threshold=5,
-        ))
+        ge.set_policy(
+            "R1",
+            EscalationPolicy(
+                warn_threshold=1,
+                throttle_threshold=3,
+                block_threshold=5,
+            ),
+        )
         for _ in range(3):
             ge.record_violation("R1", actor="bot")
         assert ge.evaluate("R1", actor="bot") == EnforcementLevel.THROTTLE
@@ -1266,9 +1296,15 @@ class TestGraduatedEnforcer:
         )
 
         ge = GraduatedEnforcer()
-        ge.set_policy("R1", EscalationPolicy(
-            warn_threshold=0, block_threshold=3, cooldown_seconds=10, auto_reset=True,
-        ))
+        ge.set_policy(
+            "R1",
+            EscalationPolicy(
+                warn_threshold=0,
+                block_threshold=3,
+                cooldown_seconds=10,
+                auto_reset=True,
+            ),
+        )
         base = 1000.0
         for i in range(2):
             ge.record_violation("R1", actor="bot", now=base + i)
@@ -1408,9 +1444,15 @@ class TestGraduatedEnforcer:
         )
 
         ge = GraduatedEnforcer()
-        ge.set_policy("R1", EscalationPolicy(
-            warn_threshold=0, block_threshold=3, cooldown_seconds=10, auto_reset=True,
-        ))
+        ge.set_policy(
+            "R1",
+            EscalationPolicy(
+                warn_threshold=0,
+                block_threshold=3,
+                cooldown_seconds=10,
+                auto_reset=True,
+            ),
+        )
         base = 1000.0
         ge.record_violation("R1", actor="bot", now=base)
         ge.record_violation("R1", actor="bot", now=base + 1)
@@ -1661,20 +1703,24 @@ class TestFindDuplicates:
     def test_no_duplicates(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["alpha"]),
-            _rule("R2", keywords=["beta"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["alpha"]),
+                _rule("R2", keywords=["beta"]),
+            ]
+        )
         report = find_duplicates(c)
         assert not report.has_duplicates
 
     def test_exact_duplicates(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         report = find_duplicates(c)
         assert len(report.exact_groups) == 1
         assert len(report.strictly_redundant_ids) == 1
@@ -1682,10 +1728,12 @@ class TestFindDuplicates:
     def test_subset_redundancy(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data"], severity=Severity.HIGH, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data"], severity=Severity.HIGH, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         report = find_duplicates(c)
         assert len(report.subset_pairs) == 1
         assert report.subset_pairs[0].subset_id == "R1"
@@ -1694,10 +1742,12 @@ class TestFindDuplicates:
     def test_subset_different_severity_not_strict(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data"], severity=Severity.LOW, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data"], severity=Severity.LOW, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         report = find_duplicates(c)
         if report.subset_pairs:
             assert report.subset_pairs[0].is_strictly_redundant is False
@@ -1705,30 +1755,36 @@ class TestFindDuplicates:
     def test_near_duplicates(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data", "access", "privacy", "pii", "security", "audit"]),
-            _rule("R2", keywords=["data", "access", "privacy", "pii", "security", "review"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data", "access", "privacy", "pii", "security", "audit"]),
+                _rule("R2", keywords=["data", "access", "privacy", "pii", "security", "review"]),
+            ]
+        )
         report = find_duplicates(c, near_threshold=0.7)
         assert len(report.near_duplicate_pairs) >= 1
 
     def test_disabled_rules_excluded(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data"], enabled=False),
-            _rule("R2", keywords=["data"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data"], enabled=False),
+                _rule("R2", keywords=["data"]),
+            ]
+        )
         report = find_duplicates(c)
         assert not report.has_duplicates
 
     def test_deprecated_rules_excluded(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data"], deprecated=True),
-            _rule("R2", keywords=["data"]),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data"], deprecated=True),
+                _rule("R2", keywords=["data"]),
+            ]
+        )
         report = find_duplicates(c)
         assert not report.has_duplicates
 
@@ -1752,10 +1808,12 @@ class TestFindDuplicates:
     def test_report_render_text(self):
         from acgs_lite.constitution.deduplication import find_duplicates
 
-        c = _const([
-            _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         report = find_duplicates(c)
         text = report.render_text()
         assert "Duplication Report" in text
@@ -1780,30 +1838,36 @@ class TestDeduplicate:
     def test_removes_exact_duplicates(self):
         from acgs_lite.constitution.deduplication import deduplicate
 
-        c = _const([
-            _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         result, report = deduplicate(c)
         assert len(result.rules) == 1
 
     def test_keep_most_keywords_strategy(self):
         from acgs_lite.constitution.deduplication import deduplicate
 
-        c = _const([
-            _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         result, _ = deduplicate(c, strategy="keep_most_keywords")
         assert len(result.rules) == 1
 
     def test_keep_oldest_strategy(self):
         from acgs_lite.constitution.deduplication import deduplicate
 
-        c = _const([
-            _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-            _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
-        ])
+        c = _const(
+            [
+                _rule("R1", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+                _rule("R2", keywords=["data", "access"], severity=Severity.HIGH, category="safety"),
+            ]
+        )
         result, _ = deduplicate(c, strategy="keep_oldest")
         assert len(result.rules) == 1
 

@@ -115,7 +115,8 @@ class ValidatorDendriteClient:
             try:
                 if timeout is not None:
                     result = await asyncio.wait_for(
-                        server.forward(syn), timeout=timeout,
+                        server.forward(syn),
+                        timeout=timeout,
                     )
                 else:
                     result = await server.forward(syn)

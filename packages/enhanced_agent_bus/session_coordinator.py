@@ -91,7 +91,9 @@ class SessionCoordinator:
         self._session_not_found_count = session_not_found_count
         self._session_error_count = session_error_count
 
-    def export_runtime_state(self) -> tuple[bool, SessionContextManager | None, SessionContextResolver, int, int, int]:
+    def export_runtime_state(
+        self,
+    ) -> tuple[bool, SessionContextManager | None, SessionContextResolver, int, int, int]:
         return (
             self._enable_session_governance,
             self._session_context_manager,

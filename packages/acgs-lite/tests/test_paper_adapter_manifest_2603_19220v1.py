@@ -9,9 +9,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXTRACT_PATH = REPO_ROOT / "autoresearch" / "paper_extracts" / "2603_19220v1.json"
-MANIFEST_PATH = (
-    REPO_ROOT / "autoresearch" / "paper_extracts" / "2603_19220v1_adapter_manifest.json"
-)
+MANIFEST_PATH = REPO_ROOT / "autoresearch" / "paper_extracts" / "2603_19220v1_adapter_manifest.json"
 
 
 @pytest.mark.skipif(not EXTRACT_PATH.exists(), reason="paper extract not generated")

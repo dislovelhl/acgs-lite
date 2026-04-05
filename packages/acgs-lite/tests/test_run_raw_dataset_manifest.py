@@ -18,6 +18,7 @@ try:
         run_manifest,
         select_rows,
     )
+
     _AUTORESEARCH_AVAILABLE = True
 except ImportError:
     _AUTORESEARCH_AVAILABLE = False
@@ -65,7 +66,9 @@ def test_select_rows_supports_offset_limit_and_seeded_sampling() -> None:
 
     assert [row["id"] for row in select_rows(rows, offset=1, limit=2)] == ["r2", "r3"]
     assert [row["id"] for row in select_rows(rows, offset=1, sample_size=2, seed=7)] == ["r3", "r2"]
-    assert [row["id"] for row in select_rows(rows, offset=1, sample_size=2, seed=7, limit=1)] == ["r3"]
+    assert [row["id"] for row in select_rows(rows, offset=1, sample_size=2, seed=7, limit=1)] == [
+        "r3"
+    ]
     stratified = select_rows(rows, sample_size=2, seed=7, stratify_by="kind")
     assert {row["kind"] for row in stratified} == {"a", "b"}
 

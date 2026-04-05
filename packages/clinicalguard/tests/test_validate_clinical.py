@@ -28,6 +28,7 @@ from clinicalguard.skills.validate_clinical import (
 @pytest.fixture
 def engine():
     from pathlib import Path
+
     yaml_path = Path(__file__).parent.parent / "constitution" / "healthcare_v1.yaml"
     constitution = Constitution.from_yaml(str(yaml_path))
     return GovernanceEngine(constitution, strict=False)
@@ -166,13 +167,21 @@ class TestConstitutionalRules:
                 audit_log=audit_log,
             )
         rule_ids = [v["rule_id"] for v in result.get("violations", [])]
-        assert "HC-005" in rule_ids, f"HC-005 should fire on 'skip interaction check', got: {rule_ids}"
+        assert "HC-005" in rule_ids, (
+            f"HC-005 should fire on 'skip interaction check', got: {rule_ids}"
+        )
 
     @pytest.mark.asyncio
     async def test_llm_detects_drug_interaction_semantically(self, engine, audit_log):
         """Drug interactions are detected by LLM, returned in drug_interactions field."""
         mock = _clean_assessment(
-            drug_interactions=[{"drugs": ["Warfarin", "Aspirin"], "severity": "MAJOR", "description": "bleeding risk"}],
+            drug_interactions=[
+                {
+                    "drugs": ["Warfarin", "Aspirin"],
+                    "severity": "MAJOR",
+                    "description": "bleeding risk",
+                }
+            ],
             recommended_decision=REJECTED,
             risk_tier=RISK_CRITICAL,
         )

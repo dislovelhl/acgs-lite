@@ -73,11 +73,7 @@ def _make_action(*, risk: RiskLevel, operation: OperationType) -> ActionEnvelope
 class TestOpenShellGovernanceIntegration:
     def test_app_registers_expected_routes(self) -> None:
         app = create_openshell_governance_app()
-        paths = {
-            route.path
-            for route in app.routes
-            if isinstance(route, APIRoute)
-        }
+        paths = {route.path for route in app.routes if isinstance(route, APIRoute)}
         assert "/governance/evaluate-action" in paths
         assert "/governance/submit-for-approval" in paths
         assert "/governance/review-approval" in paths

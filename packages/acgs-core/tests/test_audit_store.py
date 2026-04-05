@@ -111,9 +111,7 @@ class TestSQLiteAuditStore(SharedStoreTests):
         assert store.verify_chain() is True
 
         # Tamper with an entry
-        store._conn.execute(
-            "UPDATE audit_entries SET action = 'TAMPERED' WHERE id = 'entry-2'"
-        )
+        store._conn.execute("UPDATE audit_entries SET action = 'TAMPERED' WHERE id = 'entry-2'")
         store._conn.commit()
         assert store.verify_chain() is False
 

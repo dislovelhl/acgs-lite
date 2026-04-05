@@ -55,4 +55,3 @@ def test_build_feedback_event_uses_public_tenant_bucket_and_feedback_fields() ->
     assert event.feedback_type == "general"
     assert event.metadata["rating"] == 2
     assert event.workload_key.startswith("public/api_gateway/gateway_feedback/")
-

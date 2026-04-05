@@ -126,8 +126,7 @@ _UK_ITEMS: list[tuple[str, str, str, str | None, bool]] = [
         "Identify and assess risks of unfair outcomes or discrimination against "
         "protected groups under the Equality Act 2010 arising from the AI "
         "system's design or use.",
-        "UK AI White Paper (Cm 9315, 2023), Principle 3 — Fairness; "
-        "Equality Act 2010",
+        "UK AI White Paper (Cm 9315, 2023), Principle 3 — Fairness; Equality Act 2010",
         "RiskClassifier — protected characteristic risk flags",
         True,
     ),

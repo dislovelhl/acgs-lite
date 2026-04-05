@@ -150,6 +150,7 @@ class TemplateRegistry:
             )
 
         import copy
+
         self._templates[slug] = copy.deepcopy(template_data)
         meta = TemplateMetadata(
             slug=slug,
@@ -178,6 +179,7 @@ class TemplateRegistry:
             available = ", ".join(sorted(self._templates.keys()))
             raise KeyError(f"Unknown template '{slug}'. Available: {available}")
         import copy
+
         return copy.deepcopy(self._templates[slug])
 
     def load_from_file(self, path: str | Path) -> dict[str, Any]:
@@ -194,6 +196,7 @@ class TemplateRegistry:
         if filepath.suffix in (".yaml", ".yml"):
             try:
                 import yaml
+
                 data = yaml.safe_load(text)
             except ImportError as exc:
                 raise ImportError("PyYAML required for YAML templates: pip install pyyaml") from exc
@@ -227,7 +230,10 @@ class TemplateRegistry:
                     if slug in self._metadata:
                         loaded.append(self._metadata[slug])
                 except Exception as exc:
-                    logger.warning("template_load_failed", extra={"path": str(filepath), "error": type(exc).__name__})
+                    logger.warning(
+                        "template_load_failed",
+                        extra={"path": str(filepath), "error": type(exc).__name__},
+                    )
 
         return loaded
 

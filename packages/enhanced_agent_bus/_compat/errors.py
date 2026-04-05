@@ -4,6 +4,7 @@ This is the most critical shim — ACGSBaseError is the root of the exception
 hierarchy and is imported by fallback_stubs.py early in the boot chain.
 The standalone fallback must be self-contained (no imports from other _compat modules).
 """
+
 from __future__ import annotations
 
 try:
@@ -102,8 +103,15 @@ except ImportError:
         http_status_code = 403
         error_code = "CONSTITUTIONAL_VIOLATION"
 
-        def __init__(self, message: str, *, violations: list[str] | None = None,
-                     policy_id: str | None = None, action: str | None = None, **kw) -> None:
+        def __init__(
+            self,
+            message: str,
+            *,
+            violations: list[str] | None = None,
+            policy_id: str | None = None,
+            action: str | None = None,
+            **kw,
+        ) -> None:
             details = kw.pop("details", {}) or {}
             if violations:
                 details["violations"] = violations
@@ -120,12 +128,23 @@ except ImportError:
         http_status_code = 403
         error_code = "MACI_ENFORCEMENT_FAILURE"
 
-        def __init__(self, message: str, *, agent_id: str | None = None,
-                     role: str | None = None, action: str | None = None,
-                     target_agent_id: str | None = None, **kw) -> None:
+        def __init__(
+            self,
+            message: str,
+            *,
+            agent_id: str | None = None,
+            role: str | None = None,
+            action: str | None = None,
+            target_agent_id: str | None = None,
+            **kw,
+        ) -> None:
             details = kw.pop("details", {}) or {}
-            for k, v in [("agent_id", agent_id), ("role", role),
-                         ("action", action), ("target_agent_id", target_agent_id)]:
+            for k, v in [
+                ("agent_id", agent_id),
+                ("role", role),
+                ("action", action),
+                ("target_agent_id", target_agent_id),
+            ]:
                 if v:
                     details[k] = v
             super().__init__(message, details=details, **kw)
@@ -161,8 +180,9 @@ except ImportError:
         http_status_code = 429
         error_code = "RATE_LIMIT_EXCEEDED"
 
-        def __init__(self, message: str, *, limit: int | None = None,
-                     retry_after: int | None = None, **kw) -> None:
+        def __init__(
+            self, message: str, *, limit: int | None = None, retry_after: int | None = None, **kw
+        ) -> None:
             super().__init__(message, **kw)
             self.limit = limit
             self.retry_after = retry_after
@@ -203,4 +223,6 @@ except ImportError:
                 def __init__(self, **kw: object) -> None:
                     pass
 
-        return JSONResponse(status_code=429, content={"error": "Too Many Requests", "message": exc.message})
+        return JSONResponse(
+            status_code=429, content={"error": "Too Many Requests", "message": exc.message}
+        )

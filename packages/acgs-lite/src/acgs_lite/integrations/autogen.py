@@ -103,7 +103,9 @@ class GovernedModelClient:
         strict: bool = True,
     ) -> None:
         if not AUTOGEN_AVAILABLE:
-            raise ImportError("autogen-core is required. Install with: pip install acgs-lite[autogen]")
+            raise ImportError(
+                "autogen-core is required. Install with: pip install acgs-lite[autogen]"
+            )
 
         self._client = client
         self.constitution = constitution or Constitution.default()

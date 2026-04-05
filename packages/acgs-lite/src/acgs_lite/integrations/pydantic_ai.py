@@ -72,7 +72,9 @@ class GovernedPydanticAgent(GovernedBase):
 
         self._agent = agent
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     @classmethod
@@ -173,7 +175,9 @@ class GovernedModel(GovernedBase):
 
         self._model = model
         self._init_governance(
-            constitution=constitution, agent_id=agent_id, strict=strict,
+            constitution=constitution,
+            agent_id=agent_id,
+            strict=strict,
         )
 
     def _extract_messages_text(self, messages: Any) -> str:

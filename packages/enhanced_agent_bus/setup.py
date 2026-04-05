@@ -11,9 +11,21 @@ import os
 from setuptools import setup
 
 SKIP = {
-    "tests", "__pycache__", ".pytest_cache", ".ruff_cache", "build",
-    "docs", "data", "rust", "runtime", "specs", "node_modules",
-    "fixtures", "examples", "htmlcov", ".mypy_cache",
+    "tests",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "build",
+    "docs",
+    "data",
+    "rust",
+    "runtime",
+    "specs",
+    "node_modules",
+    "fixtures",
+    "examples",
+    "htmlcov",
+    ".mypy_cache",
 }
 
 

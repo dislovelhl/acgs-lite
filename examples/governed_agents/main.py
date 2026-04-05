@@ -267,9 +267,7 @@ async def demo_policy_overview() -> None:
 
 
 async def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="ACGS-Auth0 Constitutional Token Governance Demo"
-    )
+    parser = argparse.ArgumentParser(description="ACGS-Auth0 Constitutional Token Governance Demo")
     parser.add_argument(
         "--demo",
         choices=["all", "grant", "deny", "step-up", "audit", "policy"],

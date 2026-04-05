@@ -71,11 +71,13 @@ _TRANSITIONS: dict[CaseState, frozenset[CaseState]] = {
     CaseState.OPEN: frozenset({CaseState.CLAIMED, CaseState.EXPIRED}),
     CaseState.CLAIMED: frozenset({CaseState.SUBMITTED, CaseState.OPEN, CaseState.EXPIRED}),
     CaseState.SUBMITTED: frozenset({CaseState.VALIDATING, CaseState.EXPIRED}),
-    CaseState.VALIDATING: frozenset({
-        CaseState.FINALIZED,
-        CaseState.REJECTED,
-        CaseState.EXPIRED,
-    }),
+    CaseState.VALIDATING: frozenset(
+        {
+            CaseState.FINALIZED,
+            CaseState.REJECTED,
+            CaseState.EXPIRED,
+        }
+    ),
     CaseState.FINALIZED: frozenset(),  # terminal
     CaseState.REJECTED: frozenset({CaseState.OPEN}),  # can be re-queued
     CaseState.EXPIRED: frozenset({CaseState.OPEN}),  # can be re-queued
@@ -325,14 +327,10 @@ class CaseManager:
         self._check_timeout(case, now)
 
         if case.state != CaseState.OPEN:
-            raise ValueError(
-                f"Case {case_id!r} is {case.state.value}, must be OPEN to claim"
-            )
+            raise ValueError(f"Case {case_id!r} is {case.state.value}, must be OPEN to claim")
 
         if case.claim_count >= self._config.max_claims:
-            raise ValueError(
-                f"Case {case_id!r} has reached max claims ({self._config.max_claims})"
-            )
+            raise ValueError(f"Case {case_id!r} has reached max claims ({self._config.max_claims})")
 
         case.claimer_id = claimer_id
         case.claim_count += 1
@@ -340,7 +338,10 @@ class CaseManager:
         case.deadline = deadline
 
         self._transition(
-            case, CaseState.CLAIMED, claimer_id, now,
+            case,
+            CaseState.CLAIMED,
+            claimer_id,
+            now,
             reason=f"Claimed by {claimer_id} (attempt {case.claim_count})",
         )
         return case
@@ -378,9 +379,7 @@ class CaseManager:
         self._check_timeout(case, now)
 
         if case.state != CaseState.CLAIMED:
-            raise ValueError(
-                f"Case {case_id!r} is {case.state.value}, must be CLAIMED to submit"
-            )
+            raise ValueError(f"Case {case_id!r} is {case.state.value}, must be CLAIMED to submit")
 
         # MACI: claimer must be submitter
         if case.claimer_id != submitter_id:
@@ -392,7 +391,10 @@ class CaseManager:
 
         case.result = dict(result)
         self._transition(
-            case, CaseState.SUBMITTED, submitter_id, now,
+            case,
+            CaseState.SUBMITTED,
+            submitter_id,
+            now,
             reason="Result submitted",
             metadata={"result_keys": list(result.keys())},
         )
@@ -446,7 +448,10 @@ class CaseManager:
         case.deadline = deadline
 
         self._transition(
-            case, CaseState.VALIDATING, "system", now,
+            case,
+            CaseState.VALIDATING,
+            "system",
+            now,
             reason=f"Validation started with {len(validator_ids)} validators",
             metadata={"validator_ids": validator_ids},
         )
@@ -495,7 +500,10 @@ class CaseManager:
 
         target = CaseState.FINALIZED if outcome_lower == "approved" else CaseState.REJECTED
         self._transition(
-            case, target, "system", now,
+            case,
+            target,
+            "system",
+            now,
             reason=f"Validation {outcome_lower}",
             metadata={"proof_hash": proof_hash},
         )
@@ -535,14 +543,11 @@ class CaseManager:
         now = _now or self._now()
 
         if case.state != CaseState.CLAIMED:
-            raise ValueError(
-                f"Case {case_id!r} is {case.state.value}, must be CLAIMED to release"
-            )
+            raise ValueError(f"Case {case_id!r} is {case.state.value}, must be CLAIMED to release")
 
         if case.claimer_id != agent_id:
             raise ValueError(
-                f"Agent {agent_id!r} is not the claimer ({case.claimer_id!r}) "
-                f"for case {case_id!r}"
+                f"Agent {agent_id!r} is not the claimer ({case.claimer_id!r}) for case {case_id!r}"
             )
 
         case.claimer_id = ""
@@ -550,7 +555,10 @@ class CaseManager:
         case.deadline = deadline
 
         self._transition(
-            case, CaseState.OPEN, agent_id, now,
+            case,
+            CaseState.OPEN,
+            agent_id,
+            now,
             reason=reason or "Released by claimer",
         )
         return case
@@ -624,15 +632,15 @@ class CaseManager:
         prev = case.state
         case.deadline = ""
         self._transition(
-            case, CaseState.EXPIRED, "system", now,
+            case,
+            CaseState.EXPIRED,
+            "system",
+            now,
             reason=f"Timed out in {prev.value} state",
         )
 
         # Auto-requeue if configured and under claim limit
-        if (
-            self._config.auto_requeue_on_expiry
-            and case.claim_count < self._config.max_claims
-        ):
+        if self._config.auto_requeue_on_expiry and case.claim_count < self._config.max_claims:
             self._requeue(case, now, reason="Auto-requeued after expiry")
 
     def expire_stale(self, *, _now: datetime | None = None) -> list[str]:
@@ -753,8 +761,7 @@ class CaseManager:
 
     def __repr__(self) -> str:
         open_n = len(self.cases_by_state(CaseState.OPEN))
-        active_n = (
-            len(self.cases_by_state(CaseState.CLAIMED))
-            + len(self.cases_by_state(CaseState.SUBMITTED))
+        active_n = len(self.cases_by_state(CaseState.CLAIMED)) + len(
+            self.cases_by_state(CaseState.SUBMITTED)
         )
         return f"CaseManager({len(self._cases)} cases, {open_n} open, {active_n} active)"

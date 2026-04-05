@@ -46,9 +46,7 @@ def check_hipaa_compliance(agent_description: str) -> dict[str, Any]:
     system_desc: dict[str, Any] = {
         "description": agent_description,
         "agent_description": agent_description,
-        "has_audit_log": _mentions_any(
-            agent_description, ["audit", "log", "trail", "record"]
-        ),
+        "has_audit_log": _mentions_any(agent_description, ["audit", "log", "trail", "record"]),
         "has_maci": _mentions_any(
             agent_description, ["maci", "separation of powers", "proposer", "validator"]
         ),
@@ -95,7 +93,7 @@ def check_hipaa_compliance(agent_description: str) -> dict[str, Any]:
     ]
     if failing:
         summary_parts.append(
-            f"{len(failing)} failing: " + ", ".join(i.get('ref', '?') for i in failing[:5])
+            f"{len(failing)} failing: " + ", ".join(i.get("ref", "?") for i in failing[:5])
         )
     if warnings:
         summary_parts.append(f"{len(warnings)} warnings.")

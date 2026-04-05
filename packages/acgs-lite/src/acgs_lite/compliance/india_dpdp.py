@@ -311,10 +311,13 @@ class IndiaDPDPFramework:
         return _build_assessment(self, checklist)
 
 
-def _build_assessment(fw: IndiaDPDPFramework, checklist: list[ChecklistItem]) -> FrameworkAssessment:
+def _build_assessment(
+    fw: IndiaDPDPFramework, checklist: list[ChecklistItem]
+) -> FrameworkAssessment:
     total = len(checklist)
     compliant = sum(
-        1 for item in checklist
+        1
+        for item in checklist
         if item.status in (ChecklistStatus.COMPLIANT, ChecklistStatus.NOT_APPLICABLE)
     )
     acgs_covered = sum(1 for item in checklist if item.acgs_lite_feature is not None)

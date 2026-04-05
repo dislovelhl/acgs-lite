@@ -1,4 +1,5 @@
 """Shim for src.core.shared.event_schemas.decision_explanation."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

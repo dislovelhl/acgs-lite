@@ -45,21 +45,104 @@ if TYPE_CHECKING:
 
 # ── Stopwords for keyword extraction ──────────────────────────────────────
 
-_STOPWORDS: frozenset[str] = frozenset({
-    "a", "an", "the", "and", "or", "but", "in", "on", "at", "to",
-    "for", "of", "with", "by", "from", "is", "it", "its", "be",
-    "was", "were", "been", "being", "have", "has", "had", "do",
-    "does", "did", "will", "would", "shall", "should", "may",
-    "might", "can", "could", "must", "not", "no", "nor", "so",
-    "if", "then", "than", "that", "this", "these", "those",
-    "which", "what", "who", "whom", "where", "when", "how",
-    "all", "each", "every", "both", "few", "more", "most",
-    "other", "some", "such", "only", "own", "same", "too",
-    "very", "just", "about", "above", "after", "again",
-    "also", "any", "are", "as", "because", "before",
-    "between", "during", "into", "out", "over", "under",
-    "up", "down", "here", "there", "through", "while",
-})
+_STOPWORDS: frozenset[str] = frozenset(
+    {
+        "a",
+        "an",
+        "the",
+        "and",
+        "or",
+        "but",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "of",
+        "with",
+        "by",
+        "from",
+        "is",
+        "it",
+        "its",
+        "be",
+        "was",
+        "were",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "shall",
+        "should",
+        "may",
+        "might",
+        "can",
+        "could",
+        "must",
+        "not",
+        "no",
+        "nor",
+        "so",
+        "if",
+        "then",
+        "than",
+        "that",
+        "this",
+        "these",
+        "those",
+        "which",
+        "what",
+        "who",
+        "whom",
+        "where",
+        "when",
+        "how",
+        "all",
+        "each",
+        "every",
+        "both",
+        "few",
+        "more",
+        "most",
+        "other",
+        "some",
+        "such",
+        "only",
+        "own",
+        "same",
+        "too",
+        "very",
+        "just",
+        "about",
+        "above",
+        "after",
+        "again",
+        "also",
+        "any",
+        "are",
+        "as",
+        "because",
+        "before",
+        "between",
+        "during",
+        "into",
+        "out",
+        "over",
+        "under",
+        "up",
+        "down",
+        "here",
+        "there",
+        "through",
+        "while",
+    }
+)
 
 _WORD_RE = re.compile(r"[a-z][a-z0-9_-]{1,}")
 
@@ -300,20 +383,15 @@ class ViolationAnalyzer:
                 # Find matching records for this cluster
                 cluster_set = set(cluster_items)
                 matching_records = [
-                    r for r in records
-                    if (r.matched_content or r.action) in cluster_set
+                    r for r in records if (r.matched_content or r.action) in cluster_set
                 ]
 
                 # Determine suggested severity: use the most common
-                sev_counts: Counter[Severity] = Counter(
-                    r.severity for r in matching_records
-                )
+                sev_counts: Counter[Severity] = Counter(r.severity for r in matching_records)
                 suggested_severity = sev_counts.most_common(1)[0][0]
 
                 # Collect truncated examples (max 5, 200 chars each)
-                examples = [
-                    item[:200] for item in dict.fromkeys(cluster_items)
-                ][:5]
+                examples = [item[:200] for item in dict.fromkeys(cluster_items)][:5]
 
                 # Confidence: based on cluster cohesion and frequency
                 tokens_list = [_tokenize(item) for item in cluster_items]
@@ -321,21 +399,13 @@ class ViolationAnalyzer:
                     pair_sims = []
                     for i in range(min(len(tokens_list), 10)):
                         for j in range(i + 1, min(len(tokens_list), 10)):
-                            pair_sims.append(
-                                _jaccard(tokens_list[i], tokens_list[j])
-                            )
-                    avg_sim = (
-                        sum(pair_sims) / len(pair_sims)
-                        if pair_sims
-                        else 0.0
-                    )
+                            pair_sims.append(_jaccard(tokens_list[i], tokens_list[j]))
+                    avg_sim = sum(pair_sims) / len(pair_sims) if pair_sims else 0.0
                 else:
                     avg_sim = 1.0
 
                 freq_factor = min(1.0, freq / 10.0)
-                confidence = round(
-                    0.4 * avg_sim + 0.6 * freq_factor, 3
-                )
+                confidence = round(0.4 * avg_sim + 0.6 * freq_factor, 3)
 
                 # Timestamps
                 timestamps = sorted(r.timestamp for r in matching_records)
@@ -344,27 +414,26 @@ class ViolationAnalyzer:
 
                 # Generate description from common words
                 all_tokens = _tokenize(" ".join(cluster_items))
-                common_words = sorted(
-                    all_tokens - _STOPWORDS, key=lambda w: -len(w)
-                )[:5]
+                common_words = sorted(all_tokens - _STOPWORDS, key=lambda w: -len(w))[:5]
                 desc = (
-                    f"Recurring {category} violations involving: "
-                    f"{', '.join(common_words)}"
+                    f"Recurring {category} violations involving: {', '.join(common_words)}"
                     if common_words
                     else f"Recurring {category} violations"
                 )
 
-                patterns.append(ViolationPattern(
-                    pattern_id=pid,
-                    description=desc,
-                    frequency=freq,
-                    example_content=examples,
-                    suggested_severity=suggested_severity,
-                    suggested_category=category,
-                    confidence=confidence,
-                    first_seen=first_seen,
-                    last_seen=last_seen,
-                ))
+                patterns.append(
+                    ViolationPattern(
+                        pattern_id=pid,
+                        description=desc,
+                        frequency=freq,
+                        example_content=examples,
+                        suggested_severity=suggested_severity,
+                        suggested_category=category,
+                        confidence=confidence,
+                        first_seen=first_seen,
+                        last_seen=last_seen,
+                    )
+                )
 
         return sorted(patterns, key=lambda p: -p.frequency)
 
@@ -412,11 +481,7 @@ class RuleSynthesizer:
             significant = tokens - _STOPWORDS
             word_counts.update(significant)
 
-        return [
-            word
-            for word, _ in word_counts.most_common(max_keywords)
-            if len(word) > 2
-        ]
+        return [word for word, _ in word_counts.most_common(max_keywords) if len(word) > 2]
 
     def _generate_rule_text(
         self,
@@ -432,19 +497,14 @@ class RuleSynthesizer:
         else:
             verb = "should avoid"
 
-        return (
-            f"Agents {verb} produce content involving "
-            f"{kw_str} in the {category} domain"
-        )
+        return f"Agents {verb} produce content involving {kw_str} in the {category} domain"
 
     def _find_coverage_gaps(
         self,
         patterns: list[ViolationPattern],
     ) -> list[str]:
         """Identify categories with violation patterns but no rules."""
-        rule_categories = {
-            r.category for r in self._constitution.rules
-        }
+        rule_categories = {r.category for r in self._constitution.rules}
         pattern_categories = {p.suggested_category for p in patterns}
         return sorted(pattern_categories - rule_categories)
 
@@ -468,11 +528,9 @@ class RuleSynthesizer:
         category_max_severity: dict[str, Severity] = {}
         for rule in self._constitution.rules:
             cat = rule.category
-            if (
-                cat not in category_max_severity
-                or severity_order.get(rule.severity, 0)
-                > severity_order.get(category_max_severity[cat], 0)
-            ):
+            if cat not in category_max_severity or severity_order.get(
+                rule.severity, 0
+            ) > severity_order.get(category_max_severity[cat], 0):
                 category_max_severity[cat] = rule.severity
 
         mismatches: list[tuple[ViolationPattern, Severity]] = []
@@ -480,9 +538,9 @@ class RuleSynthesizer:
             cat = pattern.suggested_category
             if cat in category_max_severity:
                 existing = category_max_severity[cat]
-                if severity_order.get(
-                    pattern.suggested_severity, 0
-                ) > severity_order.get(existing, 0):
+                if severity_order.get(pattern.suggested_severity, 0) > severity_order.get(
+                    existing, 0
+                ):
                     mismatches.append((pattern, existing))
         return mismatches
 
@@ -508,55 +566,52 @@ class RuleSynthesizer:
 
         # Coverage gap suggestions
         coverage_gaps = self._find_coverage_gaps(patterns)
-        gap_patterns = [
-            p for p in patterns
-            if p.suggested_category in coverage_gaps
-        ]
+        gap_patterns = [p for p in patterns if p.suggested_category in coverage_gaps]
         for pattern in gap_patterns:
             keywords = self._extract_keywords(pattern.example_content)
             rule_text = self._generate_rule_text(pattern, keywords)
-            suggestions.append(SuggestedRule(
-                rule_id=self._next_rule_id(),
-                rule_text=rule_text,
-                severity=pattern.suggested_severity,
-                category=pattern.suggested_category,
-                rationale=(
-                    f"Coverage gap: no existing rules cover the "
-                    f"'{pattern.suggested_category}' category, but "
-                    f"{pattern.frequency} violations were observed"
-                ),
-                confidence=pattern.confidence,
-                based_on_patterns=[pattern.pattern_id],
-                keywords=keywords,
-            ))
+            suggestions.append(
+                SuggestedRule(
+                    rule_id=self._next_rule_id(),
+                    rule_text=rule_text,
+                    severity=pattern.suggested_severity,
+                    category=pattern.suggested_category,
+                    rationale=(
+                        f"Coverage gap: no existing rules cover the "
+                        f"'{pattern.suggested_category}' category, but "
+                        f"{pattern.frequency} violations were observed"
+                    ),
+                    confidence=pattern.confidence,
+                    based_on_patterns=[pattern.pattern_id],
+                    keywords=keywords,
+                )
+            )
 
         # Severity mismatch suggestions
         mismatches = self._find_severity_mismatches(patterns)
         for pattern, existing_sev in mismatches:
             keywords = self._extract_keywords(pattern.example_content)
             rule_text = self._generate_rule_text(pattern, keywords)
-            suggestions.append(SuggestedRule(
-                rule_id=self._next_rule_id(),
-                rule_text=rule_text,
-                severity=pattern.suggested_severity,
-                category=pattern.suggested_category,
-                rationale=(
-                    f"Severity escalation: violations at "
-                    f"{pattern.suggested_severity.value} level but "
-                    f"existing rules max at {existing_sev.value} "
-                    f"in '{pattern.suggested_category}' category"
-                ),
-                confidence=pattern.confidence,
-                based_on_patterns=[pattern.pattern_id],
-                keywords=keywords,
-            ))
+            suggestions.append(
+                SuggestedRule(
+                    rule_id=self._next_rule_id(),
+                    rule_text=rule_text,
+                    severity=pattern.suggested_severity,
+                    category=pattern.suggested_category,
+                    rationale=(
+                        f"Severity escalation: violations at "
+                        f"{pattern.suggested_severity.value} level but "
+                        f"existing rules max at {existing_sev.value} "
+                        f"in '{pattern.suggested_category}' category"
+                    ),
+                    confidence=pattern.confidence,
+                    based_on_patterns=[pattern.pattern_id],
+                    keywords=keywords,
+                )
+            )
 
         # General high-frequency pattern suggestions (not already covered)
-        covered_pattern_ids = {
-            pid
-            for s in suggestions
-            for pid in s.based_on_patterns
-        }
+        covered_pattern_ids = {pid for s in suggestions for pid in s.based_on_patterns}
         for pattern in patterns:
             if pattern.pattern_id in covered_pattern_ids:
                 continue
@@ -565,20 +620,22 @@ class RuleSynthesizer:
 
             keywords = self._extract_keywords(pattern.example_content)
             rule_text = self._generate_rule_text(pattern, keywords)
-            suggestions.append(SuggestedRule(
-                rule_id=self._next_rule_id(),
-                rule_text=rule_text,
-                severity=pattern.suggested_severity,
-                category=pattern.suggested_category,
-                rationale=(
-                    f"Recurring pattern: {pattern.frequency} similar "
-                    f"violations detected with {pattern.confidence:.0%} "
-                    f"confidence"
-                ),
-                confidence=pattern.confidence,
-                based_on_patterns=[pattern.pattern_id],
-                keywords=keywords,
-            ))
+            suggestions.append(
+                SuggestedRule(
+                    rule_id=self._next_rule_id(),
+                    rule_text=rule_text,
+                    severity=pattern.suggested_severity,
+                    category=pattern.suggested_category,
+                    rationale=(
+                        f"Recurring pattern: {pattern.frequency} similar "
+                        f"violations detected with {pattern.confidence:.0%} "
+                        f"confidence"
+                    ),
+                    confidence=pattern.confidence,
+                    based_on_patterns=[pattern.pattern_id],
+                    keywords=keywords,
+                )
+            )
 
         return sorted(suggestions, key=lambda s: -s.confidence)
 
@@ -592,14 +649,16 @@ class RuleSynthesizer:
         """
         new_rules = list(self._constitution.rules)
         for suggestion in suggestions:
-            new_rules.append(Rule(
-                id=suggestion.rule_id,
-                text=suggestion.rule_text,
-                severity=suggestion.severity,
-                category=suggestion.category,
-                keywords=list(suggestion.keywords),
-                tags=["synthesized"],
-            ))
+            new_rules.append(
+                Rule(
+                    id=suggestion.rule_id,
+                    text=suggestion.rule_text,
+                    severity=suggestion.severity,
+                    category=suggestion.category,
+                    keywords=list(suggestion.keywords),
+                    tags=["synthesized"],
+                )
+            )
         return Constitution(
             name=self._constitution.name,
             version=self._constitution.version,
@@ -631,15 +690,11 @@ class AutoSynthesizer:
         from .core import GovernanceEngine as _GE
 
         if not isinstance(engine, _GE):
-            raise TypeError(
-                f"engine must be a GovernanceEngine, got {type(engine)}"
-            )
+            raise TypeError(f"engine must be a GovernanceEngine, got {type(engine)}")
         self._engine = engine
         self._constitution = constitution
         self._analyzer = ViolationAnalyzer()
-        self._synthesizer = RuleSynthesizer(
-            constitution, analyzer=self._analyzer
-        )
+        self._synthesizer = RuleSynthesizer(constitution, analyzer=self._analyzer)
         self._observations = 0
 
     def observe(
@@ -684,9 +739,7 @@ class AutoSynthesizer:
         suggestions = self._synthesizer.suggest_rules(patterns)
 
         # Coverage gaps
-        rule_categories = {
-            r.category for r in self._constitution.rules
-        }
+        rule_categories = {r.category for r in self._constitution.rules}
         pattern_categories = {p.suggested_category for p in patterns}
         coverage_gaps = sorted(pattern_categories - rule_categories)
 

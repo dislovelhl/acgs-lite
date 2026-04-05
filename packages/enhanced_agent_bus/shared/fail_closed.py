@@ -33,6 +33,7 @@ except ModuleNotFoundError as exc:
     class FailClosedError(Exception):  # type: ignore[no-redef]
         """Fallback when acgs_lite is not on the import path."""
 
+
 __all__ = ["FailClosedError", "fail_closed"]
 
 

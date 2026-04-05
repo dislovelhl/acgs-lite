@@ -34,6 +34,7 @@ from constitutional_swarm.bittensor.map_elites import (
 # Shared fixture: constitution YAML
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def constitution_path():
     content = """
@@ -102,14 +103,24 @@ class TestMinerQualityGrid:
     def test_challenge_replaces_incumbent(self):
         grid = MinerQualityGrid()
         weak = MinerApproach(
-            miner_uid="miner-01", domain=GovernanceDomain.SAFETY,
-            strategy=DeliberationStrategy.HYBRID, fitness=0.5,
-            acceptance_rate=0.5, reasoning_quality=0.5, speed_ms=500, sample_count=10,
+            miner_uid="miner-01",
+            domain=GovernanceDomain.SAFETY,
+            strategy=DeliberationStrategy.HYBRID,
+            fitness=0.5,
+            acceptance_rate=0.5,
+            reasoning_quality=0.5,
+            speed_ms=500,
+            sample_count=10,
         )
         strong = MinerApproach(
-            miner_uid="miner-02", domain=GovernanceDomain.SAFETY,
-            strategy=DeliberationStrategy.HYBRID, fitness=0.9,
-            acceptance_rate=0.9, reasoning_quality=0.9, speed_ms=100, sample_count=10,
+            miner_uid="miner-02",
+            domain=GovernanceDomain.SAFETY,
+            strategy=DeliberationStrategy.HYBRID,
+            fitness=0.9,
+            acceptance_rate=0.9,
+            reasoning_quality=0.9,
+            speed_ms=100,
+            sample_count=10,
         )
         grid.challenge(weak)
         assert grid.challenge(strong) is True
@@ -120,9 +131,14 @@ class TestMinerQualityGrid:
     def test_challenge_rejects_below_min_samples(self):
         grid = MinerQualityGrid(fitness_weights=FitnessWeights(min_samples=10))
         approach = MinerApproach(
-            miner_uid="m", domain=GovernanceDomain.SAFETY,
-            strategy=DeliberationStrategy.HYBRID, fitness=0.9,
-            acceptance_rate=0.9, reasoning_quality=0.9, speed_ms=100, sample_count=3,
+            miner_uid="m",
+            domain=GovernanceDomain.SAFETY,
+            strategy=DeliberationStrategy.HYBRID,
+            fitness=0.9,
+            acceptance_rate=0.9,
+            reasoning_quality=0.9,
+            speed_ms=100,
+            sample_count=3,
         )
         assert grid.challenge(approach) is False
 
@@ -130,28 +146,45 @@ class TestMinerQualityGrid:
         grid = MinerQualityGrid()
         # Same miner in 2 cells = low diversity
         for strat in [DeliberationStrategy.HYBRID, DeliberationStrategy.PRECEDENT_BASED]:
-            grid.challenge(MinerApproach(
-                miner_uid="same-miner", domain=GovernanceDomain.SAFETY,
-                strategy=strat, fitness=0.8,
-                acceptance_rate=0.8, reasoning_quality=0.8, speed_ms=200, sample_count=10,
-            ))
+            grid.challenge(
+                MinerApproach(
+                    miner_uid="same-miner",
+                    domain=GovernanceDomain.SAFETY,
+                    strategy=strat,
+                    fitness=0.8,
+                    acceptance_rate=0.8,
+                    reasoning_quality=0.8,
+                    speed_ms=200,
+                    sample_count=10,
+                )
+            )
         assert grid.diversity_score() == 0.5  # 1 unique / 2 cells
 
     def test_ceiling_detection(self):
         grid = MinerQualityGrid(ceiling_window=3)
         strong = MinerApproach(
-            miner_uid="m", domain=GovernanceDomain.SAFETY,
-            strategy=DeliberationStrategy.HYBRID, fitness=0.9,
-            acceptance_rate=0.9, reasoning_quality=0.9, speed_ms=100, sample_count=10,
+            miner_uid="m",
+            domain=GovernanceDomain.SAFETY,
+            strategy=DeliberationStrategy.HYBRID,
+            fitness=0.9,
+            acceptance_rate=0.9,
+            reasoning_quality=0.9,
+            speed_ms=100,
+            sample_count=10,
         )
         grid.challenge(strong)  # First: fills empty cell (improvement)
 
         # 3 weaker challenges that don't improve
         for _ in range(3):
             weak = MinerApproach(
-                miner_uid="m2", domain=GovernanceDomain.SAFETY,
-                strategy=DeliberationStrategy.HYBRID, fitness=0.5,
-                acceptance_rate=0.5, reasoning_quality=0.5, speed_ms=500, sample_count=10,
+                miner_uid="m2",
+                domain=GovernanceDomain.SAFETY,
+                strategy=DeliberationStrategy.HYBRID,
+                fitness=0.5,
+                acceptance_rate=0.5,
+                reasoning_quality=0.5,
+                speed_ms=500,
+                sample_count=10,
             )
             grid.challenge(weak)
         assert grid.ceiling_detected() is True
@@ -161,11 +194,18 @@ class TestMinerQualityGrid:
         # New miner gets max bonus
         assert grid.exploration_bonus("new-miner") == 1.1
         # Miner with cells gets reduced bonus
-        grid.challenge(MinerApproach(
-            miner_uid="active", domain=GovernanceDomain.SAFETY,
-            strategy=DeliberationStrategy.HYBRID, fitness=0.8,
-            acceptance_rate=0.8, reasoning_quality=0.8, speed_ms=200, sample_count=10,
-        ))
+        grid.challenge(
+            MinerApproach(
+                miner_uid="active",
+                domain=GovernanceDomain.SAFETY,
+                strategy=DeliberationStrategy.HYBRID,
+                fitness=0.8,
+                acceptance_rate=0.8,
+                reasoning_quality=0.8,
+                speed_ms=200,
+                sample_count=10,
+            )
+        )
         bonus = grid.exploration_bonus("active")
         assert 1.0 < bonus <= 1.1
 
@@ -187,6 +227,7 @@ class TestPrecedentCascade:
 
     def test_valid_judgment_passes_all_stages(self, constitution_path):
         from acgs_lite import Constitution
+
         constitution = Constitution.from_yaml(constitution_path)
         cascade = PrecedentCascade(constitution)
 
@@ -201,6 +242,7 @@ class TestPrecedentCascade:
 
     def test_violating_judgment_rejected_at_stage1(self, constitution_path):
         from acgs_lite import Constitution
+
         constitution = Constitution.from_yaml(constitution_path)
         cascade = PrecedentCascade(constitution)
 
@@ -215,6 +257,7 @@ class TestPrecedentCascade:
 
     def test_accept_creates_delta(self, constitution_path):
         from acgs_lite import Constitution
+
         constitution = Constitution.from_yaml(constitution_path)
         cascade = PrecedentCascade(constitution)
 
@@ -232,6 +275,7 @@ class TestPrecedentCascade:
 
     def test_reject_does_not_create_delta(self, constitution_path):
         from acgs_lite import Constitution
+
         constitution = Constitution.from_yaml(constitution_path)
         cascade = PrecedentCascade(constitution)
 
@@ -247,6 +291,7 @@ class TestPrecedentCascade:
 
     def test_funnel_report(self, constitution_path):
         from acgs_lite import Constitution
+
         constitution = Constitution.from_yaml(constitution_path)
         cascade = PrecedentCascade(constitution)
 
@@ -259,6 +304,7 @@ class TestPrecedentCascade:
 
     def test_stage_by_stage_advance(self, constitution_path):
         from acgs_lite import Constitution
+
         constitution = Constitution.from_yaml(constitution_path)
         cascade = PrecedentCascade(constitution)
 
@@ -307,8 +353,9 @@ class TestEmissionGenome:
             authenticity_weight=0.0,
             generation=0,
         )
-        w = genome.compute_weight(reputation=2.0, tier=MinerTier.APPRENTICE,
-                                   precedent_count=0, manifold_trust=0.0)
+        w = genome.compute_weight(
+            reputation=2.0, tier=MinerTier.APPRENTICE, precedent_count=0, manifold_trust=0.0
+        )
         assert w == pytest.approx(2.0)
 
     def test_tier_scaling(self):
@@ -331,21 +378,51 @@ class TestEmissionEvolver:
     def _sample_observations(self) -> list[MinerQualityObservation]:
         """Create observations where quality correlates with reputation."""
         return [
-            MinerQualityObservation("m1", consensus_quality=0.9, acceptance_rate=0.95,
-                                     reputation=1.8, tier=MinerTier.MASTER,
-                                     precedent_contributions=10, manifold_trust=0.8),
-            MinerQualityObservation("m2", consensus_quality=0.7, acceptance_rate=0.75,
-                                     reputation=1.3, tier=MinerTier.JOURNEYMAN,
-                                     precedent_contributions=3, manifold_trust=0.5),
-            MinerQualityObservation("m3", consensus_quality=0.5, acceptance_rate=0.55,
-                                     reputation=1.0, tier=MinerTier.APPRENTICE,
-                                     precedent_contributions=0, manifold_trust=0.3),
-            MinerQualityObservation("m4", consensus_quality=0.3, acceptance_rate=0.35,
-                                     reputation=0.8, tier=MinerTier.APPRENTICE,
-                                     precedent_contributions=0, manifold_trust=0.2),
-            MinerQualityObservation("m5", consensus_quality=0.1, acceptance_rate=0.15,
-                                     reputation=0.5, tier=MinerTier.APPRENTICE,
-                                     precedent_contributions=0, manifold_trust=0.1),
+            MinerQualityObservation(
+                "m1",
+                consensus_quality=0.9,
+                acceptance_rate=0.95,
+                reputation=1.8,
+                tier=MinerTier.MASTER,
+                precedent_contributions=10,
+                manifold_trust=0.8,
+            ),
+            MinerQualityObservation(
+                "m2",
+                consensus_quality=0.7,
+                acceptance_rate=0.75,
+                reputation=1.3,
+                tier=MinerTier.JOURNEYMAN,
+                precedent_contributions=3,
+                manifold_trust=0.5,
+            ),
+            MinerQualityObservation(
+                "m3",
+                consensus_quality=0.5,
+                acceptance_rate=0.55,
+                reputation=1.0,
+                tier=MinerTier.APPRENTICE,
+                precedent_contributions=0,
+                manifold_trust=0.3,
+            ),
+            MinerQualityObservation(
+                "m4",
+                consensus_quality=0.3,
+                acceptance_rate=0.35,
+                reputation=0.8,
+                tier=MinerTier.APPRENTICE,
+                precedent_contributions=0,
+                manifold_trust=0.2,
+            ),
+            MinerQualityObservation(
+                "m5",
+                consensus_quality=0.1,
+                acceptance_rate=0.15,
+                reputation=0.5,
+                tier=MinerTier.APPRENTICE,
+                precedent_contributions=0,
+                manifold_trust=0.1,
+            ),
         ]
 
     def test_initialize_islands(self):
@@ -389,7 +466,9 @@ class TestEmissionEvolver:
 
     def test_ceiling_triggers_migration(self):
         evolver = EmissionEvolver(
-            seed=42, population_per_island=5, stagnation_threshold=3,
+            seed=42,
+            population_per_island=5,
+            stagnation_threshold=3,
         )
         evolver.initialize_islands()
         obs = self._sample_observations()

@@ -47,24 +47,26 @@ def _make_rules(n: int = 2) -> list[dict[str, str]]:
 
 def _make_formalization_response() -> str:
     """Mock response from Leanstral's auto-formalization step."""
-    return json.dumps({
-        "prelude": (
-            "structure ActionCtx where\n"
-            "  agentRole : String\n"
-            "  targetRole : String\n"
-            "  action : String"
-        ),
-        "predicates": {
-            "MACI-1": (
-                'def maci_1_satisfied (ctx : ActionCtx) : Prop :=\n'
-                '  ctx.agentRole ≠ "validator" ∨ ctx.action ≠ "validate_own"'
+    return json.dumps(
+        {
+            "prelude": (
+                "structure ActionCtx where\n"
+                "  agentRole : String\n"
+                "  targetRole : String\n"
+                "  action : String"
             ),
-            "MACI-2": (
-                'def maci_2_satisfied (ctx : ActionCtx) : Prop :=\n'
-                '  ctx.action ≠ "promote" ∨ ctx.agentRole = "judicial"'
-            ),
-        },
-    })
+            "predicates": {
+                "MACI-1": (
+                    "def maci_1_satisfied (ctx : ActionCtx) : Prop :=\n"
+                    '  ctx.agentRole ≠ "validator" ∨ ctx.action ≠ "validate_own"'
+                ),
+                "MACI-2": (
+                    "def maci_2_satisfied (ctx : ActionCtx) : Prop :=\n"
+                    '  ctx.action ≠ "promote" ∨ ctx.agentRole = "judicial"'
+                ),
+            },
+        }
+    )
 
 
 def _make_proof_response() -> str:
@@ -124,9 +126,12 @@ class TestProofCertificate:
 
     def test_immutable(self) -> None:
         cert = ProofCertificate(
-            lean_statement="t", lean_proof="p",
-            kernel_verified=True, rules_formalized={},
-            proof_hash="h", model_used="m",
+            lean_statement="t",
+            lean_proof="p",
+            kernel_verified=True,
+            rules_formalized={},
+            proof_hash="h",
+            model_used="m",
             verification_time_ms=0.0,
         )
         with pytest.raises(AttributeError):
@@ -141,9 +146,13 @@ class TestProofCertificate:
 class TestLeanVerifyResult:
     def test_result_fields(self) -> None:
         result = LeanVerifyResult(
-            proved=True, verified=True, certificate=None,
-            counterexample=None, lean_errors=[],
-            attempts=1, model_used="leanstral",
+            proved=True,
+            verified=True,
+            certificate=None,
+            counterexample=None,
+            lean_errors=[],
+            attempts=1,
+            model_used="leanstral",
             verification_time_ms=42.0,
         )
         assert result.proved is True
@@ -151,10 +160,15 @@ class TestLeanVerifyResult:
 
     def test_result_immutable(self) -> None:
         result = LeanVerifyResult(
-            proved=False, verified=False, certificate=None,
-            counterexample="MACI-1 violated", lean_errors=[],
-            attempts=0, model_used="leanstral",
-            verification_time_ms=0.0, error="test",
+            proved=False,
+            verified=False,
+            certificate=None,
+            counterexample="MACI-1 violated",
+            lean_errors=[],
+            attempts=0,
+            model_used="leanstral",
+            verification_time_ms=0.0,
+            error="test",
         )
         with pytest.raises(AttributeError):
             result.proved = True  # type: ignore[misc]
@@ -189,24 +203,22 @@ class TestBuildFormalizationPrompt:
         assert "No agent may validate" in prompt
 
     def test_includes_context(self) -> None:
-        prompt = _build_formalization_prompt(
-            _make_rules(1), context={"agent_role": "executive"}
-        )
+        prompt = _build_formalization_prompt(_make_rules(1), context={"agent_role": "executive"})
         assert "agent_role" in prompt
         assert "executive" in prompt
 
 
 class TestBuildProofPrompt:
     def test_includes_source_and_theorem(self) -> None:
-        prompt = _build_proof_prompt(
-            "test action", "-- source", "theorem t : True"
-        )
+        prompt = _build_proof_prompt("test action", "-- source", "theorem t : True")
         assert "-- source" in prompt
         assert "theorem t : True" in prompt
 
     def test_includes_previous_errors(self) -> None:
         prompt = _build_proof_prompt(
-            "test", "-- src", "theorem t",
+            "test",
+            "-- src",
+            "theorem t",
             previous_errors=["error: type mismatch"],
         )
         assert "type mismatch" in prompt
@@ -276,6 +288,7 @@ class TestRunLeanCheck:
     @patch("acgs_lite.lean_verify.subprocess.run")
     def test_lean_timeout(self, mock_run: MagicMock) -> None:
         import subprocess
+
         mock_run.side_effect = subprocess.TimeoutExpired("lean", 30)
         ok, errors = _run_lean_check("slow source", timeout_s=30)
         assert ok is False
@@ -329,7 +342,8 @@ class TestLeanstralVerifierMockedNoKernel:
         verifier = self._make_verifier(client)
 
         result = verifier.verify(
-            "read audit log", _make_rules(2),
+            "read audit log",
+            _make_rules(2),
             context={"agent_role": "judicial"},
         )
 
@@ -383,9 +397,7 @@ class TestLeanstralVerifierMockedNoKernel:
             _make_formalization_response(),
             _make_proof_response(),
         )
-        verifier = LeanstralVerifier(
-            api_key="test-key", model="codestral-latest"
-        )
+        verifier = LeanstralVerifier(api_key="test-key", model="codestral-latest")
         verifier._client = client
 
         result = verifier.verify("test", _make_rules(2))
@@ -478,9 +490,7 @@ class TestLeanstralVerifierMockedWithKernel:
     @patch("acgs_lite.lean_verify.subprocess.run")
     def test_all_attempts_fail(self, mock_run: MagicMock) -> None:
         """All proof attempts rejected by kernel."""
-        mock_run.return_value = MagicMock(
-            returncode=1, stderr="error: unsolved goals"
-        )
+        mock_run.return_value = MagicMock(returncode=1, stderr="error: unsolved goals")
         client = _mock_chat_responses(
             _make_formalization_response(),
             "by sorry  -- attempt 1",

@@ -1,4 +1,5 @@
 """Shim for src.core.shared.circuit_breaker."""
+
 from __future__ import annotations
 
 import functools

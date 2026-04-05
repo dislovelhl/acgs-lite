@@ -127,8 +127,7 @@ class RecommendationBridge:
         """
         pending = self._recommender.get_pending()
         return [
-            recommendation_to_proposal_dict(rec, proposer_id=self._proposer_id)
-            for rec in pending
+            recommendation_to_proposal_dict(rec, proposer_id=self._proposer_id) for rec in pending
         ]
 
     async def submit_pending(self) -> BridgeReport:
@@ -145,17 +144,20 @@ class RecommendationBridge:
 
         for rec in pending:
             proposal_dict = recommendation_to_proposal_dict(
-                rec, proposer_id=self._proposer_id,
+                rec,
+                proposer_id=self._proposer_id,
             )
 
             if self._engine is None:
                 # Dry-run mode — skip submission
                 report.skipped += 1
-                report.results.append(BridgeResult(
-                    recommendation_id=rec.recommendation_id,
-                    success=False,
-                    error="dry-run: no proposal engine configured",
-                ))
+                report.results.append(
+                    BridgeResult(
+                        recommendation_id=rec.recommendation_id,
+                        success=False,
+                        error="dry-run: no proposal engine configured",
+                    )
+                )
                 continue
 
             try:
@@ -164,16 +166,16 @@ class RecommendationBridge:
 
                 request = ProposalRequest(**proposal_dict)
                 response = await self._engine.create_proposal(request)
-                proposal_id = getattr(
-                    getattr(response, "proposal", None), "proposal_id", ""
-                )
+                proposal_id = getattr(getattr(response, "proposal", None), "proposal_id", "")
 
                 report.submitted += 1
-                report.results.append(BridgeResult(
-                    recommendation_id=rec.recommendation_id,
-                    success=True,
-                    proposal_id=proposal_id,
-                ))
+                report.results.append(
+                    BridgeResult(
+                        recommendation_id=rec.recommendation_id,
+                        success=True,
+                        proposal_id=proposal_id,
+                    )
+                )
 
                 if self._auto_acknowledge:
                     self._recommender.acknowledge(rec.recommendation_id)
@@ -190,11 +192,13 @@ class RecommendationBridge:
 
             except Exception as exc:
                 report.failed += 1
-                report.results.append(BridgeResult(
-                    recommendation_id=rec.recommendation_id,
-                    success=False,
-                    error=type(exc).__name__,
-                ))
+                report.results.append(
+                    BridgeResult(
+                        recommendation_id=rec.recommendation_id,
+                        success=False,
+                        error=type(exc).__name__,
+                    )
+                )
                 logger.warning(
                     "recommendation_bridge_failed",
                     extra={

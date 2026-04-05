@@ -178,8 +178,7 @@ class ConstitutionDistributor:
         new_hash = hashlib.sha256(new_yaml.encode()).hexdigest()[:16]
         if new_hash == self.active_hash:
             raise ValueError(
-                f"Constitution unchanged (hash={self.active_hash}). "
-                "No update recorded."
+                f"Constitution unchanged (hash={self.active_hash}). No update recorded."
             )
         return self._activate(new_yaml, description, block_height)
 
@@ -297,10 +296,7 @@ class ConstitutionReceiver:
             computed = hashlib.sha256(msg.yaml_content.encode()).hexdigest()[:16]
             return SyncResult(
                 success=False,
-                message=(
-                    f"Hash mismatch: expected={msg.expected_hash} "
-                    f"computed={computed}"
-                ),
+                message=(f"Hash mismatch: expected={msg.expected_hash} computed={computed}"),
                 old_hash=old_hash,
             )
 

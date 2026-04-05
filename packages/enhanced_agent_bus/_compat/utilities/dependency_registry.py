@@ -1,4 +1,5 @@
 """Shim for src.core.shared.utilities.dependency_registry."""
+
 from __future__ import annotations
 
 from typing import Any, ClassVar
@@ -39,12 +40,23 @@ except ImportError:
         _initialized: bool = False
 
         @classmethod
-        def register(cls, name: str, module_path: str = "", import_name: str = "",
-                     feature_flag: FeatureFlag | None = None, fallback_paths: list[str] | None = None,
-                     factory: Any = None, singleton: bool = False) -> None:
+        def register(
+            cls,
+            name: str,
+            module_path: str = "",
+            import_name: str = "",
+            feature_flag: FeatureFlag | None = None,
+            fallback_paths: list[str] | None = None,
+            factory: Any = None,
+            singleton: bool = False,
+        ) -> None:
             cls._dependencies[name] = {
-                "name": name, "module_path": module_path, "import_name": import_name,
-                "feature_flag": feature_flag, "factory": factory, "singleton": singleton,
+                "name": name,
+                "module_path": module_path,
+                "import_name": import_name,
+                "feature_flag": feature_flag,
+                "factory": factory,
+                "singleton": singleton,
             }
 
         @classmethod

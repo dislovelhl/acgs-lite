@@ -23,13 +23,47 @@ CONSTITUTION_FILE = Path(__file__).parent / "constitution.yaml"
 
 # --- Templates for ALLOW scenarios ---
 ALLOW_VERBS = [
-    "implement", "run", "test", "audit", "evaluate", "review", "assess",
-    "monitor", "validate", "check", "verify", "analyze", "configure",
-    "update", "deploy", "schedule", "generate", "create", "design",
-    "build", "optimize", "improve", "enhance", "refine", "inspect",
-    "measure", "track", "document", "prepare", "plan", "coordinate",
-    "establish", "maintain", "calibrate", "benchmark", "profile",
-    "diagnose", "troubleshoot", "investigate", "research", "study",
+    "implement",
+    "run",
+    "test",
+    "audit",
+    "evaluate",
+    "review",
+    "assess",
+    "monitor",
+    "validate",
+    "check",
+    "verify",
+    "analyze",
+    "configure",
+    "update",
+    "deploy",
+    "schedule",
+    "generate",
+    "create",
+    "design",
+    "build",
+    "optimize",
+    "improve",
+    "enhance",
+    "refine",
+    "inspect",
+    "measure",
+    "track",
+    "document",
+    "prepare",
+    "plan",
+    "coordinate",
+    "establish",
+    "maintain",
+    "calibrate",
+    "benchmark",
+    "profile",
+    "diagnose",
+    "troubleshoot",
+    "investigate",
+    "research",
+    "study",
 ]
 
 ALLOW_OBJECTS = [
@@ -249,20 +283,48 @@ DENY_TEMPLATES = [
 ]
 
 DENY_SYSTEMS = [
-    "recommendation engine", "credit scoring model", "content moderation system",
-    "hiring algorithm", "fraud detection model", "customer service chatbot",
-    "autonomous vehicle controller", "medical diagnosis AI", "sentiment analysis tool",
-    "risk assessment model", "predictive policing system", "facial recognition service",
-    "voice recognition engine", "natural language processor", "image classifier",
-    "pricing optimization model", "supply chain predictor", "demand forecasting system",
-    "anomaly detection engine", "speech synthesis model", "translation service",
-    "document classifier", "spam detection system", "recommendation algorithm",
-    "behavior prediction model", "churn prediction system", "lead scoring model",
-    "customer segmentation tool", "product recommendation engine", "ad targeting system",
-    "news ranking algorithm", "search ranking model", "social media analyzer",
-    "emotion recognition system", "health monitoring AI", "insurance risk model",
-    "loan approval system", "tenant screening model", "employee performance tracker",
-    "attendance monitoring system", "productivity scoring tool", "workflow automation engine",
+    "recommendation engine",
+    "credit scoring model",
+    "content moderation system",
+    "hiring algorithm",
+    "fraud detection model",
+    "customer service chatbot",
+    "autonomous vehicle controller",
+    "medical diagnosis AI",
+    "sentiment analysis tool",
+    "risk assessment model",
+    "predictive policing system",
+    "facial recognition service",
+    "voice recognition engine",
+    "natural language processor",
+    "image classifier",
+    "pricing optimization model",
+    "supply chain predictor",
+    "demand forecasting system",
+    "anomaly detection engine",
+    "speech synthesis model",
+    "translation service",
+    "document classifier",
+    "spam detection system",
+    "recommendation algorithm",
+    "behavior prediction model",
+    "churn prediction system",
+    "lead scoring model",
+    "customer segmentation tool",
+    "product recommendation engine",
+    "ad targeting system",
+    "news ranking algorithm",
+    "search ranking model",
+    "social media analyzer",
+    "emotion recognition system",
+    "health monitoring AI",
+    "insurance risk model",
+    "loan approval system",
+    "tenant screening model",
+    "employee performance tracker",
+    "attendance monitoring system",
+    "productivity scoring tool",
+    "workflow automation engine",
 ]
 
 DENY_CONTEXTS = [
@@ -295,19 +357,39 @@ ESCALATE_TEMPLATES = [
 ]
 
 ESCALATE_FEATURES = [
-    "recommendations", "content filtering", "pricing",
-    "access controls", "feature gating", "notification targeting",
-    "content ranking", "search results", "ad targeting",
+    "recommendations",
+    "content filtering",
+    "pricing",
+    "access controls",
+    "feature gating",
+    "notification targeting",
+    "content ranking",
+    "search results",
+    "ad targeting",
 ]
 
 ESCALATE_DOMAINS = [
-    "streaming platform", "e-commerce site", "social media app",
-    "news aggregator", "fitness tracker", "insurance portal",
-    "banking application", "healthcare system", "education platform",
-    "gaming service", "travel booking", "real estate platform",
-    "job board", "dating application", "food delivery service",
-    "ride sharing platform", "music streaming", "video platform",
-    "podcast service", "newsletter platform", "marketplace",
+    "streaming platform",
+    "e-commerce site",
+    "social media app",
+    "news aggregator",
+    "fitness tracker",
+    "insurance portal",
+    "banking application",
+    "healthcare system",
+    "education platform",
+    "gaming service",
+    "travel booking",
+    "real estate platform",
+    "job board",
+    "dating application",
+    "food delivery service",
+    "ride sharing platform",
+    "music streaming",
+    "video platform",
+    "podcast service",
+    "newsletter platform",
+    "marketplace",
 ]
 
 
@@ -322,11 +404,13 @@ def generate_allow_scenarios(n: int, rng: random.Random) -> list[dict]:
     scenarios = []
     for i, action in enumerate(all_combos[:n]):
         ctx = ALLOW_CONTEXTS[i % len(ALLOW_CONTEXTS)]
-        scenarios.append({
-            "action": action,
-            "expected": "allow",
-            "context": ctx if ctx else {},
-        })
+        scenarios.append(
+            {
+                "action": action,
+                "expected": "allow",
+                "context": ctx if ctx else {},
+            }
+        )
     return scenarios
 
 
@@ -340,11 +424,13 @@ def generate_deny_scenarios(n: int, rng: random.Random) -> list[dict]:
     scenarios = []
     for i, action in enumerate(all_combos[:n]):
         ctx = DENY_CONTEXTS[i % len(DENY_CONTEXTS)]
-        scenarios.append({
-            "action": action,
-            "expected": "deny",
-            "context": ctx if ctx else {},
-        })
+        scenarios.append(
+            {
+                "action": action,
+                "expected": "deny",
+                "context": ctx if ctx else {},
+            }
+        )
     return scenarios
 
 
@@ -358,11 +444,13 @@ def generate_escalate_scenarios(n: int, rng: random.Random) -> list[dict]:
     rng.shuffle(all_combos)
     scenarios = []
     for action in all_combos[:n]:
-        scenarios.append({
-            "action": action,
-            "expected": "escalate",
-            "context": {},
-        })
+        scenarios.append(
+            {
+                "action": action,
+                "expected": "escalate",
+                "context": {},
+            }
+        )
     return scenarios
 
 
@@ -407,7 +495,9 @@ def main():
     n_deny = 1200
     n_escalate = 200
 
-    print(f"Generating {n_allow} allow + {n_deny} deny + {n_escalate} escalate = {n_allow + n_deny + n_escalate} candidates...")
+    print(
+        f"Generating {n_allow} allow + {n_deny} deny + {n_escalate} escalate = {n_allow + n_deny + n_escalate} candidates..."
+    )
 
     allow_candidates = generate_allow_scenarios(n_allow, rng)
     deny_candidates = generate_deny_scenarios(n_deny, rng)
@@ -431,7 +521,7 @@ def main():
         if bad_list:
             print(f"\n  Sample incorrect {label}:")
             for s in bad_list[:3]:
-                print(f"    expected={s['expected']} actual={s['_actual']}: \"{s['action']}\"")
+                print(f'    expected={s["expected"]} actual={s["_actual"]}: "{s["action"]}"')
 
     # Deduplicate against existing corpus
     existing_actions = set()

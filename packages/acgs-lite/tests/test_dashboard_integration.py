@@ -24,6 +24,7 @@ from acgs_lite.integrations.dashboard import (
 
 # ── Fixtures ───────────────────────────────────────────────────────────
 
+
 @pytest.fixture()
 def constitution():
     return Constitution.default()
@@ -37,7 +38,9 @@ def audit_log():
 @pytest.fixture()
 def engine(constitution, audit_log):
     return GovernanceEngine(
-        constitution, audit_log=audit_log, strict=False,
+        constitution,
+        audit_log=audit_log,
+        strict=False,
     )
 
 
@@ -63,6 +66,7 @@ def _make_violation(
 
 
 # ── DashboardMetrics ──────────────────────────────────────────────────
+
 
 class TestDashboardMetrics:
     def test_creation(self):
@@ -174,6 +178,7 @@ class TestDashboardMetrics:
 
 # ── ViolationTimeline ─────────────────────────────────────────────────
 
+
 class TestViolationTimeline:
     def test_empty_timeline(self):
         tl = ViolationTimeline()
@@ -224,7 +229,8 @@ class TestViolationTimeline:
         tl = ViolationTimeline()
         for i in range(10):
             tl.record(
-                _make_violation(f"R{i}"), "a1",
+                _make_violation(f"R{i}"),
+                "a1",
                 timestamp=f"2026-01-01T{i:02d}:00:00Z",
             )
         last3 = tl.get_timeline(last_n=3)
@@ -263,15 +269,18 @@ class TestViolationTimeline:
     def test_summary_by_hour(self):
         tl = ViolationTimeline()
         tl.record(
-            _make_violation(), "a",
+            _make_violation(),
+            "a",
             timestamp="2026-01-01T10:00:00Z",
         )
         tl.record(
-            _make_violation(), "a",
+            _make_violation(),
+            "a",
             timestamp="2026-01-01T10:30:00Z",
         )
         tl.record(
-            _make_violation(), "a",
+            _make_violation(),
+            "a",
             timestamp="2026-01-01T11:00:00Z",
         )
         s = tl.summary()
@@ -294,6 +303,7 @@ class TestViolationTimeline:
 
 
 # ── GovernanceDashboard ───────────────────────────────────────────────
+
 
 class TestGovernanceDashboard:
     def test_get_metrics_returns_dashboard_metrics(self, dashboard):
@@ -326,7 +336,8 @@ class TestGovernanceDashboard:
 
     def test_validate_and_record_clean(self, dashboard):
         result = dashboard.validate_and_record(
-            "analyze the data", "agent-1",
+            "analyze the data",
+            "agent-1",
         )
         assert isinstance(result, ValidationResult)
         assert dashboard.get_timeline().get_timeline() == []
@@ -334,7 +345,8 @@ class TestGovernanceDashboard:
     def test_validate_and_record_violation(self, dashboard):
         # "delete all user data" should trigger violations
         result = dashboard.validate_and_record(
-            "delete all user data without consent", "agent-bad",
+            "delete all user data without consent",
+            "agent-bad",
         )
         # In non-strict mode we get violations in the result
         if result.violations:
@@ -357,7 +369,10 @@ class TestGovernanceDashboard:
         assert isinstance(summary, dict)
 
     def test_get_agent_summary_after_validation(
-        self, engine, audit_log, constitution,
+        self,
+        engine,
+        audit_log,
+        constitution,
     ):
         dash = GovernanceDashboard(engine, audit_log, constitution)
         engine.validate("analyze data", agent_id="bot-1")
@@ -402,7 +417,8 @@ class TestGovernanceDashboard:
         # Multiple validations
         for i in range(5):
             dashboard.validate_and_record(
-                f"process item {i}", f"agent-{i}",
+                f"process item {i}",
+                f"agent-{i}",
             )
         tl = dashboard.get_timeline()
         # clean actions produce no timeline entries
@@ -410,6 +426,7 @@ class TestGovernanceDashboard:
 
 
 # ── ASGI App ──────────────────────────────────────────────────────────
+
 
 class TestASGIApp:
     @pytest.fixture()
@@ -543,6 +560,7 @@ class TestASGIApp:
 
 # ── Edge Cases ────────────────────────────────────────────────────────
 
+
 class TestEdgeCases:
     def test_empty_constitution(self):
         c = Constitution(rules=[])
@@ -572,7 +590,10 @@ class TestEdgeCases:
         assert tl.get_timeline(last_n=10) == []
 
     def test_dashboard_multiple_validate_and_record(
-        self, engine, audit_log, constitution,
+        self,
+        engine,
+        audit_log,
+        constitution,
     ):
         dash = GovernanceDashboard(engine, audit_log, constitution)
         for _ in range(10):

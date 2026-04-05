@@ -225,7 +225,9 @@ class CircuitBreakerOPAClient:
         return await self._evaluate_policy_with_fail_closed(input_data, policy_path, cache_key)
 
     @fail_closed(
-        lambda self, input_data, policy_path, cache_key, *, error: self._handle_evaluate_policy_error(error),
+        lambda self, input_data, policy_path, cache_key, *, error: (
+            self._handle_evaluate_policy_error(error)
+        ),
         exceptions=OPA_OPERATION_ERRORS,
     )
     async def _evaluate_policy_with_fail_closed(

@@ -41,6 +41,7 @@ except ImportError:
             super().__init__(message)
             self.error_code = error_code
 
+
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 _CONSTITUTIONAL_HASH = CONSTITUTIONAL_HASH

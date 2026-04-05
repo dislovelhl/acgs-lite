@@ -103,7 +103,6 @@ def _build_app(
     async def _fake_role_dep() -> UserClaims:
         return user  # type: ignore[return-value]
 
-
     app.include_router(pqc_phase5_router)
 
     # Replace all Depends(require_role(...)) overrides.

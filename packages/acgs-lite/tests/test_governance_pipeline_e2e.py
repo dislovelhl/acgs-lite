@@ -43,6 +43,7 @@ from acgs_lite.constitution.validator_selection import (
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _ts(minutes: float = 0) -> datetime:
     """Base timestamp with optional minute offset."""
     return datetime(2026, 3, 30, 12, 0, 0, tzinfo=timezone.utc) + timedelta(minutes=minutes)
@@ -66,17 +67,22 @@ def _setup_trust_manager(validator_ids: list[str]) -> TrustScoreManager:
     """Create a TrustScoreManager tracking the given validators."""
     mgr = TrustScoreManager()
     for vid in validator_ids:
-        mgr.register(vid, TrustConfig(
-            initial_score=0.9,
-            time_decay_rate=0.001,
-        ))
+        mgr.register(
+            vid,
+            TrustConfig(
+                initial_score=0.9,
+                time_decay_rate=0.001,
+            ),
+        )
     return mgr
 
 
 def _revalidation_fn(oracle_outcomes: dict[str, str]):
     """Factory: returns a spot-check function that uses a fixed oracle."""
+
     def check_fn(case_id: str, submission_hash: str) -> str:
         return oracle_outcomes.get(case_id, "approve")
+
     return check_fn
 
 
@@ -93,23 +99,30 @@ class TestGovernancePipelineE2E:
 
         # ── 1. Setup infrastructure ──
         pool = _setup_pool(10)
-        selector = ValidatorSelector(pool, SelectionPolicy(
-            signing_key="e2e-test-key",
-            require_domain_match=True,
-        ))
-        case_mgr = CaseManager(CaseConfig(
-            claim_timeout_minutes=60,
-            submission_timeout_minutes=120,
-            validation_timeout_minutes=480,
-        ))
+        selector = ValidatorSelector(
+            pool,
+            SelectionPolicy(
+                signing_key="e2e-test-key",
+                require_domain_match=True,
+            ),
+        )
+        case_mgr = CaseManager(
+            CaseConfig(
+                claim_timeout_minutes=60,
+                submission_timeout_minutes=120,
+                validation_timeout_minutes=480,
+            )
+        )
         validator_ids = pool.list_validators()
         trust_mgr = _setup_trust_manager(validator_ids)
-        auditor = SpotCheckAuditor(AuditPolicy(
-            sample_rate=1.0,  # check everything in tests
-            correct_reward=0.005,
-            correct_dissent_bonus=0.05,
-            lazy_penalty=0.03,
-        ))
+        auditor = SpotCheckAuditor(
+            AuditPolicy(
+                sample_rate=1.0,  # check everything in tests
+                correct_reward=0.005,
+                correct_dissent_bonus=0.05,
+                lazy_penalty=0.03,
+            )
+        )
 
         # ── 2. Create governance case ──
         case_id = case_mgr.create(
@@ -126,7 +139,8 @@ class TestGovernancePipelineE2E:
         miner_id = "miner-42"
         case_mgr.claim(case_id, miner_id, _now=_ts(5))
         case_mgr.submit(
-            case_id, miner_id,
+            case_id,
+            miner_id,
             result={"verdict": "compliant", "confidence": 0.92},
             _now=_ts(10),
         )
@@ -146,13 +160,17 @@ class TestGovernancePipelineE2E:
 
         # ── 5. Begin validation ──
         case_mgr.begin_validation(
-            case_id, selection.selected, _now=_ts(15),
+            case_id,
+            selection.selected,
+            _now=_ts(15),
         )
         assert case_mgr.get(case_id).state == CaseState.VALIDATING
 
         # ── 6. Finalize (approved) ──
         case_mgr.finalize(
-            case_id, outcome="approved", proof_hash="abc123",
+            case_id,
+            outcome="approved",
+            proof_hash="abc123",
             _now=_ts(20),
         )
         final_case = case_mgr.get(case_id)
@@ -215,11 +233,13 @@ class TestGovernancePipelineE2E:
         case_mgr = CaseManager()
         validator_ids = pool.list_validators()
         trust_mgr = _setup_trust_manager(validator_ids)
-        auditor = SpotCheckAuditor(AuditPolicy(
-            sample_rate=1.0,
-            correct_dissent_bonus=0.05,
-            lazy_penalty=0.03,
-        ))
+        auditor = SpotCheckAuditor(
+            AuditPolicy(
+                sample_rate=1.0,
+                correct_dissent_bonus=0.05,
+                lazy_penalty=0.03,
+            )
+        )
 
         # Create and process case
         case_id = case_mgr.create("evaluate deployment risk", domain="finance", _now=t)
@@ -227,8 +247,10 @@ class TestGovernancePipelineE2E:
         case_mgr.submit(case_id, "miner-1", {"verdict": "safe"}, _now=_ts(2))
 
         selection = selector.select(
-            case_id=case_id, producer_id="miner-1",
-            risk_tier="medium", domain="finance",
+            case_id=case_id,
+            producer_id="miner-1",
+            risk_tier="medium",
+            domain="finance",
             seed="aabb" * 16,
         )
 
@@ -288,21 +310,27 @@ class TestGovernancePipelineE2E:
 
         processed_cases: list[str] = []
 
-        for i, (domain, outcome, spot_agrees) in enumerate([
-            ("finance", "approved", True),
-            ("privacy", "approved", False),  # spot-check catches bad approval
-            ("finance", "rejected", True),
-        ]):
+        for i, (domain, outcome, spot_agrees) in enumerate(
+            [
+                ("finance", "approved", True),
+                ("privacy", "approved", False),  # spot-check catches bad approval
+                ("finance", "rejected", True),
+            ]
+        ):
             cid = case_mgr.create(
-                f"case-{i}", domain=domain, risk_tier="medium",
+                f"case-{i}",
+                domain=domain,
+                risk_tier="medium",
                 _now=_ts(i * 10),
             )
             case_mgr.claim(cid, f"miner-{i}", _now=_ts(i * 10 + 1))
             case_mgr.submit(cid, f"miner-{i}", {"v": i}, _now=_ts(i * 10 + 2))
 
             sel = selector.select(
-                case_id=cid, producer_id=f"miner-{i}",
-                risk_tier="medium", domain=domain,
+                case_id=cid,
+                producer_id=f"miner-{i}",
+                risk_tier="medium",
+                domain=domain,
                 seed=f"{i:064x}",
             )
             case_mgr.begin_validation(cid, sel.selected, _now=_ts(i * 10 + 3))
@@ -313,7 +341,8 @@ class TestGovernancePipelineE2E:
             votes = {vid: vote_val for vid in sel.selected}
 
             auditor.register_completed(
-                case_id=cid, domain=domain,
+                case_id=cid,
+                domain=domain,
                 original_outcome=outcome,
                 validator_votes=votes,
                 submission_hash=f"hash-{i}",
@@ -323,9 +352,9 @@ class TestGovernancePipelineE2E:
 
         # Run spot-checks with oracle
         oracle_outcomes = {
-            processed_cases[0]: "approve",   # agrees
-            processed_cases[1]: "reject",    # disagrees (catches bad approval)
-            processed_cases[2]: "reject",    # agrees with rejection
+            processed_cases[0]: "approve",  # agrees
+            processed_cases[1]: "reject",  # disagrees (catches bad approval)
+            processed_cases[2]: "reject",  # agrees with rejection
         }
         oracle = _revalidation_fn(oracle_outcomes)
         results = auditor.run_spot_check(oracle, _now=_ts(50))
@@ -387,8 +416,10 @@ class TestGovernancePipelineE2E:
         case_mgr.submit(cid, "miner-fast", {"verdict": "ok"}, _now=_ts(40))
 
         sel = selector.select(
-            case_id=cid, producer_id="miner-fast",
-            risk_tier="medium", domain="finance",
+            case_id=cid,
+            producer_id="miner-fast",
+            risk_tier="medium",
+            domain="finance",
             seed="cc" * 32,
         )
         case_mgr.begin_validation(cid, sel.selected, _now=_ts(42))
@@ -429,8 +460,10 @@ class TestGovernancePipelineE2E:
 
         # Validator selection excludes producer
         sel = selector.select(
-            case_id=cid, producer_id="miner-1",
-            risk_tier="medium", domain="finance",
+            case_id=cid,
+            producer_id="miner-1",
+            risk_tier="medium",
+            domain="finance",
         )
         assert "miner-1" not in sel.selected
         assert sel.producer_excluded
@@ -457,8 +490,11 @@ class TestGovernancePipelineE2E:
         # Heavy penalty on val-target (4 × critical = -0.80, score = 0.20)
         for _ in range(4):
             trust_mgr.record_decision(
-                "val-target", compliant=False, severity="critical",
-                domain="finance", _now=_ts(0),
+                "val-target",
+                compliant=False,
+                severity="critical",
+                domain="finance",
+                _now=_ts(0),
             )
 
         # Immediately: val-target is restricted
@@ -466,10 +502,14 @@ class TestGovernancePipelineE2E:
         assert trust_mgr.tier("val-clean", _now=_ts(0)) == TrustTier.TRUSTED
 
         # After 50 hours: 0.20 + 0.01*50 = 0.70 → monitored
-        assert trust_mgr.tier("val-target", domain="finance", _now=_ts(50 * 60)) == TrustTier.MONITORED
+        assert (
+            trust_mgr.tier("val-target", domain="finance", _now=_ts(50 * 60)) == TrustTier.MONITORED
+        )
 
         # After 80 hours: 0.20 + 0.01*80 = 1.00 → trusted (capped at 1.0)
-        assert trust_mgr.tier("val-target", domain="finance", _now=_ts(80 * 60)) == TrustTier.TRUSTED
+        assert (
+            trust_mgr.tier("val-target", domain="finance", _now=_ts(80 * 60)) == TrustTier.TRUSTED
+        )
 
         # Sync recovered trust to pool
         pool = ValidatorPool()
@@ -503,18 +543,22 @@ class TestGovernancePipelineE2E:
         # Selection from diverse pool should have high diversity
         selector = ValidatorSelector(diverse_pool, SelectionPolicy(diversity_bonus_factor=1.0))
         result = selector.select(
-            case_id="c1", producer_id="producer-x",
-            risk_tier="low", domain="fin",
+            case_id="c1",
+            producer_id="producer-x",
+            risk_tier="low",
+            domain="fin",
         )
         assert result.diversity_score > 0.0
 
     def test_bias_detection_across_many_cases(self) -> None:
         """Validator who always votes the same way gets flagged for bias."""
-        auditor = SpotCheckAuditor(AuditPolicy(
-            sample_rate=1.0,
-            min_cases_for_bias=5,
-            bias_threshold=0.90,
-        ))
+        auditor = SpotCheckAuditor(
+            AuditPolicy(
+                sample_rate=1.0,
+                min_cases_for_bias=5,
+                bias_threshold=0.90,
+            )
+        )
 
         # Register 10 cases — val-rubber always approves
         for i in range(10):
@@ -557,10 +601,16 @@ class TestGovernancePipelineE2E:
 
         votes = {vid: "approve" for vid in sel.selected}
         auditor.register_completed(
-            cid, "finance", "approved", votes, "hash", _now=_ts(5),
+            cid,
+            "finance",
+            "approved",
+            votes,
+            "hash",
+            _now=_ts(5),
         )
         results = auditor.run_spot_check(
-            _revalidation_fn({cid: "approve"}), _now=_ts(6),
+            _revalidation_fn({cid: "approve"}),
+            _now=_ts(6),
         )
         adjustments = auditor.compute_adjustments(results)
         auditor.apply_adjustments(trust_mgr, adjustments, _now=_ts(7))

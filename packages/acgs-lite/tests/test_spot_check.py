@@ -57,9 +57,12 @@ class TestRegistration:
     def test_profiles_updated_on_registration(self) -> None:
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve", "v3": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         p1 = auditor.profile("v1")
@@ -126,9 +129,12 @@ class TestSpotCheck:
         """Spot-check agrees with original: all majority validators are correct."""
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve", "v3": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         results = auditor.run_spot_check(_always_approve, case_ids=["c1"], _now=_ts())
@@ -147,9 +153,12 @@ class TestSpotCheck:
         """Spot-check disagrees: majority validators are flagged as lazy."""
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve", "v3": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         # Spot-check says reject → original approval was wrong
@@ -173,9 +182,12 @@ class TestSpotCheck:
         )
         auditor = SpotCheckAuditor(policy)
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve", "v3": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         results = auditor.run_spot_check(_always_reject, case_ids=["c1"], _now=_ts())
@@ -197,9 +209,12 @@ class TestSpotCheck:
     def test_profiles_updated_after_check(self) -> None:
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         auditor.run_spot_check(_always_approve, case_ids=["c1"], _now=_ts())
@@ -220,9 +235,12 @@ class TestTrustAdjustments:
     def test_compute_adjustments(self) -> None:
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve", "v3": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         results = auditor.run_spot_check(_always_reject, case_ids=["c1"], _now=_ts())
@@ -244,9 +262,12 @@ class TestTrustAdjustments:
 
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve", "v3": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
 
         results = auditor.run_spot_check(_always_reject, case_ids=["c1"], _now=_ts())
@@ -268,8 +289,12 @@ class TestTrustAdjustments:
         # Create an adjustment with zero delta
         adjustments = [
             TrustAdjustment(
-                validator_id="v1", domain="fin", delta=0.0,
-                cases_checked=0, correct_count=0, lazy_count=0,
+                validator_id="v1",
+                domain="fin",
+                delta=0.0,
+                cases_checked=0,
+                correct_count=0,
+                lazy_count=0,
                 dissent_bonus_count=0,
             )
         ]
@@ -293,10 +318,12 @@ class TestBiasDetection:
         assert len(auditor.biased_validators()) == 0
 
     def test_bias_detected(self) -> None:
-        auditor = SpotCheckAuditor(AuditPolicy(
-            min_cases_for_bias=5,
-            bias_threshold=0.90,
-        ))
+        auditor = SpotCheckAuditor(
+            AuditPolicy(
+                min_cases_for_bias=5,
+                bias_threshold=0.90,
+            )
+        )
 
         # v1 always approves across 10 cases
         for i in range(10):
@@ -315,9 +342,7 @@ class TestBiasDetection:
         for i in range(10):
             vote = "approve" if i % 2 == 0 else "reject"
             outcome = "approved" if i % 2 == 0 else "rejected"
-            auditor.register_completed(
-                f"c{i}", "fin", outcome, {"v1": vote}, f"h{i}", _now=_ts()
-            )
+            auditor.register_completed(f"c{i}", "fin", outcome, {"v1": vote}, f"h{i}", _now=_ts())
 
         assert len(auditor.biased_validators()) == 0
 
@@ -349,9 +374,12 @@ class TestQueries:
     def test_summary(self) -> None:
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "reject"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
         auditor.run_spot_check(_always_approve, case_ids=["c1"], _now=_ts())
 
@@ -364,9 +392,12 @@ class TestQueries:
     def test_summary_with_disagreements(self) -> None:
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve"},
-            "abc", _now=_ts(),
+            "abc",
+            _now=_ts(),
         )
         auditor.run_spot_check(_always_reject, case_ids=["c1"], _now=_ts())
 
@@ -401,14 +432,20 @@ class TestEdgeCases:
     def test_multiple_cases_multiple_validators(self) -> None:
         auditor = _make_auditor()
         auditor.register_completed(
-            "c1", "fin", "approved",
+            "c1",
+            "fin",
+            "approved",
             {"v1": "approve", "v2": "approve"},
-            "a", _now=_ts(),
+            "a",
+            _now=_ts(),
         )
         auditor.register_completed(
-            "c2", "fin", "rejected",
+            "c2",
+            "fin",
+            "rejected",
             {"v1": "reject", "v3": "approve"},
-            "b", _now=_ts(),
+            "b",
+            _now=_ts(),
         )
 
         results = auditor.run_spot_check(_always_reject, case_ids=["c1", "c2"], _now=_ts())

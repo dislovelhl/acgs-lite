@@ -19,9 +19,7 @@ from acgs_lite.constitution.trust_score import (
 
 
 def _ts(hours_offset: float = 0) -> datetime:
-    return datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc) + timedelta(
-        hours=hours_offset
-    )
+    return datetime(2026, 3, 29, 12, 0, 0, tzinfo=timezone.utc) + timedelta(hours=hours_offset)
 
 
 # ── Domain-scoped scoring ───────────────────────────────────────────────────
@@ -50,7 +48,9 @@ class TestDomainScoring:
         mgr = TrustScoreManager()
         mgr.register("a1", TrustConfig(initial_score=1.0))
 
-        mgr.record_decision("a1", compliant=False, severity="critical", domain="finance", _now=_ts(0))
+        mgr.record_decision(
+            "a1", compliant=False, severity="critical", domain="finance", _now=_ts(0)
+        )
 
         fin_score = mgr.score("a1", domain="finance", _now=_ts(0))
         health_score = mgr.score("a1", domain="healthcare", _now=_ts(0))
@@ -64,7 +64,9 @@ class TestDomainScoring:
 
         # Hammer finance with violations (6 × high = -0.60, score = 0.40 < 0.50)
         for _ in range(6):
-            mgr.record_decision("a1", compliant=False, severity="high", domain="finance", _now=_ts(0))
+            mgr.record_decision(
+                "a1", compliant=False, severity="high", domain="finance", _now=_ts(0)
+            )
 
         assert mgr.tier("a1", domain="finance", _now=_ts(0)) == TrustTier.RESTRICTED
         # Healthcare should still be trusted
@@ -75,7 +77,9 @@ class TestDomainScoring:
         mgr.register("a1", TrustConfig(initial_score=1.0))
 
         mgr.record_decision("a1", compliant=False, severity="high", domain="finance", _now=_ts(0))
-        mgr.record_decision("a1", compliant=False, severity="high", domain="healthcare", _now=_ts(0))
+        mgr.record_decision(
+            "a1", compliant=False, severity="high", domain="healthcare", _now=_ts(0)
+        )
 
         # Global score should reflect both penalties
         global_score = mgr.score("a1", _now=_ts(0))
@@ -127,7 +131,9 @@ class TestDomainScoring:
 
         # Only a1 restricted in finance (6 × high = -0.60, score = 0.40)
         for _ in range(6):
-            mgr.record_decision("a1", compliant=False, severity="high", domain="finance", _now=_ts(0))
+            mgr.record_decision(
+                "a1", compliant=False, severity="high", domain="finance", _now=_ts(0)
+            )
 
         restricted_fin = mgr.restricted_agents(domain="finance")
 
@@ -286,7 +292,9 @@ class TestSyncToValidatorPool:
 
         mgr = TrustScoreManager()
         mgr.register("a1")
-        mgr.record_decision("a1", compliant=False, severity="critical", domain="finance", _now=_ts(0))
+        mgr.record_decision(
+            "a1", compliant=False, severity="critical", domain="finance", _now=_ts(0)
+        )
 
         mgr.sync_to_validator_pool(pool, domain="finance", _now=_ts(0))
         assert pool.get("a1").trust_score < 1.0  # type: ignore[union-attr]
@@ -320,7 +328,9 @@ class TestSummaryDomains:
     def test_summary_with_domain_filter(self) -> None:
         mgr = TrustScoreManager()
         mgr.register("a1")
-        mgr.record_decision("a1", compliant=False, severity="critical", domain="finance", _now=_ts(0))
+        mgr.record_decision(
+            "a1", compliant=False, severity="critical", domain="finance", _now=_ts(0)
+        )
 
         s = mgr.summary(domain="finance")
         assert s["domain_filter"] == "finance"

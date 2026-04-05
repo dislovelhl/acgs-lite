@@ -88,12 +88,7 @@ def clean_changes() -> dict[str, Any]:
             {
                 "old_path": "src/app.py",
                 "new_path": "src/app.py",
-                "diff": (
-                    "@@ -1,3 +1,5 @@\n"
-                    "+def health():\n"
-                    "+    return 'ok'\n"
-                    " # existing\n"
-                ),
+                "diff": ("@@ -1,3 +1,5 @@\n+def health():\n+    return 'ok'\n # existing\n"),
             }
         ]
     }
@@ -120,11 +115,7 @@ def violating_changes() -> dict[str, Any]:
         "changes": [
             {
                 "new_path": "src/evil.py",
-                "diff": (
-                    "@@ -0,0 +1,2 @@\n"
-                    "+bypass validation here\n"
-                    "+safe line\n"
-                ),
+                "diff": ("@@ -0,0 +1,2 @@\n+bypass validation here\n+safe line\n"),
             }
         ]
     }
@@ -161,14 +152,7 @@ class TestParseAddedLines:
         assert result[0][1] == "added"
 
     def test_multiple_hunks(self) -> None:
-        diff = (
-            "@@ -1,2 +1,3 @@\n"
-            " ctx\n"
-            "+first add\n"
-            "@@ -10,2 +11,3 @@\n"
-            " ctx\n"
-            "+second add\n"
-        )
+        diff = "@@ -1,2 +1,3 @@\n ctx\n+first add\n@@ -10,2 +11,3 @@\n ctx\n+second add\n"
         result = _parse_added_lines(diff)
         assert len(result) == 2
         assert result[0][1] == "first add"
@@ -851,17 +835,13 @@ class TestGitLabWebhookHandler:
         assert "post_approval_valid" in result
 
     @pytest.mark.asyncio
-    async def test_handle_merge_request_merge_noted(
-        self, handler: GitLabWebhookHandler
-    ) -> None:
+    async def test_handle_merge_request_merge_noted(self, handler: GitLabWebhookHandler) -> None:
         body = {"object_attributes": {"action": "merge", "iid": 42}}
         result = await handler._handle_merge_request(body)
         assert result["status"] == "noted"
 
     @pytest.mark.asyncio
-    async def test_handle_merge_request_missing_iid(
-        self, handler: GitLabWebhookHandler
-    ) -> None:
+    async def test_handle_merge_request_missing_iid(self, handler: GitLabWebhookHandler) -> None:
         body = {"object_attributes": {"action": "open"}}
         result = await handler._handle_merge_request(body)
         assert result["status"] == "skipped"
@@ -897,9 +877,7 @@ class TestGitLabWebhookHandler:
         assert result["action"] == "skipped"
 
     @pytest.mark.asyncio
-    async def test_handle_pipeline_unsupported_status(
-        self, handler: GitLabWebhookHandler
-    ) -> None:
+    async def test_handle_pipeline_unsupported_status(self, handler: GitLabWebhookHandler) -> None:
         body = {
             "object_attributes": {"status": "running"},
             "merge_request": {"iid": 42},
@@ -971,9 +949,7 @@ class TestGitLabWebhookHandler:
         assert response.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_handle_webhook_processing_error(
-        self, handler: GitLabWebhookHandler
-    ) -> None:
+    async def test_handle_webhook_processing_error(self, handler: GitLabWebhookHandler) -> None:
         """Exception during event routing returns 500."""
         try:
             import starlette  # noqa: F401

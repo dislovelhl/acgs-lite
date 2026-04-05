@@ -162,7 +162,9 @@ class TestRouteAndDeliverPaths:
     def bus_with_internal_queue(self):
         """Create bus without Kafka for internal queue testing."""
         bus = EnhancedAgentBus(
-            enable_maci=False, use_kafka=False, allow_unstarted=True,
+            enable_maci=False,
+            use_kafka=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         bus._use_kafka = False
         return bus
@@ -197,7 +199,8 @@ class TestKafkaPolling:
     async def test_poll_kafka_messages_no_kafka_bus(self):
         """Test _poll_kafka_messages returns early when no Kafka bus."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         bus._kafka_bus = None
 
@@ -207,7 +210,8 @@ class TestKafkaPolling:
     async def test_poll_kafka_messages_with_kafka(self):
         """Test _poll_kafka_messages subscribes and polls."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         mock_kafka = AsyncMock()
@@ -227,7 +231,8 @@ class TestRegistrationWithPolicyClient:
     async def test_register_handles_policy_client_error(self):
         """Test registration handles policy client errors gracefully."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         mock_policy = AsyncMock()
@@ -273,7 +278,8 @@ class TestOTELTracingPaths:
     async def test_send_message_without_otel(self):
         """Test send_message works when OTEL is disabled."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -299,7 +305,8 @@ class TestKafkaMessageHandler:
     async def test_kafka_handler_processes_valid_message(self):
         """Test Kafka handler processes valid message data."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Access the internal queue
@@ -324,7 +331,8 @@ class TestKafkaMessageHandler:
     async def test_kafka_handler_with_invalid_message(self):
         """Test Kafka handler handles invalid message data."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Test that AgentMessage.from_dict handles bad data
@@ -342,7 +350,8 @@ class TestCircuitBreakerHealthMetrics:
     async def test_get_metrics_async_without_circuit_breaker(self):
         """Test get_metrics_async when circuit breaker is disabled."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         metrics = await bus.get_metrics_async()
@@ -374,7 +383,9 @@ class TestOPAValidatorPath:
     def test_init_validator_opa_path_via_injection(self):
         """Test validator can use OPA when injected via _opa_client."""
         bus = EnhancedAgentBus(
-            enable_maci=False, use_dynamic_policy=True, allow_unstarted=True,
+            enable_maci=False,
+            use_dynamic_policy=True,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Inject OPA client after construction
@@ -391,7 +402,9 @@ class TestOPAValidatorPath:
     def test_init_validator_dynamic_policy_path(self):
         """Test validator uses DynamicPolicy when policy client is available."""
         bus = EnhancedAgentBus(
-            enable_maci=False, use_dynamic_policy=True, allow_unstarted=True,
+            enable_maci=False,
+            use_dynamic_policy=True,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Inject policy client after construction
@@ -412,7 +425,8 @@ class TestBroadcastMultiTenantIsolation:
     async def test_broadcast_skips_agents_from_different_tenant(self):
         """Test broadcast skips agents not in same tenant."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -445,7 +459,8 @@ class TestBroadcastMultiTenantIsolation:
     async def test_broadcast_to_no_tenant_agents(self):
         """Test broadcast to agents without tenant."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -477,7 +492,8 @@ class TestQueryMethods:
     async def test_get_registered_agents(self):
         """Test get_registered_agents returns all agent IDs."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("agent-1", "worker")
@@ -491,7 +507,8 @@ class TestQueryMethods:
     async def test_get_agents_by_type(self):
         """Test get_agents_by_type filters correctly."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("worker-1", "worker")
@@ -507,7 +524,8 @@ class TestQueryMethods:
     async def test_get_agents_by_capability(self):
         """Test get_agents_by_capability filters correctly."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("agent-1", "worker", ["read", "write"])
@@ -527,7 +545,8 @@ class TestSyncMetrics:
     async def test_get_metrics_returns_sync_data(self):
         """Test get_metrics returns synchronous metrics."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("test-agent", "worker")
@@ -546,7 +565,8 @@ class TestFailedMessagePaths:
     async def test_send_message_with_invalid_hash(self):
         """Test sending message with invalid constitutional hash."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("sender", "worker")
@@ -594,7 +614,8 @@ class TestFailedMessagePaths:
     async def test_tenant_validation_failure(self):
         """Test tenant validation failure path."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("sender", "worker", tenant_id="tenant-A")
@@ -620,7 +641,8 @@ class TestUnregisterAgent:
     async def test_unregister_existing_agent(self):
         """Test unregistering an existing agent."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("test-agent", "worker")
@@ -632,7 +654,8 @@ class TestUnregisterAgent:
     async def test_unregister_nonexistent_agent(self):
         """Test unregistering a non-existent agent."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Should not raise error
@@ -645,7 +668,8 @@ class TestMessagePriorityPaths:
     async def test_high_priority_message(self):
         """Test sending high priority message."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("sender", "worker")
@@ -666,7 +690,8 @@ class TestMessagePriorityPaths:
     async def test_low_priority_message(self):
         """Test sending low priority message."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.register_agent("sender", "worker")
@@ -691,7 +716,8 @@ class TestBusStopAndCleanup:
     async def test_stop_clears_agents(self):
         """Test stop clears registered agents."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -706,7 +732,8 @@ class TestBusStopAndCleanup:
     async def test_double_start_is_safe(self):
         """Test calling start twice is safe."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.start()
@@ -719,7 +746,8 @@ class TestBusStopAndCleanup:
     async def test_double_stop_is_safe(self):
         """Test calling stop twice is safe."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         await bus.start()
@@ -735,7 +763,8 @@ class TestMeteringManagerPaths:
     async def test_metering_manager_records_message(self):
         """Test metering manager records message."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -764,7 +793,8 @@ class TestInternalQueueAccess:
     async def test_message_queue_exists(self):
         """Test internal message queue is initialized."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Internal queue should be initialized
@@ -773,7 +803,8 @@ class TestInternalQueueAccess:
     async def test_queue_size_in_metrics(self):
         """Test queue size is reported in metrics."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         metrics = bus.get_metrics()
@@ -787,7 +818,8 @@ class TestRouteAndDeliverBranches:
     async def test_message_to_unregistered_recipient_logs_debug(self):
         """Test message to unregistered recipient triggers debug log."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -810,7 +842,8 @@ class TestRouteAndDeliverBranches:
     async def test_message_without_to_agent(self):
         """Test message without to_agent field."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
         await bus.start()
 
@@ -862,7 +895,8 @@ class TestProcessorDelegation:
     async def test_processor_metrics_included(self):
         """Test processor metrics are included in bus metrics."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         metrics = bus.get_metrics()
@@ -872,7 +906,8 @@ class TestProcessorDelegation:
     async def test_processor_property_access(self):
         """Test accessing processor property."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Processor should be accessible
@@ -886,7 +921,8 @@ class TestDynamicPolicyFlag:
     def test_dynamic_policy_disabled_by_default(self):
         """Test dynamic policy is disabled by default."""
         bus = EnhancedAgentBus(
-            enable_maci=False, allow_unstarted=True,
+            enable_maci=False,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Default should have static validation
@@ -905,7 +941,9 @@ class TestDynamicPolicyFlag:
             from agent_bus import POLICY_CLIENT_AVAILABLE
 
         bus = EnhancedAgentBus(
-            enable_maci=False, use_dynamic_policy=True, allow_unstarted=True,
+            enable_maci=False,
+            use_dynamic_policy=True,
+            allow_unstarted=True,
         )  # test-only: MACI off to isolate transport/routing logic
 
         # Flag behavior depends on POLICY_CLIENT_AVAILABLE

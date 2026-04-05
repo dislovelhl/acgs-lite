@@ -28,7 +28,9 @@ class TestMetadataEntry:
 
     def test_expired_when_past(self):
         e = MetadataEntry(
-            artifact_id="a", key="k", value="v",
+            artifact_id="a",
+            key="k",
+            value="v",
             expires_at=time.monotonic() - 10,
         )
         assert e.is_expired() is True

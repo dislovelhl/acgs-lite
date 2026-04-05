@@ -162,12 +162,8 @@ def build_test_cases(
             input_text=action,
             expected_decision=expected,
             context=context,
-            expected_rules_triggered=[
-                rid.upper() for rid in ann.get("expected_rules", [])
-            ],
-            expected_rules_not_triggered=[
-                rid.upper() for rid in ann.get("not_expected_rules", [])
-            ],
+            expected_rules_triggered=[rid.upper() for rid in ann.get("expected_rules", [])],
+            expected_rules_not_triggered=[rid.upper() for rid in ann.get("not_expected_rules", [])],
             tags=ann.get("tags", []),
         )
         cases.append(case)

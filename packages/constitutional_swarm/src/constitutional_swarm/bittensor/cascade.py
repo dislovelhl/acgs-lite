@@ -118,7 +118,7 @@ class CascadeMetrics:
     def record_improvement(self, delta: float) -> None:
         self._improvement_window.append(delta)
         if len(self._improvement_window) > self.window_size:
-            self._improvement_window = self._improvement_window[-self.window_size:]
+            self._improvement_window = self._improvement_window[-self.window_size :]
 
     @property
     def ceiling_detected(self) -> bool:
@@ -135,9 +135,7 @@ class CascadeMetrics:
             "passed_mesh": self.passed_mesh,
             "passed_consensus": self.passed_consensus,
             "passed_compatibility": self.passed_compatibility,
-            "conversion_rate": (
-                self.passed_compatibility / max(self.submitted, 1)
-            ),
+            "conversion_rate": (self.passed_compatibility / max(self.submitted, 1)),
             "ceiling_detected": self.ceiling_detected,
         }
 
@@ -377,5 +375,7 @@ class PrecedentCascade:
             stage=CascadeStage.CONSTITUTIONAL_COMPATIBILITY,
             passed=reasoning_result.valid,
             latency_ns=elapsed,
-            detail="compatible" if reasoning_result.valid else "; ".join(reasoning_result.violations),
+            detail="compatible"
+            if reasoning_result.valid
+            else "; ".join(reasoning_result.violations),
         )

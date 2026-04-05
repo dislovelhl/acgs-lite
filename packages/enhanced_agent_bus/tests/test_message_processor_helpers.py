@@ -384,7 +384,6 @@ class TestPrepareMessageContentString:
         assert prepare_message_content_string(sample_message) == str({"nested": [1, 2, 3]})
 
 
-
 class TestMergeVerificationMetadata:
     def test_merges_pqc_metadata_over_sdpc_metadata(self):
         result = merge_verification_metadata(
@@ -403,13 +402,11 @@ class TestMergeVerificationMetadata:
         assert result is not sdpc_metadata
 
 
-
 class TestExtractPqcFailureResult:
     def test_returns_none_when_pqc_passes(self):
         verification_result = Mock(pqc_result=None)
 
         assert extract_pqc_failure_result(verification_result) is None
-
 
 
 class TestApplyLatencyMetadata:
@@ -419,8 +416,6 @@ class TestApplyLatencyMetadata:
         apply_latency_metadata(result, 12.5)
 
         assert result.metadata["latency_ms"] == 12.5
-
-
 
 
 class TestBuildDlqEntry:
@@ -869,7 +864,6 @@ class TestHelperIntegration:
 
         # Assert
         assert key1 != key2
-
 
 
 if __name__ == "__main__":

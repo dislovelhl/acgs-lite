@@ -107,10 +107,7 @@ class ConstitutionalMiner:
         self._registry = CapabilityRegistry()
         self._registry.register(
             config.agent_id,
-            [
-                Capability(name=cap, domain=cap)
-                for cap in config.capabilities
-            ],
+            [Capability(name=cap, domain=cap) for cap in config.capabilities],
         )
         self._stats = MinerStats()
         self._previous_hash: str | None = None
@@ -177,8 +174,7 @@ class ConstitutionalMiner:
         if synapse.constitution_hash not in accepted_hashes:
             self._stats.constitution_mismatches += 1
             raise ConstitutionMismatchError(
-                f"Expected one of {accepted_hashes}, "
-                f"got {synapse.constitution_hash}"
+                f"Expected one of {accepted_hashes}, got {synapse.constitution_hash}"
             )
 
         # Step 2: Run deliberation (with deadline enforcement)
@@ -210,9 +206,7 @@ class ConstitutionalMiner:
 
         if not dna_result.valid:
             self._stats.dna_pre_check_failures += 1
-            raise DNAPreCheckFailedError(
-                f"DNA rejected judgment: {dna_result.violations}"
-            )
+            raise DNAPreCheckFailedError(f"DNA rejected judgment: {dna_result.violations}")
 
         # Step 4: Create artifact
         artifact = Artifact(

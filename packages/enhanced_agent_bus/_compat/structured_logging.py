@@ -1,4 +1,5 @@
 """Shim for src.core.shared.structured_logging."""
+
 from __future__ import annotations
 
 import logging
@@ -21,7 +22,11 @@ except ImportError:
 
         def process(self, msg: str, kwargs: dict) -> tuple[str, dict]:
             # Strip non-stdlib kwargs
-            clean = {k: v for k, v in kwargs.items() if k in ("exc_info", "stack_info", "stacklevel", "extra")}
+            clean = {
+                k: v
+                for k, v in kwargs.items()
+                if k in ("exc_info", "stack_info", "stacklevel", "extra")
+            }
             return msg, clean
 
     def get_logger(name: str, **kwargs: Any) -> _KwargsLogger:
@@ -52,6 +57,8 @@ except ImportError:
 
     def log_function_call(logger: Any = None) -> Any:
         """No-op decorator."""
+
         def decorator(func: Any) -> Any:
             return func
+
         return decorator

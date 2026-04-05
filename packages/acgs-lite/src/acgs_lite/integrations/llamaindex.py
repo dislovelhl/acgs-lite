@@ -80,7 +80,9 @@ class GovernedQueryEngine:
         strict: bool = True,
     ) -> None:
         if not LLAMAINDEX_AVAILABLE:
-            raise ImportError("llama-index is required. Install with: pip install acgs-lite[llamaindex]")
+            raise ImportError(
+                "llama-index is required. Install with: pip install acgs-lite[llamaindex]"
+            )
         self._engine = engine
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
@@ -166,7 +168,9 @@ class GovernedChatEngine:
         strict: bool = True,
     ) -> None:
         if not LLAMAINDEX_AVAILABLE:
-            raise ImportError("llama-index is required. Install with: pip install acgs-lite[llamaindex]")
+            raise ImportError(
+                "llama-index is required. Install with: pip install acgs-lite[llamaindex]"
+            )
         self._engine = engine
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()

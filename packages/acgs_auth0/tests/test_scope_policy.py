@@ -194,9 +194,7 @@ class TestMACIScopePolicyValidate:
         assert result.permitted is True
         assert result.step_up_required == ["repo:write"]
 
-    def test_mixed_permitted_and_denied_returns_denied(
-        self, policy: MACIScopePolicy
-    ) -> None:
+    def test_mixed_permitted_and_denied_returns_denied(self, policy: MACIScopePolicy) -> None:
         result = policy.validate(
             agent_id="planner",
             role="EXECUTIVE",
@@ -218,9 +216,7 @@ class TestMACIScopePolicyValidate:
         )
         assert result.permitted is True
 
-    def test_google_calendar_write_triggers_step_up(
-        self, policy: MACIScopePolicy
-    ) -> None:
+    def test_google_calendar_write_triggers_step_up(self, policy: MACIScopePolicy) -> None:
         result = policy.validate(
             agent_id="executor",
             role="IMPLEMENTER",
@@ -243,7 +239,9 @@ class TestScopeRiskClassification:
 
     def test_known_high_risk(self, policy: MACIScopePolicy) -> None:
         assert policy.classify_risk("repo:write") == ScopeRiskLevel.HIGH
-        assert policy.classify_risk("https://www.googleapis.com/auth/calendar") == ScopeRiskLevel.HIGH
+        assert (
+            policy.classify_risk("https://www.googleapis.com/auth/calendar") == ScopeRiskLevel.HIGH
+        )
 
     def test_known_critical(self, policy: MACIScopePolicy) -> None:
         assert policy.classify_risk("delete_repo") == ScopeRiskLevel.CRITICAL

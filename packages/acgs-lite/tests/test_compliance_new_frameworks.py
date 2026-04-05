@@ -497,9 +497,7 @@ class TestMultiFrameworkAssessorNewJurisdictions:
             assert fid in available, f"Expected {fid!r} in available frameworks"
 
     def test_explicit_selection_of_new_frameworks(self) -> None:
-        assessor = MultiFrameworkAssessor(
-            frameworks=["eu_ai_act", "dora", "canada_aida"]
-        )
+        assessor = MultiFrameworkAssessor(frameworks=["eu_ai_act", "dora", "canada_aida"])
         report = assessor.assess(
             {
                 "system_id": "multi-test",

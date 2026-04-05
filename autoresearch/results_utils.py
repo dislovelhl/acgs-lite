@@ -134,12 +134,12 @@ def recent_rows(
 # Hypothesis family signals — order matters, first match wins.
 # Each entry: (family_name, [substrings_to_match_in_lowercase_description])
 _FAMILY_SIGNALS: list[tuple[str, list[str]]] = [
-    ("matcher",      ["matcher:", "aho-corasick", "keyword"]),
+    ("matcher", ["matcher:", "aho-corasick", "keyword"]),
     ("constitution", ["constitution:", "precompute", "rule tuple", "rule representation"]),
-    ("rust",         ["rust:", "bitmask", "pyo3", "maturin", "scan_hot", "zero-alloc"]),
-    ("warmup",       ["warmup", "gc.", "jit", "warm "]),
-    ("engine",       ["engine:", "validate", "dispatch", "fast-path", "hot-path:"]),
-    ("method",       ["method:", "baseline", "tie-band", "discipline"]),
+    ("rust", ["rust:", "bitmask", "pyo3", "maturin", "scan_hot", "zero-alloc"]),
+    ("warmup", ["warmup", "gc.", "jit", "warm "]),
+    ("engine", ["engine:", "validate", "dispatch", "fast-path", "hot-path:"]),
+    ("method", ["method:", "baseline", "tie-band", "discipline"]),
 ]
 _DEFAULT_FAMILY = "general"
 

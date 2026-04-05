@@ -199,9 +199,7 @@ def compute_eval_report(
 
         # Per-rule metrics
         actual_fired = {rid.upper() for rid in result.actual_rules_triggered}
-        expected_fired = {
-            rid.upper() for rid in expected_rules_map.get(result.case_name, [])
-        }
+        expected_fired = {rid.upper() for rid in expected_rules_map.get(result.case_name, [])}
         expected_not_fired = {
             rid.upper() for rid in not_expected_rules_map.get(result.case_name, [])
         }

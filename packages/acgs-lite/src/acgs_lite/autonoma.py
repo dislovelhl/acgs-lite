@@ -258,14 +258,29 @@ _active_runs: dict[str, dict[str, Any]] = {}
 def _build_standard_scenario(test_run_id: str) -> dict[str, Any]:
     """Build refs for the ``standard`` scenario."""
     rule_ids = [
-        "SAFE-001", "PRIV-001", "BIAS-001", "TRANS-001", "OVER-001",
-        "FIN-001", "SEC-001", "DEPR-001", "COND-001", "TEMP-001",
+        "SAFE-001",
+        "PRIV-001",
+        "BIAS-001",
+        "TRANS-001",
+        "OVER-001",
+        "FIN-001",
+        "SEC-001",
+        "DEPR-001",
+        "COND-001",
+        "TEMP-001",
     ]
     audit_ids = [f"AUD-STD-{i:03d}" for i in range(1, 9)]
     user_ids = ["dev-alice", "admin-bob", "compliance-carol", "clinical-dave", "visitor-eve"]
     framework_ids = [
-        "eu_ai_act", "gdpr", "hipaa", "nist_ai_rmf", "soc2",
-        "ccpa_cpra", "uk_ai_framework", "dora", "china_ai",
+        "eu_ai_act",
+        "gdpr",
+        "hipaa",
+        "nist_ai_rmf",
+        "soc2",
+        "ccpa_cpra",
+        "uk_ai_framework",
+        "dora",
+        "china_ai",
     ]
     return {
         "rule_ids": rule_ids,
@@ -307,8 +322,15 @@ def _build_large_scenario(test_run_id: str) -> dict[str, Any]:
     audit_ids = [f"AUD-LRG-{i:04d}" for i in range(1, 1001)]
     user_ids = ["dev-alice", "admin-bob", "compliance-carol", "clinical-dave", "visitor-eve"]
     framework_ids = [
-        "eu_ai_act", "gdpr", "hipaa", "nist_ai_rmf", "soc2",
-        "ccpa_cpra", "uk_ai_framework", "dora", "china_ai",
+        "eu_ai_act",
+        "gdpr",
+        "hipaa",
+        "nist_ai_rmf",
+        "soc2",
+        "ccpa_cpra",
+        "uk_ai_framework",
+        "dora",
+        "china_ai",
     ]
     return {
         "rule_ids": rule_ids,
@@ -428,19 +450,23 @@ def _handle_up(payload: dict[str, Any]) -> Response:
     if not environment or not test_run_id:
         raise HTTPException(
             status_code=400,
-            detail=json.dumps({
-                "error": "Missing required fields: environment, testRunId",
-                "code": "UP_FAILED",
-            }),
+            detail=json.dumps(
+                {
+                    "error": "Missing required fields: environment, testRunId",
+                    "code": "UP_FAILED",
+                }
+            ),
         )
 
     builder = _SCENARIO_BUILDERS.get(environment)
     if builder is None:
         return Response(
-            content=json.dumps({
-                "error": f"Unknown environment: {environment}",
-                "code": "UNKNOWN_ENVIRONMENT",
-            }),
+            content=json.dumps(
+                {
+                    "error": f"Unknown environment: {environment}",
+                    "code": "UNKNOWN_ENVIRONMENT",
+                }
+            ),
             status_code=400,
             media_type="application/json",
         )
@@ -488,10 +514,12 @@ def _handle_down(payload: dict[str, Any]) -> Response:
     if not test_run_id or not refs or not refs_token:
         raise HTTPException(
             status_code=400,
-            detail=json.dumps({
-                "error": "Missing required fields: testRunId, refs, refsToken",
-                "code": "DOWN_FAILED",
-            }),
+            detail=json.dumps(
+                {
+                    "error": "Missing required fields: testRunId, refs, refsToken",
+                    "code": "DOWN_FAILED",
+                }
+            ),
         )
 
     # Layer 3: Verify JWT and compare refs
@@ -502,10 +530,12 @@ def _handle_down(payload: dict[str, Any]) -> Response:
     if signed_run_id != test_run_id:
         raise HTTPException(
             status_code=403,
-            detail=json.dumps({
-                "error": "testRunId does not match signed refs",
-                "code": "TESTRUNID_MISMATCH",
-            }),
+            detail=json.dumps(
+                {
+                    "error": "testRunId does not match signed refs",
+                    "code": "TESTRUNID_MISMATCH",
+                }
+            ),
         )
 
     # Clean up the active run

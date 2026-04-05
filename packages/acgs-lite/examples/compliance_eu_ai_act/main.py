@@ -37,11 +37,11 @@ def demo_single_framework() -> None:
     fw = EUAIActFramework()
     system = {
         "system_id": "cv-screener-v1",
-        "domain": "hr_recruitment",      # infers risk_tier="high"
+        "domain": "hr_recruitment",  # infers risk_tier="high"
         "has_human_oversight": True,
         "has_audit_log": True,
-        "has_risk_management": False,    # gap
-        "has_data_governance": False,    # gap
+        "has_risk_management": False,  # gap
+        "has_data_governance": False,  # gap
     }
 
     assessment = fw.assess(system)
@@ -76,15 +76,17 @@ def demo_multi_framework() -> None:
     print("\n── 4. Multi-Framework Assessment ─────────────────────────────")
 
     assessor = MultiFrameworkAssessor(frameworks=["eu_ai_act", "gdpr", "nist_ai_rmf"])
-    results = assessor.assess({
-        "system_id": "medical-ai-v2",
-        "domain": "medical_device",
-        "has_human_oversight": True,
-        "has_audit_log": True,
-        "has_risk_management": True,
-        "processes_personal_data": True,
-        "has_data_governance": True,
-    })
+    results = assessor.assess(
+        {
+            "system_id": "medical-ai-v2",
+            "domain": "medical_device",
+            "has_human_oversight": True,
+            "has_audit_log": True,
+            "has_risk_management": True,
+            "processes_personal_data": True,
+            "has_data_governance": True,
+        }
+    )
 
     print(f"  Overall score: {results.overall_score:.0%}")
     for fw_id, fw_result in results.by_framework.items():

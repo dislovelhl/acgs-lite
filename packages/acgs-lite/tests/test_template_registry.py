@@ -243,8 +243,12 @@ class TestGlobalRegistry:
 class TestTemplateMetadata:
     def test_to_dict(self):
         meta = TemplateMetadata(
-            slug="test", name="Test", domain="testing",
-            description="A test", author="tester", rule_count=5,
+            slug="test",
+            name="Test",
+            domain="testing",
+            description="A test",
+            author="tester",
+            rule_count=5,
             tags=("a", "b"),
         )
         d = meta.to_dict()

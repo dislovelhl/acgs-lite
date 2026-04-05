@@ -29,6 +29,7 @@ from acgs_lite.constitution.policy_fuzzer import (
 # Helpers: mock constitution
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class MockRule:
     id: str
@@ -72,8 +73,8 @@ class MockConstitution:
 # Tests: Mutation helpers
 # ---------------------------------------------------------------------------
 
-class TestInsertWhitespace:
 
+class TestInsertWhitespace:
     def test_inserts_something(self):
         rng = random.Random(42)
         result = _insert_whitespace("hello", rng)
@@ -92,7 +93,6 @@ class TestInsertWhitespace:
 
 
 class TestApplyHomoglyph:
-
     def test_replaces_character(self):
         rng = random.Random(42)
         result = _apply_homoglyph("hello", rng)
@@ -112,7 +112,6 @@ class TestApplyHomoglyph:
 
 
 class TestApplyLeetspeak:
-
     def test_converts(self):
         result = _apply_leetspeak("test")
         # 't'->7, 'e'->3, 's'->5, 't'->7
@@ -127,7 +126,6 @@ class TestApplyLeetspeak:
 
 
 class TestMixedCase:
-
     def test_changes_case(self):
         rng = random.Random(42)
         result = _mixed_case("hello", rng)
@@ -140,7 +138,6 @@ class TestMixedCase:
 
 
 class TestSynonymReplace:
-
     def test_replaces_known_word(self):
         rng = random.Random(42)
         result = _synonym_replace("delete the data", rng)
@@ -158,7 +155,6 @@ class TestSynonymReplace:
 
 
 class TestNormalizeUnicode:
-
     def test_normalizes(self):
         # Composed vs decomposed
         result = _normalize_unicode("\u00e9")  # e with acute
@@ -172,8 +168,8 @@ class TestNormalizeUnicode:
 # Tests: _apply_strategy
 # ---------------------------------------------------------------------------
 
-class TestApplyStrategy:
 
+class TestApplyStrategy:
     def test_all_strategies_produce_output(self):
         rng = random.Random(42)
         base = "delete the data"
@@ -219,8 +215,8 @@ class TestApplyStrategy:
 # Tests: FuzzCase dataclass
 # ---------------------------------------------------------------------------
 
-class TestFuzzCase:
 
+class TestFuzzCase:
     def test_default_values(self):
         case = FuzzCase(action="test", strategy="homoglyph", seed_action="test", rule_id=None)
         assert case.outcome == "unknown"
@@ -254,8 +250,8 @@ class TestFuzzCase:
 # Tests: RuleCoverage
 # ---------------------------------------------------------------------------
 
-class TestRuleCoverage:
 
+class TestRuleCoverage:
     def test_trigger_rate_zero_cases(self):
         cov = RuleCoverage(rule_id="r1")
         assert cov.trigger_rate == 0.0
@@ -277,8 +273,8 @@ class TestRuleCoverage:
 # Tests: FuzzReport
 # ---------------------------------------------------------------------------
 
-class TestFuzzReport:
 
+class TestFuzzReport:
     def _make_report(self, cases=None, rule_coverage=None):
         return FuzzReport(
             constitution_hash="608508a9bd224290",
@@ -297,8 +293,12 @@ class TestFuzzReport:
 
     def test_suspected_bypasses(self):
         cases = [
-            FuzzCase(action="a", strategy="s", seed_action="b", rule_id=None, is_suspected_bypass=True),
-            FuzzCase(action="c", strategy="s", seed_action="d", rule_id=None, is_suspected_bypass=False),
+            FuzzCase(
+                action="a", strategy="s", seed_action="b", rule_id=None, is_suspected_bypass=True
+            ),
+            FuzzCase(
+                action="c", strategy="s", seed_action="d", rule_id=None, is_suspected_bypass=False
+            ),
         ]
         report = self._make_report(cases=cases)
         assert report.bypass_count == 1
@@ -345,8 +345,8 @@ class TestFuzzReport:
 # Tests: GovernancePolicyFuzzer
 # ---------------------------------------------------------------------------
 
-class TestGovernancePolicyFuzzer:
 
+class TestGovernancePolicyFuzzer:
     def test_init_defaults(self):
         fuzzer = GovernancePolicyFuzzer()
         assert fuzzer._seed == 0
@@ -402,7 +402,6 @@ class TestGovernancePolicyFuzzer:
 
 
 class TestFuzzCampaign:
-
     def test_fuzz_with_mock_constitution(self):
         fuzzer = GovernancePolicyFuzzer(seed=42)
         constitution = MockConstitution()
@@ -475,7 +474,6 @@ class TestFuzzCampaign:
 
 
 class TestConstitutionHash:
-
     def test_hash_from_attribute(self):
         constitution = MockConstitution()
         h = GovernancePolicyFuzzer._constitution_hash(constitution)

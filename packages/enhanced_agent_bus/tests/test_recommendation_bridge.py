@@ -143,6 +143,7 @@ class TestRecommendationBridge:
                 class FakeResponse:
                     class proposal:
                         proposal_id = f"prop-{call_count}"
+
                 return FakeResponse()
 
         engine = FailingEngine()
@@ -162,10 +163,13 @@ class TestRecommendationBridge:
                 class R:
                     class proposal:
                         proposal_id = "p1"
+
                 return R()
 
         bridge = RecommendationBridge(
-            recommender, MockEngine(), auto_acknowledge=False,
+            recommender,
+            MockEngine(),
+            auto_acknowledge=False,
         )
 
         await bridge.submit_pending()

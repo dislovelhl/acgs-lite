@@ -106,9 +106,7 @@ class LLMClinicalAssessment:
 
     @property
     def has_major_interaction(self) -> bool:
-        return any(
-            i.get("severity", "").upper() == "MAJOR" for i in self.drug_interactions
-        )
+        return any(i.get("severity", "").upper() == "MAJOR" for i in self.drug_interactions)
 
 
 async def _call_llm_anthropic_api(action_text: str) -> dict[str, Any]:
@@ -150,7 +148,10 @@ async def _call_llm_pi_rpc(action_text: str) -> dict[str, Any]:
     prompt = _CLINICAL_PROMPT_TEMPLATE.format(action_text=action_text)
 
     proc = await asyncio.create_subprocess_exec(
-        pi_binary, "--mode", "rpc", "--no-session",
+        pi_binary,
+        "--mode",
+        "rpc",
+        "--no-session",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.DEVNULL,
@@ -211,6 +212,7 @@ async def _call_llm_pi_rpc(action_text: str) -> dict[str, Any]:
 def _pi_available() -> bool:
     """Return True if the pi binary is in PATH or PI_BINARY is set."""
     import shutil
+
     return bool(os.environ.get("PI_BINARY") or shutil.which("pi"))
 
 
@@ -261,7 +263,9 @@ async def get_llm_assessment(action_text: str) -> LLMClinicalAssessment:
             llm_available=True,
         )
     except (TimeoutError, OSError, ValueError, KeyError) as exc:
-        logger.warning("%s clinical reasoning failed: %s — rule-only fallback", label, type(exc).__name__)
+        logger.warning(
+            "%s clinical reasoning failed: %s — rule-only fallback", label, type(exc).__name__
+        )
         return LLMClinicalAssessment(
             llm_available=False,
             error=type(exc).__name__,
@@ -306,11 +310,19 @@ async def validate_clinical_action(
             "confidence": 1.0,
             "risk_tier": RISK_CRITICAL,
             "reasoning": "Empty clinical action rejected.",
-            "violations": [{"rule_id": "INPUT", "rule_text": "Action text is required.", "severity": "critical"}],
+            "violations": [
+                {
+                    "rule_id": "INPUT",
+                    "rule_text": "Action text is required.",
+                    "severity": "critical",
+                }
+            ],
             "conditions": [],
             "drug_interactions": [],
             "audit_id": f"HC-ERROR-{uuid.uuid4().hex[:8].upper()}",
-            "constitutional_hash": engine.constitution.hash if hasattr(engine, "constitution") else "",
+            "constitutional_hash": engine.constitution.hash
+            if hasattr(engine, "constitution")
+            else "",
             "maci_role": MACIRole.VALIDATOR,
             "timestamp": datetime.now(UTC).isoformat(),
             "llm_available": False,
@@ -374,7 +386,9 @@ async def validate_clinical_action(
         if major:
             reasoning_parts.append(
                 "Major drug interaction(s) detected: "
-                + "; ".join(f"{'+'.join(i.get('drugs', []))}: {i.get('description', '')}" for i in major)
+                + "; ".join(
+                    f"{'+'.join(i.get('drugs', []))}: {i.get('description', '')}" for i in major
+                )
             )
     if llm.dosing_concern and llm.dosing_detail:
         reasoning_parts.append(f"Dosing concern: {llm.dosing_detail}")
@@ -435,7 +449,9 @@ async def validate_clinical_action(
         "constitutional_hash": constitutional_hash,
         "maci_role": MACIRole.VALIDATOR,
         "timestamp": entry.timestamp,
-        "appeal_path": f"Contact your governance administrator with audit_id={audit_id}" if decision != APPROVED else None,
+        "appeal_path": f"Contact your governance administrator with audit_id={audit_id}"
+        if decision != APPROVED
+        else None,
     }
 
 

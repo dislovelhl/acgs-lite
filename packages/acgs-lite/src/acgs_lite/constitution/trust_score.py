@@ -254,8 +254,12 @@ class _AgentTrustState:
         # Always update global
         global_state = self.domains[_GLOBAL_DOMAIN]
         global_event = global_state.record(
-            agent_id, self.config,
-            compliant=compliant, severity=severity, note=note, now=now,
+            agent_id,
+            self.config,
+            compliant=compliant,
+            severity=severity,
+            note=note,
+            now=now,
             domain=domain,
         )
 
@@ -263,8 +267,12 @@ class _AgentTrustState:
         if domain:
             domain_state = self._get_domain(domain, now)
             domain_state.record(
-                agent_id, self.config,
-                compliant=compliant, severity=severity, note=note, now=now,
+                agent_id,
+                self.config,
+                compliant=compliant,
+                severity=severity,
+                note=note,
+                now=now,
                 domain=domain,
             )
 
@@ -383,7 +391,11 @@ class TrustScoreManager:
         if agent_id not in self._states:
             self._states[agent_id] = _AgentTrustState(TrustConfig(), now)
         return self._states[agent_id].record(
-            agent_id, compliant=compliant, severity=severity, note=note, now=now,
+            agent_id,
+            compliant=compliant,
+            severity=severity,
+            note=note,
+            now=now,
             domain=domain,
         )
 
@@ -444,7 +456,10 @@ class TrustScoreManager:
         return self._states[agent_id].known_domains()
 
     def domain_scores(
-        self, agent_id: str, *, _now: datetime | None = None,
+        self,
+        agent_id: str,
+        *,
+        _now: datetime | None = None,
     ) -> dict[str, dict[str, Any]]:
         """Return scores and tiers for all known domains of *agent_id*.
 

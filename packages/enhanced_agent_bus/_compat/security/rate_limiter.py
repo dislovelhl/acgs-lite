@@ -1,4 +1,5 @@
 """Shim for src.core.shared.security.rate_limiter."""
+
 from __future__ import annotations
 
 import importlib.util
@@ -37,9 +38,7 @@ except ImportError:
         except (ModuleNotFoundError, ValueError):
             return sys.modules.get(module_name) is not None
 
-    def _extract_request_from_call(
-        args: tuple[Any, ...], kwargs: dict[str, Any]
-    ) -> Any:
+    def _extract_request_from_call(args: tuple[Any, ...], kwargs: dict[str, Any]) -> Any:
         """Extract FastAPI Request from decorated endpoint call."""
         try:
             from fastapi import Request

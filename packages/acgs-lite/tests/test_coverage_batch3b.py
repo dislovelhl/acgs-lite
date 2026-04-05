@@ -97,9 +97,7 @@ class TestDecisionExplainer:
             RuleSummary,
         )
 
-        blocking = [
-            RuleSummary("r1", "d", "critical", "privacy", "block", [], [])
-        ]
+        blocking = [RuleSummary("r1", "d", "critical", "privacy", "block", [], [])]
         exp = DecisionExplanation(
             decision_id="dec-1",
             outcome="deny",
@@ -1399,9 +1397,7 @@ class TestDriftDetector:
 
         detector = GovernanceDriftDetector()
         detector.configure_thresholds(consecutive_deny_threshold=3)
-        decisions = [
-            {"decision": "deny", "action": "delete data"} for _ in range(5)
-        ]
+        decisions = [{"decision": "deny", "action": "delete data"} for _ in range(5)]
         signals = detector.analyze_decisions(decisions, agent_id="a1")
         types = {s.signal_type for s in signals}
         assert "gaming" in types
@@ -1411,9 +1407,9 @@ class TestDriftDetector:
 
         detector = GovernanceDriftDetector()
         detector.configure_thresholds(boundary_walk_threshold=0.2)
-        decisions = [
-            {"decision": "allow", "rule_ids": ["r1"]} for _ in range(5)
-        ] + [{"decision": "allow"} for _ in range(5)]
+        decisions = [{"decision": "allow", "rule_ids": ["r1"]} for _ in range(5)] + [
+            {"decision": "allow"} for _ in range(5)
+        ]
         signals = detector.analyze_decisions(decisions, agent_id="a1")
         types = {s.signal_type for s in signals}
         assert "boundary_walking" in types
@@ -1426,9 +1422,7 @@ class TestDriftDetector:
             escalation_suppression_window=5,
             boundary_walk_threshold=1.0,  # disable boundary walking
         )
-        decisions = [
-            {"decision": "allow", "rule_ids": ["r1"]} for _ in range(10)
-        ]
+        decisions = [{"decision": "allow", "rule_ids": ["r1"]} for _ in range(10)]
         signals = detector.analyze_decisions(decisions, agent_id="a1")
         types = {s.signal_type for s in signals}
         assert "escalation_suppression" in types
@@ -1474,9 +1468,7 @@ class TestDriftDetector:
         from acgs_lite.constitution.drift import GovernanceDriftDetector
 
         detector = GovernanceDriftDetector()
-        decisions = [
-            {"decision": "deny", "action": f"action_{i}"} for i in range(5)
-        ]
+        decisions = [{"decision": "deny", "action": f"action_{i}"} for i in range(5)]
         signals = detector.analyze_decisions(decisions, agent_id="a1")
         gaming = [s for s in signals if s.signal_type == "gaming"]
         assert len(gaming) == 0
@@ -1625,31 +1617,35 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Block PII exfiltration attempts",
-                "severity": "critical",
-                "category": "privacy",
-                "workflow_action": "block",
-                "keywords": ["ssn", "credit_card"],
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Block PII exfiltration attempts",
+                    "severity": "critical",
+                    "category": "privacy",
+                    "workflow_action": "block",
+                    "keywords": ["ssn", "credit_card"],
+                }
+            ]
+        )
         assert report.passed
 
     def test_lint_missing_description(self) -> None:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "severity": "high",
-                "keywords": ["test"],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.MISSING_DESCRIPTION in codes
 
@@ -1657,16 +1653,18 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Short",
-                "severity": "high",
-                "keywords": ["test_keyword"],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Short",
+                    "severity": "high",
+                    "keywords": ["test_keyword"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.DESCRIPTION_TOO_SHORT in codes
 
@@ -1674,15 +1672,17 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "A rule with no keywords at all",
-                "severity": "high",
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "A rule with no keywords at all",
+                    "severity": "high",
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         assert not report.passed
         codes = {i.code for i in report.issues}
         assert LintCode.EMPTY_KEYWORDS in codes
@@ -1691,16 +1691,18 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with duplicate keywords present",
-                "severity": "high",
-                "keywords": ["ssn", "ssn", "other"],
-                "category": "privacy",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with duplicate keywords present",
+                    "severity": "high",
+                    "keywords": ["ssn", "ssn", "other"],
+                    "category": "privacy",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.DUPLICATE_KEYWORD in codes
 
@@ -1708,16 +1710,18 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with very short keyword present",
-                "severity": "high",
-                "keywords": ["ab"],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with very short keyword present",
+                    "severity": "high",
+                    "keywords": ["ab"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.OVERLY_SHORT_KEYWORD in codes
 
@@ -1725,24 +1729,26 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "First rule for testing linter",
-                "severity": "high",
-                "keywords": ["test"],
-                "category": "security",
-                "workflow_action": "block",
-            },
-            {
-                "id": "r1",
-                "description": "Duplicate id rule for testing",
-                "severity": "low",
-                "keywords": ["other"],
-                "category": "security",
-                "workflow_action": "warn",
-            },
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "First rule for testing linter",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "category": "security",
+                    "workflow_action": "block",
+                },
+                {
+                    "id": "r1",
+                    "description": "Duplicate id rule for testing",
+                    "severity": "low",
+                    "keywords": ["other"],
+                    "category": "security",
+                    "workflow_action": "warn",
+                },
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.DUPLICATE_RULE_ID in codes
 
@@ -1750,24 +1756,26 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule one with shared keyword test",
-                "severity": "critical",
-                "keywords": ["shared_keyword"],
-                "category": "privacy",
-                "workflow_action": "block",
-            },
-            {
-                "id": "r2",
-                "description": "Rule two with shared keyword test",
-                "severity": "low",
-                "keywords": ["shared_keyword"],
-                "category": "privacy",
-                "workflow_action": "warn",
-            },
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule one with shared keyword test",
+                    "severity": "critical",
+                    "keywords": ["shared_keyword"],
+                    "category": "privacy",
+                    "workflow_action": "block",
+                },
+                {
+                    "id": "r2",
+                    "description": "Rule two with shared keyword test",
+                    "severity": "low",
+                    "keywords": ["shared_keyword"],
+                    "category": "privacy",
+                    "workflow_action": "warn",
+                },
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.CONFLICTING_SEVERITY in codes
 
@@ -1775,16 +1783,18 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with invalid severity value",
-                "severity": "mega",
-                "keywords": ["test"],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with invalid severity value",
+                    "severity": "mega",
+                    "keywords": ["test"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.INVALID_SEVERITY in codes
 
@@ -1792,15 +1802,17 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with no category at all",
-                "severity": "high",
-                "keywords": ["test"],
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with no category at all",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.MISSING_CATEGORY in codes
 
@@ -1808,15 +1820,17 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with no workflow action",
-                "severity": "high",
-                "keywords": ["test"],
-                "category": "security",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with no workflow action",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "category": "security",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.MISSING_WORKFLOW_ACTION in codes
 
@@ -1824,16 +1838,18 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter(max_keywords_per_rule=5)
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with too many keywords present",
-                "severity": "high",
-                "keywords": [f"keyword_{i}" for i in range(10)],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with too many keywords present",
+                    "severity": "high",
+                    "keywords": [f"keyword_{i}" for i in range(10)],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.EXCESSIVE_KEYWORD_COUNT in codes
 
@@ -1841,16 +1857,18 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with overlapping keyword substrings",
-                "severity": "high",
-                "keywords": ["credit", "credit_card"],
-                "category": "privacy",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with overlapping keyword substrings",
+                    "severity": "high",
+                    "keywords": ["credit", "credit_card"],
+                    "category": "privacy",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.KEYWORD_SUBSTRING_OVERLAP in codes
 
@@ -1858,17 +1876,19 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with weak regex pattern present",
-                "severity": "high",
-                "keywords": ["test"],
-                "patterns": ["ab"],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with weak regex pattern present",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "patterns": ["ab"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.WEAK_REGEX_PATTERN in codes
 
@@ -1876,26 +1896,28 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "First rule with a shared pattern",
-                "severity": "high",
-                "keywords": ["test"],
-                "patterns": ["^ssn\\d+$"],
-                "category": "privacy",
-                "workflow_action": "block",
-            },
-            {
-                "id": "r2",
-                "description": "Second rule with the same pattern",
-                "severity": "high",
-                "keywords": ["other"],
-                "patterns": ["^ssn\\d+$"],
-                "category": "privacy",
-                "workflow_action": "block",
-            },
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "First rule with a shared pattern",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "patterns": ["^ssn\\d+$"],
+                    "category": "privacy",
+                    "workflow_action": "block",
+                },
+                {
+                    "id": "r2",
+                    "description": "Second rule with the same pattern",
+                    "severity": "high",
+                    "keywords": ["other"],
+                    "patterns": ["^ssn\\d+$"],
+                    "category": "privacy",
+                    "workflow_action": "block",
+                },
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.DUPLICATE_PATTERN in codes
 
@@ -1903,17 +1925,19 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "A good rule with proper keywords",
-                "severity": "high",
-                "keywords": ["test_keyword"],
-                "category": "security",
-                "workflow_action": "block",
-            },
-            {"severity": "mega", "keywords": ["test"]},
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "A good rule with proper keywords",
+                    "severity": "high",
+                    "keywords": ["test_keyword"],
+                    "category": "security",
+                    "workflow_action": "block",
+                },
+                {"severity": "mega", "keywords": ["test"]},
+            ]
+        )
         assert report.rules_checked == 2
         assert len(report.errors) > 0
         assert isinstance(report.summary(), str)
@@ -1924,10 +1948,12 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {"id": "r1", "severity": "high", "keywords": ["test"]},
-            {"id": "r2", "severity": "mega", "keywords": ["test"]},
-        ])
+        report = linter.lint_rules(
+            [
+                {"id": "r1", "severity": "high", "keywords": ["test"]},
+                {"id": "r2", "severity": "mega", "keywords": ["test"]},
+            ]
+        )
         by_rule = report.by_rule()
         assert "r1" in by_rule or "r2" in by_rule
 
@@ -1939,9 +1965,11 @@ class TestPolicyLinter:
         )
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {"id": "r1", "severity": "mega", "keywords": ["test"]},
-        ])
+        report = linter.lint_rules(
+            [
+                {"id": "r1", "severity": "mega", "keywords": ["test"]},
+            ]
+        )
         errors = report.filter(severity=LintSeverity.ERROR)
         assert len(errors) > 0
         by_code = report.filter(code=LintCode.INVALID_SEVERITY)
@@ -1953,14 +1981,16 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rule({
-            "id": "r1",
-            "description": "A well-described rule for testing",
-            "severity": "high",
-            "keywords": ["test_keyword"],
-            "category": "security",
-            "workflow_action": "block",
-        })
+        report = linter.lint_rule(
+            {
+                "id": "r1",
+                "description": "A well-described rule for testing",
+                "severity": "high",
+                "keywords": ["test_keyword"],
+                "category": "security",
+                "workflow_action": "block",
+            }
+        )
         assert report.rules_checked == 1
         assert report.passed
 
@@ -1976,17 +2006,19 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with anchored pattern present",
-                "severity": "high",
-                "keywords": ["test"],
-                "patterns": ["^ab$"],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with anchored pattern present",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "patterns": ["^ab$"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.WEAK_REGEX_PATTERN not in codes
 
@@ -1994,17 +2026,19 @@ class TestPolicyLinter:
         from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
 
         linter = PolicyLinter()
-        report = linter.lint_rules([
-            {
-                "id": "r1",
-                "description": "Rule with invalid regex pattern present",
-                "severity": "high",
-                "keywords": ["test"],
-                "patterns": ["["],
-                "category": "security",
-                "workflow_action": "block",
-            }
-        ])
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Rule with invalid regex pattern present",
+                    "severity": "high",
+                    "keywords": ["test"],
+                    "patterns": ["["],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
         codes = {i.code for i in report.issues}
         assert LintCode.WEAK_REGEX_PATTERN not in codes
 

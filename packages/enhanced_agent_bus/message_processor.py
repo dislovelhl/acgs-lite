@@ -350,7 +350,9 @@ class MessageProcessor:
         self._agent_workflow_metrics = (
             get_agent_workflow_metrics_collector() if AGENT_WORKFLOW_METRICS_AVAILABLE else None
         )
-        self._session_resolver = kwargs.get("session_resolver") or SessionCoordinator.build_session_resolver(
+        self._session_resolver = kwargs.get(
+            "session_resolver"
+        ) or SessionCoordinator.build_session_resolver(
             self.config,
             self._session_context_manager,
         )
@@ -374,7 +376,9 @@ class MessageProcessor:
         self._verification_orchestrator = self._build_verification_orchestrator(
             kwargs.get("verification_orchestrator")
         )
-        self._governance_coordinator = kwargs.get("governance_coordinator") or GovernanceCoordinator(
+        self._governance_coordinator = kwargs.get(
+            "governance_coordinator"
+        ) or GovernanceCoordinator(
             governance_core_mode=self._governance_core_mode,
             constitutional_hash=self.constitutional_hash,
             require_independent_validator=self._require_independent_validator,
@@ -390,9 +394,11 @@ class MessageProcessor:
             verification_orchestrator=self._verification_orchestrator,
             processing_strategy=self._processing_strategy,
             handlers=self._handlers,
-            attach_governance_metadata=lambda context, result: self._governance_coordinator.attach_governance_metadata(
-                context=context,
-                result=result,
+            attach_governance_metadata=lambda context, result: (
+                self._governance_coordinator.attach_governance_metadata(
+                    context=context,
+                    result=result,
+                )
             ),
             increment_failed_count=self._increment_failed_count,
             handle_successful_processing=self._handle_successful_processing,
@@ -611,9 +617,11 @@ class MessageProcessor:
             verification_orchestrator=self._verification_orchestrator,
             processing_strategy=self._processing_strategy,
             handlers=self._handlers,
-            attach_governance_metadata=lambda context, result: self._governance_coordinator.attach_governance_metadata(
-                context=context,
-                result=result,
+            attach_governance_metadata=lambda context, result: (
+                self._governance_coordinator.attach_governance_metadata(
+                    context=context,
+                    result=result,
+                )
             ),
             handle_successful_processing=self._handle_successful_processing,
             handle_failed_processing=self._handle_failed_processing,
@@ -732,7 +740,9 @@ class MessageProcessor:
 
             # Phase 2: GateCoordinator executes fail-closed gates before deeper processing.
             self._sync_coordinator_runtime()
-            gate_result = await self._gate_coordinator.run(context, self._governance_coordinator.run)
+            gate_result = await self._gate_coordinator.run(
+                context, self._governance_coordinator.run
+            )
             if gate_result:
                 self._governance_coordinator.attach_governance_metadata(
                     context=context,

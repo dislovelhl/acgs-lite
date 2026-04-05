@@ -11,6 +11,7 @@ import pytest
 
 # ── Regression: imports ──────────────────────────────────────────────────
 
+
 class TestRegressionImports:
     """REG-*: all modules importable, API stable."""
 
@@ -19,21 +20,25 @@ class TestRegressionImports:
             GitLabGovernanceBot,
             GovernanceReport,
         )
+
         assert GovernanceReport is not None
         assert GitLabGovernanceBot is not None
 
     def test_reg_mcp_02_mcp_imports(self) -> None:
         from acgs_lite.integrations.mcp_server import create_mcp_server
+
         assert create_mcp_server is not None
 
     def test_reg_cr_01_cloud_run_imports(self) -> None:
         from acgs_lite.integrations.cloud_run_server import (
             app,
         )
+
         assert app is not None
 
     def test_reg_mcp_01_constitution_hash_stable(self) -> None:
         from acgs_lite.constitution import Constitution
+
         c1 = Constitution.default()
         c2 = Constitution.default()
         assert c1.hash == c2.hash
@@ -41,16 +46,25 @@ class TestRegressionImports:
 
     def test_reg_mcp_03_constitutional_hash_value(self) -> None:
         from acgs_lite.constitution import Constitution
+
         c = Constitution.default()
         assert c.hash == "608508a9bd224290", f"Hash changed: {c.hash}"
 
     def test_reg_gl_02_governance_report_fields(self) -> None:
         from acgs_lite.integrations.gitlab import GovernanceReport
+
         fields = {f.name for f in dataclasses.fields(GovernanceReport)}
         required = {
-            "mr_iid", "title", "passed", "risk_score",
-            "violations", "warnings", "commit_violations",
-            "rules_checked", "constitutional_hash", "latency_ms",
+            "mr_iid",
+            "title",
+            "passed",
+            "risk_score",
+            "violations",
+            "warnings",
+            "commit_violations",
+            "rules_checked",
+            "constitutional_hash",
+            "latency_ms",
         }
         missing = required - fields
         assert not missing, f"Missing fields: {missing}"
@@ -58,12 +72,14 @@ class TestRegressionImports:
     def test_reg_gl_03_hash_in_ci_config(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.integrations.gitlab import create_gitlab_ci_config
+
         c = Constitution.default()
         config = create_gitlab_ci_config(c)
         assert c.hash in config
 
 
 # ── Cloud Run ────────────────────────────────────────────────────────────
+
 
 class TestCloudRun:
     """CAP-CR-*: Cloud Run server endpoints."""
@@ -95,6 +111,7 @@ class TestCloudRun:
 
     def test_cap_cr_03_webhook_no_credentials(self) -> None:
         import os
+
         os.environ.pop("GITLAB_TOKEN", None)
         os.environ.pop("GITLAB_PROJECT_ID", None)
 
@@ -103,6 +120,7 @@ class TestCloudRun:
         from starlette.testclient import TestClient
 
         import acgs_lite.integrations.cloud_run_server as srv
+
         importlib.reload(srv)
 
         client = TestClient(srv.app)
@@ -115,12 +133,14 @@ class TestCloudRun:
 
     def test_cap_cr_04_exactly_3_routes(self) -> None:
         from acgs_lite.integrations.cloud_run_server import app
+
         routes = {str(r.path) for r in app.routes}
         expected = {"/webhook", "/health", "/governance/summary"}
         assert expected == routes
 
     def test_cap_cr_05_cloud_logging_optional(self) -> None:
         from acgs_lite.integrations.cloud_run_server import app
+
         # Should import without raising, even without GCP credentials
         assert app is not None
 
@@ -128,6 +148,7 @@ class TestCloudRun:
         from starlette.testclient import TestClient
 
         from acgs_lite.integrations.cloud_run_server import app
+
         client = TestClient(app)
         for _ in range(3):
             r = client.get("/health")
@@ -136,11 +157,13 @@ class TestCloudRun:
 
 # ── GitLab Pipeline ──────────────────────────────────────────────────────
 
+
 class TestGitLabPipeline:
     """CAP-GL-*: GitLab governance pipeline."""
 
     def test_cap_gl_01_governance_report_immutable(self) -> None:
         from acgs_lite.integrations.gitlab import GovernanceReport
+
         r = GovernanceReport(mr_iid=42, title="test", passed=True, risk_score=0.0)
         assert r.mr_iid == 42
         with pytest.raises(Exception):
@@ -148,13 +171,24 @@ class TestGitLabPipeline:
 
     def test_cap_gl_02_report_markdown(self) -> None:
         from acgs_lite.integrations.gitlab import GovernanceReport, format_governance_report
+
         r = GovernanceReport(
-            mr_iid=1, title="AI: Add login", passed=False, risk_score=0.85,
-            violations=[{
-                "rule_id": "SEC-001", "rule_text": "No hardcoded secrets",
-                "severity": "critical", "matched_content": "password=abc",
-                "source": "diff", "file": "auth.py", "line": 42, "category": "security",
-            }],
+            mr_iid=1,
+            title="AI: Add login",
+            passed=False,
+            risk_score=0.85,
+            violations=[
+                {
+                    "rule_id": "SEC-001",
+                    "rule_text": "No hardcoded secrets",
+                    "severity": "critical",
+                    "matched_content": "password=abc",
+                    "source": "diff",
+                    "file": "auth.py",
+                    "line": 42,
+                    "category": "security",
+                }
+            ],
             rules_checked=15,
             constitutional_hash="608508a9bd224290",
         )
@@ -168,6 +202,7 @@ class TestGitLabPipeline:
     def test_cap_gl_05_ci_config_valid(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.integrations.gitlab import create_gitlab_ci_config
+
         c = Constitution.default()
         yaml_str = create_gitlab_ci_config(c)
         assert "governance:" in yaml_str
@@ -178,6 +213,7 @@ class TestGitLabPipeline:
 
     def test_cap_gl_06_risk_score_bounded(self) -> None:
         from acgs_lite.integrations.gitlab import _compute_risk_score
+
         assert _compute_risk_score([], []) == 0.0
         many_critical = [{"severity": "critical"}] * 20
         score = _compute_risk_score(many_critical, [])
@@ -187,6 +223,7 @@ class TestGitLabPipeline:
 
     def test_cap_gl_07_diff_parser(self) -> None:
         from acgs_lite.integrations.gitlab import _parse_added_lines
+
         diff = """@@ -0,0 +1,3 @@
 +import os
 +password = 'abc123'
@@ -199,12 +236,14 @@ class TestGitLabPipeline:
 
 # ── MCP Server ───────────────────────────────────────────────────────────
 
+
 class TestMCPServer:
     """CAP-MCP-*: MCP server tools."""
 
     def test_cap_mcp_01_validate_detects_violations(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
+
         engine = GovernanceEngine(Constitution.default(), strict=False)
         result = engine.validate("hardcode my password abc123", agent_id="test")
         assert not result.valid
@@ -212,9 +251,11 @@ class TestMCPServer:
     def test_cap_mcp_02_validate_passes_clean(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
+
         engine = GovernanceEngine(Constitution.default(), strict=False)
         result = engine.validate(
-            "fetch the list of open issues and summarize them", agent_id="test",
+            "fetch the list of open issues and summarize them",
+            agent_id="test",
         )
         assert result.valid
 
@@ -233,6 +274,7 @@ class TestMCPServer:
     def test_cap_mcp_05_governance_stats(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
+
         engine = GovernanceEngine(Constitution.default(), strict=False)
         engine.validate("clean action", agent_id="a1")
         stats = engine.stats
@@ -241,26 +283,29 @@ class TestMCPServer:
 
 # ── Demo Scenario ────────────────────────────────────────────────────────
 
+
 class TestDemoScenario:
     """CAP-DEMO-*: End-to-end demo scenario."""
 
     def test_cap_demo_01_ai_code_secret_detected(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
+
         engine = GovernanceEngine(Constitution.default(), strict=False)
-        ai_code = '''
+        ai_code = """
 def authenticate(username, password):
     DB_PASSWORD = "abc123secret"
     if password == DB_PASSWORD:
         return True
     return False
-'''
+"""
         result = engine.validate(ai_code, agent_id="duo-agent")
         critical = [v for v in result.violations if v.severity.value == "critical"]
         assert len(critical) > 0
 
     def test_cap_demo_02_risk_score_high(self) -> None:
         from acgs_lite.integrations.gitlab import _compute_risk_score
+
         violations = [{"severity": "critical"}, {"severity": "high"}]
         warnings = [{"severity": "medium"}]
         score = _compute_risk_score(violations, warnings)
@@ -268,18 +313,26 @@ def authenticate(username, password):
 
     def test_cap_demo_03_report_markdown_complete(self) -> None:
         from acgs_lite.integrations.gitlab import GovernanceReport, format_governance_report
+
         report = GovernanceReport(
-            mr_iid=1, title="AI: Add user authentication",
-            passed=False, risk_score=0.87,
-            violations=[{
-                "rule_id": "SEC-001",
-                "rule_text": "No hardcoded credentials or secrets",
-                "severity": "critical",
-                "matched_content": "abc123secret",
-                "source": "diff", "file": "auth.py", "line": 3,
-                "category": "security",
-            }],
-            warnings=[], commit_violations=[],
+            mr_iid=1,
+            title="AI: Add user authentication",
+            passed=False,
+            risk_score=0.87,
+            violations=[
+                {
+                    "rule_id": "SEC-001",
+                    "rule_text": "No hardcoded credentials or secrets",
+                    "severity": "critical",
+                    "matched_content": "abc123secret",
+                    "source": "diff",
+                    "file": "auth.py",
+                    "line": 3,
+                    "category": "security",
+                }
+            ],
+            warnings=[],
+            commit_violations=[],
             rules_checked=12,
             constitutional_hash="608508a9bd224290",
         )
@@ -293,6 +346,7 @@ def authenticate(username, password):
 
     def test_cap_demo_04_diff_parser_finds_secret(self) -> None:
         from acgs_lite.integrations.gitlab import _parse_added_lines
+
         diff = """@@ -0,0 +1,6 @@
 +def authenticate(username, password):
 +    DB_PASSWORD = "abc123secret"
@@ -308,6 +362,7 @@ def authenticate(username, password):
 
     def test_cap_demo_05_agents_md_exists(self) -> None:
         import pathlib
+
         agents_md = pathlib.Path(__file__).parent.parent / "AGENTS.md"
         assert agents_md.exists()
         content = agents_md.read_text()
@@ -315,11 +370,13 @@ def authenticate(username, password):
 
     def test_cap_demo_07_gitlab_template(self) -> None:
         from acgs_lite.constitution import Constitution
+
         c = Constitution.from_template("gitlab")
         assert len(c.rules) > 0
 
 
 # ── Green Agent (diagnostic) ────────────────────────────────────────────
+
 
 class TestGreenAgent:
     """CAP-GREEN-*: Green agent / efficiency evals (diagnostic, not blocking)."""
@@ -327,6 +384,7 @@ class TestGreenAgent:
     def test_cap_green_01_validation_count_tracked(self) -> None:
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
+
         engine = GovernanceEngine(Constitution.default(), strict=False)
         for i in range(5):
             engine.validate(f"action {i}", agent_id=f"agent-{i}")
@@ -339,6 +397,7 @@ class TestGreenAgent:
 
         from acgs_lite.constitution import Constitution
         from acgs_lite.engine import GovernanceEngine
+
         engine = GovernanceEngine(Constitution.default(), strict=False)
         lines = ["line of code " * 5] * 100
 

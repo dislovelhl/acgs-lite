@@ -39,7 +39,8 @@ def _make_gate_coordinator(
     return GateCoordinator(
         require_independent_validator=require_independent_validator,
         independent_validator_threshold=independent_validator_threshold,
-        security_scanner=security_scanner or SimpleNamespace(scan=AsyncMock(), detect_prompt_injection=MagicMock()),
+        security_scanner=security_scanner
+        or SimpleNamespace(scan=AsyncMock(), detect_prompt_injection=MagicMock()),
         record_agent_workflow_event=record_agent_workflow_event or MagicMock(),
         increment_failed_count=increment_failed_count or MagicMock(),
         advisory_blocked_types=frozenset({"command", "governance_request", "task_request"}),
@@ -53,13 +54,17 @@ class TestRequiresIndependentValidation:
 
         assert coordinator.requires_independent_validation(sample_message) is True
 
-    def test_low_impact_score_does_not_require_validation(self, sample_message: AgentMessage) -> None:
+    def test_low_impact_score_does_not_require_validation(
+        self, sample_message: AgentMessage
+    ) -> None:
         coordinator = _make_gate_coordinator()
         sample_message.impact_score = 0.5
 
         assert coordinator.requires_independent_validation(sample_message) is False
 
-    def test_none_impact_score_does_not_require_validation(self, sample_message: AgentMessage) -> None:
+    def test_none_impact_score_does_not_require_validation(
+        self, sample_message: AgentMessage
+    ) -> None:
         coordinator = _make_gate_coordinator()
         sample_message.impact_score = None
 
@@ -176,7 +181,9 @@ class TestAutonomyAndSecurityHelpers:
             metadata={"rejection_reason": "security_violation"},
         )
         increment_failed_count = MagicMock()
-        scanner = SimpleNamespace(scan=AsyncMock(return_value=blocked_result), detect_prompt_injection=MagicMock())
+        scanner = SimpleNamespace(
+            scan=AsyncMock(return_value=blocked_result), detect_prompt_injection=MagicMock()
+        )
         coordinator = _make_gate_coordinator(
             security_scanner=scanner,
             increment_failed_count=increment_failed_count,
@@ -191,7 +198,9 @@ class TestAutonomyAndSecurityHelpers:
         self,
         sample_message: AgentMessage,
     ) -> None:
-        scanner = SimpleNamespace(scan=AsyncMock(), detect_prompt_injection=MagicMock(return_value=None))
+        scanner = SimpleNamespace(
+            scan=AsyncMock(), detect_prompt_injection=MagicMock(return_value=None)
+        )
         coordinator = _make_gate_coordinator(security_scanner=scanner)
 
         result = coordinator.detect_prompt_injection(sample_message)
@@ -225,14 +234,18 @@ class TestGatePipeline:
         self,
         sample_message: AgentMessage,
     ) -> None:
-        scanner = SimpleNamespace(scan=AsyncMock(return_value=None), detect_prompt_injection=MagicMock(return_value=None))
+        scanner = SimpleNamespace(
+            scan=AsyncMock(return_value=None), detect_prompt_injection=MagicMock(return_value=None)
+        )
         coordinator = _make_gate_coordinator(
             security_scanner=scanner,
             record_agent_workflow_event=MagicMock(),
         )
         sample_message.impact_score = 0.2
         context = MessageProcessingContext(message=sample_message, start_time=0.0)
-        governance_result = ValidationResult(is_valid=False, metadata={"rejection_reason": "governance_failed"})
+        governance_result = ValidationResult(
+            is_valid=False, metadata={"rejection_reason": "governance_failed"}
+        )
         governance_runner = AsyncMock(return_value=governance_result)
 
         result = await coordinator.run(context, governance_runner)

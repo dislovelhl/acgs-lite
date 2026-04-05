@@ -22,14 +22,14 @@ def demo_basic_roles() -> None:
     enforcer.assign_role("agent-observer", MACIRole.OBSERVER)
 
     cases = [
-        ("agent-proposer",  "propose",   True,  "Proposer drafts a change"),
-        ("agent-proposer",  "validate",  False, "Proposer tries to self-validate"),
-        ("agent-validator", "validate",  True,  "Validator reviews the proposal"),
-        ("agent-validator", "execute",   False, "Validator tries to execute"),
-        ("agent-executor",  "execute",   True,  "Executor applies approved action"),
-        ("agent-executor",  "propose",   False, "Executor tries to propose"),
-        ("agent-observer",  "read",      True,  "Observer reads audit log"),
-        ("agent-observer",  "execute",   False, "Observer tries to execute"),
+        ("agent-proposer", "propose", True, "Proposer drafts a change"),
+        ("agent-proposer", "validate", False, "Proposer tries to self-validate"),
+        ("agent-validator", "validate", True, "Validator reviews the proposal"),
+        ("agent-validator", "execute", False, "Validator tries to execute"),
+        ("agent-executor", "execute", True, "Executor applies approved action"),
+        ("agent-executor", "propose", False, "Executor tries to propose"),
+        ("agent-observer", "read", True, "Observer reads audit log"),
+        ("agent-observer", "execute", False, "Observer tries to execute"),
     ]
 
     for agent_id, operation, allowed, label in cases:
@@ -47,11 +47,11 @@ def demo_constitutional_amendment_workflow() -> None:
     print("\n── 2. Constitutional Amendment Workflow ───────────────────────")
     enforcer = MACIEnforcer()
     enforcer.assign_role("drafter-agent", MACIRole.PROPOSER)
-    enforcer.assign_role("review-agent",  MACIRole.VALIDATOR)
-    enforcer.assign_role("deploy-agent",  MACIRole.EXECUTOR)
+    enforcer.assign_role("review-agent", MACIRole.VALIDATOR)
+    enforcer.assign_role("deploy-agent", MACIRole.EXECUTOR)
 
     proposal = "Add rule: agents must not access raw PII without audit log"
-    print(f"  Proposal: \"{proposal}\"")
+    print(f'  Proposal: "{proposal}"')
 
     # Step 1: Proposer submits
     enforcer.check("drafter-agent", "propose")

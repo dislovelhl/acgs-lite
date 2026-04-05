@@ -19,8 +19,10 @@ from enhanced_agent_bus.adaptive_governance.rubrics import build_audit_rubric
 
 # --- Fixtures ---
 
+
 def _make_constitution():
     """Minimal constitution-like object for tests."""
+
     class FakeRule:
         def __init__(self, id: str, text: str, severity: str, keywords: list[str]):
             self.id = id
@@ -30,7 +32,9 @@ def _make_constitution():
 
     class FakeConstitution:
         rules = [
-            FakeRule("NO-PII", "No personally identifiable information", "critical", ["ssn", "passport"]),
+            FakeRule(
+                "NO-PII", "No personally identifiable information", "critical", ["ssn", "passport"]
+            ),
             FakeRule("NO-HARM", "No harmful instructions", "high", ["malware", "exploit"]),
         ]
 
@@ -40,23 +44,28 @@ def _make_constitution():
 def _make_audit_entries(n_allow: int = 5, n_deny: int = 5) -> list[dict]:
     entries = []
     for i in range(n_allow):
-        entries.append({
-            "id": f"allow-{i}",
-            "action": f"safe action {i}",
-            "valid": True,
-            "violations": [],
-        })
+        entries.append(
+            {
+                "id": f"allow-{i}",
+                "action": f"safe action {i}",
+                "valid": True,
+                "violations": [],
+            }
+        )
     for i in range(n_deny):
-        entries.append({
-            "id": f"deny-{i}",
-            "action": f"send ssn {i}",
-            "valid": False,
-            "violations": ["NO-PII"],
-        })
+        entries.append(
+            {
+                "id": f"deny-{i}",
+                "action": f"send ssn {i}",
+                "valid": False,
+                "violations": ["NO-PII"],
+            }
+        )
     return entries
 
 
 # --- LLMJudgment Tests ---
+
 
 class TestLLMJudgment:
     def test_construction(self):
@@ -103,12 +112,15 @@ class TestInMemoryLLMJudge:
 
 # --- Rubric Tests ---
 
+
 class TestRubrics:
     def test_build_audit_rubric_with_violations(self):
         rubric = build_audit_rubric(
             action="send the ssn to the user",
             engine_decision="deny",
-            engine_violations=[{"rule_id": "NO-PII", "severity": "critical", "matched_content": "ssn"}],
+            engine_violations=[
+                {"rule_id": "NO-PII", "severity": "critical", "matched_content": "ssn"}
+            ],
             constitution_rules=[
                 {"id": "NO-PII", "text": "No PII", "severity": "critical", "keywords": ["ssn"]},
             ],
@@ -150,6 +162,7 @@ class TestRubrics:
 
 # --- GovernanceAuditJudge Tests ---
 
+
 class TestGovernanceAuditJudge:
     @pytest.mark.asyncio
     async def test_run_audit_with_agreement(self):
@@ -186,7 +199,9 @@ class TestGovernanceAuditJudge:
     async def test_regression_candidates_from_disagreements(self):
         constitution = _make_constitution()
         deny_j = LLMJudgment(
-            decision="deny", confidence=0.95, model_id="stub",
+            decision="deny",
+            confidence=0.95,
+            model_id="stub",
             scores=JudgmentScore(accuracy=0.2, missed_violations=["NO-PII"]),
         )
         judge = InMemoryLLMJudge(judgment_map={"safe action 0": deny_j})
@@ -320,13 +335,21 @@ class TestAuditReport:
         assert report.regression_candidates == []
 
     def test_summary(self):
-        report = AuditReport(total_sampled=10, judgments=[
-            JudgmentResult(
-                entry_id="e1", action="test", engine_decision="allow",
-                judge_decision="allow", scores=JudgmentScore(accuracy=0.9),
-                reasoning="ok", model_id="stub", agrees_with_engine=True,
-            ),
-        ])
+        report = AuditReport(
+            total_sampled=10,
+            judgments=[
+                JudgmentResult(
+                    entry_id="e1",
+                    action="test",
+                    engine_decision="allow",
+                    judge_decision="allow",
+                    scores=JudgmentScore(accuracy=0.9),
+                    reasoning="ok",
+                    model_id="stub",
+                    agrees_with_engine=True,
+                ),
+            ],
+        )
         s = report.summary()
         assert "10 sampled" in s
         assert "1 judged" in s

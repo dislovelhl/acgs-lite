@@ -4,7 +4,6 @@ Covers the PolicyLifecycleOrchestrator state machine, gate checks,
 rollout plans, audit trail, supersession, and query/reporting helpers.
 """
 
-
 from acgs_lite.constitution.policy_lifecycle import (
     _ALLOWED_TRANSITIONS,
     GateEvaluation,

@@ -134,4 +134,3 @@ __all__ = [
     "ResearchRuntimeState",
     "create_research_operator_control_plane",
 ]
-

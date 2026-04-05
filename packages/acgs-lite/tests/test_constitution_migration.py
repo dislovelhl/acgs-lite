@@ -66,7 +66,8 @@ class TestRuleMigrationStepDescribe:
 
     def test_merge(self):
         step = RuleMigrationStep(
-            "R1", RuleAction.MERGE,
+            "R1",
+            RuleAction.MERGE,
             target_rule_id="MERGED",
             merge_sources=["R1", "R2"],
         )
@@ -74,7 +75,8 @@ class TestRuleMigrationStepDescribe:
 
     def test_split(self):
         step = RuleMigrationStep(
-            "R1", RuleAction.SPLIT,
+            "R1",
+            RuleAction.SPLIT,
             target_rule_ids=["R1a", "R1b"],
         )
         assert "Split" in step.describe()
@@ -94,7 +96,8 @@ class TestRuleMigrationStepDescribe:
 
     def test_transform_severity(self):
         step = RuleMigrationStep(
-            "R1", RuleAction.TRANSFORM,
+            "R1",
+            RuleAction.TRANSFORM,
             severity_change="critical",
         )
         desc = step.describe()
@@ -102,7 +105,8 @@ class TestRuleMigrationStepDescribe:
 
     def test_transform_keywords(self):
         step = RuleMigrationStep(
-            "R1", RuleAction.TRANSFORM,
+            "R1",
+            RuleAction.TRANSFORM,
             keyword_changes={"add": ["injection"]},
         )
         assert "keywords" in step.describe()
@@ -373,9 +377,7 @@ class TestMigratorExecute:
 
     def test_transform_keywords(self):
         migrator = PolicyVersionMigrator()
-        const = FakeConstitution(
-            rules=[_make_rule("R1", keywords=["old_kw"])]
-        )
+        const = FakeConstitution(rules=[_make_rule("R1", keywords=["old_kw"])])
         plan = MigrationPlan("1.0", "2.0").transform(
             "R1",
             add_keywords=["new_kw"],
@@ -404,9 +406,7 @@ class TestMigratorExecute:
 
     def test_split(self):
         migrator = PolicyVersionMigrator()
-        const = FakeConstitution(
-            rules=[_make_rule("R1", keywords=["k1", "k2", "k3", "k4"])]
-        )
+        const = FakeConstitution(rules=[_make_rule("R1", keywords=["k1", "k2", "k3", "k4"])])
         plan = MigrationPlan("1.0", "2.0").split("R1", ["R1a", "R1b"])
         result = migrator.execute(plan, const)
         assert result.status == MigrationStatus.COMPLETED
@@ -453,9 +453,7 @@ class TestMigratorExecute:
 class TestMigratorRollback:
     def test_rollback_restores_rules(self):
         migrator = PolicyVersionMigrator()
-        const = FakeConstitution(
-            rules=[_make_rule("R1", text="original", severity=Severity.LOW)]
-        )
+        const = FakeConstitution(rules=[_make_rule("R1", text="original", severity=Severity.LOW)])
         plan = MigrationPlan("1.0", "2.0").remove("R1", reason="test")
         result = migrator.execute(plan, const)
         assert len(const.rules) == 0

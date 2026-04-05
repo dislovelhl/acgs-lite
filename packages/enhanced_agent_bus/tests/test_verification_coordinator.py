@@ -54,7 +54,9 @@ class TestVerificationCoordinatorExecute:
     ) -> None:
         sample_message.content = {"nested": [1, 2, 3]}
         verification_result = SimpleNamespace(sdpc_metadata={}, pqc_metadata={}, pqc_result=None)
-        verification_orchestrator = SimpleNamespace(verify=AsyncMock(return_value=verification_result))
+        verification_orchestrator = SimpleNamespace(
+            verify=AsyncMock(return_value=verification_result)
+        )
         processing_strategy = SimpleNamespace(
             process=AsyncMock(return_value=ValidationResult(is_valid=True, metadata={}))
         )
@@ -83,7 +85,9 @@ class TestVerificationCoordinatorExecute:
             pqc_result=None,
         )
         process_result = ValidationResult(is_valid=True, metadata={})
-        verification_orchestrator = SimpleNamespace(verify=AsyncMock(return_value=verification_result))
+        verification_orchestrator = SimpleNamespace(
+            verify=AsyncMock(return_value=verification_result)
+        )
         handle_successful_processing = AsyncMock()
         coordinator = _coordinator(
             verification_orchestrator=verification_orchestrator,
@@ -117,7 +121,9 @@ class TestVerificationCoordinatorExecute:
         increment_failed_count = MagicMock()
         handle_failed_processing = AsyncMock()
         coordinator = _coordinator(
-            verification_orchestrator=SimpleNamespace(verify=AsyncMock(return_value=verification_result)),
+            verification_orchestrator=SimpleNamespace(
+                verify=AsyncMock(return_value=verification_result)
+            ),
             processing_strategy=processing_strategy,
             increment_failed_count=increment_failed_count,
             handle_failed_processing=handle_failed_processing,
@@ -145,7 +151,9 @@ class TestVerificationCoordinatorExecute:
         )
         handle_failed_processing = AsyncMock()
         coordinator = _coordinator(
-            verification_orchestrator=SimpleNamespace(verify=AsyncMock(return_value=verification_result)),
+            verification_orchestrator=SimpleNamespace(
+                verify=AsyncMock(return_value=verification_result)
+            ),
             processing_strategy=SimpleNamespace(process=AsyncMock(return_value=strategy_result)),
             handle_failed_processing=handle_failed_processing,
         )

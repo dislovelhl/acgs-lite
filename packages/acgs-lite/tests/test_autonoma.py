@@ -206,11 +206,14 @@ class TestDiscoverAction:
 @pytest.mark.integration
 class TestUpAction:
     def test_up_standard_returns_refs(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-001",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-001",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "refs" in data
@@ -219,11 +222,14 @@ class TestUpAction:
         assert data["refs"]["testRunId"] == "run-001"
 
     def test_up_standard_refs_contain_expected_ids(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-002",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-002",
+            },
+        )
         refs = resp.json()["refs"]
         assert "SAFE-001" in refs["rule_ids"]
         assert "PRIV-001" in refs["rule_ids"]
@@ -233,61 +239,79 @@ class TestUpAction:
         assert len(refs["framework_ids"]) == 9
 
     def test_up_empty_returns_empty_refs(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "empty",
-            "testRunId": "run-003",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "empty",
+                "testRunId": "run-003",
+            },
+        )
         refs = resp.json()["refs"]
         assert refs["rule_ids"] == []
         assert refs["audit_ids"] == []
 
     def test_up_large_returns_large_refs(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "large",
-            "testRunId": "run-004",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "large",
+                "testRunId": "run-004",
+            },
+        )
         refs = resp.json()["refs"]
         assert len(refs["rule_ids"]) == 120
         assert len(refs["audit_ids"]) == 1000
 
     def test_up_unknown_environment_returns_400(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "nonexistent",
-            "testRunId": "run-005",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "nonexistent",
+                "testRunId": "run-005",
+            },
+        )
         assert resp.status_code == 400
         data = resp.json()
         assert data["code"] == "UNKNOWN_ENVIRONMENT"
 
     def test_up_returns_valid_jwt_refs_token(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-006",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-006",
+            },
+        )
         data = resp.json()
         decoded = jwt.decode(data["refsToken"], JWT_SECRET, algorithms=["HS256"])
         assert decoded["refs"] == data["refs"]
 
     def test_up_auth_contains_headers(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-007",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-007",
+            },
+        )
         auth = resp.json()["auth"]
         assert "headers" in auth
         assert auth["headers"]["X-Test-Run-Id"] == "run-007"
 
     def test_up_returns_expiry(self, client: TestClient) -> None:
-        resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-008",
-        })
+        resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-008",
+            },
+        )
         assert resp.json()["expiresInSeconds"] == 7200
 
 
@@ -300,90 +324,120 @@ class TestUpAction:
 class TestDownAction:
     def test_down_succeeds_with_valid_token(self, client: TestClient) -> None:
         # First create
-        up_resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-down-001",
-        })
+        up_resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-down-001",
+            },
+        )
         up_data = up_resp.json()
 
         # Then tear down
-        down_resp = _post(client, {
-            "action": "down",
-            "testRunId": "run-down-001",
-            "refs": up_data["refs"],
-            "refsToken": up_data["refsToken"],
-        })
+        down_resp = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "run-down-001",
+                "refs": up_data["refs"],
+                "refsToken": up_data["refsToken"],
+            },
+        )
         assert down_resp.status_code == 200
         assert down_resp.json() == {"ok": True}
 
     def test_down_rejects_tampered_refs(self, client: TestClient) -> None:
-        up_resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-down-002",
-        })
+        up_resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-down-002",
+            },
+        )
         up_data = up_resp.json()
 
         # Tamper with refs
         tampered_refs = {**up_data["refs"], "rule_ids": ["FAKE-001"]}
-        down_resp = _post(client, {
-            "action": "down",
-            "testRunId": "run-down-002",
-            "refs": tampered_refs,
-            "refsToken": up_data["refsToken"],
-        })
+        down_resp = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "run-down-002",
+                "refs": tampered_refs,
+                "refsToken": up_data["refsToken"],
+            },
+        )
         assert down_resp.status_code == 403
 
     def test_down_rejects_invalid_jwt(self, client: TestClient) -> None:
-        up_resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-down-003",
-        })
+        up_resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-down-003",
+            },
+        )
         up_data = up_resp.json()
 
         # Use a wrong JWT
         bad_token = jwt.encode({"refs": {"bad": True}}, "wrong-secret", algorithm="HS256")
-        down_resp = _post(client, {
-            "action": "down",
-            "testRunId": "run-down-003",
-            "refs": up_data["refs"],
-            "refsToken": bad_token,
-        })
+        down_resp = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "run-down-003",
+                "refs": up_data["refs"],
+                "refsToken": bad_token,
+            },
+        )
         assert down_resp.status_code == 403
 
     def test_down_rejects_missing_refs(self, client: TestClient) -> None:
         """down with missing refs should return 400."""
-        up_resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-no-refs",
-        })
+        up_resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-no-refs",
+            },
+        )
         up_data = up_resp.json()
-        down_resp = _post(client, {
-            "action": "down",
-            "testRunId": "run-no-refs",
-            "refsToken": up_data["refsToken"],
-        })
+        down_resp = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "run-no-refs",
+                "refsToken": up_data["refsToken"],
+            },
+        )
         assert down_resp.status_code == 400
 
     def test_down_rejects_mismatched_test_run_id(self, client: TestClient) -> None:
         """Sending a valid token with wrong testRunId must be rejected."""
-        up_resp = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "run-match-A",
-        })
+        up_resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "run-match-A",
+            },
+        )
         up_data = up_resp.json()
 
         # Use valid refs/token from run-match-A but claim testRunId is different
-        down_resp = _post(client, {
-            "action": "down",
-            "testRunId": "run-match-B",
-            "refs": up_data["refs"],
-            "refsToken": up_data["refsToken"],
-        })
+        down_resp = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "run-match-B",
+                "refs": up_data["refs"],
+                "refsToken": up_data["refsToken"],
+            },
+        )
         assert down_resp.status_code == 403
 
 
@@ -417,37 +471,49 @@ class TestFullLifecycle:
         scenario_name = envs[0]["name"]
 
         # Step 2: up
-        up_resp = _post(client, {
-            "action": "up",
-            "environment": scenario_name,
-            "testRunId": "lifecycle-001",
-        })
+        up_resp = _post(
+            client,
+            {
+                "action": "up",
+                "environment": scenario_name,
+                "testRunId": "lifecycle-001",
+            },
+        )
         assert up_resp.status_code == 200
         up_data = up_resp.json()
         assert up_data["refs"]["testRunId"] == "lifecycle-001"
 
         # Step 3: down
-        down_resp = _post(client, {
-            "action": "down",
-            "testRunId": "lifecycle-001",
-            "refs": up_data["refs"],
-            "refsToken": up_data["refsToken"],
-        })
+        down_resp = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "lifecycle-001",
+                "refs": up_data["refs"],
+                "refsToken": up_data["refsToken"],
+            },
+        )
         assert down_resp.status_code == 200
         assert down_resp.json() == {"ok": True}
 
     def test_parallel_test_runs_isolated(self, client: TestClient) -> None:
         """Two concurrent test runs produce independent refs."""
-        up1 = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "parallel-001",
-        })
-        up2 = _post(client, {
-            "action": "up",
-            "environment": "standard",
-            "testRunId": "parallel-002",
-        })
+        up1 = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "parallel-001",
+            },
+        )
+        up2 = _post(
+            client,
+            {
+                "action": "up",
+                "environment": "standard",
+                "testRunId": "parallel-002",
+            },
+        )
         assert up1.status_code == 200
         assert up2.status_code == 200
 
@@ -456,17 +522,23 @@ class TestFullLifecycle:
         assert refs1["testRunId"] != refs2["testRunId"]
 
         # Tear down both independently
-        down1 = _post(client, {
-            "action": "down",
-            "testRunId": "parallel-001",
-            "refs": refs1,
-            "refsToken": up1.json()["refsToken"],
-        })
-        down2 = _post(client, {
-            "action": "down",
-            "testRunId": "parallel-002",
-            "refs": refs2,
-            "refsToken": up2.json()["refsToken"],
-        })
+        down1 = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "parallel-001",
+                "refs": refs1,
+                "refsToken": up1.json()["refsToken"],
+            },
+        )
+        down2 = _post(
+            client,
+            {
+                "action": "down",
+                "testRunId": "parallel-002",
+                "refs": refs2,
+                "refsToken": up2.json()["refsToken"],
+            },
+        )
         assert down1.status_code == 200
         assert down2.status_code == 200

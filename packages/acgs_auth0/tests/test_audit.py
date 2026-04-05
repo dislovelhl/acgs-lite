@@ -122,29 +122,39 @@ class TestTokenAuditLog:
 
     def test_filter_by_agent_id(self) -> None:
         log = TokenAuditLog()
-        log.record_granted(agent_id="agent-1", role="EXECUTIVE", connection="github",
-                           scopes=["repo:read"])
-        log.record_granted(agent_id="agent-2", role="EXECUTIVE", connection="github",
-                           scopes=["repo:read"])
+        log.record_granted(
+            agent_id="agent-1", role="EXECUTIVE", connection="github", scopes=["repo:read"]
+        )
+        log.record_granted(
+            agent_id="agent-2", role="EXECUTIVE", connection="github", scopes=["repo:read"]
+        )
         assert len(log.get_entries(agent_id="agent-1")) == 1
         assert len(log.get_entries(agent_id="agent-2")) == 1
 
     def test_filter_by_connection(self) -> None:
         log = TokenAuditLog()
-        log.record_granted(agent_id="a", role="EXECUTIVE", connection="github",
-                           scopes=["repo:read"])
-        log.record_granted(agent_id="a", role="EXECUTIVE", connection="google-oauth2",
-                           scopes=["openid"])
+        log.record_granted(
+            agent_id="a", role="EXECUTIVE", connection="github", scopes=["repo:read"]
+        )
+        log.record_granted(
+            agent_id="a", role="EXECUTIVE", connection="google-oauth2", scopes=["openid"]
+        )
         github_entries = log.get_entries(connection="github")
         assert len(github_entries) == 1
         assert github_entries[0].connection == "github"
 
     def test_to_jsonl(self) -> None:
         log = TokenAuditLog()
-        log.record_granted(agent_id="a", role="EXECUTIVE", connection="github",
-                           scopes=["repo:read"])
-        log.record_denied(agent_id="a", role="EXECUTIVE", connection="github",
-                          scopes=["repo:write"], reason="scope_violation")
+        log.record_granted(
+            agent_id="a", role="EXECUTIVE", connection="github", scopes=["repo:read"]
+        )
+        log.record_denied(
+            agent_id="a",
+            role="EXECUTIVE",
+            connection="github",
+            scopes=["repo:write"],
+            reason="scope_violation",
+        )
         jsonl = log.to_jsonl()
         lines = jsonl.strip().split("\n")
         assert len(lines) == 2
@@ -154,8 +164,9 @@ class TestTokenAuditLog:
     def test_file_backed_audit(self, tmp_path: pytest.TempPathFactory) -> None:
         log_file = tmp_path / "audit.jsonl"
         log = TokenAuditLog(file_path=log_file)
-        log.record_granted(agent_id="a", role="EXECUTIVE", connection="github",
-                           scopes=["repo:read"])
+        log.record_granted(
+            agent_id="a", role="EXECUTIVE", connection="github", scopes=["repo:read"]
+        )
         assert log_file.exists()
         lines = log_file.read_text().strip().split("\n")
         assert len(lines) == 1

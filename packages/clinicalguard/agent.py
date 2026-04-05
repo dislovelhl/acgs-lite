@@ -150,6 +150,7 @@ class ClinicalGuardApp:
         self.engine = GovernanceEngine(constitution, strict=False)
         # Wire custom healthcare validators (PHI-PHONE, PHI-DOB, etc.)
         from .skills.healthcare_validators import register_all
+
         register_all(self.engine)
         self.audit_log = audit_log
         self.audit_log_path = audit_log_path
@@ -197,6 +198,7 @@ class ClinicalGuardApp:
     def _check_auth(self, request: Request) -> bool:
         """Return True if auth passes (or no API key configured)."""
         import hmac
+
         if not self._api_key:
             return True
         return hmac.compare_digest(
@@ -334,7 +336,8 @@ class ClinicalGuardApp:
         # then strip null bytes, control characters, and default-ignorable code points
         text = unicodedata.normalize("NFKC", text)
         text = "".join(
-            c for c in text
+            c
+            for c in text
             if c in ("\n", "\t")
             or (ord(c) >= 32 and unicodedata.category(c) not in ("Cf", "Cc", "Cn"))
         )
@@ -398,9 +401,7 @@ class ClinicalGuardApp:
                 idx = parts.index("recent")
                 if idx + 1 < len(parts) and parts[idx + 1].isdigit():
                     limit = min(int(parts[idx + 1]), 500)
-            return query_audit_trail(
-                self.audit_log, audit_id=audit_id, limit=limit
-            )
+            return query_audit_trail(self.audit_log, audit_id=audit_id, limit=limit)
 
         # Unknown skill — return helpful error
         available = ["validate_clinical_action", "check_hipaa_compliance", "query_audit_trail"]
@@ -449,7 +450,10 @@ def _parse_skill(text: str) -> tuple[str, str]:
 
     # Keyword-based fallback
     text_lower = text.lower()
-    if any(kw in text_lower for kw in ["validate", "prescribe", "medication", "dose", "drug", "patient synth"]):
+    if any(
+        kw in text_lower
+        for kw in ["validate", "prescribe", "medication", "dose", "drug", "patient synth"]
+    ):
         return "validate_clinical_action", text
     if any(kw in text_lower for kw in ["hipaa", "compliance", "phi", "privacy"]):
         return "check_hipaa_compliance", text
@@ -484,6 +488,7 @@ def _restore_audit_log(audit_log: AuditLog, path: Path) -> None:
 # ──────────────────────────────────────────────────────────────────────────────
 # Module-level app instance (for uvicorn: clinicalguard.agent:app)
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def create_app(
     constitution_path: str | Path | None = None,

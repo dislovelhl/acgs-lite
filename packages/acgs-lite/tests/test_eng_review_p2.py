@@ -342,9 +342,7 @@ class TestGovernanceMetricsThreadSafety:
     def engine(self, constitution: Constitution, audit_log: AuditLog) -> GovernanceEngine:
         return GovernanceEngine(constitution, audit_log=audit_log, strict=False)
 
-    def _make_metrics(
-        self, engine: GovernanceEngine, audit_log: AuditLog
-    ) -> Any:
+    def _make_metrics(self, engine: GovernanceEngine, audit_log: AuditLog) -> Any:
         """Build GovernanceMetrics with mocked OTel instruments."""
         mock_meter = MagicMock()
         mock_meter.create_counter.return_value = MagicMock()

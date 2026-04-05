@@ -1,4 +1,5 @@
 """Shim for src.core.shared.constants."""
+
 from __future__ import annotations
 
 try:

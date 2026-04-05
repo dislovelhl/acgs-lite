@@ -40,19 +40,19 @@ if TYPE_CHECKING:
 
 
 class AuthenticityDimension(Enum):
-    REASONING_DEPTH          = "reasoning_depth"
-    STAKEHOLDER_COVERAGE     = "stakeholder_coverage"
+    REASONING_DEPTH = "reasoning_depth"
+    STAKEHOLDER_COVERAGE = "stakeholder_coverage"
     CONSTITUTIONAL_CONSISTENCY = "constitutional_consistency"
     DELIBERATIVE_AUTHENTICITY = "deliberative_authenticity"
-    PRECEDENT_COMPATIBILITY  = "precedent_compatibility"
+    PRECEDENT_COMPATIBILITY = "precedent_compatibility"
 
 
 _DIMENSION_WEIGHTS: dict[AuthenticityDimension, float] = {
-    AuthenticityDimension.REASONING_DEPTH:           0.25,
-    AuthenticityDimension.STAKEHOLDER_COVERAGE:      0.20,
+    AuthenticityDimension.REASONING_DEPTH: 0.25,
+    AuthenticityDimension.STAKEHOLDER_COVERAGE: 0.20,
     AuthenticityDimension.CONSTITUTIONAL_CONSISTENCY: 0.20,
-    AuthenticityDimension.DELIBERATIVE_AUTHENTICITY:  0.20,
-    AuthenticityDimension.PRECEDENT_COMPATIBILITY:    0.15,
+    AuthenticityDimension.DELIBERATIVE_AUTHENTICITY: 0.20,
+    AuthenticityDimension.PRECEDENT_COMPATIBILITY: 0.15,
 }
 
 
@@ -138,9 +138,9 @@ class DimensionScore:
     """Score for a single authenticity dimension."""
 
     dimension: AuthenticityDimension
-    score: float            # 0.0 - 1.0
+    score: float  # 0.0 - 1.0
     weight: float
-    evidence: str           # human-readable explanation
+    evidence: str  # human-readable explanation
 
     @property
     def weighted_score(self) -> float:
@@ -151,12 +151,12 @@ class DimensionScore:
 class AuthenticityScore:
     """Composite authenticity score for a miner judgment."""
 
-    overall: float                      # weighted sum, 0.0 - 1.0
+    overall: float  # weighted sum, 0.0 - 1.0
     dimension_scores: tuple[DimensionScore, ...]
     judgment_word_count: int
-    is_authentic: bool                  # overall >= threshold
+    is_authentic: bool  # overall >= threshold
     threshold: float
-    flags: tuple[str, ...]              # notable signals (positive or negative)
+    flags: tuple[str, ...]  # notable signals (positive or negative)
 
     @property
     def as_dict(self) -> dict[str, Any]:
@@ -239,9 +239,7 @@ class AuthenticityDetector:
             self._score_stakeholder_coverage(full_text, flags),
             self._score_constitutional_consistency(full_text, flags),
             self._score_deliberative_authenticity(full_text, flags),
-            self._score_precedent_compatibility(
-                full_text, precedent_store, query_vector, flags
-            ),
+            self._score_precedent_compatibility(full_text, precedent_store, query_vector, flags),
         ]
 
         overall = sum(ds.weighted_score for ds in dim_scores)

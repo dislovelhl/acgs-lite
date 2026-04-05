@@ -26,10 +26,16 @@ def _discover_examples() -> list[Path]:
         if py.name.startswith("_"):
             continue
         # Skip scripts that require external services, CLI args, or paid license
-        if any(skip in py.name for skip in (
-            "gitlab_webhook", "gitlab_anthropic", "gitlab_mr_governance",
-            "demo_cli", "eu_ai_act_quickstart",
-        )):
+        if any(
+            skip in py.name
+            for skip in (
+                "gitlab_webhook",
+                "gitlab_anthropic",
+                "gitlab_mr_governance",
+                "demo_cli",
+                "eu_ai_act_quickstart",
+            )
+        ):
             continue
         scripts.append(py)
 

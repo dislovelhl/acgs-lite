@@ -182,9 +182,7 @@ class Constitution(BaseModel):
             raise ValueError("Constitution 'rules' must be a list of rule objects")
         for index, raw_rule in enumerate(rules_data):
             if not isinstance(raw_rule, dict):
-                raise ValueError(
-                    f"Constitution rule at index {index} must be a mapping/object"
-                )
+                raise ValueError(f"Constitution rule at index {index} must be a mapping/object")
         rules = [
             Rule(
                 id=r["id"],
