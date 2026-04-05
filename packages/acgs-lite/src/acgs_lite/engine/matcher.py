@@ -78,14 +78,25 @@ class GovernanceMatcherMixin:
             _bm = data
             _a200 = action[:200]
             _vlist: list[Violation] = []
+            _bv: Violation | None = None
             while _bm:
                 _idx = (_bm & -_bm).bit_length() - 1
                 _bm &= _bm - 1
                 _rd = self._rule_data[_idx]
-                _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
+                _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
+                _vlist.append(_v)
+                if _bv is None and _v.severity.blocks():
+                    _bv = _v
             fast_records.append(None)
-            _has_blocking = any(v.severity.blocks() for v in _vlist)
-            return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
+            # strict=True is guaranteed at this call site (outer validate() guard).
+            if _bv is not None:
+                raise ConstitutionalViolationError(
+                    f"Action blocked by rule {_bv.rule_id}: {_bv.rule_text}",
+                    rule_id=_bv.rule_id,
+                    severity=_bv.severity.value,
+                    action=_a200,
+                )
+            return self._new_fast_result(valid=True, violations=_vlist, action=action)
         return None
 
     def _validate_rust_gov_context(
@@ -195,15 +206,26 @@ class GovernanceMatcherMixin:
             _bm = data
             _a200 = action[:200]
             _vlist: list[Violation] = []
+            _bv_meta: Violation | None = None
             while _bm:
                 _idx = (_bm & -_bm).bit_length() - 1
                 _bm &= _bm - 1
                 _rd = self._rule_data[_idx]
-                _vlist.append(Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4]))
+                _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
+                _vlist.append(_v)
+                if _bv_meta is None and _v.severity.blocks():
+                    _bv_meta = _v
             if is_noop:
                 fast_records.append(None)
-            _has_blocking = any(v.severity.blocks() for v in _vlist)
-            return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
+            # strict=True is guaranteed at this call site (outer validate() guard).
+            if _bv_meta is not None:
+                raise ConstitutionalViolationError(
+                    f"Action blocked by rule {_bv_meta.rule_id}: {_bv_meta.rule_text}",
+                    rule_id=_bv_meta.rule_id,
+                    severity=_bv_meta.severity.value,
+                    action=_a200,
+                )
+            return self._new_fast_result(valid=True, violations=_vlist, action=action)
         return None
 
     def _validate_rust_full(

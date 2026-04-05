@@ -348,14 +348,15 @@ class TestRustMetadataContext:
 
     @pytest.mark.skipif(not _HAS_RUST, reason="Rust extension not available")
     def test_metadata_context_deny_non_critical(self):
-        """Metadata-only context with non-critical deny returns violations."""
+        """HIGH severity in strict mode raises ConstitutionalViolationError even with metadata-only context."""
         audit = AuditLog()
         engine = _make_engine(audit_log=audit, strict=True)
-        result = engine.validate(
-            "skip audit for this action",
-            context={"source": "test", "env": "staging"},
-        )
-        assert len(result.violations) > 0
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate(
+                "skip audit for this action",
+                context={"source": "test", "env": "staging"},
+            )
+        assert exc_info.value.rule_id == "X-HIGH"
 
 
 # ===================================================================
