@@ -581,7 +581,7 @@ class DeliberationLayer(OPAGuardMixin):
         if available("hotl_manager"):
             from src.core.shared.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
 
-            get_hotl_manager = import_module(require("hotl_manager")).get_hotl_manager
+            import_module(require("hotl_manager"))  # verify hotl_manager is available
             if RISK_TIER_LOW_MAX <= impact_score < RISK_TIER_HIGH_MIN:
                 return await self._process_medium_risk(message, routing_decision, impact_score)
 

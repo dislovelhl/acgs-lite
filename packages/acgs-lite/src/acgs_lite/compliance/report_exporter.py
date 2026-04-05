@@ -339,7 +339,6 @@ def _md_framework_section(fa: FrameworkAssessment) -> list[str]:
     ]
 
     # Checklist items as a table (compliant only shown in summary mode)
-    compliant_items = [i for i in fa.items if i.get("status") == "compliant"]
     gap_items = [i for i in fa.items if i.get("status") not in ("compliant", "not_applicable")]
 
     if gap_items:

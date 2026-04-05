@@ -20,7 +20,7 @@ resolution-markers = [
 members = [
     "acgs",
     "acgs-deliberation",
-    "acgs-monorepo",
+    "acgs-lite",
     "enhanced-agent-bus",
 ]
 
@@ -42,139 +42,7 @@ wheels = [
 
 [[package]]
 name = "acgs"
-version = "2.4.0"
-source = { editable = "packages/acgs-lite" }
-dependencies = [
-    { name = "click" },
-    { name = "pydantic" },
-    { name = "pyyaml" },
-]
-
-[package.optional-dependencies]
-a2a = [
-    { name = "a2a-sdk" },
-    { name = "httpx" },
-]
-all = [
-    { name = "a2a-sdk" },
-    { name = "anthropic" },
-    { name = "autogen-agentchat" },
-    { name = "autogen-core" },
-    { name = "crewai" },
-    { name = "fpdf2" },
-    { name = "google-cloud-logging" },
-    { name = "google-genai" },
-    { name = "httpx" },
-    { name = "langchain-core" },
-    { name = "litellm" },
-    { name = "llama-index-core" },
-    { name = "mcp" },
-    { name = "openai" },
-    { name = "starlette" },
-]
-anthropic = [
-    { name = "anthropic" },
-]
-autogen = [
-    { name = "autogen-agentchat" },
-    { name = "autogen-core" },
-]
-crewai = [
-    { name = "crewai" },
-]
-dev = [
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-benchmark" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-gitlab = [
-    { name = "httpx" },
-    { name = "starlette" },
-]
-google = [
-    { name = "google-genai" },
-]
-google-cloud = [
-    { name = "google-cloud-logging" },
-]
-langchain = [
-    { name = "langchain-core" },
-]
-litellm = [
-    { name = "litellm" },
-]
-llamaindex = [
-    { name = "llama-index-core" },
-]
-mcp = [
-    { name = "mcp" },
-]
-openai = [
-    { name = "openai" },
-]
-pdf = [
-    { name = "fpdf2" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "a2a-sdk", marker = "extra == 'a2a'", specifier = ">=0.2" },
-    { name = "acgs", extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf"], marker = "extra == 'all'", editable = "packages/acgs-lite" },
-    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.30" },
-    { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.4" },
-    { name = "autogen-core", marker = "extra == 'autogen'", specifier = ">=0.4" },
-    { name = "click", specifier = ">=8.0" },
-    { name = "crewai", marker = "extra == 'crewai'", specifier = ">=0.30" },
-    { name = "fpdf2", marker = "extra == 'pdf'", specifier = ">=2.7" },
-    { name = "google-cloud-logging", marker = "extra == 'google-cloud'", specifier = ">=3.0" },
-    { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.0" },
-    { name = "httpx", marker = "extra == 'a2a'", specifier = ">=0.27" },
-    { name = "httpx", marker = "extra == 'gitlab'", specifier = ">=0.27" },
-    { name = "langchain-core", marker = "extra == 'langchain'", specifier = ">=0.2" },
-    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.0" },
-    { name = "llama-index-core", marker = "extra == 'llamaindex'", specifier = ">=0.10" },
-    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13" },
-    { name = "openai", marker = "extra == 'openai'", specifier = ">=1.0" },
-    { name = "pydantic", specifier = ">=2.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
-    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
-    { name = "starlette", marker = "extra == 'gitlab'", specifier = ">=0.37" },
-]
-provides-extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "pdf", "all", "dev"]
-
-[[package]]
-name = "acgs-deliberation"
-version = "0.1.0"
-source = { editable = "packages/acgs-deliberation" }
-dependencies = [
-    { name = "enhanced-agent-bus" },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "enhanced-agent-bus", editable = "packages/enhanced_agent_bus" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
-]
-provides-extras = ["dev"]
-
-[[package]]
-name = "acgs-monorepo"
-version = "3.0.0"
+version = "3.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "cachetools" },
@@ -279,6 +147,153 @@ requires-dist = [
     { name = "uvloop", specifier = ">=0.21.0" },
 ]
 provides-extras = ["dev", "test", "ml", "pqc", "postgres"]
+
+[[package]]
+name = "acgs-deliberation"
+version = "0.1.0"
+source = { editable = "packages/acgs-deliberation" }
+dependencies = [
+    { name = "enhanced-agent-bus" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "enhanced-agent-bus", editable = "packages/enhanced_agent_bus" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
+]
+provides-extras = ["dev"]
+
+[[package]]
+name = "acgs-lite"
+version = "2.5.0"
+source = { editable = "packages/acgs-lite" }
+dependencies = [
+    { name = "click" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+a2a = [
+    { name = "a2a-sdk" },
+    { name = "httpx" },
+]
+all = [
+    { name = "a2a-sdk" },
+    { name = "anthropic" },
+    { name = "autogen-agentchat" },
+    { name = "autogen-core" },
+    { name = "crewai" },
+    { name = "fastapi" },
+    { name = "fpdf2" },
+    { name = "google-cloud-logging" },
+    { name = "google-genai" },
+    { name = "httpx" },
+    { name = "langchain-core" },
+    { name = "litellm" },
+    { name = "llama-index-core" },
+    { name = "llguidance" },
+    { name = "mcp" },
+    { name = "openai" },
+    { name = "starlette" },
+    { name = "uvicorn" },
+]
+anthropic = [
+    { name = "anthropic" },
+]
+autogen = [
+    { name = "autogen-agentchat" },
+    { name = "autogen-core" },
+]
+crewai = [
+    { name = "crewai" },
+    { name = "httpx" },
+]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+gitlab = [
+    { name = "httpx" },
+    { name = "starlette" },
+]
+google = [
+    { name = "google-genai" },
+]
+google-cloud = [
+    { name = "google-cloud-logging" },
+]
+langchain = [
+    { name = "langchain-core" },
+]
+litellm = [
+    { name = "litellm" },
+]
+llamaindex = [
+    { name = "llama-index-core" },
+]
+llguidance = [
+    { name = "llguidance" },
+]
+mcp = [
+    { name = "mcp" },
+]
+openai = [
+    { name = "openai" },
+]
+pdf = [
+    { name = "fpdf2" },
+]
+server = [
+    { name = "fastapi" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "a2a-sdk", marker = "extra == 'a2a'", specifier = ">=0.2" },
+    { name = "acgs-lite", extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "llguidance", "pdf", "server"], marker = "extra == 'all'", editable = "packages/acgs-lite" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.30" },
+    { name = "autogen-agentchat", marker = "extra == 'autogen'", specifier = ">=0.4" },
+    { name = "autogen-core", marker = "extra == 'autogen'", specifier = ">=0.4" },
+    { name = "click", specifier = ">=8.0" },
+    { name = "crewai", marker = "extra == 'crewai'", specifier = ">=0.30" },
+    { name = "fastapi", marker = "extra == 'server'", specifier = ">=0.109" },
+    { name = "fpdf2", marker = "extra == 'pdf'", specifier = ">=2.7" },
+    { name = "google-cloud-logging", marker = "extra == 'google-cloud'", specifier = ">=3.0" },
+    { name = "google-genai", marker = "extra == 'google'", specifier = ">=1.0" },
+    { name = "httpx", marker = "extra == 'a2a'", specifier = ">=0.27" },
+    { name = "httpx", marker = "extra == 'crewai'", specifier = ">=0.27" },
+    { name = "httpx", marker = "extra == 'gitlab'", specifier = ">=0.27" },
+    { name = "langchain-core", marker = "extra == 'langchain'", specifier = ">=0.2" },
+    { name = "litellm", marker = "extra == 'litellm'", specifier = ">=1.0" },
+    { name = "llama-index-core", marker = "extra == 'llamaindex'", specifier = ">=0.10" },
+    { name = "llguidance", marker = "extra == 'llguidance'", specifier = ">=1.0" },
+    { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13" },
+    { name = "openai", marker = "extra == 'openai'", specifier = ">=1.0" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
+    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8" },
+    { name = "starlette", marker = "extra == 'gitlab'", specifier = ">=0.37" },
+    { name = "uvicorn", marker = "extra == 'server'", specifier = ">=0.27" },
+]
+provides-extras = ["a2a", "openai", "anthropic", "langchain", "litellm", "google", "llamaindex", "autogen", "mcp", "crewai", "gitlab", "google-cloud", "llguidance", "pdf", "server", "all", "dev"]
 
 [[package]]
 name = "aiofiles"
@@ -3115,6 +3130,29 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/00/50/7dc3affce3ac34dbcdeac7794fa5bde74081e2a366e4f9ea976928a59503/llama_index_workflows-2.17.0.tar.gz", hash = "sha256:fa1566926825d17ca33164224883c085fae0b4c5a038d5e3258a54ef3840e597", size = 86167, upload-time = "2026-03-17T23:56:58.301Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/28/15/7fca72c10314bdbc1fc0c3469266a130f97008c74e715a29179880368e1e/llama_index_workflows-2.17.0-py3-none-any.whl", hash = "sha256:6f4d9f7140a3a34ea7730feaeb827c29cd41051ccd0e9ddb0080e224faf8c91f", size = 109819, upload-time = "2026-03-17T23:56:57.325Z" },
+]
+
+[[package]]
+name = "llguidance"
+version = "1.7.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/8a/fa9f4271f89be19552fc9f4fc907d112aa9eba1796b8a6d0f0487900aaf9/llguidance-1.7.0.tar.gz", hash = "sha256:5180aa72d37126e489312beadb25486f9fbb668e080c683f856b007f6836ccf8", size = 1112033, upload-time = "2026-03-18T18:23:44.934Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/15/75/5a3c9d085d086be7c5db9ea85708b7b56f86686ac7564f2599d90c1e193d/llguidance-1.7.0-cp314-cp314t-macosx_10_12_x86_64.whl", hash = "sha256:621e6ab07d049b75cd4618e85a8c8837ee95c0194a1790afcdb979d0bf108d0f", size = 3238643, upload-time = "2026-03-18T18:23:19.909Z" },
+    { url = "https://files.pythonhosted.org/packages/8b/63/f918b6e7e56ff0f608e05954bc21a19741bb1d7b15b3e0dc7f5f5edbdb93/llguidance-1.7.0-cp314-cp314t-macosx_11_0_arm64.whl", hash = "sha256:1c7fdd6894fd2619cc6f38a246d9f8d774a0deb6819e04461494cd35f17c008b", size = 3146040, upload-time = "2026-03-18T18:23:21.76Z" },
+    { url = "https://files.pythonhosted.org/packages/44/92/bff395aaf423e7de9a898cf3d452f80a0e5fccf950d72eaa5d0b95994ef3/llguidance-1.7.0-cp314-cp314t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d84c78b6db2103ab8560bfa50fd4aeb706073fa1b16596010b1a0905ce48c39f", size = 3456797, upload-time = "2026-03-18T18:23:24.034Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/ce/4a5b0f12fa0910137f81c66b091113f1fafe31bae0ebd4aac2017d1e028c/llguidance-1.7.0-cp314-cp314t-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:aa5ffbd067b694852bfa14e9a29df122701a6a1e98cd17b8b0558d841d1460fc", size = 3776717, upload-time = "2026-03-18T18:23:25.566Z" },
+    { url = "https://files.pythonhosted.org/packages/02/83/10498db3b8c6f393d5ff0cd65f494424e875e909ed72f3ef4b11ec8a4eca/llguidance-1.7.0-cp314-cp314t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b4d674b9775118f8cc372e3b733467b8a34b5a99a9638952fe632b81a7c34fb1", size = 3492553, upload-time = "2026-03-18T18:23:27.167Z" },
+    { url = "https://files.pythonhosted.org/packages/81/64/74e8ea91ab780b5213085d7e206331ba8976b8ad4ee8401e380b79d77792/llguidance-1.7.0-cp314-cp314t-win32.whl", hash = "sha256:bffdd22a4798eb268339044d86553fa875068186ece54c0c26f2b37b82b52925", size = 2598549, upload-time = "2026-03-18T18:23:28.738Z" },
+    { url = "https://files.pythonhosted.org/packages/48/38/96638bdea02f85b880772864151eabc1c0e59780fd94f2fb755d8f3a7df8/llguidance-1.7.0-cp314-cp314t-win_amd64.whl", hash = "sha256:f9e35921bcafbc931aec775d1bcc9c5c43ba91ed982f56e7c20fa3e9ba2e2f82", size = 2859168, upload-time = "2026-03-18T18:23:30.415Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/9e/7fa5e575f2a348ef88564edc0903f314d741569e44bb5448a9ced93a7635/llguidance-1.7.0-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:e59f5d3bc57b37cae70733f3b1ed4972cee7037ebfdc4623466ff792a3f13bb6", size = 3247244, upload-time = "2026-03-18T18:23:32.023Z" },
+    { url = "https://files.pythonhosted.org/packages/b5/81/e55954cddd0b6863221ed2a19ef5b7ce326013a8640994f5bd2e978e08be/llguidance-1.7.0-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:be7b45490de5bd874a4da590513f64e9f18df86f2fee8f962361199e8dda3a1a", size = 3154948, upload-time = "2026-03-18T18:23:33.585Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/9e/31d7f6dca66a39e7f4fdf7a593ff0e2d0ce738afcb4d91b6bd408b8350cb/llguidance-1.7.0-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:6e0186acbe3d5879eb85f7e5e2165bdcc5de29d8e328fe01ce537379e87e6420", size = 2895097, upload-time = "2026-03-18T18:23:35.11Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/c5/dc74be474a274b6fc493c8811d11c8c81e4975aa238953661bfaa19d679a/llguidance-1.7.0-cp39-abi3-manylinux_2_31_x86_64.whl", hash = "sha256:624fa6950cb14610b3ad63ada5c6cf7391ff1c008d14c7bd9b7cc2f3c0cc8568", size = 3077485, upload-time = "2026-03-18T18:23:36.762Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/19/007b8ed37abf2e0e9efb4f01d125babfa5beaa77d7cd22b5c1a2c58aed8b/llguidance-1.7.0-cp39-abi3-manylinux_2_34_i686.whl", hash = "sha256:818c6224358eadff29add9f6356788a25a5f15c8a13106eb913617f28d989163", size = 3336262, upload-time = "2026-03-18T18:23:38.381Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/74/29496d04534075c7e1b121c8b9a6b5e8832cc096d0821b67e0b9ce1d3d25/llguidance-1.7.0-cp39-abi3-manylinux_2_39_riscv64.whl", hash = "sha256:8584244dbc8ea3f58a9398d6d39e7396a5b8b4f0bb745b956a527cc3b1420d4f", size = 3604536, upload-time = "2026-03-18T18:23:40.082Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/1a/fa7c685974778ebcea965c04a1197ff41b0df8f170cf27d2a5aac3a1c55f/llguidance-1.7.0-cp39-abi3-win32.whl", hash = "sha256:0fa6517e1de2f74102b5b755dbf5f65fe5485603760f33e3c6633175101830f5", size = 2609754, upload-time = "2026-03-18T18:23:41.707Z" },
+    { url = "https://files.pythonhosted.org/packages/32/14/bb9a85bada3128480f9d3a9a409644492359cdfbf6196aa8f3697659fc43/llguidance-1.7.0-cp39-abi3-win_amd64.whl", hash = "sha256:45fa74d26864437d2187c0b818c838f821764014b6a7c06606275ee818d140a0", size = 2868934, upload-time = "2026-03-18T18:23:43.461Z" },
 ]
 
 [[package]]
