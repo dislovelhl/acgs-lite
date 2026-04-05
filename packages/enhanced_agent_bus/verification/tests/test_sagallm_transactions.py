@@ -16,8 +16,8 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.verification.sagallm_transactions import (
     SagaAction,
     SagaLLMEngine,

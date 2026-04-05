@@ -9,6 +9,7 @@ Tests cover: workflow lifecycle, signals, queries, activities, and error handlin
 import asyncio
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.errors import (
     ConstitutionalViolationError as ACGSConstitutionalViolationError,

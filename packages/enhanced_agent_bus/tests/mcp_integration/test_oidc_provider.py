@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 pytestmark = [pytest.mark.governance, pytest.mark.constitutional]

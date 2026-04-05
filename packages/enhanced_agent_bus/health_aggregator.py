@@ -32,6 +32,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
     import pybreaker
+
     from enhanced_agent_bus._compat.circuit_breaker import CircuitBreakerRegistry
 
     CIRCUIT_BREAKER_AVAILABLE = True

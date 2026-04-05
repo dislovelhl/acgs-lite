@@ -7,8 +7,8 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.constitutional.amendment_model import (
     AmendmentProposal,
     AmendmentStatus,

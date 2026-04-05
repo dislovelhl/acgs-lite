@@ -14,8 +14,8 @@ from __future__ import annotations
 from datetime import datetime
 
 from redis.asyncio import Redis
-from enhanced_agent_bus._compat.types import AgentID
 
+from enhanced_agent_bus._compat.types import AgentID
 from enhanced_agent_bus.agent_health.models import (
     AgentHealthRecord,
     HealingAction,

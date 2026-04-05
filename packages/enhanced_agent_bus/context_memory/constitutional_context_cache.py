@@ -27,7 +27,6 @@ except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
 from enhanced_agent_bus._compat.json_utils import loads as json_loads
-
 from enhanced_agent_bus.bus_types import JSONDict
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

@@ -11,8 +11,8 @@ import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.utilities.dependency_registry import DependencyRegistry, FeatureFlag
 
+from enhanced_agent_bus._compat.utilities.dependency_registry import DependencyRegistry, FeatureFlag
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # ---------------------------------------------------------------------------

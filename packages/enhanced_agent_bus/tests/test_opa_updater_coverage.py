@@ -17,7 +17,6 @@ import httpx
 
 # Constitutional hash for tests
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.constitutional.opa_updater import (
     AIOFILES_AVAILABLE,
     OPAPolicyUpdater,

@@ -9,6 +9,7 @@ import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 try:

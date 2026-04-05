@@ -21,8 +21,8 @@ from datetime import UTC, datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.chaos.scenarios import (
     MAX_CPU_PERCENT,
     MAX_DURATION_S,

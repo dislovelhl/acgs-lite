@@ -11,8 +11,8 @@ from uuid import UUID
 
 import pytest
 from pydantic import ValidationError
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalStatus,
     ConstitutionalVersion,

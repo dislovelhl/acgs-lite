@@ -41,7 +41,9 @@ GLOBAL_SETTINGS_AVAILABLE: bool = False
 
 # Constitutional hash fallback (canonical value)
 try:
-    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as _DEFAULT_CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import (
+        CONSTITUTIONAL_HASH as _DEFAULT_CONSTITUTIONAL_HASH,
+    )
 except ImportError:
     _DEFAULT_CONSTITUTIONAL_HASH = "608508a9bd224290"  # pragma: allowlist secret
 

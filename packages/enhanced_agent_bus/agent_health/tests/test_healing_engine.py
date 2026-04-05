@@ -27,6 +27,7 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, call
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # RED: This import fails until healing_engine.py is created.

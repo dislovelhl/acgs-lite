@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.event_schemas.decision_explanation import (
     CounterfactualHint,
@@ -22,7 +23,6 @@ from enhanced_agent_bus._compat.event_schemas.decision_explanation import (
     GovernanceDimension,
     PredictedOutcome,
 )
-
 from enhanced_agent_bus.explanation_service import (
     DEFAULT_GOVERNANCE_VECTOR,
     FACTOR_TO_GOVERNANCE_MAPPING,

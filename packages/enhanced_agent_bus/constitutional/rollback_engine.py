@@ -32,7 +32,6 @@ try:
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 from enhanced_agent_bus._compat.errors import ACGSBaseError
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:

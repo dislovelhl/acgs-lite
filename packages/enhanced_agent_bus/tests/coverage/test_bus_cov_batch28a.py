@@ -860,6 +860,7 @@ class TestN1DetectionMiddleware:
     async def test_middleware_disabled_passes_through(self):
         from fastapi import FastAPI
         from httpx import ASGITransport, AsyncClient
+
         from enhanced_agent_bus._compat.database.n1_middleware import N1DetectionMiddleware
 
         app = FastAPI()
@@ -878,6 +879,7 @@ class TestN1DetectionMiddleware:
     async def test_middleware_enabled_adds_headers(self):
         from fastapi import FastAPI
         from httpx import ASGITransport, AsyncClient
+
         from enhanced_agent_bus._compat.database.n1_middleware import N1DetectionMiddleware
 
         app = FastAPI()

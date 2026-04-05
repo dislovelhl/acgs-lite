@@ -18,6 +18,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
 
 # Governance and constitutional compliance test markers

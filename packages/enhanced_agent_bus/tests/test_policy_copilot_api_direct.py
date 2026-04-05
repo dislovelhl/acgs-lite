@@ -6,10 +6,10 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi import HTTPException
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.errors import ValidationError
 from enhanced_agent_bus._compat.security.auth import UserClaims
-
 from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
     ValidateRequest,

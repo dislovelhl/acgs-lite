@@ -33,7 +33,6 @@ pytestmark = [
 ]
 
 from enhanced_agent_bus._compat.database.session import Base
-
 from enhanced_agent_bus.multi_tenancy.orm_models import (
     CONSTITUTIONAL_HASH,
     EnterpriseIntegrationORM,

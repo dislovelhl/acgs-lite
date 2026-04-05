@@ -87,7 +87,6 @@ except (ImportError, ValueError):
         except ImportError:
             # Fallback for sharing with shared package
             from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
-
             from exceptions import OPANotInitializedError  # type: ignore[import-untyped]
             from models import CONSTITUTIONAL_HASH  # type: ignore[import-untyped]
             from validators import ValidationResult  # type: ignore[import-untyped]

@@ -17,8 +17,8 @@ from typing import Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.config import BusConfiguration
 from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import (

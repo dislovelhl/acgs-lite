@@ -9,7 +9,6 @@ import asyncio
 import logging
 
 from enhanced_agent_bus._compat.policy.models import VerificationStatus
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Configure logging

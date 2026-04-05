@@ -40,6 +40,7 @@ try:
     from opentelemetry.sdk.resources import Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, SimpleSpanProcessor
+
     from enhanced_agent_bus._compat.otel_attributes import (
         get_resource_attributes,
     )

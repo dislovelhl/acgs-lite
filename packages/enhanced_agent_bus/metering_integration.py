@@ -64,7 +64,9 @@ except ImportError:
         MeteringTier: object | None = None  # type: ignore[no-redef]
         UsageEvent: object | None = None  # type: ignore[no-redef]
         UsageMeteringService: object | None = None  # type: ignore[no-redef]
-        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH  # type: ignore[no-redef]
+        from enhanced_agent_bus._compat.constants import (
+            CONSTITUTIONAL_HASH,  # type: ignore[no-redef]
+        )
 
 # Import models for type checking
 try:

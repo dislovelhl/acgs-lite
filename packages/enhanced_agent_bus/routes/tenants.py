@@ -76,6 +76,7 @@ except (ImportError, ValueError):
         from enum import Enum
 
         from pydantic import BaseModel
+
         from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         class TenantStatus(str, Enum):  # type: ignore[no-redef]

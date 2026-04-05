@@ -24,6 +24,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
@@ -814,7 +815,6 @@ class TestModuleMetadata:
     def test_module_uses_constitutional_hash(self) -> None:
         """The module references CONSTITUTIONAL_HASH (imported from constants)."""
         from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as CH2
-
         from enhanced_agent_bus.saga_persistence.postgres.queries import (
             CONSTITUTIONAL_HASH as CH1,
         )

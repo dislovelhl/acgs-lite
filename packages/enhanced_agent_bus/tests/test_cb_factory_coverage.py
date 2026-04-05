@@ -16,6 +16,7 @@ import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------

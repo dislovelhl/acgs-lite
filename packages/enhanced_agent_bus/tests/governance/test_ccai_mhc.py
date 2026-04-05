@@ -23,7 +23,6 @@ pytestmark = [pytest.mark.governance, pytest.mark.constitutional]
 sys.path.append("/home/martin/ACGS")
 
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.governance.ccai_framework import (
     ConstitutionalProposal,
     DeliberationResult,

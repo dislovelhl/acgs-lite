@@ -8,9 +8,9 @@ from __future__ import annotations
 import pytest
 from fastapi import HTTPException
 from fastapi.routing import APIRoute
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
-
 from enhanced_agent_bus.api.routes.workflows import (
     _resolve_tenant_id as resolve_workflow_tenant_id,
 )

@@ -21,6 +21,7 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.types import JSONDict
 
@@ -263,6 +264,7 @@ def app_with_sessions(mock_manager: MockSessionContextManager) -> FastAPI:
     import time
 
     from fastapi import FastAPI
+
     from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
     app = FastAPI()

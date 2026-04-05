@@ -789,7 +789,6 @@ class TestCrossEnumConsistency:
 
     def test_risk_level_is_re_exported_from_shared(self):
         from enhanced_agent_bus._compat.enums import RiskLevel as SharedRiskLevel
-
         from enhanced_agent_bus.enums import RiskLevel as BusRiskLevel
 
         assert SharedRiskLevel is BusRiskLevel

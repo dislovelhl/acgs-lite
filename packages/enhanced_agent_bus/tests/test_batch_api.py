@@ -35,6 +35,7 @@ with patch.dict(os.environ, _IMPORT_ENV_OVERRIDES, clear=False):
     from uuid import uuid4
 
     import pytest
+
     from enhanced_agent_bus._compat.types import JSONDict
 
     try:

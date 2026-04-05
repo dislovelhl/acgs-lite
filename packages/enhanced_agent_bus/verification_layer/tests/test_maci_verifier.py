@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import MACIRole
 
 from ..maci_verifier import (

@@ -8,6 +8,7 @@ Comprehensive tests for the recovery orchestrator module.
 from datetime import UTC, datetime, timezone
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Import module under test

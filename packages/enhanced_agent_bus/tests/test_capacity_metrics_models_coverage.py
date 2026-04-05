@@ -16,7 +16,6 @@ from __future__ import annotations
 from datetime import UTC, datetime, timezone
 
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.observability.capacity_metrics.models import (
     CapacitySnapshot,
     CapacityStatus,

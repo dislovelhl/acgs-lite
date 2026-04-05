@@ -8,7 +8,6 @@ Targets ≥95% coverage of:
 """
 
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.batch_models import (
     BatchRequest,
     BatchRequestItem,

@@ -28,7 +28,6 @@ pytestmark = [pytest.mark.unit]
 # ---------------------------------------------------------------------------
 
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.core_models import AgentMessage, MessageType
 from enhanced_agent_bus.deliberation_layer.deliberation_queue import (
     DeliberationQueue,

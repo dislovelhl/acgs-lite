@@ -14,8 +14,8 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.errors import ServiceUnavailableError
 
+from enhanced_agent_bus._compat.errors import ServiceUnavailableError
 from enhanced_agent_bus.config import BusConfiguration
 from enhanced_agent_bus.mcp_server.config import MCPConfig
 from enhanced_agent_bus.mcp_server.protocol.handler import MCPHandler

@@ -37,7 +37,6 @@ except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus._compat.constants import MACIRole
-
 from enhanced_agent_bus.interfaces import RecommendationPlannerProtocol
 from enhanced_agent_bus.maci_role_projection import project_to_verification_role
 from enhanced_agent_bus.observability.structured_logging import get_logger

@@ -6,8 +6,8 @@ Constitutional Hash: 608508a9bd224290
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.llm_adapters.capability_matrix import (
     CapabilityDimension,
     CapabilityLevel,

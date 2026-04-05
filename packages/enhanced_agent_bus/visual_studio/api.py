@@ -4,6 +4,7 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from pydantic import Field
+
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
 from .models import (

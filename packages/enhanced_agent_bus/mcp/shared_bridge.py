@@ -17,7 +17,6 @@ from __future__ import annotations
 from typing import Any
 
 from enhanced_agent_bus._compat.orchestration.intent_graph import SwarmTask, TaskIntent
-
 from enhanced_agent_bus.mcp.pool import MCPClientPool
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

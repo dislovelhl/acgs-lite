@@ -9,8 +9,8 @@ asyncio_mode = "auto" — no @pytest.mark.asyncio needed.
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.ai_assistant.context import (
     ConversationContext,
     ConversationState,

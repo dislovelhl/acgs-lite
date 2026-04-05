@@ -14,7 +14,6 @@ import pytest
 
 # Constitutional hash constant
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.models import RiskLevel, SessionGovernanceConfig
 
 from ..session_context import SessionContext, SessionContextManager, SessionContextStore

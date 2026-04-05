@@ -9,6 +9,7 @@ Tests mock implementations, isinstance checks, and async functional behavior.
 from typing import Any, Optional
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.types import JSONDict
 

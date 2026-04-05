@@ -13,9 +13,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
-
 from enhanced_agent_bus.visual_studio.models import (
     ExportFormat,
     NodeType,

@@ -14,10 +14,10 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 from fastapi import FastAPI
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.errors import ValidationError
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
-
 from enhanced_agent_bus.policy_copilot.api import (
     FeedbackRequest,
     FeedbackResponse,

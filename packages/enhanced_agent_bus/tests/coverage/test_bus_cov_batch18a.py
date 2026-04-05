@@ -19,6 +19,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from pydantic import ValidationError as PydanticValidationError
+
 from enhanced_agent_bus._compat.constants import MACIRole
 from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 

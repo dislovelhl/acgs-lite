@@ -106,7 +106,6 @@ class TestREPLDisabledError:
 
     def test_is_acgs_base_error(self):
         from enhanced_agent_bus._compat.errors import ACGSBaseError
-
         from enhanced_agent_bus.rlm_repl import REPLDisabledError
 
         assert issubclass(REPLDisabledError, ACGSBaseError)
@@ -149,7 +148,6 @@ class TestREPLConfig:
 
     def test_constitutional_hash_default(self):
         from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
         from enhanced_agent_bus.rlm_repl import REPLConfig
 
         cfg = REPLConfig()

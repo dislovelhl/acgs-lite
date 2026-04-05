@@ -16,8 +16,8 @@ Covers:
 from datetime import UTC, timezone
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.saga_persistence.models import SagaState
 from enhanced_agent_bus.saga_persistence.repository import (
     InvalidStateTransitionError,

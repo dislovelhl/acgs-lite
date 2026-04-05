@@ -18,7 +18,6 @@ from typing import ClassVar, Optional
 # Constitutional Hash - Required for all governance operations
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.types import JSONDict
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

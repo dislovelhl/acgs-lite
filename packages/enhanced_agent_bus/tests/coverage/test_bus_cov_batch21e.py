@@ -1432,8 +1432,8 @@ class TestGovernanceRoutes:
 
     async def test_get_stability_metrics_no_governance(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1451,8 +1451,8 @@ class TestGovernanceRoutes:
 
     async def test_get_stability_metrics_no_stability_layer(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1473,8 +1473,8 @@ class TestGovernanceRoutes:
 
     async def test_get_stability_metrics_no_stats(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1499,8 +1499,8 @@ class TestGovernanceRoutes:
 
     async def test_get_stability_metrics_with_stats(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1532,8 +1532,8 @@ class TestGovernanceRoutes:
 
     async def test_create_maci_record(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1553,8 +1553,8 @@ class TestGovernanceRoutes:
 
     async def test_get_maci_record(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1571,8 +1571,8 @@ class TestGovernanceRoutes:
 
     async def test_update_maci_record(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]
@@ -1591,8 +1591,8 @@ class TestGovernanceRoutes:
 
     async def test_delete_maci_record(self, app, mock_auth, mock_tenant):
         import httpx
-        from enhanced_agent_bus._compat.security.auth import get_current_user
 
+        from enhanced_agent_bus._compat.security.auth import get_current_user
         from enhanced_agent_bus.api.routes._tenant_auth import get_tenant_id
 
         app.dependency_overrides[get_current_user] = mock_auth[0]

@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field
+
 from enhanced_agent_bus._compat.resilience.retry import RetryConfig as SharedRetryConfig
 from enhanced_agent_bus._compat.resilience.retry import retry
 

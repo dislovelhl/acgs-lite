@@ -973,7 +973,6 @@ class TestOPAClientCoreValidatePolicyPath:
 
     def test_invalid_characters(self):
         from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
-
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -982,7 +981,6 @@ class TestOPAClientCoreValidatePolicyPath:
 
     def test_path_traversal(self):
         from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
-
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -991,7 +989,6 @@ class TestOPAClientCoreValidatePolicyPath:
 
     def test_special_chars_rejected(self):
         from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
-
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -1009,7 +1006,6 @@ class TestOPAClientCoreValidateInputData:
 
     def test_oversized_input(self):
         from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
-
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore()
@@ -1197,7 +1193,6 @@ class TestOPAClientCoreEvaluatePolicy:
 
     async def test_evaluate_policy_validation_error(self):
         from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
-
         from enhanced_agent_bus.opa_client.core import OPAClient
 
         client = OPAClient()

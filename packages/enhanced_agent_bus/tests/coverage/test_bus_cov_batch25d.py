@@ -464,7 +464,6 @@ class TestCheckGovernance:
 
     async def test_governance_verified(self):
         from enhanced_agent_bus._compat.policy.models import VerificationStatus
-
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
         mock_policy = MagicMock()
@@ -492,7 +491,6 @@ class TestCheckGovernance:
 
     async def test_governance_failed_verification(self):
         from enhanced_agent_bus._compat.policy.models import VerificationStatus
-
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
         mock_policy = MagicMock()
@@ -519,7 +517,6 @@ class TestCheckGovernance:
 
     async def test_governance_with_audit_ledger(self):
         from enhanced_agent_bus._compat.policy.models import VerificationStatus
-
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
         mock_policy = MagicMock()
@@ -553,7 +550,6 @@ class TestCheckGovernance:
 
     async def test_governance_audit_ledger_failure(self):
         from enhanced_agent_bus._compat.policy.models import VerificationStatus
-
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
         mock_policy = MagicMock()

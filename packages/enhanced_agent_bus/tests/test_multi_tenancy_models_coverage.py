@@ -11,8 +11,8 @@ from typing import Any
 
 import pytest
 from pydantic import ValidationError
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.multi_tenancy.models import (
     Tenant,
     TenantConfig,

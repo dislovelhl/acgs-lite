@@ -23,6 +23,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import numpy as np
 import pytest
+
 from enhanced_agent_bus._compat.structured_logging import (
     BoundLogger,
     StructuredJSONFormatter,
@@ -42,7 +43,6 @@ from enhanced_agent_bus._compat.structured_logging import (
     setup_opentelemetry,
     tenant_id_var,
 )
-
 from enhanced_agent_bus.circuit_breaker.enums import CircuitState
 from enhanced_agent_bus.governance.models import (
     OpinionCluster,

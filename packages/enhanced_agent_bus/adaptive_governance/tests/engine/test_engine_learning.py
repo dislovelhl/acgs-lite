@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as CONST_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH as CONST_HASH
 from enhanced_agent_bus.adaptive_governance.governance_engine import (
     AdaptiveGovernanceEngine,
 )

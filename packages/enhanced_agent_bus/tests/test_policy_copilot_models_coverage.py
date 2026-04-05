@@ -10,8 +10,8 @@ from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.policy_copilot.models import (
     ChatHistory,
     ChatMessage,

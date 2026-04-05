@@ -48,7 +48,6 @@ from enhanced_agent_bus._compat.security.pqc_crypto import (
 from enhanced_agent_bus._compat.security.pqc_crypto import (
     verify_signature as pqc_verify_signature,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

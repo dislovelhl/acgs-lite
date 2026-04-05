@@ -11,6 +11,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from pydantic import ValidationError
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------

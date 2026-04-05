@@ -15,6 +15,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 # ---------------------------------------------------------------------------

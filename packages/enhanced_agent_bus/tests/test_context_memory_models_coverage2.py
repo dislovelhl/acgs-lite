@@ -11,8 +11,8 @@ from datetime import UTC, datetime, timezone
 
 import pytest
 from pydantic import ValidationError
-from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.context_memory.models import (
     ContextChunk,
     ContextPriority,

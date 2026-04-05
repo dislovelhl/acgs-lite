@@ -30,7 +30,6 @@ try:
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 from enhanced_agent_bus._compat.utilities import DependencyRegistry, FeatureFlag
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

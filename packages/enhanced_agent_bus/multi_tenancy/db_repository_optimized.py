@@ -21,6 +21,7 @@ from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from enhanced_agent_bus._compat.cache.manager import TieredCacheConfig, TieredCacheManager
 from enhanced_agent_bus._compat.database.utils import (
     BulkOperations,

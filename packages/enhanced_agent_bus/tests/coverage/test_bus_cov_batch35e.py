@@ -15,6 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
+
 from enhanced_agent_bus._compat.errors import (
     ServiceUnavailableError,
 )

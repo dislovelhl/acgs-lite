@@ -17,6 +17,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
 
 # ---------------------------------------------------------------------------
@@ -780,7 +781,6 @@ class TestValidateConstitutionalHashPqc:
         from dataclasses import field as dc_field
 
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         @dataclass
@@ -822,7 +822,6 @@ class TestValidateConstitutionalHashPqc:
         from dataclasses import field as dc_field
 
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         @dataclass
@@ -862,7 +861,6 @@ class TestValidateConstitutionalHashPqc:
     async def test_constitutional_hash_mismatch_error_caught(self):
         from enhanced_agent_bus._compat.security.pqc import ConstitutionalHashMismatchError
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
@@ -882,7 +880,6 @@ class TestValidateConstitutionalHashPqc:
     async def test_pqc_verification_error_caught(self):
         from enhanced_agent_bus._compat.security.pqc import PQCVerificationError
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
@@ -902,7 +899,6 @@ class TestValidateConstitutionalHashPqc:
 
     async def test_unexpected_error_caught(self):
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_constitutional_hash_pqc
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
@@ -971,7 +967,6 @@ class TestValidateMaciRecordPqc:
 
     async def test_valid_record_with_pqc_config_no_signature(self):
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
@@ -1091,7 +1086,6 @@ class TestValidateSignature:
 
     async def test_unsupported_algorithm(self):
         from enhanced_agent_bus._compat.security.pqc import UnsupportedAlgorithmError
-
         from enhanced_agent_bus.pqc_validators import validate_signature
 
         with pytest.raises(UnsupportedAlgorithmError):
@@ -1240,7 +1234,6 @@ class TestSupportedPqcAlgorithms:
 class TestValidateMaciRecordWithPqcSignature:
     async def test_pqc_signature_validation_delegated(self):
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
@@ -1271,7 +1264,6 @@ class TestValidateMaciRecordWithPqcSignature:
 
     async def test_pqc_signature_validation_failure_adds_error(self):
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=True, verification_mode="strict")
@@ -1304,7 +1296,6 @@ class TestValidateMaciRecordWithPqcSignature:
 class TestValidateMaciRecordClassicalWithPqcConfig:
     async def test_classical_with_pqc_config_returns_metadata(self):
         from enhanced_agent_bus._compat.security.pqc_crypto import PQCConfig
-
         from enhanced_agent_bus.pqc_validators import validate_maci_record_pqc
 
         config = PQCConfig(pqc_enabled=False, verification_mode="classical_only")

@@ -10,6 +10,7 @@ import tempfile
 from unittest.mock import AsyncMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.errors import (
     ConstitutionalViolationError as ACGSConstitutionalViolationError,

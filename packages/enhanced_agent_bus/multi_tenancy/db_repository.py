@@ -12,6 +12,7 @@ from uuid import uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from enhanced_agent_bus._compat.cache.manager import TieredCacheConfig, TieredCacheManager
 
 try:

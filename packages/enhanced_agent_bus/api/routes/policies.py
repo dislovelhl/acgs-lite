@@ -14,6 +14,7 @@ from fastapi import (
     Body,
     Depends,
 )
+
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
 try:

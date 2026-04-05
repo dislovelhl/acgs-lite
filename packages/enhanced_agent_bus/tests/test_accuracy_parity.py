@@ -24,6 +24,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
+
 from enhanced_agent_bus._compat.types import JSONDict
 
 # Import the module under test

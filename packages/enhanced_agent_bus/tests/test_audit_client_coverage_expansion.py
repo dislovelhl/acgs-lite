@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import httpx
-from enhanced_agent_bus._compat.types import JSONDict
 
 from audit_client import (
     CONSTITUTIONAL_HASH,
@@ -22,6 +21,7 @@ from audit_client import (
     get_audit_client,
     initialize_audit_client,
 )
+from enhanced_agent_bus._compat.types import JSONDict
 
 # =============================================================================
 # Test Data Classes

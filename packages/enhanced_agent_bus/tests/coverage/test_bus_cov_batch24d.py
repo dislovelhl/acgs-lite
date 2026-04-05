@@ -300,7 +300,10 @@ class TestTenantRateLimitProvider:
         assert q.requests == 100
 
     def test_set_quota_with_object(self):
-        from enhanced_agent_bus._compat.security.rate_limiter import TenantQuota, TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            TenantQuota,
+            TenantRateLimitProvider,
+        )
 
         provider = TenantRateLimitProvider()
         quota = TenantQuota(tenant_id="t2", requests=300)
@@ -613,7 +616,10 @@ class TestRateLimitMiddleware:
     """Test RateLimitMiddleware ASGI middleware."""
 
     def _make_middleware(self, config=None, tenant_provider=None):
-        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig, RateLimitMiddleware
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            RateLimitConfig,
+            RateLimitMiddleware,
+        )
 
         app = AsyncMock()
         cfg = config or RateLimitConfig(enabled=True, rules=[], fail_open=True)
@@ -982,6 +988,7 @@ class TestExtractRequestFromCall:
 
     def test_request_in_args(self):
         from fastapi import Request
+
         from enhanced_agent_bus._compat.security.rate_limiter import _extract_request_from_call
 
         req = MagicMock(spec=Request)
@@ -990,6 +997,7 @@ class TestExtractRequestFromCall:
 
     def test_request_in_kwargs(self):
         from fastapi import Request
+
         from enhanced_agent_bus._compat.security.rate_limiter import _extract_request_from_call
 
         req = MagicMock(spec=Request)
@@ -1038,7 +1046,10 @@ class TestConfigureRateLimits:
     """Test configure_rate_limits global config."""
 
     def test_configure_with_redis(self):
-        from enhanced_agent_bus._compat.security.rate_limiter import configure_rate_limits, rate_limiter
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            configure_rate_limits,
+            rate_limiter,
+        )
 
         old_client = rate_limiter.redis_client
         old_rpm = getattr(rate_limiter, "default_rpm", None)
@@ -1056,7 +1067,10 @@ class TestConfigureRateLimits:
                 rate_limiter.default_burst = old_burst
 
     def test_configure_without_redis(self):
-        from enhanced_agent_bus._compat.security.rate_limiter import configure_rate_limits, rate_limiter
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            configure_rate_limits,
+            rate_limiter,
+        )
 
         old_burst = getattr(rate_limiter, "default_burst", None)
         try:
@@ -1125,7 +1139,10 @@ class TestSecuritySettings:
             assert s.jwt_public_key == "test-key"
 
     def test_placeholder_validation(self):
-        from enhanced_agent_bus._compat.config.security import HAS_PYDANTIC_SETTINGS, SecuritySettings
+        from enhanced_agent_bus._compat.config.security import (
+            HAS_PYDANTIC_SETTINGS,
+            SecuritySettings,
+        )
 
         if HAS_PYDANTIC_SETTINGS:
             with pytest.raises(ValidationError):

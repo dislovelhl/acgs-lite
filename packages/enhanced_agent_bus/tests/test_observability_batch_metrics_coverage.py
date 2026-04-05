@@ -9,6 +9,7 @@ import time
 from unittest.mock import MagicMock, call, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
@@ -1288,7 +1289,6 @@ class TestEdgeCases:
     def test_constitutional_hash_constant_in_attrs_matches_module(self):
         """The hash embedded in record_batch_request attrs must match CONSTITUTIONAL_HASH."""
         from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
         from enhanced_agent_bus.observability import batch_metrics as bm_module
 
         mock_meter = _make_mock_meter()

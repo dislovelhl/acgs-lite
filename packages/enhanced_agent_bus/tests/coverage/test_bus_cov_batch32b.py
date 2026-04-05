@@ -20,6 +20,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.security.pqc import (
     CONSTITUTIONAL_HASH,
     ClassicalKeyRejectedError,
@@ -32,7 +33,6 @@ from enhanced_agent_bus._compat.security.pqc_crypto import (
     PQCMetadata,
     ValidationResult,
 )
-
 from enhanced_agent_bus.collaboration.models import (
     ActivityEventType,
     ChatMessage,

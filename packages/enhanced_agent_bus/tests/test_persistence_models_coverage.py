@@ -20,7 +20,6 @@ if _eab_dir not in sys.path:
     sys.path.insert(0, _eab_dir)
 
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
-
 from enhanced_agent_bus.persistence.models import (
     CheckpointData,
     EventType,

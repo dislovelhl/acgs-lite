@@ -12,6 +12,7 @@ from uuid import uuid4
 
 import httpx
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Base URL for API tests - can be overridden via environment variable

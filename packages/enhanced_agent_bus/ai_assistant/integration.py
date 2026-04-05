@@ -15,7 +15,6 @@ from typing import TypeAlias
 # Policy imports
 from enhanced_agent_bus._compat.policy.models import PolicySpecification, VerificationStatus
 from enhanced_agent_bus._compat.policy.unified_generator import UnifiedVerifiedPolicyGenerator
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from .context import ConversationContext

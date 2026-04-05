@@ -9,6 +9,7 @@ and the new DependencyRegistry.
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from enhanced_agent_bus._compat.utilities import DependencyRegistry, FeatureFlag
 
 

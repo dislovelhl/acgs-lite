@@ -8,6 +8,7 @@ Tests for AmendmentProposal model, status transitions, and validation.
 from datetime import datetime, timezone
 
 import pytest
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 

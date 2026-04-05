@@ -32,6 +32,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 if TYPE_CHECKING:
     from src.core.cognitive.graphrag.protocols import EmbeddingProvider, VectorStore
     from src.core.cognitive.graphrag.retrieval.retriever import GraphRAGRetriever
+
     from enhanced_agent_bus._compat.types import JSONDict
 
 logger = get_logger(__name__)

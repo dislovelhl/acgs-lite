@@ -22,7 +22,6 @@ from enhanced_agent_bus._compat.metrics.noop import (
 from enhanced_agent_bus._compat.metrics.noop import (
     NoOpHistogram as _NoOpHistogram,
 )
-
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)

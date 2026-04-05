@@ -7,9 +7,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi import HTTPException
+
 from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus._compat.security.auth import UserClaims
-
 from enhanced_agent_bus.visual_studio.api import (
     _resolve_tenant_id,
     create_workflow,
