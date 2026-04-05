@@ -88,6 +88,8 @@ def create_governance_app(
     openshell_observability_hook: GovernanceStateObservabilityHook | None = None,
     openshell_state_backend: GovernanceStateBackend | None = None,
     openshell_state_path: str | Path | None = None,
+    include_autonoma: bool = False,
+    autonoma_scenarios_path: str | Path | None = None,
 ) -> FastAPI:
     """Create a FastAPI app exposing governance validation endpoints.
 
@@ -323,5 +325,11 @@ def create_governance_app(
                 state_backend=state_backend,
             )
         )
+
+    if include_autonoma:
+        from acgs_lite.autonoma import create_autonoma_router
+
+        scenarios_path_resolved = Path(autonoma_scenarios_path) if autonoma_scenarios_path else None
+        app.include_router(create_autonoma_router(scenarios_path=scenarios_path_resolved))
 
     return app
