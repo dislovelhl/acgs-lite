@@ -242,17 +242,22 @@ async def get_llm_assessment(action_text: str) -> LLMClinicalAssessment:
     try:
         data = await asyncio.wait_for(caller(action_text), timeout=60.0)
         logger.debug("LLM assessment via %s: decision=%s", label, data.get("recommended_decision"))
+        # Validate LLM response types — untrusted JSON may have wrong field types
+        raw_interactions = data.get("drug_interactions", [])
+        drug_interactions = raw_interactions if isinstance(raw_interactions, list) else []
+        raw_conditions = data.get("conditions", [])
+        conditions = raw_conditions if isinstance(raw_conditions, list) else []
         return LLMClinicalAssessment(
-            evidence_tier=data.get("evidence_tier", "UNKNOWN"),
-            drug_interactions=data.get("drug_interactions", []),
+            evidence_tier=str(data.get("evidence_tier", "UNKNOWN")),
+            drug_interactions=drug_interactions,
             step_therapy_concern=bool(data.get("step_therapy_concern", False)),
             step_therapy_detail=str(data.get("step_therapy_detail", "")),
             dosing_concern=bool(data.get("dosing_concern", False)),
             dosing_detail=str(data.get("dosing_detail", "")),
-            risk_tier=data.get("risk_tier", RISK_MEDIUM),
+            risk_tier=str(data.get("risk_tier", RISK_MEDIUM)),
             reasoning=str(data.get("reasoning", "")),
-            recommended_decision=data.get("recommended_decision", CONDITIONAL),
-            conditions=list(data.get("conditions", [])),
+            recommended_decision=str(data.get("recommended_decision", CONDITIONAL)),
+            conditions=conditions,
             llm_available=True,
         )
     except Exception as exc:

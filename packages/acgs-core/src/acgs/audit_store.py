@@ -6,19 +6,26 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any
 
-from acgs_lite.audit import AuditEntry
+if TYPE_CHECKING:
+    from acgs_lite.audit import AuditEntry
 
 
 class AuditStore(ABC):
-    """Abstract base for audit trail persistence."""
+    """Abstract base for audit trail persistence.
+
+    Uses TYPE_CHECKING import for AuditEntry to avoid a hard runtime
+    dependency on acgs-lite. Consumers must have acgs-lite installed
+    to use concrete implementations.
+    """
 
     @abstractmethod
-    def append(self, entry: AuditEntry) -> str:
+    def append(self, entry: Any) -> str:
         """Persist an audit entry. Returns the entry ID."""
 
     @abstractmethod
-    def get(self, entry_id: str) -> AuditEntry | None:
+    def get(self, entry_id: str) -> Any | None:
         """Retrieve a single entry by ID."""
 
     @abstractmethod
@@ -28,7 +35,7 @@ class AuditStore(ABC):
         limit: int = 100,
         offset: int = 0,
         agent_id: str | None = None,
-    ) -> list[AuditEntry]:
+    ) -> list[Any]:
         """Paginated listing with optional agent_id filter."""
 
     @abstractmethod

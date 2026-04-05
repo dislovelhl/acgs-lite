@@ -155,8 +155,9 @@ class GovernedAgent:
             parts.append("Suggestions to produce a compliant response:")
             for s in decision.suggestions:
                 parts.append(f"  - {s.rationale}")
-        # Truncate and quote user-controlled input to limit injection surface
-        safe_input = original_input[:200]
+        # Truncate and quote user-controlled input to limit injection surface.
+        # Escape triple-quote sequences to prevent prompt breakout.
+        safe_input = original_input[:200].replace('"""', '\\"\\"\\""')
         parts.append(f'Original request (quoted): """{safe_input}"""')
         parts.append("Please provide a response that complies with all governance rules.")
         return "\n".join(parts)
@@ -173,6 +174,63 @@ class GovernedAgent:
                 "and has no .run() method",
                 rule_id="AGENT-PROTOCOL",
             )
+
+    def _resolve_capability_profile(self, explicit_profile: Any | None) -> Any | None:
+        if explicit_profile is not None:
+            return explicit_profile
+
+        for attr_name in ("capability_profile", "provider_capability_profile"):
+            profile = getattr(self._agent, attr_name, None)
+            if profile is not None:
+                return profile
+
+        provider_name_getter = getattr(self._agent, "get_provider_name", None)
+        provider_name = provider_name_getter() if callable(provider_name_getter) else None
+        if provider_name is None:
+            provider_name = getattr(self._agent, "provider_type", None)
+
+        model = getattr(self._agent, "model", None)
+        if not isinstance(model, str):
+            return None
+
+        try:
+            from enhanced_agent_bus.llm_adapters.capability_matrix import get_capability_registry
+        except ImportError:
+            return None
+
+        for profile in get_capability_registry().get_all_profiles(active_only=False):
+            if profile.model_id != model:
+                continue
+            if isinstance(provider_name, str) and profile.provider_type != provider_name:
+                continue
+            return profile
+        return None
+
+    def _prepare_execution_kwargs(self, kwargs: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+        execution_kwargs = dict(kwargs)
+        explicit_profile = execution_kwargs.pop("capability_profile", None)
+        if explicit_profile is None:
+            explicit_profile = execution_kwargs.pop("provider_capability_profile", None)
+
+        if self.validate_output:
+            capability_profile = self._resolve_capability_profile(explicit_profile)
+            try:
+                from enhanced_agent_bus.llm_adapters.constrained_output import (
+                    attach_response_format,
+                )
+            except ImportError:
+                pass
+            else:
+                execution_kwargs = attach_response_format(
+                    execution_kwargs,
+                    self.constitution,
+                    capability_profile,
+                )
+
+        governance_kwargs = {
+            key: value for key, value in execution_kwargs.items() if key != "response_format"
+        }
+        return execution_kwargs, governance_kwargs
 
     def _validate_output(self, result: Any) -> None:
         """Validate agent output against constitution. Raises on violation."""
@@ -203,18 +261,19 @@ class GovernedAgent:
         """
         # Step 1: Enforce MACI boundary, when enabled
         self._check_maci(governance_action)
+        execution_kwargs, governance_kwargs = self._prepare_execution_kwargs(kwargs)
 
         # Step 2: Validate input (no retries for input violations)
-        context = dict(kwargs)
+        context = dict(governance_kwargs)
         if governance_action is not None:
             context["governance_action"] = governance_action
         self.engine.validate(input, agent_id=self.agent_id, context=context)
-        kwargs_payload = serialize_for_governance(kwargs)
+        kwargs_payload = serialize_for_governance(governance_kwargs)
         if kwargs_payload:
             self.engine.validate(kwargs_payload, agent_id=f"{self.agent_id}:kwargs")
 
         # Step 3: Execute agent
-        result = self._execute_agent(input, **kwargs)
+        result = self._execute_agent(input, **execution_kwargs)
 
         # Step 4: Validate output with retry loop
         last_error: ConstitutionalViolationError | None = None
@@ -243,7 +302,7 @@ class GovernedAgent:
                     },
                 ))
                 retry_prompt = self._build_retry_prompt(input, exc, attempt)
-                result = self._execute_agent(retry_prompt, **kwargs)
+                result = self._execute_agent(retry_prompt, **execution_kwargs)
 
         # Should not reach here, but fail-closed
         if last_error is not None:
@@ -280,18 +339,19 @@ class GovernedAgent:
         """Async version of run() with output-violation retry support."""
         # Step 1: Enforce MACI boundary, when enabled
         self._check_maci(governance_action)
+        execution_kwargs, governance_kwargs = self._prepare_execution_kwargs(kwargs)
 
         # Step 2: Validate input (no retries for input violations)
-        context = dict(kwargs)
+        context = dict(governance_kwargs)
         if governance_action is not None:
             context["governance_action"] = governance_action
         self.engine.validate(input, agent_id=self.agent_id, context=context)
-        kwargs_payload = serialize_for_governance(kwargs)
+        kwargs_payload = serialize_for_governance(governance_kwargs)
         if kwargs_payload:
             self.engine.validate(kwargs_payload, agent_id=f"{self.agent_id}:kwargs")
 
         # Step 3: Execute agent
-        result = await self._aexecute_agent(input, **kwargs)
+        result = await self._aexecute_agent(input, **execution_kwargs)
 
         # Step 4: Validate output with retry loop
         last_error: ConstitutionalViolationError | None = None
@@ -319,7 +379,7 @@ class GovernedAgent:
                     },
                 ))
                 retry_prompt = self._build_retry_prompt(input, exc, attempt)
-                result = await self._aexecute_agent(retry_prompt, **kwargs)
+                result = await self._aexecute_agent(retry_prompt, **execution_kwargs)
 
         if last_error is not None:
             raise last_error
