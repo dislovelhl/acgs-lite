@@ -13,7 +13,7 @@ try:
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
-__version__ = "2.0.0"
+__version__ = "3.0.2"
 __constitutional_hash__ = CONSTITUTIONAL_HASH
 
 # Backward-compatible import aliases for legacy module paths.
