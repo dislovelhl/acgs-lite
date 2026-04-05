@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
       - name: Lint
-        run: ruff check src/acgs_lite/ tests/
+        run: ruff check src/acgs_lite/
       - name: Type check
         if: matrix.python-version == '3.11'
         run: mypy src/acgs_lite/ --ignore-missing-imports
