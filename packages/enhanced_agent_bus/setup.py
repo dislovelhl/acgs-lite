@@ -19,7 +19,7 @@ SKIP = {
 
 def _find_packages() -> list[str]:
     pkgs = ["enhanced_agent_bus"]
-    for dirpath, dirnames, filenames in os.walk("."):
+    for dirpath, _dirnames, filenames in os.walk("."):
         parts = dirpath.split(os.sep)
         if any(s in parts for s in SKIP):
             continue
