@@ -31,7 +31,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -195,8 +195,8 @@ class TemplateRegistry:
             try:
                 import yaml
                 data = yaml.safe_load(text)
-            except ImportError:
-                raise ImportError("PyYAML required for YAML templates: pip install pyyaml")
+            except ImportError as exc:
+                raise ImportError("PyYAML required for YAML templates: pip install pyyaml") from exc
         elif filepath.suffix == ".json":
             data = json.loads(text)
         else:

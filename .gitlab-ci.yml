@@ -10,7 +10,7 @@ stages:
   - verify
 
 default:
-  image: node:20-bookworm
+  image: node:22-bookworm
   interruptible: true
   variables:
     UV_CACHE_DIR: "$CI_PROJECT_DIR/.uv-cache"
