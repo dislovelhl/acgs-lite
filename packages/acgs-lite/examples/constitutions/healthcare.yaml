@@ -1,0 +1,250 @@
+# Healthcare Constitution --- acgs-lite
+# Governance rules for AI systems used in clinical decision support, patient
+# communication, diagnostics, medication management, and health data processing.
+# Covers HIPAA, FDA guidance on clinical decision support, and patient safety.
+#
+# Usage:
+#   from acgs_lite import Constitution
+#   constitution = Constitution.from_yaml("constitutions/healthcare.yaml")
+
+name: healthcare-governance
+version: "1.0"
+description: |
+  Constitutional rules governing AI systems operating in healthcare contexts
+  including clinical decision support, patient-facing chatbots, diagnostic
+  assistance, medication management, and health data analytics. Designed to
+  ensure compliance with HIPAA (45 CFR 160-164), FDA guidance on CDS software,
+  21st Century Cures Act, and clinical safety best practices.
+
+rules:
+  # -- PHI Protection (HIPAA) -------------------------------------------------
+  - id: HLTH-001
+    name: Protected health information safeguards
+    description: >
+      The system must not transmit, store, or log protected health information
+      (PHI) as defined under HIPAA (45 CFR 160.103) outside of authorized,
+      encrypted channels. PHI includes patient names, dates, medical record
+      numbers, Social Security numbers, device identifiers, biometric
+      identifiers, and any data that could identify an individual in combination.
+      All PHI in transit must use TLS 1.2+ and at rest must use AES-256
+      encryption.
+    severity: CRITICAL
+    keywords:
+      - "patient name"
+      - "medical record number"
+      - "MRN"
+      - "date of birth"
+      - "social security"
+      - "health plan number"
+      - "diagnosis code"
+      - "ICD-10"
+      - "PHI"
+    action: BLOCK
+
+  - id: HLTH-002
+    name: Minimum necessary standard
+    description: >
+      The system must request and process only the minimum amount of PHI
+      necessary to accomplish the intended purpose. Broad queries against
+      patient databases that return more data than needed for the specific
+      clinical or administrative function are prohibited. Per the HIPAA
+      minimum necessary rule (45 CFR 164.502(b)).
+    severity: HIGH
+    keywords:
+      - "bulk patient data"
+      - "all patients"
+      - "full medical history"
+      - "entire record"
+      - "database dump"
+      - "export all"
+    action: BLOCK
+
+  - id: HLTH-003
+    name: Business associate agreement requirement
+    description: >
+      Before processing PHI, the system must verify that a valid Business
+      Associate Agreement (BAA) is in place between the covered entity and
+      any third-party service the AI relies upon (cloud providers, model
+      hosting, analytics services). Per 45 CFR 164.502(e) and 164.504(e).
+    severity: HIGH
+    keywords:
+      - "business associate"
+      - "BAA"
+      - "third party"
+      - "cloud provider"
+      - "subcontractor"
+      - "data processor"
+    action: FLAG
+
+  # -- Clinical Decision Transparency ----------------------------------------
+  - id: HLTH-004
+    name: Clinical recommendation explainability
+    description: >
+      All clinical decision support outputs must include the evidence basis,
+      confidence level, applicable clinical guidelines (e.g., USPSTF grade,
+      AHA/ACC class), and known limitations of the recommendation. Clinicians
+      must be able to review the reasoning chain before acting on AI output.
+      Per FDA guidance on Clinical Decision Support Software (2022).
+    severity: HIGH
+    keywords:
+      - "recommendation"
+      - "clinical decision"
+      - "suggested treatment"
+      - "diagnosis"
+      - "prognosis"
+      - "risk assessment"
+      - "clinical guideline"
+    action: FLAG
+
+  - id: HLTH-005
+    name: Diagnostic uncertainty disclosure
+    description: >
+      When the system produces a diagnostic suggestion, it must disclose the
+      confidence interval and explicitly state alternative diagnoses (differential
+      diagnosis). Outputs with confidence below the validated operating threshold
+      must include a prominent warning that the result is uncertain and should
+      not be used as a sole basis for clinical action.
+    severity: HIGH
+    keywords:
+      - "diagnosis"
+      - "differential diagnosis"
+      - "confidence"
+      - "probability"
+      - "uncertain"
+      - "inconclusive"
+      - "false positive"
+      - "false negative"
+    action: FLAG
+
+  # -- Patient Safety ---------------------------------------------------------
+  - id: HLTH-006
+    name: Medication safety and interaction checking
+    description: >
+      The system must cross-reference any medication recommendation against the
+      patient's current medication list, known allergies, and contraindications
+      before presenting the recommendation to a clinician. Failure to flag
+      known drug-drug interactions, drug-allergy conflicts, or contraindicated
+      conditions is a critical safety violation.
+    severity: CRITICAL
+    keywords:
+      - "prescribe"
+      - "medication"
+      - "drug interaction"
+      - "allergy"
+      - "contraindication"
+      - "dosage"
+      - "adverse drug reaction"
+      - "formulary"
+    action: BLOCK
+
+  - id: HLTH-007
+    name: Adverse event reporting
+    description: >
+      If the system detects or is informed of a potential adverse event related
+      to its output (misdiagnosis, incorrect medication suggestion, delayed
+      treatment), it must immediately log the event, alert the designated safety
+      officer, and generate a structured report suitable for MedWatch (FDA
+      Form 3500A) or institutional incident reporting systems.
+    severity: CRITICAL
+    keywords:
+      - "adverse event"
+      - "patient harm"
+      - "misdiagnosis"
+      - "medication error"
+      - "near miss"
+      - "sentinel event"
+      - "safety report"
+      - "MedWatch"
+    action: BLOCK
+
+  # -- Informed Consent -------------------------------------------------------
+  - id: HLTH-008
+    name: Informed consent for AI-assisted care
+    description: >
+      Patients must be informed when AI systems are materially involved in their
+      diagnosis, treatment planning, or risk assessment. The disclosure must be
+      in plain language and must explain the AI's role, its limitations, and
+      the patient's right to request a fully human review. Consent must be
+      documented in the medical record.
+    severity: HIGH
+    keywords:
+      - "informed consent"
+      - "patient consent"
+      - "AI disclosure"
+      - "automated decision"
+      - "algorithm"
+      - "machine learning"
+    action: FLAG
+
+  # -- Equity & Bias ----------------------------------------------------------
+  - id: HLTH-009
+    name: Clinical algorithm bias monitoring
+    description: >
+      The system must monitor for differential performance across demographic
+      groups including race, ethnicity, sex, age, and socioeconomic status.
+      Diagnostic accuracy, false positive/negative rates, and treatment
+      recommendation distributions must be stratified and reported. Models
+      must not perpetuate known biases such as race-adjusted eGFR calculations
+      unless clinically validated and explicitly approved.
+    severity: HIGH
+    keywords:
+      - "race adjustment"
+      - "eGFR"
+      - "demographic disparity"
+      - "bias"
+      - "health equity"
+      - "algorithmic fairness"
+      - "subgroup performance"
+    action: FLAG
+
+  # -- Audit & Compliance -----------------------------------------------------
+  - id: HLTH-010
+    name: Audit trail for clinical AI decisions
+    description: >
+      Every clinical decision support interaction must produce an immutable
+      audit record containing: timestamp, patient identifier (de-identified
+      in non-clinical logs), input data summary, model version, output,
+      confidence score, and clinician disposition (accepted/modified/rejected).
+      Records must be retained for a minimum of 6 years per HIPAA
+      (45 CFR 164.530(j)) and state medical record retention laws.
+    severity: HIGH
+    keywords:
+      - "audit trail"
+      - "audit log"
+      - "decision log"
+      - "clinical record"
+      - "retention"
+      - "compliance record"
+    action: FLAG
+
+  - id: HLTH-011
+    name: Emergency override with logging
+    description: >
+      In clinical emergencies, authorized clinicians may override AI safety
+      controls to provide immediate patient care. All overrides must be logged
+      with the clinician's identity, reason, timestamp, and the specific
+      control overridden. Overrides must be reviewed within 24 hours by the
+      clinical safety committee.
+    severity: MEDIUM
+    keywords:
+      - "emergency override"
+      - "clinical override"
+      - "bypass safety"
+      - "urgent care"
+      - "life-threatening"
+      - "code blue"
+    action: LOG
+
+metadata:
+  author: ACGS Team
+  domain: healthcare
+  jurisdiction: US (federal)
+  regulations:
+    - "HIPAA Privacy Rule (45 CFR 160, 164)"
+    - "HIPAA Security Rule (45 CFR 164.302-318)"
+    - "FDA Guidance on Clinical Decision Support Software (2022)"
+    - "21st Century Cures Act Section 3060"
+    - "FDA MedWatch Adverse Event Reporting"
+    - "ONC Health IT Certification (45 CFR 170)"
+  license: AGPL-3.0-or-later
+  last_updated: "2026-04-03"

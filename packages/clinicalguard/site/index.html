@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClinicalGuard | Constitutional AI Governance for Healthcare</title>
+  <meta name="description" content="ClinicalGuard adds constitutional governance, MACI separation of powers, and tamper-evident audit trails to healthcare AI workflows.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: "#020617",
+            panel: "#0f172a",
+            panelSoft: "#111c32",
+            accent: "#2dd4bf",
+            accentSoft: "#99f6e4"
+          },
+          boxShadow: {
+            glow: "0 0 0 1px rgba(45,212,191,.18), 0 24px 80px rgba(15,23,42,.55)"
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+  <div class="absolute inset-0 -z-10 overflow-hidden">
+    <div class="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(45,212,191,0.18),transparent_46%)]"></div>
+    <div class="absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-teal-400/10 blur-3xl"></div>
+  </div>
+
+  <main class="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+    <section class="rounded-3xl border border-white/10 bg-slate-950/70 shadow-glow backdrop-blur">
+      <div class="grid gap-12 px-8 py-12 lg:grid-cols-[1.2fr_0.8fr] lg:px-12 lg:py-16">
+        <div>
+          <p class="mb-4 inline-flex items-center rounded-full border border-teal-400/30 bg-teal-400/10 px-3 py-1 text-sm font-medium text-teal-300">
+            Healthcare AI governance for regulated clinical workflows
+          </p>
+          <h1 class="max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+            Constitutional AI Governance for Healthcare
+          </h1>
+          <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+            ClinicalGuard gives healthcare teams deterministic guardrails around LLM-powered clinical decision support with MACI separation of powers, tamper-evident audit logging, and built-in checks for PHI, drug safety, and adverse events.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3 text-sm text-slate-300">
+            <span class="rounded-full border border-white/10 px-3 py-1">20 constitutional rules</span>
+            <span class="rounded-full border border-white/10 px-3 py-1">10 PHI identifiers detected</span>
+            <span class="rounded-full border border-white/10 px-3 py-1">API-key protected</span>
+            <span class="rounded-full border border-white/10 px-3 py-1">Docker and Fly.io deployable</span>
+          </div>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-slate-900/80 p-6">
+          <p class="text-sm font-medium uppercase tracking-[0.22em] text-teal-300">Quick start</p>
+          <pre class="mt-4 overflow-x-auto rounded-2xl border border-white/10 bg-slate-950 p-5 text-sm text-teal-200"><code>pip install acgs-lite</code></pre>
+          <div class="mt-6 space-y-3 text-sm text-slate-300">
+            <p>Embed constitutional rules in YAML, route decisions through MACI roles, and retain a chain-valid audit trail for every governance event.</p>
+            <p class="text-slate-400">Purpose-built for teams that need trustworthy AI oversight before recommendations reach clinicians, patients, or regulators.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <p class="text-sm font-medium uppercase tracking-[0.22em] text-teal-300">The problem</p>
+          <h2 class="mt-3 text-3xl font-semibold text-white">Ungoverned healthcare AI creates compliance and liability exposure.</h2>
+        </div>
+      </div>
+      <div class="mt-8 grid gap-6 md:grid-cols-3">
+        <article class="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <p class="text-4xl font-semibold text-teal-300">$1.5M</p>
+          <h3 class="mt-4 text-lg font-medium text-white">HIPAA fine exposure</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-300">A single PHI-handling failure can become a reportable event with severe financial consequences.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <p class="text-4xl font-semibold text-teal-300">2</p>
+          <h3 class="mt-4 text-lg font-medium text-white">Regulatory pressure</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-300">Healthcare AI faces two oversight fronts at once: privacy obligations and FDA-style expectations for evidence, controls, and escalation.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <p class="text-4xl font-semibold text-teal-300">0</p>
+          <h3 class="mt-4 text-lg font-medium text-white">Tolerance for unauditable decisions</h3>
+          <p class="mt-2 text-sm leading-7 text-slate-300">If a recommendation cannot be reconstructed after the fact, the liability sits with the deploying organization.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <p class="text-sm font-medium uppercase tracking-[0.22em] text-teal-300">How it works</p>
+      <h2 class="mt-3 text-3xl font-semibold text-white">Three steps to governed clinical AI.</h2>
+      <div class="mt-8 grid gap-6 lg:grid-cols-3">
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-7">
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-teal-300">Define</p>
+          <h3 class="mt-4 text-2xl font-semibold">YAML rules</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">Encode healthcare policy as a 20-rule constitution covering evidence tiers, PHI handling, dosing, escalation, audit, and clinical safety.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-7">
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-teal-300">Enforce</p>
+          <h3 class="mt-4 text-2xl font-semibold">MACI separation</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">The system separates proposer, validator, and approver roles so no agent can self-approve or bypass governance.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-7">
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-teal-300">Prove</p>
+          <h3 class="mt-4 text-2xl font-semibold">Audit trail</h3>
+          <p class="mt-4 text-sm leading-7 text-slate-300">Every decision is written to a tamper-evident chain with constitutional hash, timestamp, reasoning, and integrity verification.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-16 rounded-3xl border border-white/10 bg-slate-950/60 p-8">
+      <p class="text-sm font-medium uppercase tracking-[0.22em] text-teal-300">Compliance</p>
+      <h2 class="mt-3 text-3xl font-semibold text-white">Built for security, auditability, and regulatory review.</h2>
+      <div class="mt-8 overflow-hidden rounded-2xl border border-white/10">
+        <table class="min-w-full divide-y divide-white/10 text-left text-sm">
+          <thead class="bg-white/5 text-slate-300">
+            <tr>
+              <th class="px-5 py-4 font-medium">Framework</th>
+              <th class="px-5 py-4 font-medium">Coverage</th>
+              <th class="px-5 py-4 font-medium">Operational evidence</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/10 bg-slate-900/60 text-slate-200">
+            <tr>
+              <td class="px-5 py-4 font-medium text-white">HIPAA</td>
+              <td class="px-5 py-4">9/15 auto-covered controls for healthcare AI governance workflows</td>
+              <td class="px-5 py-4">PHI detection, audit logging, access control hooks, de-identified workflows</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-4 font-medium text-white">FDA AI/ML</td>
+              <td class="px-5 py-4">Aligned with evidence-tiering, monitoring, escalation, and adverse-event review expectations</td>
+              <td class="px-5 py-4">Off-label routing, dosing checks, MedWatch-style adverse event signaling, human review gates</td>
+            </tr>
+            <tr>
+              <td class="px-5 py-4 font-medium text-white">SOC 2</td>
+              <td class="px-5 py-4">Ready for control mapping across security, change management, and traceability</td>
+              <td class="px-5 py-4">Tamper-evident logs, API-key auth, persistent audit storage, deployment hardening</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="mt-16 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+      <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+        <p class="text-sm font-medium uppercase tracking-[0.22em] text-teal-300">Two-layer validation</p>
+        <h2 class="mt-3 text-3xl font-semibold text-white">Clinical reasoning plus deterministic constitutional enforcement.</h2>
+        <p class="mt-5 text-sm leading-7 text-slate-300">ClinicalGuard combines an LLM layer for semantic clinical reasoning with a deterministic governance layer for what cannot be left to model judgment alone.</p>
+      </div>
+      <div class="grid gap-6">
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-6">
+          <h3 class="text-xl font-semibold text-white">LLM clinical reasoning</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-300">Assesses evidence tier, drug interactions, dosing concerns, step therapy, and risk tier in free-text clinical proposals.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-6">
+          <h3 class="text-xl font-semibold text-white">Deterministic constitutional rules</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-300">Enforces MACI validation, PHI restrictions, escalation logic, audit requirements, and reproducible rule checks with chain integrity.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mt-16">
+      <p class="text-sm font-medium uppercase tracking-[0.22em] text-teal-300">Features</p>
+      <h2 class="mt-3 text-3xl font-semibold text-white">Purpose-built safety controls for healthcare AI.</h2>
+      <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-6">
+          <h3 class="text-lg font-semibold text-white">PHI detection</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-300">Flags 10 HIPAA Safe Harbor identifier types including SSNs, MRNs, DOBs, phones, email, and device identifiers.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-6">
+          <h3 class="text-lg font-semibold text-white">Drug interaction checks</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-300">Routes major interaction, contraindication, dosing, narrow therapeutic index, and step-therapy concerns before approval.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-6">
+          <h3 class="text-lg font-semibold text-white">Adverse event detection</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-300">Detects severe allergic reactions, overdose, hospitalization, death, and other MedWatch-relevant safety signals.</p>
+        </article>
+        <article class="rounded-2xl border border-white/10 bg-slate-800/60 p-6">
+          <h3 class="text-lg font-semibold text-white">Tamper-evident audit</h3>
+          <p class="mt-3 text-sm leading-7 text-slate-300">Persists audit entries with constitutional hash and chain validation so investigators can verify nothing was altered.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="mt-16 flex flex-col gap-4 border-t border-white/10 py-8 text-sm text-slate-400 md:flex-row md:items-center md:justify-between">
+      <p>ClinicalGuard is available under AGPL for community use and commercial licensing for production healthcare deployments.</p>
+      <a class="text-teal-300 transition hover:text-teal-200" href="https://github.com/acgs-project/acgs-clean">GitHub repository</a>
+    </footer>
+  </main>
+</body>
+</html>
