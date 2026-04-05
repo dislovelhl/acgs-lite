@@ -1,4 +1,4 @@
-name: Release acgs
+name: Release acgs-lite
 
 on:
   push:
@@ -137,19 +137,19 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "acgs ${{ github.ref_name }}"
+          name: "acgs-lite ${{ github.ref_name }}"
           tag_name: ${{ github.ref_name }}
           body: |
-            ## acgs ${{ github.ref_name }}
+            ## acgs-lite ${{ github.ref_name }}
 
             Constitutional AI governance for any agent. Wrap any LLM agent in enforceable rules, audit trails, and MACI separation of powers.
 
             ### Install
 
             ```bash
-            pip install acgs==${{ steps.version.outputs.version }}
+            pip install acgs-lite==${{ steps.version.outputs.version }}
             # or with all LLM integrations:
-            pip install "acgs[all]==${{ steps.version.outputs.version }}"
+            pip install "acgs-lite[all]==${{ steps.version.outputs.version }}"
             ```
 
             ### Changes
@@ -159,7 +159,7 @@ jobs:
             `608508a9bd224290` — embedded in all validation paths.
 
             ---
-            **[Documentation](https://acgs.ai)** · **[PyPI](https://pypi.org/project/acgs/)** · **[Repository](https://github.com/acgs2_admin/acgs)**
+            **[Documentation](https://acgs.ai)** · **[PyPI](https://pypi.org/project/acgs-lite/)** · **[Repository](https://github.com/acgs2_admin/acgs)**
           files: |
             dist/*
             paper-dist/*.pdf
@@ -173,7 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/project/acgs/
+      url: https://pypi.org/project/acgs-lite/
 
     steps:
       - name: Download build artifacts
