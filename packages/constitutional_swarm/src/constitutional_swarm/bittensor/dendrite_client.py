@@ -24,10 +24,9 @@ import asyncio
 from typing import Any
 
 from acgs_lite import Constitution
-
 from constitutional_swarm.bittensor.synapse_adapter import (
-    GovernanceDeliberation,
     HAS_BITTENSOR,
+    GovernanceDeliberation,
     bt_to_judgment,
     deliberation_to_bt,
 )
@@ -123,7 +122,7 @@ class ValidatorDendriteClient:
 
                 if result.has_response and result.error_message is None:
                     return bt_to_judgment(result)
-            except (asyncio.TimeoutError, ValueError):
+            except (TimeoutError, ValueError):
                 pass
             return None
 

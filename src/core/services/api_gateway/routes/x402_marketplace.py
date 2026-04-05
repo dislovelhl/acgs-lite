@@ -174,6 +174,49 @@ def _get_article12_logger():
     return _article12_logger
 
 
+def _build_governance_engine(template: str = "general") -> tuple[object, object]:
+    """Create an acgs-lite constitution plus governance engine for route execution."""
+    from acgs_lite.constitution import Constitution
+    from acgs_lite.engine import GovernanceEngine
+
+    constitution = Constitution.from_template(template)
+    return constitution, GovernanceEngine(constitution)
+
+
+def _evaluate_governance_action(
+    action: str,
+    context: dict[str, Any] | None,
+    *,
+    template: str = "general",
+) -> tuple[object, object]:
+    """Run a governance evaluation through the public acgs-lite engine surface."""
+    constitution, engine = _build_governance_engine(template)
+    result = engine.validate(action, context=context or {})
+    return constitution, result
+
+
+def _build_triggered_rules(constitution: Any, result: Any) -> list[dict[str, Any]]:
+    triggered_rules: list[dict[str, Any]] = []
+    for violation in result.violations:
+        rule = constitution.get_rule(violation.rule_id) if hasattr(constitution, "get_rule") else None
+        triggered_rules.append(
+            {
+                "id": violation.rule_id,
+                "description": rule.text if rule else violation.rule_text,
+                "severity": violation.severity.value,
+                "category": rule.category if rule else violation.category,
+                "workflow_action": (
+                    rule.workflow_action
+                    if rule and getattr(rule, "workflow_action", "")
+                    else ("block" if violation.severity.blocks() else "warn")
+                ),
+                "matched_keywords": list(getattr(rule, "keywords", [])),
+                "tags": list(getattr(rule, "tags", [])),
+            }
+        )
+    return triggered_rules
+
+
 # ---------------------------------------------------------------------------
 # Request / Response models
 # ---------------------------------------------------------------------------
@@ -683,13 +726,11 @@ async def simulate_policy(
     start = datetime.now(UTC)
 
     try:
-        from acgs_lite.constitution import Constitution
         from acgs_lite.constitution.policy_simulator import GovernancePolicySimulator
 
-        baseline = Constitution.from_template("default")
-        candidate = Constitution.from_template("strict")
-
         simulator = GovernancePolicySimulator()
+        baseline, _ = _build_governance_engine("general")
+        candidate, _ = _build_governance_engine("security")
         report = simulator.evaluate_single(
             baseline=baseline,
             candidate=candidate,
@@ -861,15 +902,24 @@ async def explain_decision(request: Request, body: ExplainRequest) -> dict[str, 
     start = datetime.now(UTC)
 
     try:
-        from acgs_lite.constitution import Constitution
-        from acgs_lite.constitution.decision_explainer import explain_decision as _explain
+        from acgs_lite.constitution.decision_explainer import (
+            ExplanationDetail,
+            GovernanceDecisionExplainer,
+        )
 
-        constitution = Constitution.from_template("default")
-        result = constitution.validate(body.action, body.context)
-        explanation = _explain(
-            result,
-            constitution=constitution,
-            detail_level=body.detail_level,
+        constitution, result = _evaluate_governance_action(body.action, body.context)
+        explainer = GovernanceDecisionExplainer(store_history=False)
+        explanation = explainer.explain(
+            decision_id=str(result.request_id or "x402-explain"),
+            outcome=(
+                "deny"
+                if result.blocking_violations
+                else ("warn" if result.violations else "allow")
+            ),
+            triggered_rules=_build_triggered_rules(constitution, result),
+            input_text=body.action,
+            context=body.context or None,
+            detail=ExplanationDetail(body.detail_level),
         )
     except ImportError as exc:
         raise HTTPException(503, "Decision explainer unavailable") from exc

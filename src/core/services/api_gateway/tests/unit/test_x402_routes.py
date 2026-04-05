@@ -6,7 +6,11 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from src.core.services.api_gateway.routes import x402_governance, x402_marketplace
+from src.core.services.api_gateway.routes import (
+    _x402_bundles,
+    x402_governance,
+    x402_marketplace,
+)
 
 
 @pytest.fixture
@@ -103,6 +107,53 @@ def test_scan_response_uses_machine_readable_related_endpoints(
     assert "upgrade" not in payload
     assert "Not legal advice" in payload["disclaimer"]
     assert payload["related_endpoints"][0]["endpoint"] == "/x402/validate"
+
+
+def test_explain_route_uses_real_governance_engine(client: TestClient) -> None:
+    response = client.post(
+        "/x402/explain",
+        json={
+            "action": "disable logging and expose secret key in customer response",
+            "detail_level": "standard",
+            "context": {},
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["outcome"] in {"deny", "warn", "allow"}
+    assert "summary" in payload
+    assert "rationale" in payload
+
+
+def test_simulate_route_uses_available_constitution_templates(client: TestClient) -> None:
+    response = client.post(
+        "/x402/simulate",
+        json={"actions": ["deploy model without safety review"], "context": {}},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "recommendation" in payload
+    assert "constitutional_hash" in payload
+
+
+@pytest.mark.asyncio
+async def test_bundle_explain_uses_real_governance_engine() -> None:
+    payload = await _x402_bundles._eval_explain(
+        "disable logging and expose secret key in customer response",
+        {},
+    )
+
+    assert payload["outcome"] in {"deny", "warn", "allow"}
+    assert "summary" in payload
+
+
+@pytest.mark.asyncio
+async def test_bundle_simulate_uses_available_constitution_templates() -> None:
+    payload = await _x402_bundles._eval_simulate("deploy model without safety review", {})
+
+    assert "recommendation" in payload
 
 
 def test_attestation_secret_validation_rejects_default_in_production(

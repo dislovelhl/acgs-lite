@@ -140,6 +140,13 @@ class TestMACIEnforcer:
         with pytest.raises(MACIViolationError):
             enforcer.check("unregistered", "execute")
 
+    def test_query_literal_is_allowed_but_query_phrase_is_denied(self):
+        enforcer = MACIEnforcer()
+        enforcer.assign_role("a1", MACIRole.PROPOSER)
+        assert enforcer.check("a1", "query") is True
+        with pytest.raises(MACIViolationError):
+            enforcer.check("a1", "query secrets")
+
     def test_check_no_self_validation_different_agents(self):
         enforcer = MACIEnforcer()
         assert enforcer.check_no_self_validation("a1", "a2") is True
@@ -260,6 +267,20 @@ class TestDomainRoleRegistry:
         assert result["allowed"] is False
         assert "role violation" in result["reason"]
 
+    def test_check_unknown_action_is_denied(self):
+        reg = DomainRoleRegistry()
+        reg.assign("a1", MACIRole.PROPOSER, domains=["finance"])
+        result = reg.check("a1", "delete", domain="finance")
+        assert result["allowed"] is False
+        assert "role violation" in result["reason"]
+
+    def test_check_query_phrase_is_denied(self):
+        reg = DomainRoleRegistry()
+        reg.assign("a1", MACIRole.PROPOSER, domains=["finance"])
+        result = reg.check("a1", "query secrets", domain="finance")
+        assert result["allowed"] is False
+        assert "role violation" in result["reason"]
+
     def test_check_unregistered_agent(self):
         reg = DomainRoleRegistry()
         result = reg.check("unknown", "read", domain="finance")
@@ -347,6 +368,12 @@ class TestDerivedRole:
     def test_check_not_found(self):
         derived = DerivedRole("test", [MACIRole.PROPOSER])
         result = derived.check("completely_unknown_action")
+        assert result["allowed"] is False
+        assert result["source"] == "not_found"
+
+    def test_check_query_phrase_is_not_treated_as_query_permission(self):
+        derived = DerivedRole("test", [MACIRole.PROPOSER])
+        result = derived.check("query secrets")
         assert result["allowed"] is False
         assert result["source"] == "not_found"
 

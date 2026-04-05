@@ -240,6 +240,7 @@ class EnhancedAgentBus:
         )
         self._kafka_bus: object | None = None
         self._kafka_consumer_task: asyncio.Task[None] | None = None
+        self._background_tasks: set[asyncio.Task[object]] = set()
 
         # Initialize new modular components with Dependency Injection support
         self._registry_manager = registry_manager or RegistryManager(
@@ -274,6 +275,8 @@ class EnhancedAgentBus:
 
         # Backward compatibility properties (legacy agents dict)
         self._running = False
+        self._idempotency_lock = asyncio.Lock()
+        self._inflight_idempotency: dict[str, asyncio.Task[ValidationResult]] = {}
 
         # Legacy queue for receive_message
         self._message_queue: asyncio.Queue[object] = asyncio.Queue()
@@ -451,6 +454,11 @@ class EnhancedAgentBus:
         await self._metering_manager.stop()
         await self._governance.shutdown()
         await self._router_component.shutdown()
+        processor_shutdown = getattr(self._processor, "shutdown", None)
+        if callable(processor_shutdown):
+            shutdown_result = processor_shutdown()
+            if asyncio.iscoroutine(shutdown_result):
+                await shutdown_result
 
         if self._kafka_consumer_task:
             self._kafka_consumer_task.cancel()
@@ -458,6 +466,14 @@ class EnhancedAgentBus:
                 await self._kafka_consumer_task
             except asyncio.CancelledError:
                 pass
+
+        background_tasks = tuple(self._background_tasks)
+        for task in background_tasks:
+            if not task.done():
+                task.cancel()
+        if background_tasks:
+            await asyncio.gather(*background_tasks, return_exceptions=True)
+        self._background_tasks.clear()
 
         if self._redis_client_for_limiter:
             try:
@@ -619,32 +635,40 @@ class EnhancedAgentBus:
         )
         return False
 
-    # --- Main Message Sending ---
+    def _resolve_idempotency_key(self, msg: AgentMessage) -> str | None:
+        """Resolve an idempotency key from supported message surfaces."""
+        explicit_key = getattr(msg, "idempotency_key", None)
+        if isinstance(explicit_key, str) and explicit_key:
+            return explicit_key
 
-    async def send_message(self, msg: AgentMessage) -> ValidationResult:
-        """
-        Send a message through the agent bus with constitutional validation.
+        headers = getattr(msg, "headers", None)
+        if isinstance(headers, dict):
+            header_key = headers.get("idempotency_key") or headers.get("Idempotency-Key")
+            if isinstance(header_key, str) and header_key:
+                return header_key
 
-        This method performs:
-        1. Bus state verification
-        2. Constitutional hash validation
-        3. Tenant ID normalization and validation
-        4. Message processing with graceful degradation
-        5. Routing and delivery
+        metadata = getattr(msg, "metadata", None)
+        if isinstance(metadata, dict):
+            metadata_key = metadata.get("idempotency_key")
+            if isinstance(metadata_key, str) and metadata_key:
+                return metadata_key
 
-        Args:
-            msg: The AgentMessage to send.
+        return None
 
-        Returns:
-            ValidationResult indicating success/failure with any errors.
-        """
+    async def _send_message_once(self, msg: AgentMessage) -> ValidationResult:
+        """Execute a single send_message flow without idempotency wrapping."""
         result = ValidationResult()
 
-        # Step 1: Check bus running state (allow test bypass)
-        if not self._running and (
-            self._config.get("allow_unstarted") or self._is_test_mode_message(msg)
-        ):
-            self._metrics["sent"] += 1
+        if not self._running:
+            if self._config.get("allow_unstarted") or self._is_test_mode_message(msg):
+                self._metrics["sent"] += 1
+            else:
+                result.add_error("Agent bus is not started")
+                self._record_metrics_failure()
+                return result
+
+        if not self._message_validator.validate_message_shape(msg, result):
+            return result
 
         # Step 2: Validate constitutional hash
         if not self._validate_constitutional_hash_for_message(msg, result):
@@ -706,6 +730,8 @@ class EnhancedAgentBus:
                     self._governance_integration.provide_feedback, msg, delivery_success
                 )
             )
+            self._background_tasks.add(_fb_task)
+            _fb_task.add_done_callback(self._background_tasks.discard)
             _fb_task.add_done_callback(
                 lambda t: (
                     t.exception()
@@ -714,6 +740,46 @@ class EnhancedAgentBus:
             )
 
         return result
+
+    # --- Main Message Sending ---
+
+    async def send_message(self, msg: AgentMessage) -> ValidationResult:
+        """
+        Send a message through the agent bus with constitutional validation.
+
+        This method performs:
+        1. Bus state verification
+        2. Constitutional hash validation
+        3. Tenant ID normalization and validation
+        4. Message processing with graceful degradation
+        5. Routing and delivery
+
+        Args:
+            msg: The AgentMessage to send.
+
+        Returns:
+            ValidationResult indicating success/failure with any errors.
+        """
+        idempotency_key = self._resolve_idempotency_key(msg)
+        if not idempotency_key:
+            return await self._send_message_once(msg)
+
+        async with self._idempotency_lock:
+            existing_task = self._inflight_idempotency.get(idempotency_key)
+            if existing_task is None:
+                existing_task = asyncio.create_task(self._send_message_once(msg))
+                self._inflight_idempotency[idempotency_key] = existing_task
+                created_task = True
+            else:
+                created_task = False
+
+        try:
+            return await existing_task
+        finally:
+            if created_task:
+                async with self._idempotency_lock:
+                    if self._inflight_idempotency.get(idempotency_key) is existing_task:
+                        self._inflight_idempotency.pop(idempotency_key, None)
 
     async def broadcast_message(self, msg: AgentMessage) -> dict[str, ValidationResult]:
         """Broadcast message to all agents in same tenant."""

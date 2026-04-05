@@ -28,12 +28,10 @@ from __future__ import annotations
 import math
 import time
 import uuid
-from dataclasses import dataclass, field
-from enum import Enum
+from dataclasses import dataclass
 from typing import Any
 
 from constitutional_swarm.bittensor.protocol import EscalationType
-
 
 # ---------------------------------------------------------------------------
 # Vector utilities
@@ -130,7 +128,7 @@ class PrecedentRecord:
         impact_vector: dict[str, float],
         constitutional_hash: str,
         ambiguous_dimensions: tuple[str, ...] = (),
-    ) -> "PrecedentRecord":
+    ) -> PrecedentRecord:
         total_votes = votes_for + votes_against
         grade = votes_for / total_votes if total_votes > 0 else 0.0
         return cls(

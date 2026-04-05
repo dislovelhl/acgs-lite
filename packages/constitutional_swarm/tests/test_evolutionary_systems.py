@@ -10,19 +10,10 @@ import os
 import tempfile
 
 import pytest
-
-from constitutional_swarm.bittensor.map_elites import (
-    CellCoordinate,
-    DeliberationStrategy,
-    FitnessWeights,
-    GovernanceDomain,
-    MinerApproach,
-    MinerQualityGrid,
-)
 from constitutional_swarm.bittensor.cascade import (
     CascadeStage,
-    PrecedentCascade,
     ConstitutionDelta,
+    PrecedentCascade,
 )
 from constitutional_swarm.bittensor.island_evolution import (
     EmissionEvolver,
@@ -31,7 +22,13 @@ from constitutional_swarm.bittensor.island_evolution import (
     MinerTier,
     _spearman_rho,
 )
-
+from constitutional_swarm.bittensor.map_elites import (
+    DeliberationStrategy,
+    FitnessWeights,
+    GovernanceDomain,
+    MinerApproach,
+    MinerQualityGrid,
+)
 
 # ---------------------------------------------------------------------------
 # Shared fixture: constitution YAML

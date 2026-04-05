@@ -33,12 +33,11 @@ from enum import Enum
 from typing import Any
 
 from constitutional_swarm.bittensor.protocol import (
-    MinerTier,
     TIER_REQUIREMENTS,
     TIER_TAO_MULTIPLIER,
+    MinerTier,
 )
 from constitutional_swarm.capability import Capability, CapabilityRegistry
-
 
 # ---------------------------------------------------------------------------
 # Task complexity

@@ -6,16 +6,13 @@ import hashlib
 import uuid
 
 import pytest
-
 from constitutional_swarm.bittensor.nmc_protocol import (
     ConsensusJudgment,
     NMCCoordinator,
     NMCSession,
     NMCSessionState,
-    SybilFlag,
     SynthesisMethod,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

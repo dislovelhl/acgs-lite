@@ -27,7 +27,6 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-
 # ---------------------------------------------------------------------------
 # Chain submitter interface (pluggable — stub or real Bittensor extrinsic)
 # ---------------------------------------------------------------------------
@@ -116,7 +115,7 @@ class ProofEvidence:
         content_hash: str,
         vote_hashes: tuple[str, ...] | list[str],
         constitutional_hash: str,
-    ) -> "ProofEvidence":
+    ) -> ProofEvidence:
         """Create from MeshProof fields (avoids importing MeshProof here)."""
         return cls(
             proof_id=uuid.uuid4().hex[:8],

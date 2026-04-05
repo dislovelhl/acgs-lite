@@ -27,6 +27,8 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 
+from enhanced_agent_bus.plugin_registry import available, require
+
 # Constitutional hash for immutable validation
 try:
     from src.core.shared.constants import CONSTITUTIONAL_HASH
@@ -51,12 +53,10 @@ _Z3_VERIFIER_OPERATION_ERRORS = (
     ConnectionError,
 )
 
-# Try to import Z3, gracefully handle if not available
-try:
-    import z3
-
+if available("z3"):
+    z3 = __import__(require("z3"))
     Z3_AVAILABLE = True
-except ImportError:
+else:
     Z3_AVAILABLE = False
     z3 = None
     logger.warning("Z3 solver not available. Install with: pip install z3-solver")
@@ -435,12 +435,14 @@ class Z3SolverWrapper:
         self.solver.set("timeout", timeout_ms)
         self._variables: JSONDict = {}
         self._constraints: JSONDict = {}
+        self._constraint_trackers: dict[str, object] = {}
 
     def reset(self) -> None:
         """Reset the solver state."""
         self.solver.reset()
         self._variables.clear()
         self._constraints.clear()
+        self._constraint_trackers.clear()
 
     def declare_variable(self, name: str, var_type: str) -> object:
         """Declare a variable of the given type."""
@@ -471,8 +473,10 @@ class Z3SolverWrapper:
             # Parse and add constraint expression
             z3_expr = self._parse_expression(constraint.expression)
             if z3_expr is not None:
-                self.solver.add(z3_expr)
+                tracker = z3.Bool(constraint_id)
+                self.solver.assert_and_track(z3_expr, tracker)
                 self._constraints[constraint_id] = z3_expr
+                self._constraint_trackers[constraint_id] = tracker
                 return True
 
             return False
@@ -551,13 +555,24 @@ class Z3SolverWrapper:
             unsat_core = []
             try:
                 core = self.solver.unsat_core()
-                unsat_core = [str(c) for c in core]
+                tracker_to_constraint = {
+                    str(tracker): constraint_id
+                    for constraint_id, tracker in self._constraint_trackers.items()
+                }
+                unsat_core = [tracker_to_constraint.get(str(c), str(c)) for c in core]
             except (RuntimeError, AttributeError, TypeError):
                 pass
 
             return Z3VerificationStatus.UNSATISFIABLE, None, unsat_core
 
         else:
+            reason_unknown = ""
+            try:
+                reason_unknown = self.solver.reason_unknown()
+            except (RuntimeError, AttributeError, TypeError):
+                reason_unknown = ""
+            if reason_unknown == "timeout":
+                return Z3VerificationStatus.TIMEOUT, None, None
             return Z3VerificationStatus.UNKNOWN, None, None
 
 

@@ -205,11 +205,14 @@ def _build_governance_redis_client() -> Any:
     return aioredis.from_url(redis_url, decode_responses=True)
 
 
-def _initialize_agent_bus_state() -> MessageProcessor | dict:
+def _initialize_agent_bus_state(
+    *,
+    workflow_repository: PostgresWorkflowRepository | InMemoryWorkflowRepository | None = None,
+) -> MessageProcessor | dict:
     """Initialize primary message processor, with mock fallback in development."""
     logger.info("Initializing Enhanced Agent Bus Message Processor...")
     try:
-        bus = MessageProcessor()
+        bus = MessageProcessor(workflow_repository=workflow_repository)
         logger.info("Enhanced Agent Bus initialized successfully")
         return bus
     except _API_APP_OPERATION_ERRORS as e:
@@ -238,6 +241,7 @@ async def _initialize_workflow_components(
         await repository.initialize()
         executor = _register_builtin_workflows(DurableWorkflowExecutor(repository=repository))
         app.state.workflow_executor = executor
+        app.state.workflow_repository = repository
         logger.info("Durable Workflow Executor initialized successfully")
         return executor, repository
     except ImportError:
@@ -248,6 +252,7 @@ async def _initialize_workflow_components(
             repository = InMemoryWorkflowRepository()
             executor = _register_builtin_workflows(DurableWorkflowExecutor(repository=repository))
             app.state.workflow_executor = executor
+            app.state.workflow_repository = repository
             return executor, None
         logger.warning("asyncpg not installed, skipping Workflow Executor initialization")
     except Exception as e:
@@ -471,9 +476,9 @@ async def _startup_runtime(app: FastAPI) -> None:
         app,
         allow_in_memory_fallback=_is_development_like_environment(),
     )
-    bus = _initialize_agent_bus_state()
-    _bind_runtime_state(app, bus=bus)
     workflow_executor, workflow_repository = await _initialize_workflow_components(app)
+    bus = _initialize_agent_bus_state(workflow_repository=workflow_repository)
+    _bind_runtime_state(app, bus=bus)
     _attach_pqc_postgres_fallback(app, workflow_repository)
     await _initialize_session_manager_if_available()
 

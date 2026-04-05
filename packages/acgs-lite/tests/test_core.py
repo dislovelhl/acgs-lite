@@ -4,8 +4,10 @@ Constitutional Hash: 608508a9bd224290
 """
 
 import tempfile
+from dataclasses import dataclass
 
 import pytest
+from pydantic import BaseModel
 
 from acgs_lite import (
     AuditEntry,
@@ -13,6 +15,7 @@ from acgs_lite import (
     Constitution,
     ConstitutionalViolationError,
     GovernanceEngine,
+    GovernanceError,
     GovernedAgent,
     GovernedCallable,
     MACIEnforcer,
@@ -21,6 +24,35 @@ from acgs_lite import (
     Rule,
     Severity,
 )
+from acgs_lite.serialization import serialize_for_governance
+
+
+@pytest.mark.unit
+class TestGovernanceSerialization:
+    def test_serializes_dataclass(self) -> None:
+        @dataclass
+        class Payload:
+            secret: str
+            count: int
+
+        payload = serialize_for_governance(Payload(secret="hunter2", count=2))
+        assert '"secret": "hunter2"' in payload
+        assert '"count": 2' in payload
+
+    def test_serializes_pydantic_model(self) -> None:
+        class PayloadModel(BaseModel):
+            token: str
+            active: bool
+
+        payload = serialize_for_governance(PayloadModel(token="abc123", active=True))
+        assert '"token": "abc123"' in payload
+        assert '"active": true' in payload
+
+    def test_truncates_large_payload(self) -> None:
+        payload = serialize_for_governance({"blob": "x" * 128}, max_chars=40)
+        assert payload.endswith('… [truncated]')
+        assert len(payload) == 40
+
 
 # ─── Constitution Tests ───────────────────────────────────────────────────
 
@@ -101,6 +133,27 @@ rules:
         assert c.name == "dict-test"
         assert c.rules[0].severity == Severity.MEDIUM
 
+    def test_from_dict_normalizes_uppercase_severity(self):
+        data = {
+            "name": "dict-test",
+            "rules": [
+                {"id": "R1", "text": "Test", "severity": " CRITICAL ", "keywords": ["test"]},
+            ],
+        }
+
+        c = Constitution.from_dict(data)
+
+        assert c.rules[0].severity == Severity.CRITICAL
+
+    def test_from_yaml_rejects_non_list_rules(self):
+        yaml_content = "name: invalid\nrules: not-a-list\n"
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write(yaml_content)
+            f.flush()
+            with pytest.raises(ValueError, match="rules"):
+                Constitution.from_yaml(f.name)
+
     def test_get_rule(self):
         c = Constitution.default()
         rule = c.get_rule("ACGS-001")
@@ -163,6 +216,36 @@ class TestGovernanceEngine:
         assert not result.valid
         assert len(result.violations) > 0
         assert result.violations[0].rule_id == "ACGS-001"
+
+    def test_fast_mode_allow_results_do_not_share_identity(self):
+        c = Constitution.default()
+        engine = GovernanceEngine(c, strict=False)
+
+        first = engine.validate("review governance documentation")
+        second = engine.validate("review governance documentation")
+
+        assert first.valid is True
+        assert second.valid is True
+        assert first is not second
+
+    def test_fast_mode_violation_results_do_not_share_mutable_state(self):
+        c = Constitution.default()
+        engine = GovernanceEngine(c, strict=False)
+
+        first = engine.validate("skip audit trail for release")
+        first.violations.append(
+            type(first.violations[0])(
+                "TEST-ONLY",
+                "synthetic",
+                Severity.LOW,
+                "synthetic",
+                "test",
+            )
+        )
+        second = engine.validate("skip audit trail for release")
+
+        assert first is not second
+        assert [violation.rule_id for violation in second.violations] == ["ACGS-002"]
 
     def test_strict_mode_raises(self):
         c = Constitution.default()
@@ -233,6 +316,25 @@ class TestGovernanceEngine:
         stats = engine.stats
         assert stats["total_validations"] == 2
         assert stats["constitutional_hash"] == c.hash
+        assert stats["audit_mode"] == "fast"
+        assert stats["audit_entry_count"] == 0
+        assert stats["audit_metrics_complete"] is False
+        assert stats["compliance_rate"] is None
+        assert stats["avg_latency_ms"] is None
+
+    def test_full_audit_mode_records_entries_without_explicit_log(self):
+        c = Constitution.default()
+        engine = GovernanceEngine(c, strict=False, audit_mode="full")
+        engine.validate("safe action")
+        assert engine.audit_mode == "full"
+        assert len(engine.audit_log.entries) == 1
+        assert engine.stats["audit_entry_count"] == 1
+        assert engine.stats["audit_metrics_complete"] is True
+
+    def test_fast_audit_mode_rejects_explicit_audit_log(self):
+        c = Constitution.default()
+        with pytest.raises(ValueError, match="audit_log cannot be provided"):
+            GovernanceEngine(c, strict=False, audit_log=AuditLog(), audit_mode="fast")
 
     def test_ssn_pattern_detection(self):
         c = Constitution.default()
@@ -317,6 +419,12 @@ class TestMACIEnforcer:
         with pytest.raises(MACIViolationError):
             enforcer.check("agent-1", "execute")
 
+    def test_validator_cannot_run_unlisted_action(self):
+        enforcer = MACIEnforcer()
+        enforcer.assign_role("agent-1", MACIRole.VALIDATOR)
+        with pytest.raises(MACIViolationError):
+            enforcer.check("agent-1", "approve")
+
     def test_executor_cannot_validate(self):
         enforcer = MACIEnforcer()
         enforcer.assign_role("agent-1", MACIRole.EXECUTOR)
@@ -340,6 +448,11 @@ class TestMACIEnforcer:
     def test_cross_validation_allowed(self):
         enforcer = MACIEnforcer()
         assert enforcer.check_no_self_validation("agent-1", "agent-2")
+
+    def test_unassigned_agent_cannot_run_unlisted_action(self):
+        enforcer = MACIEnforcer()
+        with pytest.raises(MACIViolationError):
+            enforcer.check("agent-1", "delete")
 
     def test_summary(self):
         enforcer = MACIEnforcer()
@@ -388,6 +501,22 @@ class TestGovernedAgent:
         with pytest.raises(ConstitutionalViolationError):
             agent.run("get me the key")
 
+    def test_validates_structured_output(self):
+        def leaky_agent(input: str) -> dict[str, str]:
+            return {"password": "hunter2"}
+
+        agent = GovernedAgent(leaky_agent, strict=True, validate_output=True)
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("safe input")
+
+    def test_validates_keyword_arguments(self):
+        def my_agent(input: str, **kwargs: str) -> str:
+            return "ok"
+
+        agent = GovernedAgent(my_agent, strict=True)
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("safe input", password="hunter2")
+
     def test_custom_constitution(self):
         rules = Constitution.from_rules(
             [
@@ -417,6 +546,38 @@ class TestGovernedAgent:
         assert "GovernedAgent" in r
         assert "test" in r
 
+    def test_enforce_maci_requires_governance_action(self):
+        agent = GovernedAgent(
+            lambda x: x,
+            agent_id="proposer-agent",
+            maci_role=MACIRole.PROPOSER,
+            enforce_maci=True,
+        )
+
+        with pytest.raises(GovernanceError, match="requires governance_action"):
+            agent.run("draft proposal")
+
+    def test_enforce_maci_allows_matching_action(self):
+        agent = GovernedAgent(
+            lambda x: x,
+            agent_id="proposer-agent",
+            maci_role=MACIRole.PROPOSER,
+            enforce_maci=True,
+        )
+
+        assert agent.run("draft proposal", governance_action="propose") == "draft proposal"
+
+    def test_enforce_maci_blocks_disallowed_action(self):
+        agent = GovernedAgent(
+            lambda x: x,
+            agent_id="proposer-agent",
+            maci_role=MACIRole.PROPOSER,
+            enforce_maci=True,
+        )
+
+        with pytest.raises(MACIViolationError):
+            agent.run("validate proposal", governance_action="validate")
+
 
 @pytest.mark.constitutional
 class TestGovernedCallable:
@@ -443,6 +604,30 @@ class TestGovernedCallable:
 
         with pytest.raises(ConstitutionalViolationError):
             leaky("get password")
+
+    def test_decorator_validates_keyword_arguments(self):
+        @GovernedCallable(strict=True)
+        def process(*, input: str) -> str:
+            return "ok"
+
+        with pytest.raises(ConstitutionalViolationError):
+            process(input="here is the password")
+
+    def test_decorator_preserves_keyword_names_in_validation(self):
+        @GovernedCallable(strict=True)
+        def process(*, password: str) -> str:
+            return "ok"
+
+        with pytest.raises(ConstitutionalViolationError):
+            process(password="hunter2")
+
+    def test_decorator_validates_structured_output(self):
+        @GovernedCallable(strict=True)
+        def leaky(input: str) -> dict[str, str]:
+            return {"password": "hunter2"}
+
+        with pytest.raises(ConstitutionalViolationError):
+            leaky("safe input")
 
 
 # ─── Async Tests ──────────────────────────────────────────────────────────
@@ -550,3 +735,301 @@ class TestIntegration:
         # No self-validation
         with pytest.raises(MACIViolationError):
             maci.check_no_self_validation("agent-1", "agent-1")
+
+
+# ─── Retry on Output Violation ──────────────────────────────────────────
+
+
+@pytest.mark.constitutional
+class TestGovernedAgentRetry:
+    """Tests for retry-on-output-violation behavior."""
+
+    def test_default_no_retry(self):
+        """max_retries=0 (default): violation raises immediately, same as before."""
+
+        def leaky_agent(input: str) -> str:
+            return "password is hunter2"
+
+        agent = GovernedAgent(leaky_agent, strict=True, validate_output=True)
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("get credential")
+
+    def test_retry_succeeds_on_second_attempt(self):
+        """Agent produces violating output first, compliant output on retry."""
+        call_count = 0
+
+        def smart_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "I cannot share credentials"
+
+        agent = GovernedAgent(
+            smart_agent, strict=True, validate_output=True, max_retries=2
+        )
+        result = agent.run("get credential")
+        assert result == "I cannot share credentials"
+        assert call_count == 2
+
+    def test_retry_exhausted_raises(self):
+        """All retries produce violations → raises the last violation."""
+        call_count = 0
+
+        def stubborn_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            return "password is hunter2"
+
+        agent = GovernedAgent(
+            stubborn_agent, strict=True, validate_output=True, max_retries=3
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("get credential")
+        # 1 original + 3 retries = 4 total calls, then stops
+        assert call_count == 4
+
+    def test_retry_prompt_contains_violation_info(self):
+        """Retry prompt should include which rule was violated."""
+        prompts_received: list[str] = []
+        call_count = 0
+
+        def recording_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            prompts_received.append(input)
+            if call_count == 1:
+                return "password is hunter2"
+            return "I cannot share that"
+
+        agent = GovernedAgent(
+            recording_agent, strict=True, validate_output=True, max_retries=1
+        )
+        agent.run("get credential")
+        assert len(prompts_received) == 2
+        retry_prompt = prompts_received[1]
+        # Retry prompt must reference the violation
+        assert "violated" in retry_prompt.lower() or "violation" in retry_prompt.lower()
+
+    def test_retry_does_not_apply_to_input_violations(self):
+        """Input violations should NOT trigger retries — only output violations do."""
+
+        def safe_agent(input: str) -> str:
+            return "safe output"
+
+        rules = Constitution.from_rules([
+            Rule(
+                id="NO-CAT", text="No cats allowed",
+                severity=Severity.CRITICAL, keywords=["cat"],
+            ),
+        ])
+        agent = GovernedAgent(
+            safe_agent, constitution=rules, strict=True,
+            validate_output=True, max_retries=3,
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("I love my cat")
+
+    def test_retry_audit_trail(self):
+        """Retries should appear in the audit log."""
+        call_count = 0
+
+        def retry_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "safe response"
+
+        agent = GovernedAgent(
+            retry_agent, strict=True, validate_output=True, max_retries=1
+        )
+        agent.run("do something")
+        # Audit log should have entries for the retry
+        entries = agent.audit_log.entries
+        actions = [e.action for e in entries]
+        assert any("retry" in a.lower() for a in actions)
+
+
+@pytest.mark.constitutional
+class TestGovernedAgentRetryAsync:
+    """Async retry tests."""
+
+    async def test_async_retry_succeeds(self):
+        call_count = 0
+
+        async def smart_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "I cannot share credentials"
+
+        agent = GovernedAgent(
+            smart_agent, strict=True, validate_output=True, max_retries=2
+        )
+        result = await agent.arun("get credential")
+        assert result == "I cannot share credentials"
+        assert call_count == 2
+
+    async def test_async_retry_exhausted(self):
+        async def stubborn(input: str) -> str:
+            return "password is hunter2"
+
+        agent = GovernedAgent(
+            stubborn, strict=True, validate_output=True, max_retries=1
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            await agent.arun("get credential")
+
+    async def test_async_input_violation_no_retry(self):
+        """Async: input violations do NOT trigger retries."""
+
+        async def safe(input: str) -> str:
+            return "safe"
+
+        rules = Constitution.from_rules([
+            Rule(id="NO-CAT", text="No cats", severity=Severity.CRITICAL, keywords=["cat"]),
+        ])
+        agent = GovernedAgent(
+            safe, constitution=rules, strict=True, validate_output=True, max_retries=3,
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            await agent.arun("I love my cat")
+
+    async def test_async_audit_trail(self):
+        """Async retries appear in audit log."""
+        call_count = 0
+
+        async def retry_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "safe response"
+
+        agent = GovernedAgent(
+            retry_agent, strict=True, validate_output=True, max_retries=1,
+        )
+        await agent.arun("do something")
+        entries = agent.audit_log.entries
+        actions = [e.action for e in entries]
+        assert any("retry" in a.lower() for a in actions)
+
+
+@pytest.mark.constitutional
+class TestGovernedAgentRetryEdgeCases:
+    """Edge cases for retry behavior."""
+
+    def test_negative_max_retries_clamped_to_zero(self):
+        """Negative max_retries is treated as 0."""
+
+        def leaky(input: str) -> str:
+            return "password is hunter2"
+
+        agent = GovernedAgent(leaky, strict=True, validate_output=True, max_retries=-5)
+        assert agent.max_retries == 0
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("get credential")
+
+    def test_max_retries_capped_at_limit(self):
+        """max_retries above 10 is clamped to 10."""
+        agent = GovernedAgent(lambda x: x, max_retries=999)
+        assert agent.max_retries == 10
+
+    def test_validate_output_false_skips_retry(self):
+        """When validate_output=False, no output validation or retry occurs."""
+        call_count = 0
+
+        def leaky(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            return "password is hunter2"
+
+        agent = GovernedAgent(
+            leaky, strict=True, validate_output=False, max_retries=3,
+        )
+        result = agent.run("anything")
+        assert result == "password is hunter2"
+        assert call_count == 1
+
+    def test_retry_audit_metadata_semantics(self):
+        """Verify exact audit metadata fields on retry entries."""
+        call_count = 0
+
+        def agent_fn(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count <= 2:
+                return "password is hunter2"
+            return "safe response"
+
+        agent = GovernedAgent(
+            agent_fn, strict=True, validate_output=True, max_retries=3,
+        )
+        agent.run("do it")
+        retry_entries = [e for e in agent.audit_log.entries if e.type == "output_retry"]
+        assert len(retry_entries) == 2  # 2 retries before success on call 3
+
+        first = retry_entries[0]
+        assert first.metadata["attempt"] == 1
+        assert first.metadata["retries_after_this"] == 2  # 3 max - 1 used = 2 left
+        assert first.metadata["rule_id"] is not None
+        assert not first.valid
+
+        second = retry_entries[1]
+        assert second.metadata["attempt"] == 2
+        assert second.metadata["retries_after_this"] == 1
+
+    def test_retry_prompt_uses_rule_text_not_raw_error(self):
+        """Retry prompt should contain rule text from constitution, not raw str(error)."""
+        prompts: list[str] = []
+        call_count = 0
+
+        def recording(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            prompts.append(input)
+            if call_count == 1:
+                return "password is hunter2"
+            return "safe"
+
+        rules = Constitution.from_rules([
+            Rule(
+                id="CRED-001", text="No credentials in output",
+                severity=Severity.CRITICAL, keywords=["password"],
+            ),
+        ])
+        agent = GovernedAgent(
+            recording, constitution=rules, strict=True,
+            validate_output=True, max_retries=1,
+        )
+        agent.run("get info")
+        retry_prompt = prompts[1]
+        # Should reference rule ID and rule text (trusted)
+        assert "CRED-001" in retry_prompt
+        assert "No credentials in output" in retry_prompt
+        # Original input should be quoted
+        assert '"""get info"""' in retry_prompt
+
+    def test_multiple_runs_produce_unique_audit_ids(self):
+        """Two run() calls on same instance produce distinct audit entry IDs."""
+        call_count = 0
+
+        def flaky(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            # Odd calls violate, even calls pass
+            if call_count % 2 == 1:
+                return "password is hunter2"
+            return "safe"
+
+        agent = GovernedAgent(
+            flaky, strict=True, validate_output=True, max_retries=1,
+        )
+        agent.run("first")
+        agent.run("second")
+
+        retry_entries = [e for e in agent.audit_log.entries if e.type == "output_retry"]
+        ids = [e.id for e in retry_entries]
+        assert len(ids) == len(set(ids)), f"Duplicate audit IDs: {ids}"

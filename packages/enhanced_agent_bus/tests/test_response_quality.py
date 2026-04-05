@@ -14,13 +14,21 @@ from datetime import datetime, timezone
 
 import pytest
 
+from enhanced_agent_bus.llm_adapters.base import (
+    BaseLLMAdapter,
+    CompletionMetadata,
+    CostEstimate,
+    LLMMessage,
+    LLMResponse,
+    TokenUsage,
+)
 from enhanced_agent_bus.response_quality import (
     CONSTITUTIONAL_HASH,
+    AdapterConstitutionalCorrector,
+    AdapterLLMRefiner,
     ConstitutionalHashError,
     DefaultConstitutionalCorrector,
-    AdapterConstitutionalCorrector,
     DefaultLLMRefiner,
-    AdapterLLMRefiner,
     DimensionScores,
     DimensionSpec,
     QualityAssessment,
@@ -40,7 +48,7 @@ from enhanced_agent_bus.response_quality import (
     create_refiner,
     create_validator,
 )
-from enhanced_agent_bus.llm_adapters.base import BaseLLMAdapter, LLMResponse, LLMMessage, TokenUsage, CostEstimate, CompletionMetadata
+
 
 class MockLLMAdapter(BaseLLMAdapter):
     def __init__(self, expected_response="Mock refined response"):
@@ -65,12 +73,13 @@ class MockLLMAdapter(BaseLLMAdapter):
             usage=TokenUsage(),
             cost=CostEstimate()
         )
-        
+
     def stream(self, messages, **kwargs): pass
     async def astream(self, messages, **kwargs): pass
     def count_tokens(self, messages): return 0
     def estimate_cost(self, p, c): return CostEstimate()
     async def health_check(self): pass
+    def validate_constitutional_compliance(self, response, **kwargs): return True
 
 
 # ---------------------------------------------------------------------------

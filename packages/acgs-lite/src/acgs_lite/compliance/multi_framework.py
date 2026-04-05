@@ -25,13 +25,13 @@ from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
+from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
 from acgs_lite.compliance.base import (
     ChecklistStatus,
     ComplianceFramework,
     FrameworkAssessment,
     MultiFrameworkReport,
 )
-from acgs_lite.compliance.australia_ai_ethics import AustraliaAIEthicsFramework
 from acgs_lite.compliance.brazil_lgpd import BrazilLGPDFramework
 from acgs_lite.compliance.canada_aida import CanadaAIDAFramework
 from acgs_lite.compliance.ccpa_cpra import CCPACPRAFramework

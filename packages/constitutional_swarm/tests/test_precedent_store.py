@@ -3,17 +3,13 @@
 from __future__ import annotations
 
 import pytest
-
 from constitutional_swarm.bittensor.precedent_store import (
-    PrecedentMatch,
     PrecedentRecord,
     PrecedentStore,
-    RetrievalResult,
     _cosine_similarity,
     _euclidean_distance,
 )
 from constitutional_swarm.bittensor.protocol import EscalationType
-
 
 CONST_HASH = "608508a9bd224290"
 
@@ -390,7 +386,7 @@ class TestPrecedentStoreStatistics:
     def test_escalation_rate_floor(self):
         store = PrecedentStore(CONST_HASH, min_votes_for_precedent=1)
         # Even with many precedents, floor should be 0.5%
-        for i in range(100_000):
+        for _i in range(100_000):
             # We can't actually add 100k records but we can set a huge count
             pass
         rate = store.escalation_rate_projection(baseline_rate=0.03, decay_per_1k=100.0)

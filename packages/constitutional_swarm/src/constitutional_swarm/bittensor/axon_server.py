@@ -76,7 +76,7 @@ class MinerAxonServer:
             synapse.error_message = f"DNA pre-check failed: {exc}"
         except TimeoutError:
             synapse.error_message = "Deliberation timed out"
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - bt forward handlers must fail closed without raising
             synapse.error_message = f"Processing error: {type(exc).__name__}"
         return synapse
 

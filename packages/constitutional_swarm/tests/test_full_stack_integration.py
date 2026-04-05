@@ -17,16 +17,9 @@ from __future__ import annotations
 
 import os
 import tempfile
-from datetime import datetime, timedelta, timezone
-from typing import Any
+from datetime import UTC, datetime, timedelta
 
 import pytest
-
-from acgs_lite.constitution.claim_lifecycle import CaseConfig, CaseState
-from acgs_lite.constitution.spot_check import AuditPolicy
-from acgs_lite.constitution.trust_score import TrustConfig
-from acgs_lite.constitution.validator_selection import SelectionPolicy
-
 from constitutional_swarm.bittensor.governance_coordinator import (
     CoordinatorConfig,
     GovernanceCoordinator,
@@ -43,6 +36,10 @@ from constitutional_swarm.bittensor.protocol import (
 from constitutional_swarm.bittensor.subnet_owner import SubnetOwner
 from constitutional_swarm.bittensor.validator import ConstitutionalValidator
 
+from acgs_lite.constitution.claim_lifecycle import CaseConfig, CaseState
+from acgs_lite.constitution.spot_check import AuditPolicy
+from acgs_lite.constitution.trust_score import TrustConfig
+from acgs_lite.constitution.validator_selection import SelectionPolicy
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -122,7 +119,7 @@ def coordinator():
 
 
 def _ts(minutes: float = 0) -> datetime:
-    return datetime(2026, 3, 30, 12, 0, 0, tzinfo=timezone.utc) + timedelta(minutes=minutes)
+    return datetime(2026, 3, 30, 12, 0, 0, tzinfo=UTC) + timedelta(minutes=minutes)
 
 
 async def _valid_handler(task: str, context: str, meta: dict) -> tuple[str, str]:
@@ -351,8 +348,9 @@ class TestFullStackIntegration:
     @pytest.mark.asyncio
     async def test_dna_violation_blocks_miner(self, constitution_path, coordinator):
         """Miner producing a harmful judgment is blocked by DNA pre-check."""
-        from acgs_lite import ConstitutionalViolationError
         from constitutional_swarm.bittensor.miner import DNAPreCheckFailedError
+
+        from acgs_lite import ConstitutionalViolationError
 
         bad_miner = ConstitutionalMiner(
             config=MinerConfig(

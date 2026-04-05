@@ -31,12 +31,28 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import os
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Protocol
 
+COMPLIANCE_CERTIFICATE_SECRET_ENV_KEY = "CONSTITUTIONAL_SWARM_COMPLIANCE_CERTIFICATE_SECRET"
+
+
+def _resolve_compliance_certificate_secret(secret_key: str | None) -> str:
+    if secret_key:
+        return secret_key
+
+    configured_secret = (os.getenv(COMPLIANCE_CERTIFICATE_SECRET_ENV_KEY) or "").strip()
+    if configured_secret:
+        return configured_secret
+
+    raise ValueError(
+        "Compliance certificate secret is required. Provide secret_key or set "
+        f"{COMPLIANCE_CERTIFICATE_SECRET_ENV_KEY}."
+    )
 
 # ---------------------------------------------------------------------------
 # Certificate types and status
@@ -74,14 +90,14 @@ class AuditPeriod:
         return (self.end_at - self.start_at) / 86_400
 
     @classmethod
-    def last_n_days(cls, n: int, label: str = "") -> "AuditPeriod":
+    def last_n_days(cls, n: int, label: str = "") -> AuditPeriod:
         end = time.time()
         return cls(start_at=end - n * 86_400, end_at=end, label=label or f"last-{n}d")
 
     @classmethod
-    def current_month(cls) -> "AuditPeriod":
+    def current_month(cls) -> AuditPeriod:
         import datetime
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
         start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         return cls(
             start_at=start.timestamp(),
@@ -348,7 +364,7 @@ class CertificateIssuer:
     def __init__(
         self,
         issuer_id: str = "acgs-subnet-owner",
-        secret_key: str = "change-me-in-production",
+        secret_key: str | None = None,
         prover: ComplianceProver | None = None,
         proof_type: ProofType = ProofType.HMAC_SHA256,
     ) -> None:
@@ -357,7 +373,7 @@ class CertificateIssuer:
         if prover is not None:
             self._prover = prover
         else:
-            self._prover = HMACProver(secret_key)
+            self._prover = HMACProver(_resolve_compliance_certificate_secret(secret_key))
         self._issued: dict[str, ComplianceCertificate] = {}
         self._revoked: set[str] = set()
 

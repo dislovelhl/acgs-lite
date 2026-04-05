@@ -6,7 +6,13 @@ Constitutional Hash: 608508a9bd224290
 
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
+from typing import Generic, TypeVar
 from uuid import UUID
+
+try:
+    from src.core.shared.constants import CONSTITUTIONAL_HASH
+except ImportError:
+    CONSTITUTIONAL_HASH = "standalone"
 
 from enhanced_agent_bus.data_flywheel.models import (
     CandidateArtifact,
@@ -25,8 +31,34 @@ from .models import (
     WorkflowStep,
 )
 
+RepositoryIdT = TypeVar("RepositoryIdT")
+CheckpointT = TypeVar("CheckpointT")
+CheckpointSaveResultT = TypeVar("CheckpointSaveResultT")
 
-class WorkflowRepository(ABC):
+
+class GovernanceRepository(
+    ABC,
+    Generic[RepositoryIdT, CheckpointT, CheckpointSaveResultT],
+):
+    """Shared governance persistence contract used by workflow and saga stores."""
+
+    @property
+    def constitutional_hash(self) -> str:
+        """Return the constitutional hash for validation."""
+        return CONSTITUTIONAL_HASH  # type: ignore[no-any-return]
+
+    @abstractmethod
+    async def save_checkpoint(self, checkpoint: CheckpointT) -> CheckpointSaveResultT:
+        """Persist a checkpoint snapshot."""
+
+    @abstractmethod
+    async def get_latest_checkpoint(
+        self, instance_id: RepositoryIdT
+    ) -> CheckpointT | None:
+        """Get the latest checkpoint for a governance record."""
+
+
+class WorkflowRepository(GovernanceRepository[UUID, CheckpointData, None]):
     """Abstract repository for workflow persistence operations."""
 
     @abstractmethod
@@ -76,15 +108,6 @@ class WorkflowRepository(ABC):
     @abstractmethod
     async def get_compensations(self, workflow_instance_id: UUID) -> list[WorkflowCompensation]:
         """Get all compensations for a workflow."""
-
-    @abstractmethod
-    async def save_checkpoint(self, checkpoint: CheckpointData) -> None:
-        """Save a checkpoint snapshot."""
-
-    @abstractmethod
-    async def get_latest_checkpoint(self, workflow_instance_id: UUID) -> CheckpointData | None:
-        """Get latest checkpoint for a workflow."""
-        pass
 
     @abstractmethod
     async def list_workflows(

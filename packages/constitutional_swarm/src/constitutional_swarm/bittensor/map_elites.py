@@ -1,11 +1,11 @@
 """MAP-Elites Miner Quality Optimization.
 
-Maintains a quality-diversity grid over (governance_domain × deliberation_strategy).
+Maintains a quality-diversity grid over (governance_domain x deliberation_strategy).
 Each cell tracks the best-performing miner approach for that combination.
 Forces exploration of the full behavioral space — prevents convergence to a
 single "good enough" strategy.
 
-7 domains × 4 strategies = 28 cells.
+7 domains x 4 strategies = 28 cells.
 
 Evolutionary pattern: MAP-Elites (Mouret & Clune, 2015).
 Ceiling detection per cell and globally.

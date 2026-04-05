@@ -3,18 +3,14 @@
 from __future__ import annotations
 
 import pytest
-
+from constitutional_swarm.bittensor.protocol import TIER_TAO_MULTIPLIER, MinerTier
 from constitutional_swarm.bittensor.tier_manager import (
+    _COMPLEXITY_MIN_TIER,
     MinerPerformance,
-    RoutingResult,
     TaskComplexity,
     TierManager,
-    TierPromotion,
-    _COMPLEXITY_MIN_TIER,
 )
-from constitutional_swarm.bittensor.protocol import MinerTier, TIER_TAO_MULTIPLIER
 from constitutional_swarm.capability import CapabilityRegistry
-
 
 # ---------------------------------------------------------------------------
 # TaskComplexity → min tier mapping
@@ -119,7 +115,7 @@ class TestTierPromotion:
         mgr = TierManager()
         mgr.register_miner("m1")
         promotion = None
-        for i in range(10):
+        for _i in range(10):
             result = mgr.record_judgment("m1", accepted=True, reputation=1.3)
             if result is not None:
                 promotion = result
@@ -131,7 +127,7 @@ class TestTierPromotion:
         mgr = TierManager()
         mgr.register_miner("m1", domains={"finance"})
         promotion = None
-        for i in range(50):
+        for _i in range(50):
             result = mgr.record_judgment("m1", accepted=True, reputation=1.6)
             if result is not None and result.to_tier == MinerTier.MASTER:
                 promotion = result
@@ -151,7 +147,7 @@ class TestTierPromotion:
         mgr = TierManager()
         mgr.register_miner("m1", domains={"finance"})
         promotion = None
-        for i in range(200):
+        for _i in range(200):
             result = mgr.record_judgment("m1", accepted=True, reputation=1.9)
             if result is not None and result.to_tier == MinerTier.ELDER:
                 promotion = result

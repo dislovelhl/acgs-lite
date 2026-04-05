@@ -2,19 +2,15 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
-import time
 import uuid
 
 import pytest
-
 from constitutional_swarm.bittensor.arweave_audit_log import (
+    ArweaveAuditLogger,
     AuditBatch,
     AuditDecisionType,
     AuditLogEntry,
-    AuditLogReceipt,
-    ArweaveAuditLogger,
     InMemoryArweaveClient,
     _compute_merkle_root,
     _merkle_path_for_index,
@@ -141,7 +137,6 @@ class TestMerkleUtilities:
 
     def test_tampered_root_fails(self):
         leaves = ["L0", "L1"]
-        root = _compute_merkle_root(leaves)
         path = _merkle_path_for_index(leaves, 0)
         assert not verify_merkle_path("L0", path, "tampered-root")
 
@@ -355,7 +350,7 @@ class TestArweaveAuditLogger:
         assert batch.entry_count == 5
 
     def test_multiple_batches(self):
-        logger, arweave = _logger(batch_size=3)
+        logger, _arweave = _logger(batch_size=3)
         for i in range(9):
             logger.add_entry(_entry(f"id-{i}"))
         logger.flush()  # remaining

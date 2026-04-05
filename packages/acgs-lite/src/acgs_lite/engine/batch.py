@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from acgs_lite.constitution import Severity
 
 if TYPE_CHECKING:
-    from .core import ValidationResult
+    from .models import ValidationResult
 
 
 @dataclass(frozen=True)
@@ -134,7 +134,7 @@ class BatchValidationMixin:
         """
         from acgs_lite.errors import ConstitutionalViolationError
 
-        from .core import ValidationResult, Violation
+        from .models import ValidationResult, Violation
 
         individual: list[ValidationResult] = []
         for item in actions:

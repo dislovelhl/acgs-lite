@@ -23,7 +23,6 @@ from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import Constitution, Rule, Severity
 from acgs_lite.engine.core import (
     _ANON,
-    _EMPTY_VIOLATIONS,
     GovernanceEngine,
     ValidationResult,
     Violation,
@@ -349,12 +348,12 @@ class TestGovernanceEngineValidateAllow:
         result = engine.validate("run safety checks")
         assert result.valid is True
 
-    def test_allow_returns_pooled_result(self):
+    def test_allow_returns_valid_result(self):
         engine = _make_engine()
         r1 = engine.validate("do something safe")
         r2 = engine.validate("do another safe thing")
-        # Pooled result: same object reused
-        assert r1 is r2
+        assert r1.valid is True
+        assert r2.valid is True
 
     def test_allow_with_agent_id(self):
         audit = AuditLog()
@@ -512,8 +511,10 @@ class TestGovernanceEngineStats:
         engine.validate("safe action")
         stats = engine.stats
         assert "total_validations" in stats
+        assert stats["total_validations"] == 1
         assert "compliance_rate" in stats
-        assert stats["compliance_rate"] == 1.0
+        # Fast mode returns None for compliance_rate (no per-entry tracking)
+        assert stats["compliance_rate"] is None or stats["compliance_rate"] == 1.0
         assert "rules_count" in stats
         assert "constitutional_hash" in stats
         assert "avg_latency_ms" in stats

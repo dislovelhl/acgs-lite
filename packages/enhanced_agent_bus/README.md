@@ -13,6 +13,13 @@
 > **Performance:** Benchmark from the current checkout before quoting latency or throughput
 > **Dependencies:** Redis/OPA optional for some features, required for full local stack
 
+### Quality status
+
+- **Test pass rate:** latest observed full run passed 23,792 tests (99.98%)
+- **Coverage gate:** CI enforces 80% minimum for this package
+- These are different signals: pass rate reflects the latest observed run; coverage gate reflects the CI threshold
+- 4 residual failures are test-isolation-order-dependent (env-var pollution, optional dep mocks); they pass in isolation
+
 ## Overview
 
 The Enhanced Agent Bus is the platform runtime layer for ACGS, historically referenced internally as ACGS-2. It provides high-performance, constitutionally compliant message routing between AI agents with built-in policy validation, MACI role enforcement, and comprehensive antifragility features.
@@ -113,6 +120,13 @@ graph TD
     J --> K[Health Aggregator]
     J --> L[Recovery Orchestrator]
 ```
+
+For a focused breakdown of the refactored message-processing pipeline, see
+[`docs/MESSAGE_PROCESSOR_ARCHITECTURE.md`](./docs/MESSAGE_PROCESSOR_ARCHITECTURE.md).
+For the final wrapper inventory and residual-risk audit, see
+[`docs/MESSAGE_PROCESSOR_FINAL_ARCHITECTURE_AUDIT.md`](./docs/MESSAGE_PROCESSOR_FINAL_ARCHITECTURE_AUDIT.md).
+For the post-refactor wrapper retirement sequence and coverage-shard blocker map, see
+[`docs/MESSAGE_PROCESSOR_COVERAGE_REGEN_CLEANUP_PLAN.md`](./docs/MESSAGE_PROCESSOR_COVERAGE_REGEN_CLEANUP_PLAN.md).
 
 ## Core Components
 
@@ -258,7 +272,7 @@ measure the current checkout instead of relying on hard-coded numbers in this RE
 
 ### Optimization Tips
 
-1. **Enable Rust Backend**: Set `USE_RUST_BACKEND=true` for 10-50x speedup
+1. **Enable Rust Backend**: Set `USE_RUST_BACKEND=true` for measurable speedup on benchmark paths; measure from the current checkout before quoting numbers
 2. **Use Redis Registry**: Distributed agent registry for multi-node deployments
 3. **Enable Metering**: Fire-and-forget billing with <5μs latency impact
 4. **Circuit Breakers**: Prevent cascade failures under load
@@ -320,15 +334,12 @@ bus = EnhancedAgentBus(
 
 ## Documentation
 
-**Start Here:** [Documentation Portal](./DOCUMENTATION_PORTAL.md) - Unified navigation for all 32 documentation files
+**Start Here:** [Documentation Portal](./DOCUMENTATION_PORTAL.md) — navigation for package-level docs.
 
-| Document                                          | Description                    |
-| ------------------------------------------------- | ------------------------------ |
-| [Documentation Portal](./DOCUMENTATION_PORTAL.md) | Unified navigation with search |
-| [API Reference](./docs/API.md)                    | Complete API documentation     |
-| [Developer Guide](./docs/DEVELOPER_GUIDE.md)      | Development setup and patterns |
-| [Architecture](./docs/ARCHITECTURE.md)            | System design and components   |
-| [MACI Guide](./docs/guides/MACI_GUIDE.md)         | Role separation enforcement    |
+For message-processor internals see the `docs/` subdirectory:
+- [`docs/MESSAGE_PROCESSOR_ARCHITECTURE.md`](./docs/MESSAGE_PROCESSOR_ARCHITECTURE.md) — pipeline design and state invariants
+- [`docs/MESSAGE_PROCESSOR_FINAL_ARCHITECTURE_AUDIT.md`](./docs/MESSAGE_PROCESSOR_FINAL_ARCHITECTURE_AUDIT.md) — wrapper inventory and residual-risk audit
+- [`docs/MESSAGE_PROCESSOR_COVERAGE_REGEN_CLEANUP_PLAN.md`](./docs/MESSAGE_PROCESSOR_COVERAGE_REGEN_CLEANUP_PLAN.md) — post-refactor wrapper retirement and coverage-shard map
 
 ## Exception Hierarchy
 
@@ -371,15 +382,43 @@ AGPL-3.0-or-later. See [../../LICENSE](../../LICENSE) for the repository license
 
 ---
 
+## Fail-Closed Architecture
+
+The canonical fail-closed implementation lives in `acgs_lite.fail_closed`. This package
+imports and extends it — `enhanced_agent_bus.shared.fail_closed` is a superset that adds:
+
+- **callable deny values** (handler receives original `*args, error=exc`)
+- **`exceptions` kwarg** (alias for the canonical `reraise` inverse)
+
+Always import `fail_closed` from `enhanced_agent_bus.shared.fail_closed` for bus code; never
+create a third version.
+
+## Optional Plugin Registry
+
+`plugin_registry.py` centralizes availability checks for 16 optional modules. Use
+`plugin_registry.available("name")` instead of try/except import guards:
+
+```python
+from enhanced_agent_bus.plugin_registry import available, require
+
+if available("z3"):
+    # Z3 is present — use formal verification path
+    ...
+
+# Or raise PluginNotAvailable with install hint:
+require("mlflow")  # raises if mlflow not installed
+```
+
+Optional plugins include: `z3`, `mlflow`, `numpy`, `pandas`, `sklearn`, `maci_enforcement`,
+`maci_strategy`, `ab_testing`, `online_learning`, `opa_guard_mixin`, and others.
+Z3 is present but optional and transitional; it is gated through this registry.
+Default-state runtime behavior (whether Z3 is invoked in any live path) depends on
+deployment config and the verification pipeline feature flags. Do not assume Z3 is
+active or inactive without checking the controlling configuration. Cedar is a planned
+migration target for the policy evaluation path — it is not yet implemented.
+
+---
+
 _Constitutional Hash: 608508a9bd224290_
-_Updated: 2026-02-01_
+_Updated: 2026-04-02_
 _Enhanced Agent Bus for ACGS (historically labeled ACGS-2) v2.5.0_
-\n
-
-## Coverage Metrics
-
-**System-wide Coverage:** 48.46% (actual coverage across entire codebase)
-**Module Coverage:** 65%+ (average coverage of individual well-tested modules)
-
-The system-wide coverage represents the actual test coverage across all source files,
-while module coverage shows the average coverage of individual components.

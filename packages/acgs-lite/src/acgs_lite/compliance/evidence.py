@@ -845,8 +845,11 @@ def collect_evidence(
 # ---------------------------------------------------------------------------
 
 import uuid as _uuid
-from datetime import datetime as _datetime, timezone as _timezone
-from dataclasses import dataclass as _dc, field as _field, asdict as _asdict
+from dataclasses import asdict as _asdict
+from dataclasses import dataclass as _dc
+from dataclasses import field as _field
+from datetime import datetime as _datetime
+from datetime import timezone as _timezone
 from typing import Any as _Any
 
 _NOT_ASSESSED = "not_assessed"

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from constitutional_swarm.bittensor.chain_anchor import (
     AnchorRecord,
     ChainAnchor,
@@ -11,7 +10,6 @@ from constitutional_swarm.bittensor.chain_anchor import (
     ProofEvidence,
     _compute_merkle_root,
 )
-
 
 CONST_HASH = "608508a9bd224290"
 

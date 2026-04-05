@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
+import importlib
 import time
 from collections import deque
 from types import SimpleNamespace
@@ -115,7 +116,13 @@ def _patch_externals():
         mock_validator.GovernanceDecisionValidator.return_value.validate_decision = AsyncMock(
             return_value=(True, [])
         )
-        mock_import.return_value = mock_validator
+
+        def _import_side_effect(module_name: str):
+            if module_name == "enhanced_agent_bus.validators":
+                return mock_validator
+            return importlib.import_module(module_name)
+
+        mock_import.side_effect = _import_side_effect
 
         # ImpactScorer instance
         scorer = MagicMock()
@@ -746,13 +753,15 @@ class TestCollectDriftData:
         assert engine._collect_drift_data() is None
 
     def test_returns_dataframe_with_data(self, engine):
+        pd = pytest.importorskip("pandas", reason="pandas required for drift data")
         engine.decision_history.append(_make_decision())
         engine.decision_history.append(_make_decision())
 
         result = engine._collect_drift_data()
-        # If pandas is available it returns a DataFrame, otherwise None
-        if result is not None:
-            assert len(result) == 2
+        if result is None:
+            pytest.skip("drift data collection returned None (pandas mock or unavailable)")
+        assert isinstance(result, pd.DataFrame)
+        assert len(result) == 2
 
 
 # ---------------------------------------------------------------------------

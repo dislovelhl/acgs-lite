@@ -35,7 +35,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.structured_logging import get_logger
@@ -85,6 +85,13 @@ def _get_detector():
     return _injection_detector
 
 
+def _normalize_action_text(value: str) -> str:
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError("Action must contain non-whitespace content")
+    return normalized
+
+
 # ---------------------------------------------------------------------------
 # Request / Response models
 # ---------------------------------------------------------------------------
@@ -94,6 +101,11 @@ class GovernanceValidationRequest(BaseModel):
     action: str = Field(..., description="The action to validate", max_length=5000)
     agent_id: str = Field(default="anonymous", description="Requesting agent ID")
     context: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("action")
+    @classmethod
+    def normalize_action(cls, value: str) -> str:
+        return _normalize_action_text(value)
 
 
 class GovernanceValidationResponse(BaseModel):
@@ -144,6 +156,11 @@ class BatchValidationRequest(BaseModel):
     )
     agent_id: str = Field(default="anonymous")
     context: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("actions")
+    @classmethod
+    def normalize_actions(cls, values: list[str]) -> list[str]:
+        return [_normalize_action_text(value) for value in values]
 
 
 class BatchValidationResponse(BaseModel):
@@ -594,7 +611,12 @@ async def quick_check(
     No auth, no payment. Returns minimal result to let agents
     discover the service before committing to paid tiers.
     """
-    result = _evaluate_action(action, {}, detailed=True)
+    try:
+        normalized_action = _normalize_action_text(action)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    result = _evaluate_action(normalized_action, {}, detailed=True)
     first_violation = result["violations"][0] if result["violations"] else None
     response: dict[str, Any] = {
         "compliant": result["compliant"],

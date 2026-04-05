@@ -23,12 +23,11 @@ from enhanced_agent_bus.impact_scorer_infra.turboquant_cache import (
     TurboQuantCompressor,
     TurboQuantConfig,
     _generate_rotation_matrix,
+    _inverse_rotate,
     _lloyd_max_boundaries,
     _quantize_scalar,
     _rotate_vector,
-    _inverse_rotate,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

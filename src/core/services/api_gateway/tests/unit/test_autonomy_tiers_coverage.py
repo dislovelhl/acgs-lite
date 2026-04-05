@@ -161,6 +161,24 @@ class TestCreateTierAssignment:
         )
         assert resp.status_code == 422
 
+    def test_create_rejects_blank_agent_id(self, client: TestClient):
+        resp = client.post(
+            "/autonomy-tiers",
+            json={"agent_id": "   ", "tier": "ADVISORY"},
+        )
+        assert resp.status_code == 422
+
+    def test_create_rejects_blank_action_boundary(self, client: TestClient):
+        resp = client.post(
+            "/autonomy-tiers",
+            json={
+                "agent_id": "agent-1",
+                "tier": "BOUNDED",
+                "action_boundaries": ["read:*", "   "],
+            },
+        )
+        assert resp.status_code == 422
+
 
 # ---------------------------------------------------------------------------
 # GET /autonomy-tiers/{agent_id}
@@ -216,6 +234,13 @@ class TestUpdateTierAssignment:
             json={"tier": "BOUNDED"},
         )
         assert resp.status_code == 403
+
+    def test_update_rejects_blank_action_boundary(self, client: TestClient):
+        resp = client.put(
+            "/autonomy-tiers/agent-1",
+            json={"tier": "BOUNDED", "action_boundaries": ["write:*", ""]},
+        )
+        assert resp.status_code == 422
 
 
 # ---------------------------------------------------------------------------

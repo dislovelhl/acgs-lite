@@ -445,13 +445,8 @@ class TestGovernanceEngineInternals:
         # Our fixture includes HIGH severity rules
         assert engine._has_high_rules is True
 
-    def test_pooled_result_exists(self, engine):
-        assert engine._pooled_result is not None
-        assert engine._pooled_result.valid is True
-
-    def test_pooled_escalate_exists(self, engine):
-        assert engine._pooled_escalate is not None
-        assert engine._pooled_escalate.valid is True
+    def test_audit_mode_attribute_exists(self, engine):
+        assert engine._audit_mode in ("fast", "full")
 
 
 # ---------------------------------------------------------------------------

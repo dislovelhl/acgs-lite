@@ -30,6 +30,11 @@ mlruns/
 .gstack/
 .openclaw/
 .agents/
+!.agents/
+!.agents/archive/
+!.agents/archive/**
+!.agents/skills/
+!.agents/skills/**
 .claude/
 .mcp.json
 .playwright-cli/
@@ -120,3 +125,7 @@ src/split_engine.py
 .gstack/
 .python-version
 .github/workflows/docs-pdf.yml
+
+# Per-rule eval harness output
+eval_results/
+.omx/

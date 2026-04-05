@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.shared.config import settings
+from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security.key_loader import load_key_material
@@ -32,6 +33,11 @@ _ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384"
 _JWT_ALGORITHM_CANONICAL_MAP = {
     algorithm.lower(): algorithm for algorithm in _ALLOWED_JWT_ALGORITHMS
 }
+_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
+_RS256_KEYS_MISSING_MESSAGE = (
+    "RS256 requested but RSA verification keys are not configured. Set JWT_PUBLIC_KEY for "
+    "verification, JWT_PRIVATE_KEY for signing, or change JWT_ALGORITHM to HS256."
+)
 
 # Security schemes
 security = HTTPBearer(auto_error=False)
@@ -146,10 +152,7 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 
     if requested_algorithm == "RS256":
         raise ConfigurationError(
-            message=(
-                "RS256 requested but RSA keys (JWT_PRIVATE_KEY, JWT_PUBLIC_KEY) are not "
-                "configured. Set keys or change JWT_ALGORITHM to HS256."
-            ),
+            message=_RS256_KEYS_MISSING_MESSAGE,
             error_code="JWT_RSA_KEYS_MISSING",
         )
 
@@ -214,6 +217,44 @@ def create_access_token(
     encoded_jwt = jwt.encode(to_encode, key_material, algorithm=algorithm)
 
     return encoded_jwt
+
+
+def _is_production_environment() -> bool:
+    environment = resolve_runtime_environment(
+        getattr(settings, "env", None),
+        extra_env_vars=("ACGS2_ENV",),
+    )
+    return environment not in _NON_PRODUCTION_ENVS
+
+
+def _get_revocation_service():
+    try:
+        from src.core.shared.security import auth_dependency
+    except Exception:
+        return None
+
+    return getattr(auth_dependency, "_revocation_service", None)
+
+
+async def _check_revocation_or_fail_closed(jti: str | None) -> None:
+    if not jti:
+        return
+
+    service = _get_revocation_service()
+    if service is None:
+        if _is_production_environment():
+            raise HTTPException(status_code=503, detail="Token revocation backend unavailable")
+        return
+
+    try:
+        if await service.is_token_revoked(jti):
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Token revocation check failed: %s", exc)
+        if _is_production_environment():
+            raise HTTPException(status_code=503, detail="Token revocation backend unavailable") from exc
 
 
 def verify_token(token: str) -> UserClaims:
@@ -299,7 +340,9 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return verify_token(credentials.credentials)
+    claims = verify_token(credentials.credentials)
+    await _check_revocation_or_fail_closed(claims.jti)
+    return claims
 
 
 async def get_current_user_optional(

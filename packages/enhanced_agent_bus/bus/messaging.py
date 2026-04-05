@@ -238,4 +238,4 @@ class MessageHandler:
 
     def requires_deliberation(self, msg: AgentMessage) -> bool:
         """Check if message requires deliberation based on impact score."""
-        return (getattr(msg, "impact_score", 0) or 0) > 0.7
+        return (getattr(msg, "impact_score", 0) or 0) >= 0.8

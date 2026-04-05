@@ -3,6 +3,8 @@
 Repo-local AI workspace bootstrap for **Claude Code**, **Codex CLI**, and **Gemini CLI**.
 This document is the source of truth for agent-facing tooling in this repository.
 
+> Part of the ACGS workflow docs. Start at [`docs/README.md`](README.md) for the full workflow/reference set.
+
 ## Workspace Layout
 
 | Tool | Repo-local entry | Purpose |
@@ -31,8 +33,8 @@ bash .claude/commands/test-and-verify.sh
 Key files:
 - `.codex/config.toml` — repo-local Codex configuration
 - `scripts/codex-doctor.sh` — readiness checks
-- `scripts/codex-mcp-acgs-governance.sh` — governance MCP launcher
-- `scripts/codex-mcp-acgs-agent-bus.sh` — agent-bus MCP launcher
+- `.agents/skills/acgs-codex-bootstrap/` — Codex workspace bootstrap skill
+- `.agents/skills/package-health-governance/` — package-health workflow skill
 
 Recommended command:
 
@@ -42,8 +44,10 @@ make gemini-doctor
 ```
 
 Notes:
-- The repo already ships Codex configuration.
-- `make codex-doctor` validates config presence and MCP wiring, but it currently ends with `make lint`, so it can fail on unrelated repo lint issues. Treat that as a repository baseline issue, not a workspace-config parsing failure.
+- The repo ships a minimal repo-local Codex config in `.codex/config.toml`.
+- `make codex-doctor` is a local workspace sanity check. It validates the active skills,
+  `AGENTS.md`, `PLANS.md`, and the repo-local Codex config without running a broad lint or test
+  sweep.
 
 ## Gemini CLI
 
@@ -105,9 +109,52 @@ bash .gemini/run-gemini.sh --workspace-info
 bash .claude/commands/test-and-verify.sh --quick
 ```
 
+## Worktree Isolation
+
+For parallel or risky work, prefer a dedicated worktree instead of editing in the shared checkout.
+The canonical ACGS workflow is documented in [`docs/worktree-isolation.md`](worktree-isolation.md).
+Use worktrees together with package-health gates to keep both edits and verification scoped.
+
+## Context Compaction and Project Memory
+
+For long-running work, handoffs, or context resets, preserve the right task state instead of
+re-reading the whole repository. Use:
+- [`docs/context-compaction.md`](context-compaction.md) for carry-forward rules during compaction
+  and handoff
+- [`docs/project-memory.md`](project-memory.md) for durable workspace memory and `claude-mem`
+  guidance
+
+## Docs Index and Sub-Agent Execution
+
+Use [`docs/README.md`](README.md) as the tracked index for workflow/reference docs added to this
+repository.
+
+For delegated implementation or review work, use
+[`docs/subagent-execution.md`](subagent-execution.md) together with `docs/worktree-isolation.md`
+and `docs/context-compaction.md`.
+
+## Repo Guidance Layering
+
+To decide where new shared guidance should live, use
+[`docs/repo-guidance-layering.md`](repo-guidance-layering.md). It explains the division of labor
+between `AGENTS.md`, `CLAUDE.md`, `.claude/rules/`, package-local `AGENTS.md`, `docs/`, and
+`.claude/evals/`.
+
+## Related docs
+
+Common companions to this workspace guide:
+- [`docs/README.md`](README.md) — docs index for the workflow/reference set
+- [`docs/testing-spec.md`](testing-spec.md) — repository testing model
+- [`docs/worktree-isolation.md`](worktree-isolation.md) — parallel-task isolation
+- [`docs/context-compaction.md`](context-compaction.md) — carry-forward and handoff rules
+- [`docs/project-memory.md`](project-memory.md) — durable workspace memory guidance
+- [`docs/subagent-execution.md`](subagent-execution.md) — delegated implementation/review workflow
+- [`docs/repo-guidance-layering.md`](repo-guidance-layering.md) — where new guidance should live
+
 ## Operating Principles
 
-- Read `AGENTS.md` and `CLAUDE.md` before broad changes.
+- Read `AGENTS.md` before broad changes. Use `CLAUDE.md` only as a compatibility summary for tools
+  that still load it.
 - Keep the constitutional hash `608508a9bd224290` consistent across docs and config.
 - Respect MACI separation of powers in prompts, commands, and implementation guidance.
 - Prefer deterministic, code-based verification over open-ended judgment when possible.

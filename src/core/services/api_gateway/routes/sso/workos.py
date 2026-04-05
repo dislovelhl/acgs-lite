@@ -66,7 +66,7 @@ async def workos_webhook_events(req: StarletteRequest) -> WorkOSWebhookAck:
         ingestion_result = await ingestion_service.ingest_event(event)
     except WorkOSEventForwardingError as exc:
         logger.error("WorkOS event forwarding failed", extra={"error_type": type(exc).__name__})
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=503, detail="WorkOS event failed to forward.") from exc
 
     logger.info(
         "Received WorkOS webhook event",

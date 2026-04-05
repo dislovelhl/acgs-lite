@@ -40,14 +40,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Protocol
 
-
 # ---------------------------------------------------------------------------
 # Decision type enum (from Q&A §2)
 # ---------------------------------------------------------------------------
 
 
 class AuditDecisionType(Enum):
-    AUTO_PASS    = "auto_pass"    # confident automated approval
+    AUTO_PASS    = "auto_pass"    # noqa: S105 - enum label, not a credential
     AUTO_REJECT  = "auto_reject"  # constitutional violation, hard reject
     ESCALATED    = "escalated"    # sent to human miners
     INFRA_ERROR  = "infra_error"  # timeout, missing data, service failure
@@ -72,11 +71,11 @@ class AuditLogEntry:
       constitutional_hash: which constitution governed this decision
       decision_type:     outcome category (AUTO_PASS, ESCALATED, etc.)
       compliance_passed: True if the decision passed constitutional rules
-      impact_score:      aggregate 7-vector score (0.0–1.0)
+      impact_score:      aggregate 7-vector score (0.0-1.0)
       escalation_type:   which dimension caused escalation (if any)
       resolution:        final disposition (e.g. "allow", "deny", "allow_with_conditions")
       miner_uid:         miner who handled escalation (empty if auto-resolved)
-      validator_grade:   quality score from validators (0.0–1.0, NaN if auto)
+      validator_grade:   quality score from validators (0.0-1.0, NaN if auto)
       decision_at:       Unix timestamp of the decision
       tags:              extensible metadata (client, framework, domain…)
     """
@@ -125,7 +124,7 @@ class AuditLogEntry:
         }
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "AuditLogEntry":
+    def from_dict(cls, d: dict[str, Any]) -> AuditLogEntry:
         return cls(
             entry_id=d["entry_id"],
             case_id=d["case_id"],
@@ -312,7 +311,7 @@ class AuditBatch:
         }
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "AuditBatch":
+    def from_dict(cls, d: dict[str, Any]) -> AuditBatch:
         entries = [AuditLogEntry.from_dict(e) for e in d["entries"]]
         batch = cls(
             batch_id=d["batch_id"],

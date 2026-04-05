@@ -6,18 +6,18 @@ combining all five signal sources into a single normalized weight per miner:
   emission_weight(miner_i) = f(
       manifold_trust[i],          GovernanceManifold projected column sum
       reputation[i],              ConstitutionalMesh reputation score
-      tier_multiplier[i],         MinerTier TAO bonus (1.0x – 4.0x)
+      tier_multiplier[i],         MinerTier TAO bonus (1.0x - 4.0x)
       precedent_contribution[i],  PrecedentStore contribution count
       authenticity_score[i],      Average AuthenticityDetector score
   )
 
 Formula (configurable weights, defaults sum to 1.0):
   raw_score = (
-      w_trust         × normalize(manifold_trust)
-    + w_reputation    × normalize(reputation)
-    + w_tier          × normalize(tier_multiplier)
-    + w_precedent     × normalize(precedent_contributions)
-    + w_authenticity  × authenticity_score
+      w_trust         x normalize(manifold_trust)
+    + w_reputation    x normalize(reputation)
+    + w_tier          x normalize(tier_multiplier)
+    + w_precedent     x normalize(precedent_contributions)
+    + w_authenticity  x authenticity_score
   )
   emission_weight = normalize(raw_score) over all miners
 
@@ -32,11 +32,10 @@ Roadmap: 08-subnet-implementation-roadmap.md § Economic Model Integration
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from constitutional_swarm.bittensor.protocol import MinerTier, TIER_TAO_MULTIPLIER
-
+from constitutional_swarm.bittensor.protocol import TIER_TAO_MULTIPLIER, MinerTier
 
 # ---------------------------------------------------------------------------
 # Formula weights (configurable)
@@ -94,7 +93,7 @@ class MinerEmission:
 
     miner_uid: str
     raw_score: float          # before normalization + clamping
-    emission_weight: float    # final normalized weight (0.0 – 1.0)
+    emission_weight: float    # final normalized weight (0.0 - 1.0)
     tier_multiplier: float
     was_floor_applied: bool
     was_cap_applied: bool
@@ -200,7 +199,7 @@ class EmissionCalculator:
           3. Apply formula weights → raw_score per miner
           4. Apply tier multiplier
           5. Normalize raw_scores → weights summing to 1.0
-          6. Apply floor (min_weight_fraction × count) and cap (max_weight_fraction)
+          6. Apply floor (min_weight_fraction x count) and cap (max_weight_fraction)
           7. Re-normalize after floor/cap adjustments
 
         Returns EmissionCycle with all MinerEmission records.
@@ -337,7 +336,6 @@ def _apply_floor_cap(
 
         # Cap and redistribute: locked miners stay at cap,
         # remaining budget flows to uncapped miners
-        capped_total = sum(min(cap, v) for v in w)
         excess = sum(max(0.0, v - cap) for v in w)
         locked = [min(cap, v) for v in w]
         uncapped_sum = sum(v for v in locked if v < cap - 1e-9)

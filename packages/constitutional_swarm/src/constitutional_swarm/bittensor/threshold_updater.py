@@ -6,7 +6,7 @@ bounded updates to a weight lookup table.
 
 Formula (per dimension d, per domain):
     observation_rate = confirmed / (confirmed + overblown)
-    shift = (observation_rate - 0.5) × max_shift_per_cycle
+    shift = (observation_rate - 0.5) x max_shift_per_cycle
     posterior = clamp(prior + shift, min_weight, max_weight)
     then re-normalize so all weights sum to 1.0
 
@@ -19,7 +19,7 @@ Evidence classification (from PrecedentRecord):
 Example (matches Q&A doc §5 Mechanism 2):
     Prior security_weight = 0.20
     Evidence: 47 healthcare cases, 41 confirmed (87%), 6 overblown (13%)
-    shift = (0.87 - 0.50) × 0.08 = 0.030
+    shift = (0.87 - 0.50) x 0.08 = 0.030
     Posterior = 0.23
 
 Design invariants:
@@ -235,7 +235,7 @@ class BayesianThresholdUpdater:
 
     def collect_evidence(
         self,
-        precedents: list["PrecedentRecord"],
+        precedents: list[PrecedentRecord],
         domain: str = "",
     ) -> list[DimensionEvidence]:
         """Aggregate evidence for each dimension from a list of PrecedentRecords.
@@ -397,7 +397,7 @@ class BayesianThresholdUpdater:
 
     def update_from_precedents(
         self,
-        precedents: list["PrecedentRecord"],
+        precedents: list[PrecedentRecord],
         domain: str = "",
     ) -> UpdateCycle:
         """Convenience: collect evidence + run one update cycle."""

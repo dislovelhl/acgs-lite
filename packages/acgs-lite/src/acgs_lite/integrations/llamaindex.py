@@ -88,6 +88,7 @@ class GovernedQueryEngine:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
 
@@ -173,6 +174,7 @@ class GovernedChatEngine:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
         self.agent_id = agent_id
 

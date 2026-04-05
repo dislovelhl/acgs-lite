@@ -6,15 +6,12 @@ import hashlib
 import time
 
 import pytest
-
 from constitutional_swarm.bittensor.constitution_sync import (
     ConstitutionDistributor,
     ConstitutionReceiver,
     ConstitutionSyncMessage,
     ConstitutionVersionRecord,
-    SyncResult,
 )
-
 
 YAML_V1 = """\
 name: test-constitution-v1

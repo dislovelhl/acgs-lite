@@ -18,7 +18,6 @@ from typing import Any, Callable
 from acgs_auth0._meta import CONSTITUTIONAL_HASH
 from acgs_auth0.audit import TokenAuditLog
 from acgs_auth0.exceptions import (
-    ConstitutionalScopeViolation,
     MACIRoleNotPermittedError,
     StepUpAuthRequiredError,
 )

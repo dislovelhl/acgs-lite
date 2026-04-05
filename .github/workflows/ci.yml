@@ -38,6 +38,8 @@ jobs:
         run: make setup
       - name: Lint
         run: make lint
+      - name: MessageProcessor wrapper audit
+        run: make health-bus-wrappers
 
   test-quick:
     runs-on: ubuntu-latest

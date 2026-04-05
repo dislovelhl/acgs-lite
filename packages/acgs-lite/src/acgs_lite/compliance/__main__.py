@@ -30,7 +30,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
@@ -116,7 +115,7 @@ def cmd_assess(args: argparse.Namespace) -> int:
 
     # ------ plain text (default) ------
     inferred_tier = infer_risk_tier(desc)
-    tier_note = "" if desc.get("risk_tier") else f" (auto-inferred from domain)"
+    tier_note = "" if desc.get("risk_tier") else " (auto-inferred from domain)"
 
     print()
     print("  ACGS Compliance Assessment")

@@ -112,6 +112,7 @@ class GitLabGovernanceBot:
             self.constitution,
             audit_log=self.audit_log,
             strict=strict,
+            audit_mode="full",
         )
 
     # -- HTTP helpers -------------------------------------------------------
