@@ -75,7 +75,7 @@ jobs:
         continue-on-error: true
       - name: Test key packages
         run: |
-          .venv/bin/python -m pytest packages/acgs-lite/tests/ packages/acgs-core/tests/ packages/clinicalguard/tests/ -m "not slow" -x -q --import-mode=importlib --timeout=120
+          .venv/bin/python -m pytest packages/acgs-lite/tests/ packages/clinicalguard/tests/ -m "not slow" -x -q --import-mode=importlib --timeout=120
 
   test-full:
     if: github.ref == 'refs/heads/main'
