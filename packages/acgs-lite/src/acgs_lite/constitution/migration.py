@@ -9,11 +9,14 @@ from __future__ import annotations
 
 import contextlib
 import hashlib
+import logging
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class MigrationStatus(Enum):
@@ -402,7 +405,13 @@ class PolicyVersionMigrator:
                         patterns=rule_data.get("patterns", []),
                     )
                     constitution.rules.append(rule)
-                except Exception:
+                except Exception as exc:
+                    logger.warning(
+                        "failed to restore migrated rule %r during rollback: %s",
+                        rule_data.get("id", "<unknown>"),
+                        exc,
+                        exc_info=True,
+                    )
                     continue
 
         result.status = MigrationStatus.ROLLED_BACK

@@ -56,10 +56,10 @@ impl std::fmt::Display for BuildError {
                 write!(f, "Bad regex '{}': {}", pattern, message)
             }
             BuildError::TooManyRules { count } => {
-                write!(f, "Rule count {} exceeds 63 (u64 bitmask limit)", count)
+                write!(f, "Rule count {} exceeds 127 (u128 bitmask limit)", count)
             }
             BuildError::TooManyAnchors { count } => {
-                write!(f, "Anchor count {} exceeds 63 (u64 bitmask limit)", count)
+                write!(f, "Anchor count {} exceeds 127 (u128 bitmask limit)", count)
             }
             BuildError::AhoCorasickBuild(msg) => {
                 write!(f, "AC build error: {}", msg)
@@ -174,13 +174,13 @@ impl GovernanceValidator {
             .build(&all_words)
             .map_err(|e| BuildError::AhoCorasickBuild(e.to_string()))?;
 
-        // Guard: bitmask deduplication uses u64 — max 63 rules/anchors
-        if rule_data.len() > 63 {
+        // Guard: bitmask deduplication uses u128 — max 127 rules/anchors
+        if rule_data.len() > 127 {
             return Err(BuildError::TooManyRules {
                 count: rule_data.len(),
             });
         }
-        if anchor_dispatch.len() > 63 {
+        if anchor_dispatch.len() > 127 {
             return Err(BuildError::TooManyAnchors {
                 count: anchor_dispatch.len(),
             });
@@ -331,8 +331,8 @@ impl GovernanceValidator {
         };
         let is_pos_verb = self.positive_verbs.contains(first_word);
 
-        let mut fired: u64 = 0;
-        let mut hit_anchors: u64 = 0;
+        let mut fired: u128 = 0;
+        let mut hit_anchors: u128 = 0;
 
         // AC scan — single pass, tracks both keywords and anchors
         for mat in self.automaton.find_overlapping_iter(text_lower) {
@@ -342,7 +342,7 @@ impl GovernanceValidator {
                         if is_pos_verb && !kw_has_neg {
                             continue;
                         }
-                        let bit = 1u64 << rule_idx;
+                        let bit = 1u128 << rule_idx;
                         if fired & bit != 0 {
                             continue;
                         }
@@ -354,18 +354,18 @@ impl GovernanceValidator {
                     }
                 }
                 AcPayload::Anchor(ai) => {
-                    hit_anchors |= 1u64 << ai;
+                    hit_anchors |= 1u128 << ai;
                 }
                 AcPayload::Both {
                     kw_data,
                     anchor_idx,
                 } => {
-                    hit_anchors |= 1u64 << anchor_idx;
+                    hit_anchors |= 1u128 << anchor_idx;
                     for &(rule_idx, kw_has_neg) in kw_data {
                         if is_pos_verb && !kw_has_neg {
                             continue;
                         }
-                        let bit = 1u64 << rule_idx;
+                        let bit = 1u128 << rule_idx;
                         if fired & bit != 0 {
                             continue;
                         }
@@ -389,7 +389,7 @@ impl GovernanceValidator {
                     tmp ^= lsb;
                     if ai < self.anchor_dispatch.len() {
                         for (rule_idx, re) in &self.anchor_dispatch[ai].patterns {
-                            let bit = 1u64 << rule_idx;
+                            let bit = 1u128 << rule_idx;
                             if fired & bit == 0 && re.is_match(text_lower) {
                                 fired |= bit;
                                 let rd = &self.rule_data[*rule_idx];
@@ -402,7 +402,7 @@ impl GovernanceValidator {
                 }
             }
             for (rule_idx, re) in &self.no_anchor_pats {
-                let bit = 1u64 << rule_idx;
+                let bit = 1u128 << rule_idx;
                 if fired & bit == 0 && re.is_match(text_lower) {
                     fired |= bit;
                     let rd = &self.rule_data[*rule_idx];
@@ -427,8 +427,8 @@ impl GovernanceValidator {
         };
         let is_pos_verb = self.positive_verbs.contains(first_word);
 
-        let mut fired: u64 = 0;
-        let mut hit_anchors: u64 = 0;
+        let mut fired: u128 = 0;
+        let mut hit_anchors: u128 = 0;
         let mut violations: Vec<Violation> = Vec::new();
 
         // AC scan — overlapping mode finds all matches
@@ -439,7 +439,7 @@ impl GovernanceValidator {
                         if is_pos_verb && !kw_has_neg {
                             continue;
                         }
-                        let bit = 1u64 << rule_idx;
+                        let bit = 1u128 << rule_idx;
                         if fired & bit != 0 {
                             continue;
                         }
@@ -459,18 +459,18 @@ impl GovernanceValidator {
                     }
                 }
                 AcPayload::Anchor(ai) => {
-                    hit_anchors |= 1u64 << ai;
+                    hit_anchors |= 1u128 << ai;
                 }
                 AcPayload::Both {
                     kw_data,
                     anchor_idx,
                 } => {
-                    hit_anchors |= 1u64 << anchor_idx;
+                    hit_anchors |= 1u128 << anchor_idx;
                     for &(rule_idx, kw_has_neg) in kw_data {
                         if is_pos_verb && !kw_has_neg {
                             continue;
                         }
-                        let bit = 1u64 << rule_idx;
+                        let bit = 1u128 << rule_idx;
                         if fired & bit != 0 {
                             continue;
                         }
@@ -502,7 +502,7 @@ impl GovernanceValidator {
                     tmp ^= lsb;
                     if ai < self.anchor_dispatch.len() {
                         for (rule_idx, re) in &self.anchor_dispatch[ai].patterns {
-                            let bit = 1u64 << rule_idx;
+                            let bit = 1u128 << rule_idx;
                             if fired & bit == 0 && re.is_match(text_lower) {
                                 fired |= bit;
                                 let rd = &self.rule_data[*rule_idx];
@@ -525,7 +525,7 @@ impl GovernanceValidator {
                 }
             }
             for (rule_idx, re) in &self.no_anchor_pats {
-                let bit = 1u64 << rule_idx;
+                let bit = 1u128 << rule_idx;
                 if fired & bit == 0 && re.is_match(text_lower) {
                     fired |= bit;
                     let rd = &self.rule_data[*rule_idx];

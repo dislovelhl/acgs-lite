@@ -224,7 +224,7 @@ def generate_pdf_report(
 ) -> Path:
     """Generate a PDF compliance report.
 
-    Requires ``fpdf2`` (``pip install acgs[pdf]`` or ``pip install fpdf2``).
+    Requires ``fpdf2`` (``pip install acgs-lite[pdf]`` or ``pip install fpdf2``).
     Falls back to Markdown + instruction if fpdf2 is unavailable.
 
     Args:

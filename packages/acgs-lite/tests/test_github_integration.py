@@ -344,7 +344,7 @@ class TestCreateGitHubActionsConfig:
         assert isinstance(config, str)
         assert "name: Governance" in config
         assert "pull_request:" in config
-        assert "pip install acgs[github]" in config
+        assert "pip install acgs-lite[github]" in config
 
     def test_includes_constitutional_hash(self) -> None:
         c = Constitution.default()

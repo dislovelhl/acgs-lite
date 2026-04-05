@@ -425,9 +425,21 @@ class ConnectionTokenVaultWrapper:
         def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
             import asyncio
 
-            return asyncio.get_event_loop().run_until_complete(
-                wrapper_self._execute(tool_fn, args, kwargs)
-            )
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+
+            if loop and loop.is_running():
+                # Already inside an async context — caller should use async_wrapper
+                import concurrent.futures
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(
+                        asyncio.run, wrapper_self._execute(tool_fn, args, kwargs)
+                    )
+                    return future.result()
+            return asyncio.run(wrapper_self._execute(tool_fn, args, kwargs))
 
         import inspect
 

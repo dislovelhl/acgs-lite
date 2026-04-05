@@ -34,12 +34,15 @@ from __future__ import annotations
 
 import hashlib
 import itertools
+import logging
 import random
 import re
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Mutation helpers
@@ -405,8 +408,12 @@ class GovernancePolicyFuzzer:
                 kws = list(getattr(rule, "keywords", []) or [])
                 if isinstance(rid, str):
                     rule_keywords[rid] = kws
-        except Exception:
-            pass  # Constitution may not support .rules iteration — fall back to blind fuzzing
+        except Exception as exc:
+            logger.debug(
+                "policy fuzzer could not inspect constitution rules; falling back to blind fuzzing: %s",
+                exc,
+                exc_info=True,
+            )
 
         rule_coverage: dict[str, RuleCoverage] = {
             rid: RuleCoverage(rule_id=rid) for rid in rule_keywords
@@ -602,12 +609,21 @@ class GovernancePolicyFuzzer:
         try:
             # Try constitutional_hash attribute first
             return str(getattr(constitution, "constitutional_hash", None) or "")[:16]
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug(
+                "policy fuzzer could not read constitutional_hash; deriving hash from rules: %s",
+                exc,
+                exc_info=True,
+            )
         try:
             rule_repr = repr(sorted(str(r) for r in constitution.rules))
             return hashlib.sha256(rule_repr.encode()).hexdigest()[:16]
-        except Exception:
+        except Exception as exc:
+            logger.debug(
+                "policy fuzzer could not derive constitution hash from rules; returning unknown: %s",
+                exc,
+                exc_info=True,
+            )
             return "unknown"
 
     # ------------------------------------------------------------------

@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .constitution import Constitution
+
+logger = logging.getLogger(__name__)
 
 
 def get_governance_metrics(constitution: Constitution) -> dict[str, Any]:
@@ -169,7 +172,12 @@ def health_score(constitution: Constitution) -> dict[str, Any]:
         num_conflicts = len(conflicts.get("conflicts", []))
         # Penalty: each conflict costs 0.1, floor at 0
         conflict_freedom = max(0.0, 1.0 - num_conflicts * 0.1)
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "governance conflict detection failed; assuming clean conflict score: %s",
+            exc,
+            exc_info=True,
+        )
         conflict_freedom = 1.0  # can't assess — assume clean
 
     # 4. Dependency soundness: fraction of depends_on refs that resolve

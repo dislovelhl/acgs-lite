@@ -8,10 +8,13 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import logging
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,7 +133,13 @@ class GovernanceTestSuite:
             ctx = case.context or None
             try:
                 result = engine.validate(case.action, context=ctx)
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "governance test case validation failed for %r; treating result as deny: %s",
+                    case.action,
+                    exc,
+                    exc_info=True,
+                )
                 actual_decision = "deny"
             else:
                 if result.valid:

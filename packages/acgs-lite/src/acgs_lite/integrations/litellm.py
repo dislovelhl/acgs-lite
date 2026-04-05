@@ -95,7 +95,7 @@ class GovernedLiteLLM:
         strict: bool = True,
     ) -> None:
         if not LITELLM_AVAILABLE:
-            raise ImportError("litellm is required. Install with: pip install acgs[litellm]")
+            raise ImportError("litellm is required. Install with: pip install acgs-lite[litellm]")
         self.constitution = constitution or Constitution.default()
         self.audit_log = AuditLog()
         self.engine = GovernanceEngine(

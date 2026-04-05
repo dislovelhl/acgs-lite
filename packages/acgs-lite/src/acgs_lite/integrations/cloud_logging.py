@@ -120,7 +120,7 @@ class CloudLoggingAuditExporter:
     ) -> None:
         if not CLOUD_LOGGING_AVAILABLE:
             raise ImportError(
-                "google-cloud-logging is required. Install with: pip install acgs[google-cloud]"
+                "google-cloud-logging is required. Install with: pip install acgs-lite[google-cloud]"
             )
 
         self._client = cloud_logging.Client(project=project_id)  # type: ignore[no-untyped-call]
@@ -164,10 +164,11 @@ class CloudLoggingAuditExporter:
         for entry in entries:
             try:
                 self.export_entry(entry)
-            except Exception:
+            except Exception as exc:
                 logger.error(
-                    "Failed to export audit entry %s to Cloud Logging",
+                    "Failed to export audit entry %s to Cloud Logging: %s",
                     entry.id,
+                    exc,
                     exc_info=True,
                 )
 

@@ -102,9 +102,10 @@ def _export_audit_entries(audit_log: AuditLog) -> None:
     if entries:
         try:
             _cloud_exporter.export_batch(entries)
-        except Exception:
+        except Exception as exc:
             logger.error(
-                "Failed to export audit entries to Cloud Logging",
+                "Failed to export audit entries to Cloud Logging: %s",
+                exc,
                 exc_info=True,
             )
 

@@ -58,7 +58,7 @@ class A2AGovernedClient:
         timeout: float = 30.0,
     ) -> None:
         if not HTTPX_AVAILABLE:
-            raise ImportError("httpx is required for A2A. Install with: pip install acgs[a2a]")
+            raise ImportError("httpx is required for A2A. Install with: pip install acgs-lite[a2a]")
         self.agent_url = agent_url.rstrip("/")
         self.timeout = timeout
 

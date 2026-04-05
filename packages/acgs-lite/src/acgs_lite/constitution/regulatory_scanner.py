@@ -36,7 +36,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+import logging
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 def _ts() -> str:
@@ -363,8 +366,12 @@ class RegulatoryHorizonScanner:
                     rid = getattr(rule, "id", None) or getattr(rule, "rule_id", str(rule))
                     if isinstance(rid, str):
                         rule_ids_in_constitution.add(rid)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug(
+                    "regulatory scanner could not iterate constitution rules; continuing with empty rule set: %s",
+                    exc,
+                    exc_info=True,
+                )
 
         total_reqs = 0
         mapped_reqs: set[tuple[str, str]] = set()

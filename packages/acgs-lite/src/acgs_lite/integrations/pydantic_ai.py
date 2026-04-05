@@ -67,7 +67,7 @@ class GovernedPydanticAgent(GovernedBase):
     ) -> None:
         if not PYDANTIC_AI_AVAILABLE:
             raise ImportError(
-                "pydantic-ai is required. Install with: pip install acgs[pydantic-ai]"
+                "pydantic-ai is required. Install with: pip install acgs-lite[pydantic-ai]"
             )
 
         self._agent = agent
@@ -168,7 +168,7 @@ class GovernedModel(GovernedBase):
     ) -> None:
         if not PYDANTIC_AI_AVAILABLE:
             raise ImportError(
-                "pydantic-ai is required. Install with: pip install acgs[pydantic-ai]"
+                "pydantic-ai is required. Install with: pip install acgs-lite[pydantic-ai]"
             )
 
         self._model = model

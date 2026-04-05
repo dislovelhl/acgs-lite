@@ -202,8 +202,8 @@ Building `acgs-auth0` for this hackathon taught me that Auth0 Token Vault is the
 
 ## Links
 
-- **Code**: https://github.com/[your-github]/acgs-clean
-- **Demo video**: [to be recorded]
+- **Code**: https://github.com/dislovelhl/acgs
+- **Demo video**: [RECORD TODAY — see DEMO_RECORDING.md]
 - **Live demo**: `python examples/governed_agents/main.py`
 
 ## Team

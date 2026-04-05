@@ -21,10 +21,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
+import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .constitution import Constitution
+
+logger = logging.getLogger(__name__)
 
 
 class RolloutStage(str, Enum):
@@ -114,8 +117,14 @@ def _simple_decision(constitution: Constitution, action: str) -> str:
         AttributeError,
     ):
         return "deny"
-    except Exception:
+    except Exception as exc:
         # ConstitutionalViolationError (Rust fast path raises on deny)
+        logger.warning(
+            "rollout decision validation failed for action %r; defaulting to deny: %s",
+            action,
+            exc,
+            exc_info=True,
+        )
         return "deny"
 
 

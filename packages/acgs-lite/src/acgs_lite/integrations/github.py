@@ -99,7 +99,7 @@ class GitHubGovernanceBot:
         if not HTTPX_AVAILABLE:
             raise ImportError(
                 "httpx is required for GitHub integration. "
-                "Install with: pip install acgs[github]"
+                "Install with: pip install acgs-lite[github]"
             )
 
         self._token = token
@@ -750,7 +750,7 @@ def create_github_actions_config(
         "          python-version: '3.11'\n"
         "\n"
         "      - name: Install acgs-lite\n"
-        "        run: pip install acgs[github]\n"
+        "        run: pip install acgs-lite[github]\n"
         "\n"
         "      - name: Run governance validation\n"
         "        env:\n"

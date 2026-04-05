@@ -2,7 +2,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/acgs-lite)](https://pypi.org/project/acgs-lite/)
 [![Python](https://img.shields.io/pypi/pyversions/acgs-lite)](https://pypi.org/project/acgs-lite/)
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![CI](https://github.com/dislovelhl/acgs-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/dislovelhl/acgs-lite/actions/workflows/ci.yml)
 
 **Constitutional governance infrastructure for AI agents.**
 
@@ -21,7 +22,7 @@ pip install acgs-lite[openai]
 pip install acgs-lite[langchain]
 pip install acgs-lite[mcp]
 pip install acgs-lite[gitlab]
-pip install acgs-lite[server]
+pip install acgs-lite[autonoma]
 pip install acgs-lite[pdf]
 pip install acgs-lite[all]
 ```
@@ -166,14 +167,15 @@ acgs observe "action" --prometheus
 
 ## License
 
-AGPL-3.0-or-later. Commercial licensing is available for proprietary or SaaS
-embedding; contact `hello@acgs.ai`.
+Apache-2.0. See [LICENSE](LICENSE) for details.
 
 ## Links
 
 - [Homepage](https://acgs.ai)
+- [Documentation](https://acgs.ai/docs)
 - [PyPI](https://pypi.org/project/acgs-lite/)
-- [GitHub](https://github.com/dislovelhl/acgs)
-- [Issues](https://github.com/dislovelhl/acgs/issues)
+- [GitHub](https://github.com/dislovelhl/acgs-lite)
+- [Issues](https://github.com/dislovelhl/acgs-lite/issues)
+- [Changelog](https://github.com/dislovelhl/acgs-lite/blob/main/CHANGELOG.md)
 
 Constitutional Hash: `608508a9bd224290`

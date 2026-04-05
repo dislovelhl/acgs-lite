@@ -209,10 +209,11 @@ class StreamingValidator:
         try:
             result = self._validate_nonstrict(window_text)
             violations = list(result.violations)
-        except Exception:
-            log.exception(
-                "streaming validation error, "
-                "treating chunk as passed"
+        except Exception as exc:
+            log.warning(
+                "streaming validation failed; treating chunk as passed: %s",
+                exc,
+                exc_info=True,
             )
             elapsed_ms = (time.monotonic() - t0) * 1000
             self._stats.latency_ms += elapsed_ms

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from typing import Any, cast
+from unittest.mock import patch
 
 import pytest
 from fastapi.routing import APIRoute
@@ -141,6 +142,28 @@ class TestGovernanceServer:
         entries_response = client.get("/audit/entries", params={"agent_id": "store-agent"})
         assert entries_response.status_code == 200
         assert len(entries_response.json()) == 1
+
+    def test_external_acgs_audit_store_is_opt_in(self, tmp_path: Any) -> None:
+        with patch("acgs_lite.server.import_module") as import_module_mock:
+            app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+            client = TestClient(app)
+            response = client.get("/audit/count")
+
+        assert response.status_code == 200
+        assert response.json() == {"count": 0}
+        import_module_mock.assert_not_called()
+
+    def test_external_acgs_audit_store_attempted_when_enabled(self, tmp_path: Any) -> None:
+        with patch("acgs_lite.server.import_module", side_effect=ImportError):
+            app = create_governance_app(
+                audit_db_path=tmp_path / "audit.db",
+                enable_external_acgs_audit_store=True,
+            )
+            client = TestClient(app)
+            response = client.get("/audit/count")
+
+        assert response.status_code == 200
+        assert response.json() == {"count": 0}
 
     def test_app_mounts_experimental_openshell_routes_by_default(self, tmp_path: Any) -> None:
         app = self._make_app(tmp_path)

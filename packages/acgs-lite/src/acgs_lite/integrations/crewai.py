@@ -71,7 +71,7 @@ class GovernedCrewAgent(GovernedBase):
     ) -> None:
         if not CREWAI_AVAILABLE:
             raise ImportError(
-                "crewai is required. Install with: pip install acgs[crewai]"
+                "crewai is required. Install with: pip install acgs-lite[crewai]"
             )
 
         self._agent = agent
@@ -150,7 +150,7 @@ class GovernedTask(GovernedBase):
     ) -> None:
         if not CREWAI_AVAILABLE:
             raise ImportError(
-                "crewai is required. Install with: pip install acgs[crewai]"
+                "crewai is required. Install with: pip install acgs-lite[crewai]"
             )
 
         self._task = task
@@ -223,7 +223,7 @@ class GovernedCrew(GovernedBase):
     ) -> None:
         if not CREWAI_AVAILABLE:
             raise ImportError(
-                "crewai is required. Install with: pip install acgs[crewai]"
+                "crewai is required. Install with: pip install acgs-lite[crewai]"
             )
 
         self._crew = crew

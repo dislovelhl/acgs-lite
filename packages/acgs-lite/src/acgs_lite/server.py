@@ -66,7 +66,7 @@ class _AuditStoreAdapter:
 
 
 def _build_default_audit_store(path: str | Path) -> _AuditStoreLike | None:
-    """Prefer SQLite persistence when the public ``acgs`` package is installed."""
+    """Build an audit store from the optional external compatibility package."""
     try:
         module = import_module("acgs.audit_sqlite")
     except ImportError:
@@ -86,6 +86,7 @@ def create_governance_app(
     include_openshell_governance: bool = True,
     include_openshell_experimental: bool | None = None,
     openshell_observability_hook: GovernanceStateObservabilityHook | None = None,
+    enable_external_acgs_audit_store: bool = False,
     openshell_state_backend: GovernanceStateBackend | None = None,
     openshell_state_path: str | Path | None = None,
     include_autonoma: bool = False,
@@ -96,16 +97,21 @@ def create_governance_app(
     When ``include_openshell_governance`` is true, the app also mounts the
     stable OpenShell/OpenClaw governance router under ``/governance``.
 
-    When ``audit_store`` is omitted, the server tries to use
-    ``acgs.audit_sqlite.SQLiteAuditStore(audit_db_path)`` and falls back to the
-    legacy in-memory ``AuditLog`` when the public ``acgs`` package is not installed.
+    When ``audit_store`` is omitted, the server uses the legacy in-memory
+    ``AuditLog`` by default.
+
+    Set ``enable_external_acgs_audit_store=True`` to opt into trying the
+    compatibility-layer store ``acgs.audit_sqlite.SQLiteAuditStore(audit_db_path)``
+    when the external ``acgs`` package is installed.
 
     ``include_openshell_experimental`` is kept as a compatibility alias.
     """
     from fastapi import FastAPI, HTTPException, Query
 
     gov_constitution = constitution if constitution is not None else Constitution.default()
-    resolved_audit_store = audit_store if audit_store is not None else _build_default_audit_store(audit_db_path)
+    resolved_audit_store = audit_store
+    if resolved_audit_store is None and enable_external_acgs_audit_store:
+        resolved_audit_store = _build_default_audit_store(audit_db_path)
     audit_log: AuditLog | _AuditStoreAdapter
     if resolved_audit_store is None:
         audit_log = AuditLog()

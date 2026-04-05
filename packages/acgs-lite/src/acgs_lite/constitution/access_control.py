@@ -8,11 +8,14 @@ Zero hot-path overhead (offline tooling only).
 
 from __future__ import annotations
 
+import logging
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class Permission(Enum):
@@ -54,7 +57,13 @@ class AccessCondition:
     def evaluate(self, context: dict[str, Any]) -> bool:
         try:
             return self.predicate(context)
-        except Exception:
+        except Exception as exc:
+            logger.warning(
+                "access condition predicate failed for %s: %s",
+                self.name,
+                exc,
+                exc_info=True,
+            )
             return False
 
 

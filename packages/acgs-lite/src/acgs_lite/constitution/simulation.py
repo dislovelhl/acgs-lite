@@ -10,7 +10,10 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+import logging
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,7 +63,13 @@ def _safe_decision(constitution: Any, action: str) -> str:
     engine = GovernanceEngine(constitution, strict=False)
     try:
         result = engine.validate(action)
-    except Exception:
+    except Exception as exc:
+        logger.debug(
+            "constitution simulation validation failed for action %r; defaulting to deny: %s",
+            action,
+            exc,
+            exc_info=True,
+        )
         return "deny"
     if result.valid:
         return "allow"
