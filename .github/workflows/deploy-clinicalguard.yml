@@ -38,14 +38,14 @@ jobs:
           python -m pytest packages/clinicalguard/tests/ \
             --import-mode=importlib -v --timeout=60
 
-  deploy-staging:
+  deploy:
     needs: test
     runs-on: ubuntu-latest
-    environment: staging
+    environment: production
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Deploy to Fly.io staging
+      - name: Deploy to Fly.io production
         run: |
           flyctl deploy \
             --config deploy/fly.toml \
