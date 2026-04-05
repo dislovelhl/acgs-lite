@@ -15,12 +15,23 @@ for path in (packages_path, src_path, script_dir):
         sys.path.insert(0, path)
 
 os.environ["PYTHONPATH"] = os.pathsep.join(
-    [path for path in (packages_path, script_dir, src_path, os.environ.get("PYTHONPATH", "")) if path]
+    [
+        path
+        for path in (packages_path, script_dir, src_path, os.environ.get("PYTHONPATH", ""))
+        if path
+    ]
 )
 os.environ["ENVIRONMENT"] = os.environ.get("ENVIRONMENT") or "development"
 os.environ["AGENT_BUS_URL"] = os.environ.get("AGENT_BUS_URL") or "http://localhost:8000"
 os.environ["LOG_LEVEL"] = os.environ.get("LOG_LEVEL") or "INFO"
-if os.environ["ENVIRONMENT"].strip().lower() in {"development", "dev", "test", "testing", "local", "ci"}:
+if os.environ["ENVIRONMENT"].strip().lower() in {
+    "development",
+    "dev",
+    "test",
+    "testing",
+    "local",
+    "ci",
+}:
     os.environ["CSRF_ALLOW_EPHEMERAL_SECRET"] = (
         os.environ.get("CSRF_ALLOW_EPHEMERAL_SECRET") or "true"
     )

@@ -18,6 +18,7 @@ Status computed automatically; override with --status if needed.
 
 Run from repo root.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,6 +29,7 @@ from pathlib import Path
 from results_utils import (
     KEPT_STATUSES,
     best_kept_row,
+    ceiling_tightness,
     ensure_results_tsv,
     load_rows,
     scoped_description,
@@ -45,7 +47,7 @@ METRIC_PATTERNS: dict[str, re.Pattern[str]] = {
     "errors": re.compile(r"^errors:\s+(\d+)", re.MULTILINE),
 }
 
-COMPOSITE_TIE_BAND = 0.0005
+COMPOSITE_TIE_BAND = 0.005
 MATERIAL_P99_IMPROVEMENT_MS = 0.0003
 
 
@@ -96,6 +98,11 @@ def compute_status(
     composite = metrics["composite_score"]
     best = best_kept_composite(rows, scope)
     if best is None:
+        return "baseline"
+
+    # Formula-transition guard: v1 composites are >0.99, v2 are <0.95.
+    # Treat v2 first run as a baseline when all prior rows are v1.
+    if best > 0.95 and composite < 0.95:
         return "baseline"
 
     delta = composite - best
@@ -192,7 +199,9 @@ def main() -> int:
         if args.recommend:
             print("discard")
             return 0
-        print("ERROR: no parseable summary block in log. Benchmark may have crashed.", file=sys.stderr)
+        print(
+            "ERROR: no parseable summary block in log. Benchmark may have crashed.", file=sys.stderr
+        )
         print(f"  Check: tail -n 50 {log_path}", file=sys.stderr)
         description = scoped_description(args.description or "crash", args.scope)
         append_row(args.commit, 0.0, 0.0, 0.0, args.scope, "crash", description)
@@ -216,6 +225,13 @@ def main() -> int:
         print("keep" if status in KEPT_STATUSES else "discard")
         return 0
 
+    if args.commit.strip() == "uncommitted":
+        print(
+            "WARNING: commit='uncommitted' — this result cannot be recovered later. "
+            "Commit your code before logging.",
+            file=sys.stderr,
+        )
+
     description = scoped_description(args.description, args.scope)
     append_row(args.commit, composite, compliance, p99_ms, args.scope, status, description)
 
@@ -238,6 +254,16 @@ def main() -> int:
         print("\n→ CRASH logged. Fix only if the cause is trivial; otherwise move on.")
     else:
         print("\n→ DISCARD. Revert the experiment cleanly before the next mutation.")
+
+    # Reload rows (includes the row we just appended) for ceiling check
+    updated_rows = load_rows(RESULTS_TSV)
+    tightness = ceiling_tightness(updated_rows, args.scope)
+    if tightness == "tight":
+        print(f"\n⚠  CEILING in {args.scope} (TIGHT): composite spread < 0.0001 — true measurement floor.")
+        print("   → Pivot: try a different experiment family (matcher/rust/constitution/warmup).")
+    elif tightness == "loose":
+        print(f"\n⚠  CEILING in {args.scope} (LOOSE): composite spread ≥ 0.0001 — noise may be masking signal.")
+        print("   → Run bench_stable.py --trials 7 to confirm before pivoting.")
 
     return 0
 

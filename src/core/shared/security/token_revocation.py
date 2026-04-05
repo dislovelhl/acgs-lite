@@ -48,7 +48,13 @@ logger = get_logger(__name__)
 
 
 def _runtime_environment() -> str:
-    return resolve_runtime_environment(getattr(settings, "env", None))
+    configured_env = getattr(settings, "env", None)
+    # Trust an explicitly configured non-default env (e.g. "production") over
+    # raw ENVIRONMENT env vars so that tests patching settings.env work correctly
+    # even when the EAB test conftest sets ENVIRONMENT=test in os.environ.
+    if configured_env and configured_env not in ("development",):
+        return configured_env
+    return resolve_runtime_environment(configured_env)
 
 
 def _parse_bool_env(value: str | None) -> bool | None:
@@ -175,7 +181,7 @@ class TokenRevocationService:
             )
             return False
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error revoking token: {jti[:8]}... - {e}"
             )
@@ -232,7 +238,7 @@ class TokenRevocationService:
             )
             return True
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error checking token revocation: {jti[:8]}... - {e}"
             )
@@ -298,7 +304,7 @@ class TokenRevocationService:
             )
             return 0
 
-        except Exception as e:
+        except (ValueError, TypeError, RuntimeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error revoking user tokens: {user_id} - {e}"
             )
@@ -363,12 +369,12 @@ class TokenRevocationService:
 
         except (ConnectionError, TimeoutError, OSError) as e:
             return self._handle_revocation_backend_error(user_id, e)
-        except (ValueError, TypeError) as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Invalid revocation timestamp for user: {user_id} - {e}"
             )
             return False
-        except Exception as e:
+        except RuntimeError as e:
             logger.error(
                 f"[{CONSTITUTIONAL_HASH}] Unexpected error checking user revocation: {user_id} - {e}"
             )
@@ -481,31 +487,32 @@ async def create_token_revocation_service(redis_url: str | None = None) -> Token
         service = await create_token_revocation_service("redis://localhost:6379")
     """
     if not redis_url:
-        import os
-
         redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
 
     try:
         # Try to import async Redis
         try:
-            import redis.asyncio as redis_async
-
-            redis_client = await redis_async.from_url(redis_url)
+            redis_async = __import__("redis.asyncio", fromlist=["asyncio"])
+            redis_client = redis_async.from_url(redis_url)
         except ImportError:
             # Fallback to sync Redis (for compatibility)
-            import redis
-
+            redis = __import__("redis")
             redis_client = redis.from_url(redis_url)
 
+        if inspect.isawaitable(redis_client):
+            redis_client = await redis_client
+
         # Test connection
-        await redis_client.ping()
+        ping_result = redis_client.ping()
+        if inspect.isawaitable(ping_result):
+            await ping_result
 
         try:
             from urllib.parse import urlparse
 
             parsed = urlparse(redis_url)
             safe_url = f"{parsed.scheme}://{parsed.hostname}:{parsed.port or 6379}"
-        except Exception:
+        except (ValueError, AttributeError):
             safe_url = "<redis>"
         logger.info(
             "[%s] TokenRevocationService initialized with Redis: %s",

@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
+	import { Canvas } from '@threlte/core';
+	import TrustCrystal from '$lib/components/TrustCrystal.svelte';
 
 	// Intersection observer for scroll animations
 	function observe(node: HTMLElement) {
@@ -126,64 +128,56 @@
 
 <!-- ─── HERO ─── -->
 <section
-	class="relative flex h-[calc(100vh-76px)] w-full flex-col justify-between overflow-hidden p-8 md:p-12"
+	class="relative flex h-[100vh] w-full flex-col items-center justify-center overflow-hidden px-8 md:px-12 grid-mesh"
 >
-	<!-- Ambient glow -->
-	<div class="pointer-events-none absolute inset-0">
-		<div
-			class="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-3xl"
-			style="background: radial-gradient(circle, var(--color-accent-glow) 0%, transparent 60%); animation: sphere-drift 20s ease-in-out infinite;"
-		></div>
+	<!-- 3D Hero Element -->
+	<div class="absolute inset-0 z-0 opacity-80 pointer-events-none">
+		<Canvas>
+			<TrustCrystal />
+		</Canvas>
 	</div>
 
-	<div
-		class="mx-auto w-full max-w-[1400px] flex-1 flex flex-col justify-between relative z-10 py-10"
-	>
-		<!-- Top left -->
-		<div class="fade-in" use:observe>
-			<p class="mb-3 font-mono text-xs tracking-[0.3em] text-fg-muted">01 — GOVERNANCE</p>
-			<h2 class="font-sans text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
-				HTTPS
-				<br />
-				<span class="italic text-white/70"> for AI </span>
-			</h2>
+	<div class="relative z-10 flex max-w-[1400px] flex-col items-center text-center">
+		<div class="fade-in mb-10 inline-flex items-center gap-3 glass-accent px-5 py-2.5 rounded-full" use:observe>
+			<span class="relative flex h-2 w-2">
+				<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"></span>
+				<span class="relative inline-flex h-2 w-2 rounded-full bg-accent"></span>
+			</span>
+			<span class="font-mono text-[10px] tracking-[0.4em] text-accent uppercase font-medium">v2.4.0 — PROD READY</span>
 		</div>
 
-		<!-- Center CTA -->
-		<div
-			class="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
-		>
+		<h1 class="fade-in font-sans text-7xl font-bold tracking-tight md:text-9xl lg:text-[11rem] leading-[0.85] text-white" use:observe>
+			HTTPS<br />FOR <span class="font-serif italic font-light text-white/90">AI</span>
+		</h1>
+
+		<p class="fade-in mt-12 max-w-2xl text-lg leading-relaxed text-fg-muted md:text-xl font-light" use:observe>
+			Constitutional governance infrastructure for AI agents. 
+			<span class="text-white font-medium">1.1M RPS. 3.9µs P99.</span> 
+			9 regulatory frameworks. Tamper-evident audit trails. 
+			The missing safety layer between your LLM and production.
+		</p>
+
+		<div class="fade-in mt-14 flex flex-col gap-6 sm:flex-row items-center" use:observe>
 			<button
 				onclick={copyInstall}
-				class="group relative rounded-full border border-white/20 bg-black/50 px-10 py-5 font-mono text-sm tracking-widest uppercase backdrop-blur-md transition-all duration-500 hover:bg-fg hover:text-bg hover:scale-105"
+				class="group relative overflow-hidden rounded-full bg-white px-12 py-5 font-mono text-xs tracking-[0.2em] font-bold text-black transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.2)]"
 			>
-				pip install acgs
-				<span
-					class="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-accent shadow-[0_0_15px_rgba(37,99,235,0.8)]"
-				></span>
+				<span class="relative z-10">PIP INSTALL ACGS</span>
 			</button>
-			<p class="mt-6 text-center font-mono text-xs tracking-wider text-fg-muted max-w-sm">
-				Constitutional governance for AI agents. <br class="hidden sm:block" /> 1.1M RPS. 3.9µs P99.
-				9 frameworks.
-			</p>
-		</div>
-
-		<!-- Bottom right -->
-		<div class="fade-in self-end text-right" use:observe>
-			<p class="mb-3 font-mono text-xs tracking-[0.3em] text-fg-muted">02 — COMPLIANCE</p>
-			<h2 class="font-sans text-5xl font-light tracking-tight text-white md:text-7xl lg:text-8xl">
-				NINE
-				<br />
-				<span class="italic text-white/70"> Frameworks </span>
-			</h2>
+			<a
+				href={resolve('/resources')}
+				class="group rounded-full border border-white/10 glass px-12 py-5 font-mono text-xs tracking-[0.2em] font-bold text-white transition-all hover:bg-white/5 hover:border-white/30"
+			>
+				EXPLORE RESOURCES
+			</a>
 		</div>
 	</div>
 
 	<!-- Scroll indicator -->
-	<div class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
-		<div class="flex flex-col items-center gap-3">
-			<span class="font-mono text-[10px] uppercase tracking-widest text-fg-muted">Scroll</span>
-			<div class="h-10 w-px bg-gradient-to-b from-white/50 to-transparent"></div>
+	<div class="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-30">
+		<div class="flex flex-col items-center gap-4">
+			<span class="font-mono text-[9px] uppercase tracking-[0.5em] text-fg-muted">Scroll</span>
+			<div class="h-16 w-px bg-gradient-to-b from-white to-transparent"></div>
 		</div>
 	</div>
 </section>
@@ -283,16 +277,18 @@
 		<div class="fade-in mb-12 text-center" use:observe>
 			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">GOVERNANCE WATCH</p>
 		</div>
-		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
-			<iframe
-				src="https://www.youtube.com/embed/uWacmC3CbYg?rel=0&modestbranding=1&color=white"
-				title="ACGS — Governance Watch & Constitutional AI"
-				frameborder="0"
-				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-				allowfullscreen
-				class="h-full w-full"
-				loading="lazy"
-			></iframe>
+		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl bg-black" use:observe>
+			<video
+				src={asset('/acgs-intro.mp4')}
+				poster="https://img.youtube.com/vi/uWacmC3CbYg/maxresdefault.jpg"
+				preload="metadata"
+				controls
+				class="h-full w-full object-cover"
+				aria-label="ACGS — Governance Watch & Constitutional AI Demo"
+			>
+				<track kind="captions" />
+				Your browser does not support the video tag.
+			</video>
 		</div>
 	</div>
 </section>
@@ -305,8 +301,8 @@
 			use:observe
 		>
 			<div class="max-w-xl">
-				<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">05 — VALUE</p>
-				<h2 class="font-sans text-4xl font-light italic md:text-6xl">The Compliance Receipt</h2>
+				<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted uppercase">05 — VALUE</p>
+				<h2 class="font-sans text-5xl font-bold md:text-7xl leading-tight">The Compliance <span class="font-serif italic font-light">Receipt</span></h2>
 			</div>
 			<p class="max-w-md text-base leading-relaxed text-fg-muted/90">
 				Every decision produces a verifiable, timestamped proof that your AI was constitutionally

@@ -151,6 +151,11 @@ def _disable_rust_on_engine(engine: GovernanceEngine) -> None:
     """Neutralize the Rust validator on an already-built engine by setting _hot[10] to None.
 
     This forces the Python fallback paths (AC or regex) to execute.
+    _hot layout (11 elements):
+      [0] ac_iter, [1] pat_anchor_dispatch, [2] no_anchor_patterns,
+      [3] rule_data, [4] rule_excs, [5] has_high_rules,
+      [6] fast_records, [7] pos_verbs, [8] has_ac, [9] is_noop,
+      [10] rust_validator
     """
     _h = engine._hot
     engine._hot = (
@@ -203,10 +208,11 @@ class TestRustNoContext:
 
     @pytest.mark.skipif(not _HAS_RUST, reason="Rust extension not available")
     def test_rust_deny_non_critical_path(self):
-        """HIGH severity detected in strict mode; violations reported but valid=True (only CRITICAL blocks)."""
+        """HIGH severity in strict mode raises ConstitutionalViolationError."""
         engine = _make_engine(strict=True)
-        result = engine.validate("skip audit for this")
-        assert any(v.rule_id == "X-HIGH" for v in result.violations)
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate("skip audit for this")
+        assert exc_info.value.rule_id == "X-HIGH"
 
     @pytest.mark.skipif(not _HAS_RUST, reason="Rust extension not available")
     def test_rust_allow_already_lowercase(self):

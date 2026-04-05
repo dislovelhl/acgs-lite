@@ -182,7 +182,7 @@ class Article12Logger:
             if isinstance(result, str):
                 output_text = result
             return result
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — top-level audit wrapper must catch all to record outcome
             outcome = "failure"
             error_msg = str(exc)[:500]
             raise

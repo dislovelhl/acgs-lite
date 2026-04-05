@@ -32,6 +32,7 @@ enhanced_agent_bus/
 ## Testing
 
 ```bash
+make test-bus  # shortcut
 python -m pytest packages/enhanced_agent_bus/tests/ -v --import-mode=importlib
 python -m pytest packages/enhanced_agent_bus/tests/ -m "not slow" -v --import-mode=importlib
 ```
@@ -47,8 +48,7 @@ benchmarks or tests rather than copied from old docs.
 
 - MACI enforcement and governance checks span middleware and runtime paths; avoid narrow
   assumptions about a single file owning the invariant.
-- Legacy namespaces such as `middleware/` and `context/` still appear for compatibility but are
-  not for new code.
+- The legacy `context/` namespace still appears for compatibility but is not for new code.
 - `_ext_*.py` modules intentionally use fallback stubs for missing optional dependencies.
 - Package-level MyPy is enabled in `packages/enhanced_agent_bus/pyproject.toml`; do not assume
   the package is globally exempt from type discipline.

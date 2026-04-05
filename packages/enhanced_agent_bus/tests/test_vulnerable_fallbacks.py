@@ -31,6 +31,7 @@ from fastapi import HTTPException
 
 BLOCKED_MODULES = {
     "src.core.shared.security.tenant_context",
+    "enhanced_agent_bus._compat.security.tenant_context",
 }
 
 original_import = builtins.__import__

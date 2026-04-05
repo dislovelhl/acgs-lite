@@ -1,6 +1,6 @@
 """
 Tests for PQC Key Registry
-Constitutional Hash: 608508a9bd224290
+Constitutional Hash: cdd01ef066bc6cf2
 
 This test file uses dynamic import to bypass parent module dependencies.
 """
@@ -37,10 +37,7 @@ _pqc_registry_path = (
     _project_root / "src/core/services/policy_registry/app/services/pqc_key_registry/__init__.py"
 )
 if not _pqc_registry_path.is_file():
-    pytest.skip(
-        f"PQC key registry service not present: {_pqc_registry_path}",
-        allow_module_level=True,
-    )
+    pytest.skip(f"Legacy PQC key registry source not found at {_pqc_registry_path}", allow_module_level=True)
 _spec = importlib.util.spec_from_file_location("pqc_key_registry_test_module", _pqc_registry_path)
 if _spec is None or _spec.loader is None:
     raise ImportError(f"Could not load module spec from {_pqc_registry_path}")
@@ -197,6 +194,7 @@ class TestKeyRecord:
 class TestPQCKeyRegistry:
     """Test PQCKeyRegistry operations."""
 
+    @pytest.mark.asyncio
     async def test_store_and_get_key(self, registry, sample_key):
         """Test storing and retrieving a key."""
         # Store key
@@ -217,6 +215,7 @@ class TestPQCKeyRegistry:
         assert retrieved.public_key == sample_key
         assert retrieved.algorithm == "dilithium3"
 
+    @pytest.mark.asyncio
     async def test_store_duplicate_key_fails(self, registry, sample_key):
         """Test that storing duplicate key_id raises error."""
         await registry.store_key(
@@ -238,11 +237,13 @@ class TestPQCKeyRegistry:
                 public_key=sample_key,
             )
 
+    @pytest.mark.asyncio
     async def test_get_nonexistent_key(self, registry):
         """Test retrieving non-existent key raises error."""
         with pytest.raises(KeyNotFoundError):
             await registry.get_key("nonexistent_key")
 
+    @pytest.mark.asyncio
     async def test_get_expired_key(self, registry, sample_key):
         """Test retrieving expired key raises error."""
         await registry.store_key(
@@ -258,6 +259,7 @@ class TestPQCKeyRegistry:
         with pytest.raises(KeyExpiredError):
             await registry.get_key("expired_key")
 
+    @pytest.mark.asyncio
     async def test_get_keys_by_agent(self, registry, sample_key):
         """Test retrieving keys by agent."""
         # Store multiple keys for same agent
@@ -292,6 +294,7 @@ class TestPQCKeyRegistry:
         assert "agent_key_1" in key_ids
         assert "agent_key_2" in key_ids
 
+    @pytest.mark.asyncio
     async def test_get_keys_by_agent_filtered(self, registry, sample_key):
         """Test retrieving keys by agent with type filter."""
         await registry.store_key(
@@ -316,6 +319,7 @@ class TestPQCKeyRegistry:
         assert len(sig_keys) == 1
         assert sig_keys[0].key_id == "sig_key"
 
+    @pytest.mark.asyncio
     async def test_revoke_key(self, registry, sample_key):
         """Test key revocation."""
         await registry.store_key(
@@ -347,6 +351,7 @@ class TestPQCKeyRegistry:
         record = await registry.get_key("revoke_test_key", include_revoked=True)
         assert record.is_revoked is True
 
+    @pytest.mark.asyncio
     async def test_rotate_key(self, registry, sample_key):
         """Test key rotation."""
         from unittest.mock import AsyncMock, MagicMock, patch
@@ -393,6 +398,7 @@ class TestPQCKeyRegistry:
         # Verify rotation result has new key ID
         assert result.new_key_id is not None
 
+    @pytest.mark.asyncio
     async def test_cleanup_expired_keys(self, registry, sample_key):
         """Test cleanup of expired keys."""
         await registry.store_key(
@@ -415,6 +421,7 @@ class TestPQCKeyRegistry:
         # Key should be removed from memory
         assert "cleanup_expired" not in registry._memory_storage
 
+    @pytest.mark.asyncio
     async def test_store_with_metadata(self, registry, sample_key):
         """Test storing key with metadata."""
         metadata = {"purpose": "signing", "environment": "production"}
@@ -435,12 +442,14 @@ class TestPQCKeyRegistry:
 class TestPQCKeyRegistryClient:
     """Test PQCKeyRegistryClient singleton."""
 
+    @pytest.mark.asyncio
     async def test_client_singleton(self):
         """Test that client is a singleton."""
         client1 = PQCKeyRegistryClient()
         client2 = PQCKeyRegistryClient()
         assert client1 is client2
 
+    @pytest.mark.asyncio
     async def test_client_not_initialized(self):
         """Test that uninitialized client raises error."""
         # Create fresh client (not the singleton)
@@ -450,6 +459,7 @@ class TestPQCKeyRegistryClient:
         with pytest.raises(KeyRegistryError):
             await client.get_public_key("any_key")
 
+    @pytest.mark.asyncio
     async def test_client_get_public_key(self, sample_key):
         """Test client get_public_key method."""
         registry = PQCKeyRegistry()
@@ -473,6 +483,7 @@ class TestPQCKeyRegistryClient:
         assert public_key == sample_key
         assert algorithm == "dilithium3"
 
+    @pytest.mark.asyncio
     async def test_client_get_keys_for_agent(self, sample_key):
         """Test client get_keys_for_agent method."""
         registry = PQCKeyRegistry()

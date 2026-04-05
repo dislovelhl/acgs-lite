@@ -489,7 +489,7 @@ class HTTPTransport:
         if self._client is not None:
             try:
                 await self._client.aclose()
-            except Exception:
+            except Exception:  # noqa: BLE001 — teardown must suppress all errors
                 logger.debug("HTTPTransport: error closing httpx client (suppressed)")
             finally:
                 self._client = None

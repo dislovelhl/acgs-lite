@@ -1,13 +1,15 @@
 """
 ACGS-2 Authentication and Authorization Module
-Constitutional Hash: cdd01ef066bc6cf2
+Constitutional Hash: 608508a9bd224290
 
 Provides JWT-based authentication and role-based authorization for all services.
 """
 
 import os
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 
 import jwt
 from fastapi import Depends, HTTPException, Request, params
@@ -17,11 +19,13 @@ from pydantic import BaseModel, Field
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.shared.config import settings
-from src.core.shared.config.runtime_environment import resolve_runtime_environment
 from src.core.shared.constants import CONSTITUTIONAL_HASH
 from src.core.shared.errors.exceptions import ConfigurationError
 from src.core.shared.security.key_loader import load_key_material
 from src.core.shared.structured_logging import get_logger
+
+if TYPE_CHECKING:
+    from src.core.shared.security.token_revocation import TokenRevocationService
 
 logger = get_logger(__name__)
 
@@ -33,17 +37,12 @@ _ALLOWED_JWT_ALGORITHMS = frozenset({"RS256", "RS384", "RS512", "ES256", "ES384"
 _JWT_ALGORITHM_CANONICAL_MAP = {
     algorithm.lower(): algorithm for algorithm in _ALLOWED_JWT_ALGORITHMS
 }
-_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
-_RS256_KEYS_MISSING_MESSAGE = (
-    "RS256 requested but RSA verification keys are not configured. Set JWT_PUBLIC_KEY for "
-    "verification, JWT_PRIVATE_KEY for signing, or change JWT_ALGORITHM to HS256."
-)
 
 # Security schemes
 security = HTTPBearer(auto_error=False)
 
 
-class UserClaims(BaseModel):
+class UserClaims(BaseModel):  # type: ignore[misc]
     """JWT user claims model."""
 
     sub: str  # User ID
@@ -58,7 +57,7 @@ class UserClaims(BaseModel):
     constitutional_hash: str = CONSTITUTIONAL_HASH  # Constitutional hash binding
 
 
-class TokenResponse(BaseModel):
+class TokenResponse(BaseModel):  # type: ignore[misc]
     """Token response model."""
 
     access_token: str
@@ -72,7 +71,7 @@ def _current_jwt_secret() -> str | None:
             return secret
 
     if settings.security.jwt_secret:
-        return settings.security.jwt_secret.get_secret_value()
+        return str(settings.security.jwt_secret.get_secret_value())
 
     return None
 
@@ -97,11 +96,15 @@ def _current_jwt_public_key() -> str | None:
         return loaded if loaded else None
 
     local_public_key = getattr(settings, "jwt_public_key", "")
-    if isinstance(local_public_key, str) and local_public_key:
+    if (
+        isinstance(local_public_key, str)
+        and local_public_key
+        and local_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER"
+    ):
         return local_public_key
 
     if settings.security.jwt_public_key != "SYSTEM_PUBLIC_KEY_PLACEHOLDER":
-        return settings.security.jwt_public_key
+        return str(settings.security.jwt_public_key)
 
     return None
 
@@ -152,7 +155,10 @@ def _resolve_jwt_material(for_signing: bool) -> tuple[str, str]:
 
     if requested_algorithm == "RS256":
         raise ConfigurationError(
-            message=_RS256_KEYS_MISSING_MESSAGE,
+            message=(
+                "RS256 requested but RSA verification keys are not configured. Set JWT_PUBLIC_KEY for "
+                "verification, JWT_PRIVATE_KEY for signing, or change JWT_ALGORITHM to HS256."
+            ),
             error_code="JWT_RSA_KEYS_MISSING",
         )
 
@@ -173,6 +179,143 @@ def has_jwt_secret() -> bool:
 def has_jwt_verification_material() -> bool:
     """Return True when any JWT verification material (secret or public key) is configured."""
     return _current_jwt_secret() is not None or _current_jwt_public_key() is not None
+
+
+def _is_production_environment() -> bool:
+    """Return True when the runtime environment is NOT a known non-production env.
+
+    Uses an allowlist of non-production environments so unknown environments
+    (staging, uat, custom) are treated as production (fail-closed). Aligned with
+    the same logic in auth_dependency.py.
+    """
+    from src.core.shared.config.runtime_environment import resolve_runtime_environment
+
+    configured_env = getattr(settings, "env", None)
+    if configured_env and configured_env not in ("development",):
+        return configured_env not in _NON_PRODUCTION_ENVS
+
+    env = resolve_runtime_environment(configured_env=configured_env)
+    return env not in _NON_PRODUCTION_ENVS
+
+
+_NON_PRODUCTION_ENVS = frozenset({"development", "dev", "test", "testing", "local", "ci"})
+
+# Module-level revocation service cache (lazy-initialized from REDIS_URL env var)
+_revocation_service: "TokenRevocationService | None" = None
+_revocation_service_initialized: bool = False
+
+
+def _configured_revocation_redis_url() -> str | None:
+    """Return the configured Redis URL for token revocation, if any."""
+    return os.getenv("REDIS_URL") or os.getenv("TOKEN_REVOCATION_REDIS_URL")
+
+
+def _cache_revocation_service(
+    service: "TokenRevocationService | None",
+) -> "TokenRevocationService | None":
+    """Persist a Redis-backed revocation service for subsequent requests."""
+    global _revocation_service, _revocation_service_initialized
+
+    if service is None or not bool(getattr(service, "_use_redis", True)):
+        _revocation_service = None
+        return None
+
+    _revocation_service = service
+    _revocation_service_initialized = True
+    return service
+
+
+def _get_revocation_service() -> "TokenRevocationService | None":
+    """Return the active TokenRevocationService, initialising lazily if REDIS_URL is set.
+
+    The service is initialised at most once per process.  If initialisation fails
+    (e.g. Redis is unreachable), ``None`` is returned and the flag is left ``False``
+    so the next call can retry.
+
+    The service can also be injected directly by setting ``auth._revocation_service``
+    and ``auth._revocation_service_initialized = True`` (used in tests and by
+    ``auth_dependency.configure_revocation_service``).
+    """
+    global _revocation_service, _revocation_service_initialized
+
+    if _revocation_service_initialized:
+        return _revocation_service
+
+    redis_url = _configured_revocation_redis_url()
+    if not redis_url:
+        return None
+
+    try:
+        import asyncio
+
+        from src.core.shared.security.token_revocation import create_token_revocation_service
+
+        try:
+            asyncio.get_running_loop()
+            # Running inside an async context — defer; return None for this call
+            return None
+        except RuntimeError:
+            pass  # No running loop — safe to create one
+
+        loop = asyncio.new_event_loop()
+        try:
+            service = loop.run_until_complete(create_token_revocation_service(redis_url))
+        finally:
+            loop.close()
+
+        return _cache_revocation_service(service)
+    except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
+        return None
+
+
+async def _get_revocation_service_async() -> "TokenRevocationService | None":
+    """Return the revocation service, initializing it inside async request flows when needed."""
+    revocation_service = _get_revocation_service()
+    if revocation_service is not None or _revocation_service_initialized:
+        return revocation_service
+
+    redis_url = _configured_revocation_redis_url()
+    if not redis_url:
+        return None
+
+    try:
+        from src.core.shared.security.token_revocation import create_token_revocation_service
+
+        service = await create_token_revocation_service(redis_url)
+    except (ImportError, ConnectionError, TimeoutError, OSError, ValueError, RuntimeError):
+        return None
+
+    return _cache_revocation_service(service)
+
+
+async def _check_token_revocation(claims: UserClaims) -> None:
+    """Fail closed in production when revocation cannot be enforced."""
+    is_production = _is_production_environment()
+    revocation_service = await _get_revocation_service_async()
+    if is_production and revocation_service is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Revocation service unavailable — cannot authenticate in production",
+        )
+
+    if revocation_service is None:
+        return
+
+    try:
+        if await revocation_service.is_token_revoked(claims.jti):
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+    except HTTPException:
+        raise
+    except Exception as err:
+        if is_production:
+            raise HTTPException(
+                status_code=503,
+                detail="Revocation check failed — cannot authenticate in production",
+            ) from err
+        logger.warning(
+            "Revocation check failed in non-production — allowing request: %s",
+            type(err).__name__,
+        )
 
 
 def create_access_token(
@@ -216,45 +359,7 @@ def create_access_token(
     key_material, algorithm = _resolve_jwt_material(for_signing=True)
     encoded_jwt = jwt.encode(to_encode, key_material, algorithm=algorithm)
 
-    return encoded_jwt
-
-
-def _is_production_environment() -> bool:
-    environment = resolve_runtime_environment(
-        getattr(settings, "env", None),
-        extra_env_vars=("ACGS2_ENV",),
-    )
-    return environment not in _NON_PRODUCTION_ENVS
-
-
-def _get_revocation_service():
-    try:
-        from src.core.shared.security import auth_dependency
-    except Exception:
-        return None
-
-    return getattr(auth_dependency, "_revocation_service", None)
-
-
-async def _check_revocation_or_fail_closed(jti: str | None) -> None:
-    if not jti:
-        return
-
-    service = _get_revocation_service()
-    if service is None:
-        if _is_production_environment():
-            raise HTTPException(status_code=503, detail="Token revocation backend unavailable")
-        return
-
-    try:
-        if await service.is_token_revoked(jti):
-            raise HTTPException(status_code=401, detail="Token has been revoked")
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("Token revocation check failed: %s", exc)
-        if _is_production_environment():
-            raise HTTPException(status_code=503, detail="Token revocation backend unavailable") from exc
+    return str(encoded_jwt)
 
 
 def verify_token(token: str) -> UserClaims:
@@ -313,7 +418,7 @@ def verify_token(token: str) -> UserClaims:
     except InvalidTokenError as e:
         logger.warning(f"JWT verification failed: {e}")
         raise HTTPException(status_code=401, detail="Invalid authentication token") from e
-    except Exception as e:
+    except (ValueError, TypeError, KeyError, AttributeError) as e:
         logger.error(f"Token verification error: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed") from e
 
@@ -341,7 +446,9 @@ async def get_current_user(
         )
 
     claims = verify_token(credentials.credentials)
-    await _check_revocation_or_fail_closed(claims.jti)
+
+    await _check_token_revocation(claims)
+
     return claims
 
 
@@ -370,12 +477,16 @@ async def get_current_user_optional(
         return None
 
     try:
-        return verify_token(token)
-    except HTTPException:
+        claims = verify_token(token)
+        await _check_token_revocation(claims)
+        return claims
+    except HTTPException as exc:
+        if exc.status_code >= 500:
+            raise
         return None
 
 
-def require_role(required_role: str):
+def require_role(required_role: str) -> Callable[..., Any]:
     """
     Create a dependency that requires a specific role.
 
@@ -395,7 +506,7 @@ def require_role(required_role: str):
     return role_checker
 
 
-def require_permission(required_permission: str):
+def require_permission(required_permission: str) -> Callable[..., Any]:
     """
     Create a dependency that requires a specific permission.
 
@@ -417,7 +528,7 @@ def require_permission(required_permission: str):
     return permission_checker
 
 
-def require_tenant_access(tenant_id: str | None = None):
+def require_tenant_access(tenant_id: str | None = None) -> Callable[..., Any]:
     """
     Create a dependency that ensures user has access to specified tenant.
 
@@ -451,14 +562,14 @@ def require_tenant_access(tenant_id: str | None = None):
 # ============================================================================
 
 
-class AuthenticationMiddleware(BaseHTTPMiddleware):
+class AuthenticationMiddleware(BaseHTTPMiddleware):  # type: ignore[misc]
     """
     FastAPI middleware for automatic authentication.
 
     Adds user information to request state if token is present.
     """
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable[..., Any]) -> Any:
         """Authenticate the request and attach user info to request state."""
         # Try to authenticate user
         user = await get_current_user_optional(request)
@@ -480,6 +591,8 @@ __all__ = [
     "AuthenticationMiddleware",
     "TokenResponse",
     "UserClaims",
+    "_get_revocation_service",
+    "_is_production_environment",
     "create_access_token",
     "get_current_user",
     "get_current_user_optional",

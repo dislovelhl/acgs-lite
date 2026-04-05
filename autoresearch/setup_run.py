@@ -14,6 +14,7 @@ Actions:
 
 Run from repo root.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,7 +30,7 @@ _GIT_BIN = shutil.which("git") or "git"
 
 
 def _git(*args: str) -> str:
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [_GIT_BIN, *args],
         capture_output=True,
         text=True,
@@ -39,7 +40,7 @@ def _git(*args: str) -> str:
 
 
 def _git_check(*args: str) -> bool:
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [_GIT_BIN, *args],
         capture_output=True,
         text=True,
@@ -81,10 +82,14 @@ def ensure_ready_to_switch(*, branch_will_change: bool, dirty_allowed: bool) -> 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Initialize an autoresearch benchmark run.")
-    parser.add_argument("--tag", required=True, help="Run tag (e.g. mar15). Branch: autoresearch/<tag>")
+    parser.add_argument(
+        "--tag", required=True, help="Run tag (e.g. mar15). Branch: autoresearch/<tag>"
+    )
     parser.add_argument("--dirty", action="store_true", help="Allow dirty working tree")
     parser.add_argument("--base", default="main", help="Base branch for new autoresearch branches")
-    parser.add_argument("--dry-run", action="store_true", help="Show actions without mutating git state")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Show actions without mutating git state"
+    )
     args = parser.parse_args()
 
     branch_name = f"autoresearch/{args.tag}"
@@ -104,14 +109,14 @@ def main() -> int:
     elif _git_check("show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"):
         print(f"Branch exists — switching: git checkout {branch_name}")
         if not args.dry_run:
-            subprocess.run([_GIT_BIN, "checkout", branch_name], check=True)  # noqa: S603
+            subprocess.run([_GIT_BIN, "checkout", branch_name], check=True)
     else:
         if not _git_check("rev-parse", "--verify", args.base):
             print(f"ERROR: base branch not found: {args.base}", file=sys.stderr)
             return 1
         print(f"Creating branch: git checkout -b {branch_name} {args.base}")
         if not args.dry_run:
-            subprocess.run(  # noqa: S603
+            subprocess.run(
                 [_GIT_BIN, "checkout", "-b", branch_name, args.base],
                 check=True,
             )
@@ -145,7 +150,9 @@ def main() -> int:
         "Recent sidecar wins",
         recent_rows(rows, scope="sidecar", statuses={"improved", "neutral-kept", "baseline"}),
     )
-    print_rows("Recent hot-path discards", recent_rows(rows, scope="hot-path", statuses={"discard"}))
+    print_rows(
+        "Recent hot-path discards", recent_rows(rows, scope="hot-path", statuses={"discard"})
+    )
 
     print(
         f"""

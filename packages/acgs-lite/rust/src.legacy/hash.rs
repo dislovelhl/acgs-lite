@@ -4,7 +4,7 @@
 ///   canonical = "|".join(f"{r.id}:{r.text}:{r.severity}:{kw1,kw2,...}" for r in sorted(rules))
 ///   hash = sha256(canonical.encode()).hexdigest()[:16]
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use sha2::{Digest, Sha256};
 

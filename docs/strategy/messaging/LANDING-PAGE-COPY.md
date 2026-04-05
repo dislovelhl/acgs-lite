@@ -1,27 +1,34 @@
-# Propriety.ai Landing Page Copy
+# ACGS Landing Page Copy
 
-**Date:** 2026-03-19
+**Date:** 2026-03-27
 **Status:** Draft for implementation
-**Target:** propriety-ai/src/pages/Home.tsx and components
+**Target:** `packages/propriety-ai` homepage and supporting pages
 
 ---
 
 ## Hero Section
 
 ### Headline
-**HTTPS for AI**
+**AI agents can take actions. They need a constitution.**
 
 ### Subheadline
-Constitutional governance for your AI systems. Cryptographic proof that every decision is compliant.
+ACGS is the constitutional governance layer for agentic systems. Enforce machine-readable rules
+before execution, prevent self-validation by architecture, and produce audit-ready evidence for
+regulated AI workflows.
 
 ### Supporting text
-560 nanoseconds of overhead. 9 regulatory frameworks. 5 lines of code. EU AI Act enforcement begins August 2, 2026.
+Guardrails filter outputs. GRC tracks policies. Agent frameworks orchestrate flow.
+**ACGS governs actions.**
 
 ### CTAs
-- Primary: **Get Started Free** (-> pip install instructions / signup)
-- Secondary: **View Pricing** (-> /pricing)
+- Primary: **Get Started**
+- Secondary: **Run the EU AI Act Check**
 
-### Code snippet (hero visual)
+### Code snippet
+```bash
+pip install acgs-lite
+```
+
 ```python
 from acgs_lite import Constitution, GovernedAgent
 
@@ -35,78 +42,88 @@ result = agent.run("process this request")  # Governed.
 ## Problem Section
 
 ### Heading
-The most powerful decision-making engines in history. No brakes.
+AI infrastructure got good at helping agents act. It is still weak at constraining them.
 
 ### Body
-$203 billion invested in AI in 2025. Less than 1% in governance infrastructure.
+Prompts are not governance. Dashboards are not runtime control. Post-hoc review is not prevention.
 
-A single mother applies for a mortgage. 742 credit score. 12 years of stable employment. The AI rejects her in 340 milliseconds. No human review. No appeal. No audit trail.
+Once agents can approve, deny, deploy, escalate, or call tools, the real questions change:
+- Who proposed the action?
+- Who validated it?
+- Which rules were active?
+- Can you prove governance happened after the fact?
 
-The EU AI Act takes full enforcement August 2026. Fines up to 7% of global annual revenue. Most companies have zero governance infrastructure.
-
-### Stat bar
-| 340ms | 7% | $0 |
-|-------|-----|-----|
-| Time for AI to deny a mortgage | Maximum fine under EU AI Act | What most companies spend on AI governance |
+Most teams still cannot answer those questions cleanly.
 
 ---
 
 ## Solution Section
 
 ### Heading
-Governance that runs faster than a cache hit
+Govern actions inside the runtime
 
 ### Body
-ACGS validates every AI action against constitutional rules in 560 nanoseconds. No exceptions. No performance excuse to turn it off.
+ACGS embeds governance directly into agent execution. Before an agent can act, ACGS can evaluate
+constitutional rules, enforce role boundaries, and record what happened against a specific
+governance state.
 
 ### Three pillars
 
-**Constitutional Engine**
-Define governance rules in YAML. Keywords, regex patterns, severity levels. Context-aware matching that doesn't false-flag constructive actions. Tamper-proof constitutional hash.
+**Constitutional Rules**  
+Machine-readable governance policies with versioned rule state, templates, and composable
+constitutions.
 
-**MACI Separation of Powers**
-Agents never validate their own output. Proposer, Validator, Executor — enforced at the middleware level. The same separation of powers we built for human institutions, now for AI.
+**Structural Separation**  
+Proposer, validator, executor, and observer roles stay distinct so the same agent does not approve
+its own high-risk action.
 
-**Compliance Proof**
-Every validation produces an auditable receipt. Cryptographic chain verification. Nine regulatory frameworks mapped to 125 compliance checklist items. Your auditor gets evidence, not promises.
-
----
-
-## Metrics Bar
-
-| 560ns | 9 | 125 | 2.8M | 3,820 |
-|-------|---|-----|------|-------|
-| P50 validation latency | Regulatory frameworks | Compliance items (72 auto) | Validations/sec (Rust) | Automated tests |
+**Audit Evidence**  
+Every decision is tied to rule state and written into a tamper-evident audit trail for compliance,
+security, and post-incident review.
 
 ---
 
-## Framework Coverage Section
+## Proof Strip
+
+- Machine-readable constitutional rules
+- Structural anti-self-validation
+- Tamper-evident audit trail
+- Compliance-oriented outputs
+- Developer-first integration
+
+---
+
+## Why ACGS Is Different
 
 ### Heading
-Nine regulatory frameworks. One tool.
+The missing layer in the AI stack
 
-### Grid
+### Body
+- **Governance platforms** organize oversight and compliance workflows
+- **Guardrails tools** filter prompts and outputs
+- **Policy engines** evaluate general policy-as-code
+- **Agent frameworks** orchestrate execution
 
-| Framework | Jurisdiction | Enforcement | ACGS Coverage |
-|-----------|-------------|-------------|---------------|
-| EU AI Act | EU (27 states) | Aug 2026, 7% fine | Articles 12, 13, 14 |
-| GDPR | EU | Active, 4% fine | Articles 22, 35, 40 |
-| NIST AI RMF | US (federal) | Procurement gate | GOVERN/MAP/MEASURE/MANAGE |
-| ISO 42001 | International | Certification | AI Management System |
-| SOC 2 + AI | International | Enterprise gate | Trust Service Criteria |
-| HIPAA + AI | US (healthcare) | Active, $1.5M/violation | PHI protection |
-| ECOA/FCRA | US (finance) | Active, unlimited damages | Fair lending |
-| NYC LL 144 | New York City | Active, $1,500/day | Employment automation |
-| OECD AI | 46 countries | Baseline standard | AI Principles |
+ACGS adds the missing layer: governance inside execution.
 
 ---
 
-## How It Works Section
+## Use Cases
 
 ### Heading
-Three steps. Five minutes. Full governance.
+Where ACGS fits first
 
-### Steps
+- Merge request governance for AI-generated code
+- High-risk internal copilots
+- Regulated decision-support systems
+- Tool-using agents in healthcare, finance, and compliance-heavy environments
+
+---
+
+## How It Works
+
+### Heading
+Define rules. Wrap the agent. Govern every action.
 
 **1. Define your constitution**
 ```yaml
@@ -125,92 +142,59 @@ constitution = Constitution.from_yaml("rules.yaml")
 agent = GovernedAgent(my_agent, constitution=constitution)
 ```
 
-**3. Every action is governed**
-```
-Action: "Should I invest in crypto?"
-Decision: DENY (SAFE-001)
-Latency: 487ns
-Audit: chain-verified, hash 608508a9bd224290
+**3. Evaluate actions inline**
+```text
+Action: "Approve the deployment"
+Decision: REQUIRE_VALIDATOR_REVIEW
+Rule state: hash-bound
+Audit: chain-verified
 ```
 
 ---
 
-## Integration Section
+## Compliance Section
 
 ### Heading
-Works with everything you already use
-
-### Grid (logos + pip install extras)
-- OpenAI (`acgs[openai]`)
-- Anthropic (`acgs[anthropic]`)
-- LangChain (`acgs[langchain]`)
-- LiteLLM (`acgs[litellm]`)
-- Google GenAI (`acgs[google]`)
-- LlamaIndex (`acgs[llamaindex]`)
-- AutoGen (`acgs[autogen]`)
-- CrewAI (`acgs[crewai]`)
-- MCP (`acgs[mcp]`)
-- A2A (`acgs[a2a]`)
-- GitLab CI/CD (pipeline stage)
-
----
-
-## EU AI Act Countdown Section
-
-### Heading
-**[X] days until EU AI Act enforcement**
+Built for regulated environments
 
 ### Body
-High-risk AI provisions take effect August 2, 2026. Fines up to 7% of global annual revenue or EUR 35 million — whichever is higher.
+ACGS maps governance outputs to major frameworks including the EU AI Act, NIST AI RMF,
+ISO/IEC 42001, SOC 2 + AI, HIPAA + AI, GDPR Article 22, ECOA/FCRA, NYC LL 144, and OECD AI.
+
+The goal is not to replace your governance program. The goal is to give it enforceable runtime
+controls and evidence your security, legal, and compliance teams can use.
 
 ### CTA
-**Take the free assessment** — see where you stand against Article 12, 13, and 14 requirements.
+**Run the EU AI Act Check**
 
 ---
 
-## Pricing Preview Section
+## Integrations Section
 
 ### Heading
-Start free. Scale with compliance needs.
+Fits into the stack you already use
 
-| Community | Pro | Team | Enterprise |
-|-----------|-----|------|------------|
-| **Free** | **$299/mo** | **$999/mo** | **Custom** |
-| Full governance engine | + Compliance reports | + All 9 frameworks | + Everything |
-| Local audit trail | + Cloud audit sync | + SSO/SAML | + On-premise |
-| MACI separation | + 3 frameworks | + Change workflows | + Dedicated engineer |
-| Community support | + Email support | + Priority support | + 1h SLA |
-| [Install] | [Start Free Trial] | [Start Free Trial] | [Contact Sales] |
-
----
-
-## Social Proof Section (when available)
-
-### Pre-launch (use metrics)
-- "3,820 automated tests"
-- "847 benchmark scenarios"
-- "118 optimization experiments"
-- "Open source under AGPL-3.0"
-
-### Post-launch (use logos + quotes)
-- Design partner logos
-- Quote from partner champion
-- PyPI download count
-- GitHub star count
+- Anthropic (`acgs-lite[anthropic]`)
+- OpenAI (`acgs-lite[openai]`)
+- LangChain (`acgs-lite[langchain]`)
+- LiteLLM (`acgs-lite[litellm]`)
+- Google GenAI (`acgs-lite[google]`)
+- LlamaIndex (`acgs-lite[llamaindex]`)
+- AutoGen (`acgs-lite[autogen]`)
+- CrewAI (`acgs-lite[crewai]`)
+- MCP (`acgs-lite[mcp]`)
+- A2A (`acgs-lite[a2a]`)
+- GitLab CI/CD
 
 ---
 
 ## Footer CTA
 
 ### Heading
-Your AI makes decisions. Can you prove they're governed?
+If your agents can act in the world, they need more than prompts.
+
+### Body
+They need governance at runtime.
 
 ### CTA
-**Get Started Free** — `pip install acgs`
-
-### Secondary links
-- Documentation
-- GitHub
-- Pricing
-- EU AI Act Guide
-- AGPL FAQ
+**Get Started** — `pip install acgs-lite`

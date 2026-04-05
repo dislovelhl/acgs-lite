@@ -51,6 +51,13 @@ def configure_revocation_service(service: "TokenRevocationService") -> None:
     """
     global _revocation_service
     _revocation_service = service
+
+    import src.core.shared.security.auth as auth_module
+
+    auth_module._revocation_service = (
+        service if bool(getattr(service, "_use_redis", True)) else None
+    )
+    auth_module._revocation_service_initialized = auth_module._revocation_service is not None
     logger.info("TokenRevocationService registered with require_auth")
 
 
@@ -85,8 +92,12 @@ async def shutdown_revocation_service() -> None:
     """Clear the shared token revocation service during lifespan shutdown."""
     global _revocation_service
 
+    import src.core.shared.security.auth as auth_module
+
     service = _revocation_service
     _revocation_service = None
+    auth_module._revocation_service = None
+    auth_module._revocation_service_initialized = False
     if service is None:
         return
 
@@ -95,8 +106,18 @@ async def shutdown_revocation_service() -> None:
 
 
 def _is_production_environment() -> bool:
+    # ``settings.env`` is the canonical source (configured at startup from APP_ENV
+    # or explicit config).  Only fall back to raw env vars when settings.env is
+    # absent or is the default "development" — this allows tests to control the
+    # environment via patch.object(settings, "env", …) without the raw ENVIRONMENT
+    # env var (set to "test" by the EAB test conftest) overriding them.
+    configured_env = getattr(settings, "env", None)
+    if configured_env and configured_env not in ("development",):
+        # Settings has an explicit non-default value — trust it.
+        return configured_env not in _NON_PRODUCTION_ENVS
+
     environment = resolve_runtime_environment(
-        getattr(settings, "env", None),
+        configured_env,
         extra_env_vars=("ACGS2_ENV",),
     )
     return environment not in _NON_PRODUCTION_ENVS

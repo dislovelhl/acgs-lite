@@ -1,0 +1,27 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install build tools
+        run: pip install build twine
+      - name: Build
+        run: python -m build --wheel --sdist
+      - name: Check
+        run: twine check dist/*
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1

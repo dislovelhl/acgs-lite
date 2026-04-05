@@ -16,10 +16,8 @@ All repository `pytest` invocations should include `--import-mode=importlib`.
 
 ## Contribution Terms
 
-- The repository source code is licensed under `AGPL-3.0-or-later`.
-- By submitting a contribution, you agree that your contribution is made available under `AGPL-3.0-or-later`.
-- Proprietary and SaaS users who cannot comply with the AGPL can obtain a separate commercial license. See [COMMERCIAL_LICENSE.md](COMMERCIAL_LICENSE.md).
-- If maintainers need additional dual-licensing rights for a commercial distribution, they may request separate CLA paperwork before merge.
+- The repository source code is licensed under `Apache-2.0`.
+- By submitting a contribution, you agree that your contribution is made available under `Apache-2.0`.
 
 ## Pull Requests
 

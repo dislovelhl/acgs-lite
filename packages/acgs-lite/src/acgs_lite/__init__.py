@@ -1,7 +1,7 @@
 """ACGS: Constitutional AI Governance for Any Agent.
 
 Copyright (C) 2024-2026 ACGS Contributors
-Licensed under AGPL-3.0-or-later. See LICENSE for details.
+Licensed under Apache-2.0. See LICENSE for details.
 Commercial license available at https://acgs.ai for proprietary use.
 
 Constitutional Hash: 608508a9bd224290
@@ -75,6 +75,13 @@ from acgs_lite.openshell import (
     create_openshell_governance_app,
     create_openshell_governance_router,
 )
+from acgs_lite.scoring import ConstitutionalImpactScorer, RuleBasedScorer, score_impact
+from acgs_lite.z3_verify import (
+    Z3_AVAILABLE,
+    Z3_RISK_THRESHOLD,
+    Z3ConstraintVerifier,
+    Z3VerifyResult,
+)
 
 __version__ = VERSION
 
@@ -120,6 +127,15 @@ __all__ = [
     # MACI
     "MACIRole",
     "MACIEnforcer",
+    # Scoring
+    "ConstitutionalImpactScorer",
+    "RuleBasedScorer",
+    "score_impact",
+    # Z3 formal verification
+    "Z3ConstraintVerifier",
+    "Z3VerifyResult",
+    "Z3_AVAILABLE",
+    "Z3_RISK_THRESHOLD",
     # OpenShell governance integration
     "ActionContext",
     "ActionEnvelope",

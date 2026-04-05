@@ -5,7 +5,14 @@ from typing import Any
 
 try:
     from src.core.shared.auth.oidc_handler import *  # noqa: F403
+    from src.core.shared.auth.oidc_handler import _normalize_secret_sentinel  # noqa: F401
 except ImportError:
+
+    import re
+
+    def _normalize_secret_sentinel(secret: str) -> str:
+        """Normalize a secret for comparison (strip, lowercase, remove non-alnum)."""
+        return re.sub(r"[^a-z0-9]", "", secret.strip().lower())
 
     class OIDCConfig:
         issuer: str = ""

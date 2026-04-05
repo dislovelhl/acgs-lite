@@ -1,7 +1,7 @@
 # ACGS Strategy Documents
 
 **Generated:** 2026-03-19
-**Last updated:** 2026-03-19
+**Last updated:** 2026-03-27
 
 Current naming reference: the public package is `acgs`, the compatibility namespace is
 `acgs_lite`, and `ACGS-2` is an internal historical platform label. See
@@ -15,16 +15,13 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 |---|----------|-------------|
 | 01 | [Business Panel Analysis](01-business-panel-analysis.md) | Multi-expert analysis (9 simulated experts: Christensen, Porter, Taleb, Kim/Mauborgne, Drucker, Meadows, Godin, Collins, Doumont). Consensus points, disagreements, priority recommendations. |
 | 02 | [Market Research Evidence](02-market-research-evidence.md) | Competitive intelligence (Guardrails AI, NeMo, OPA/Styra, Snyk, Checkmarx), OSS monetization precedents (HashiCorp, Elastic, Redis, Grafana, PostHog, Supabase), market sizing ($200M-$15.8B), PLG playbook, product surface inventory. |
-| 03 | [Economic Engine Design](03-economic-engine-design.md) | Monetization model: AGPL-3.0 dual license, 4-tier pricing (Free/$299/$999/$5K+), flywheel design, OPA/Styra differentiation, ARR growth path, revenue streams, risk mitigation, framework maintenance, funding strategy. |
+| 03 | [Economic Engine Design](03-economic-engine-design.md) | Monetization model: Apache-2.0 license (updated from AGPL), 4-tier pricing, flywheel design, OPA/Styra differentiation, ARR growth path, revenue streams, risk mitigation, framework maintenance, funding strategy. |
 | 04 | [Competitive Landscape](04-competitive-landscape.md) | Head-to-head comparison matrix (ACGS vs Guardrails AI vs NeMo vs OPA vs LlamaGuard), potential new entrants, partner opportunities, moat assessment, win/loss scenarios. |
 | 05 | [GTM Playbook](05-gtm-playbook.md) | Go-to-market: GitLab wedge, distribution channels, conversion funnel, Day Zero pipeline, design partner program, community building, enterprise sales motion, 90-day launch plan. |
 
 ## Legal
 
-| Document | Description |
-|----------|-------------|
-| [AGPL Migration Plan](legal/AGPL-MIGRATION-PLAN.md) | Step-by-step license migration: files to change, header templates, communication plan, automated migration script, legal checklist. |
-| [AGPL FAQ](legal/AGPL-FAQ.md) | Enterprise-ready FAQ: when AGPL triggers (and when it doesn't), commercial license options, CLA explanation. For developers and legal teams. |
+License changed to Apache-2.0 (2026-03-27). Previous AGPL strategy docs archived.
 
 ## Sales Enablement
 
@@ -34,13 +31,21 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 | [Compliance Brief](sales/COMPLIANCE-BRIEF.md) | CISO/auditor-facing: 9-framework coverage matrix, evidence types, MACI separation, audit readiness checklist, deployment options, security posture. |
 | [Budget Playbook](sales/BUDGET-PLAYBOOK.md) | How to get ACGS purchased when "AI governance" is not a budget line item. Budget attachment map by trigger event, price anchoring, conversation templates, deal acceleration. |
 | [Design Partner Program](sales/DESIGN-PARTNER-PROGRAM.md) | Terms, ideal partner profile, prospecting sources, outreach cadence, onboarding checklist, exit criteria, success metrics. |
+| [Pitch Deck Outline](sales/PITCH-DECK.md) | 10-slide founder deck narrative: problem, category gap, product, competition, GTM, and closing thesis. |
 
 ## Messaging
 
 | Document | Description |
 |----------|-------------|
+| [Core Messaging](messaging/CORE-MESSAGING.md) | Canonical positioning, one-liners, category framing, founder narrative, language to use and avoid. |
 | [Audience Narratives](messaging/AUDIENCE-NARRATIVES.md) | Segmented messaging for 5 audiences: developers, CTOs, CISOs, investors, design partners. Tone, content angles, channels, what NOT to say. |
 | [Landing Page Copy](messaging/LANDING-PAGE-COPY.md) | Full copy for propriety.ai homepage: hero, problem, solution, metrics, frameworks, how-it-works, integrations, EU AI Act countdown, pricing preview, CTAs. |
+
+## Launch
+
+| Document | Description |
+|----------|-------------|
+| [Launch Pack](../launch/LAUNCH-PACK.md) | Founder-style launch copy in English and Chinese for LinkedIn, X, Hacker News, and short-form posts. |
 
 ---
 
@@ -64,6 +69,7 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 | 2026-03-19 | Initial creation (docs 01-05) | Business panel analysis |
 | 2026-03-19 | Round 2 revisions (docs 03, 04, 05) | Panel adversarial review: 6 contradictions, 5 omissions fixed |
 | 2026-03-19 | Operational documents (legal, sales, messaging) | Execution readiness |
+| 2026-03-27 | Messaging refresh and launch collateral | Core positioning, landing page refresh, pitch deck outline, bilingual launch pack |
 
 ### Round 2 Fixes Applied
 

@@ -77,7 +77,10 @@ export default {
     const url = new URL(request.url);
 
     // Health check
-    if (url.pathname === "/health" || url.pathname === "/") {
+    // - Always on /health
+    // - On / only if it's the default workers.dev domain
+    const isDefaultRoot = url.pathname === "/" && url.hostname.includes(".workers.dev");
+    if (url.pathname === "/health" || isDefaultRoot) {
       return healthResponse();
     }
 
@@ -179,14 +182,37 @@ export default {
 
     // Route matching
     const endpoint = matchEndpoint(url.pathname);
-    if (!endpoint) {
-      return new Response(
-        JSON.stringify({ error: { message: "Not found", type: "invalid_request_error" } }),
-        { status: 404, headers: { "Content-Type": "application/json" } },
-      );
+    
+    // If not an API endpoint, proxy static content to Pages (GET/HEAD only)
+    if (!endpoint && !url.pathname.startsWith("/admin/")) {
+      if (request.method !== "GET" && request.method !== "HEAD") {
+        return new Response(
+          JSON.stringify({ error: { message: "Method not allowed", type: "invalid_request_error" } }),
+          { status: 405, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      
+      const response = await fetch(`https://acgs-ai.pages.dev${url.pathname}${url.search}`, {
+        method: request.method,
+        headers: request.headers,
+      });
+
+      // Override content-type for media assets if origin returns text/html (common Pages misconfiguration)
+      if (url.pathname.endsWith(".mp4")) {
+        const newHeaders = new Headers(response.headers);
+        newHeaders.set("Content-Type", "video/mp4");
+        return new Response(response.body, { ...response, headers: newHeaders });
+      }
+      if (url.pathname.endsWith(".pptx")) {
+        const newHeaders = new Headers(response.headers);
+        newHeaders.set("Content-Type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+        return new Response(response.body, { ...response, headers: newHeaders });
+      }
+
+      return response;
     }
 
-    // Only support POST
+    // OpenAI-compatible POST only
     if (request.method !== "POST") {
       return new Response(
         JSON.stringify({ error: { message: "Method not allowed", type: "invalid_request_error" } }),

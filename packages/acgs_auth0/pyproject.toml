@@ -1,14 +1,15 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=80.9.0", "wheel>=0.46.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-auth0"
-version = "0.1.0"
+version = "0.1.1"
 description = "Constitutional Token Governance for AI Agents — ACGS × Auth0 Token Vault"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "AGPL-3.0-or-later" }
+authors = [{name = "ACGS Team", email = "hello@acgs.dev"}]
 keywords = ["acgs", "auth0", "token-vault", "ai-agents", "governance", "maci"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -23,6 +24,14 @@ dependencies = [
     "httpx>=0.28.0",
     "pyyaml>=6.0",
 ]
+
+[project.urls]
+Homepage = "https://acgs.ai"
+Documentation = "https://github.com/dislovelhl/acgs-auth0"
+Repository = "https://github.com/dislovelhl/acgs-auth0"
+Issues = "https://github.com/dislovelhl/acgs-auth0/issues"
+Changelog = "https://github.com/dislovelhl/acgs-auth0/releases"
+PyPI = "https://pypi.org/project/acgs-auth0/"
 
 [project.optional-dependencies]
 langchain = [
@@ -42,8 +51,11 @@ dev = [
     "pytest-cov>=5.0",
 ]
 
-[tool.hatch.build.targets.wheel]
+[tool.setuptools]
 packages = ["acgs_auth0"]
+
+[tool.setuptools.package-dir]
+acgs_auth0 = "."
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -128,14 +128,20 @@ async def test_configure_revocation_service():
     """configure_revocation_service registers the service."""
     from unittest.mock import MagicMock
 
+    from src.core.shared.security import auth
+
     mock_service = MagicMock()
     auth_dependency.configure_revocation_service(mock_service)
 
     # Verify it was set
     assert auth_dependency._revocation_service is mock_service
+    assert auth._revocation_service is mock_service
+    assert auth._revocation_service_initialized is True
 
     # Clean up
     auth_dependency._revocation_service = None
+    auth._revocation_service = None
+    auth._revocation_service_initialized = False
 
 
 async def test_check_revocation_skips_when_no_service():

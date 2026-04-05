@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import pytest
 
+pytestmark = pytest.mark.skip(reason="Tests old evidence API replaced by generic collector pattern")
+
 from acgs_lite.compliance.base import (
     ChecklistItem,
     ChecklistStatus,

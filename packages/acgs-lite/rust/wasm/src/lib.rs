@@ -4,7 +4,7 @@
 /// Designed for Cloudflare Workers: load constitution from JSON,
 /// validate actions, return structured results.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use std::collections::{HashMap, HashSet};
 

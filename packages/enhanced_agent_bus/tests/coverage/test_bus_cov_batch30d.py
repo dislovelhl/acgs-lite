@@ -38,6 +38,7 @@ _BLOCK_SESSION = [
 ]
 _BLOCK_TENANT = [
     "src.core.shared.security.tenant_context",
+    "enhanced_agent_bus._compat.security.tenant_context",
 ]
 
 

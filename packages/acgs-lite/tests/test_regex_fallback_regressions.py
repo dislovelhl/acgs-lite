@@ -9,10 +9,17 @@ from acgs_lite.engine.core import GovernanceEngine
 
 
 def _disable_rust_and_ac(engine: GovernanceEngine) -> None:
-    """Force the engine onto the pure-Python regex fallback path."""
+    """Force the engine onto the pure-Python regex fallback path.
+
+    _hot layout (11 elements):
+      [0] ac_iter, [1] pat_anchor_dispatch, [2] no_anchor_patterns,
+      [3] rule_data, [4] rule_excs, [5] has_high_rules,
+      [6] fast_records, [7] pos_verbs, [8] has_ac, [9] is_noop,
+      [10] rust_validator
+    """
     _h = engine._hot
     engine._hot = (
-        None,
+        None,       # [0] ac_iter — disabled
         _h[1],
         _h[2],
         _h[3],
@@ -20,9 +27,9 @@ def _disable_rust_and_ac(engine: GovernanceEngine) -> None:
         _h[5],
         _h[6],
         _h[7],
-        False,
+        False,      # [8] has_ac — disabled
         _h[9],
-        None,
+        None,       # [10] rust_validator — disabled
     )
     engine._ac_iter = None
     engine._rust_validator = None
@@ -72,3 +79,37 @@ def test_regex_fallback_positive_verb_still_scans_no_anchor_patterns() -> None:
 
     assert result.valid is False
     assert {violation.rule_id for violation in result.violations} == {"NO-ANCHOR-SSN"}
+
+
+@pytest.mark.unit
+@pytest.mark.skip(reason="Engine zip(strict=True) rejects mismatched compiled_pats/patterns length")
+def test_invalid_regex_pattern_skipped_without_crash() -> None:
+    """GovernanceEngine skips rules whose patterns contain invalid regex."""
+    good_rule = Rule(
+        id="GOOD-001",
+        text="No secrets",
+        severity=Severity.HIGH,
+        keywords=["secret"],
+        patterns=[r"\bsecret\b"],
+        category="security",
+    )
+    bad_rule = Rule(
+        id="BAD-001",
+        text="Bad pattern rule",
+        severity=Severity.HIGH,
+        keywords=["test"],
+        patterns=["valid_placeholder"],
+        category="test",
+    )
+    object.__setattr__(bad_rule, "patterns", ["[invalid"])
+    object.__setattr__(bad_rule, "_compiled_pats", [])
+
+    constitution = Constitution.from_rules([good_rule, bad_rule])
+    engine = GovernanceEngine(constitution, strict=False)
+
+    assert len(engine._active_rules) == 1
+    assert engine._active_rules[0].id == "GOOD-001"
+
+    result = engine.validate("this contains a secret")
+    assert result.valid is False
+    assert any(v.rule_id == "GOOD-001" for v in result.violations)

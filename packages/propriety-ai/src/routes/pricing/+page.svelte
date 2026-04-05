@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { Canvas } from '@threlte/core';
+	import TrustCrystal from '$lib/components/TrustCrystal.svelte';
+
 	function observe(node: HTMLElement) {
 		if (typeof IntersectionObserver === 'undefined') {
 			node.classList.add('visible');
@@ -100,20 +103,21 @@
 	<title>Pricing — ACGS</title>
 </svelte:head>
 
-<section class="py-24 md:py-32 px-8 md:px-12 relative overflow-hidden">
-	<!-- Subtle background glow -->
-	<div
-		class="pointer-events-none absolute top-0 right-0 -mr-40 -mt-40 h-[600px] w-[600px] rounded-full opacity-10 blur-[100px]"
-		style="background: radial-gradient(circle, var(--color-accent) 0%, transparent 70%);"
-	></div>
+<section class="py-24 md:py-32 px-8 md:px-12 relative overflow-hidden grid-mesh">
+	<!-- 3D Hero Element -->
+	<div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
+		<Canvas>
+			<TrustCrystal />
+		</Canvas>
+	</div>
 
 	<div class="mx-auto max-w-[1600px] relative z-10">
-		<div class="fade-in mb-16 text-center md:text-left" use:observe>
-			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-accent">PRICING</p>
-			<h1 class="font-sans text-5xl font-light italic md:text-7xl">The Engine Is Free Forever</h1>
-			<p class="mt-6 max-w-2xl text-lg leading-relaxed text-fg-muted/90 mx-auto md:mx-0">
+		<div class="fade-in mb-24 text-center md:text-left" use:observe>
+			<p class="mb-4 font-mono text-xs tracking-[0.4em] text-accent font-bold uppercase">03 — PRICING</p>
+			<h1 class="font-sans text-6xl font-bold tracking-tight md:text-9xl text-white">The Engine Is <span class="font-serif italic font-light">Free Forever</span></h1>
+			<p class="mt-8 max-w-2xl text-lg leading-relaxed text-fg-muted md:text-xl font-light mx-auto md:mx-0">
 				You pay for compliance proof, not governance.<br />
-				Enterprise compliance consulting: $50,000+/engagement.
+				Enterprise compliance consulting: <span class="text-white">$50,000+/engagement</span>.
 			</p>
 		</div>
 

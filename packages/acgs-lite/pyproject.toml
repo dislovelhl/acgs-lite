@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-lite"
-version = "2.5.0"
+version = "2.5.2"
 description = "Public ACGS Lite package for constitutional governance in AI agents. Enforce rules, audit decisions, and prevent self-validation in production."
 readme = "README.md"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
     {name = "ACGS Team", email = "hello@acgs.dev"},
@@ -23,6 +23,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Security",
     "Topic :: Office/Business :: Financial",
@@ -49,10 +50,11 @@ llamaindex = ["llama-index-core>=0.10"]
 autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
 mcp = ["mcp>=1.0"]
 crewai = ["crewai>=0.30"]
+autonoma = ["pyjwt>=2.0", "structlog>=21.0", "fastapi>=0.100"]
 gitlab = ["httpx>=0.27", "starlette>=0.37"]
 google-cloud = ["google-cloud-logging>=3.0"]
 pdf = ["fpdf2>=2.7"]
-all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,gitlab,google-cloud,pdf]"]
+all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,autonoma,gitlab,google-cloud,pdf]"]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -68,10 +70,10 @@ dev = [
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://acgs.ai"
-Repository = "https://github.com/acgs2_admin/acgs"
-Issues = "https://github.com/acgs2_admin/acgs/issues"
-Changelog = "https://github.com/acgs2_admin/acgs/releases"
+Documentation = "https://acgs.ai/docs"
+Repository = "https://github.com/dislovelhl/acgs-lite"
+Issues = "https://github.com/dislovelhl/acgs-lite/issues"
+Changelog = "https://github.com/dislovelhl/acgs-lite/releases"
 PyPI = "https://pypi.org/project/acgs-lite/"
 
 [tool.setuptools.packages.find]

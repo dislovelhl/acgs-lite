@@ -8,16 +8,7 @@ for high-risk AI system compliance.
 
 Constitutional Hash: 608508a9bd224290
 
-License Requirements
---------------------
-- **PRO+**: Article12Logger, RiskClassifier, ComplianceChecklist
-- **TEAM+**: TransparencyDisclosure, HumanOversightGateway
-- **ENTERPRISE**: Custom constitutional rules, priority support
-
 Quick Start::
-
-    import acgs_lite
-    acgs_lite.set_license("ACGS-PRO-...")
 
     from acgs_lite.eu_ai_act import (
         Article12Logger,
@@ -39,7 +30,6 @@ Quick Start::
         employment=True,
     ))
     # result.level == RiskLevel.HIGH_RISK
-    # result.requires_article12_logging == True
 
     # 2. Add Article 12 logging to every LLM call
     logger = Article12Logger(system_id="my-system")
@@ -74,119 +64,71 @@ Quick Start::
 
 from __future__ import annotations
 
-from typing import Any
-
 import acgs_lite.eu_ai_act.article12 as _a12
 import acgs_lite.eu_ai_act.compliance_checklist as _cc
 import acgs_lite.eu_ai_act.human_oversight as _ho
 import acgs_lite.eu_ai_act.risk_classification as _rc
 import acgs_lite.eu_ai_act.transparency as _tr
-from acgs_lite.licensing import LicenseError, LicenseManager, Tier
 
 # ---------------------------------------------------------------------------
-# Tier-gating helper
+# Article 12 — Record-Keeping
 # ---------------------------------------------------------------------------
 
-
-def _gated(tier: Tier, original_cls: type, feature: str = "") -> type:
-    """Return a subclass whose __init__ checks the license tier first."""
-
-    class _Gated(original_cls):  # type: ignore[misc]
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            # Always resolve the current singleton so test resets work correctly
-            LicenseManager().require(tier, feature or original_cls.__name__)
-            super().__init__(*args, **kwargs)
-
-    _Gated.__name__ = original_cls.__name__
-    _Gated.__qualname__ = original_cls.__qualname__
-    _Gated.__doc__ = original_cls.__doc__
-    _Gated.__module__ = original_cls.__module__
-    return _Gated
-
+Article12Logger = _a12.Article12Logger
+Article12Record = _a12.Article12Record
 
 # ---------------------------------------------------------------------------
-# PRO-gated classes (Article 12 + risk classification + compliance checklist)
+# Risk Classification — Article 6 + Annex III
 # ---------------------------------------------------------------------------
 
-Article12Logger: type = _gated(Tier.PRO, _a12.Article12Logger, "Article 12 logging")
-Article12Record = _a12.Article12Record  # data class, no gate needed
-
-RiskClassifier: type = _gated(Tier.PRO, _rc.RiskClassifier, "Risk classification")
-ClassificationResult = _rc.ClassificationResult  # data class
-RiskLevel = _rc.RiskLevel  # enum
-SystemDescription = _rc.SystemDescription  # data class
-
-ComplianceChecklist: type = _gated(Tier.PRO, _cc.ComplianceChecklist, "Compliance checklist")
-ChecklistItem = _cc.ChecklistItem  # data class
-ChecklistStatus = _cc.ChecklistStatus  # enum
+RiskClassifier = _rc.RiskClassifier
+ClassificationResult = _rc.ClassificationResult
+RiskLevel = _rc.RiskLevel
+SystemDescription = _rc.SystemDescription
 
 # ---------------------------------------------------------------------------
-# TEAM-gated classes (Article 13 transparency + Article 14 human oversight)
+# Compliance Checklist
 # ---------------------------------------------------------------------------
 
-TransparencyDisclosure: type = _gated(
-    Tier.TEAM, _tr.TransparencyDisclosure, "Article 13 transparency"
-)
-
-HumanOversightGateway: type = _gated(
-    Tier.TEAM, _ho.HumanOversightGateway, "Article 14 human oversight"
-)
-OversightDecision = _ho.OversightDecision  # data class
-OversightOutcome = _ho.OversightOutcome  # enum
+ComplianceChecklist = _cc.ComplianceChecklist
+ChecklistItem = _cc.ChecklistItem
+ChecklistStatus = _cc.ChecklistStatus
 
 # ---------------------------------------------------------------------------
-# Module-level helpers
+# Article 13 — Transparency
 # ---------------------------------------------------------------------------
 
+TransparencyDisclosure = _tr.TransparencyDisclosure
 
-def check_license() -> dict[str, Any]:
-    """Return current license tier and available EU AI Act features.
+# ---------------------------------------------------------------------------
+# Article 14 — Human Oversight
+# ---------------------------------------------------------------------------
 
-    Returns a dict with keys: tier, expiry, pro_features, team_features.
-    """
-    info = LicenseManager().load()
-    return {
-        "tier": info.tier.name,
-        "expiry": info.expiry_date,
-        "pro_features": info.has_tier(Tier.PRO),
-        "team_features": info.has_tier(Tier.TEAM),
-        "enterprise_features": info.has_tier(Tier.ENTERPRISE),
-        "available_classes": [
-            cls
-            for cls, tier in [
-                ("Article12Logger", Tier.PRO),
-                ("RiskClassifier", Tier.PRO),
-                ("ComplianceChecklist", Tier.PRO),
-                ("TransparencyDisclosure", Tier.TEAM),
-                ("HumanOversightGateway", Tier.TEAM),
-            ]
-            if info.has_tier(tier)
-        ],
-    }
+HumanOversightGateway = _ho.HumanOversightGateway
+OversightDecision = _ho.OversightDecision
+OversightOutcome = _ho.OversightOutcome
 
+# ---------------------------------------------------------------------------
 
 __all__ = [
-    # Article 12 — Record-Keeping (PRO+)
+    # Article 12 — Record-Keeping
     "Article12Logger",
     "Article12Record",
-    # Article 13 — Transparency (TEAM+)
+    # Article 13 — Transparency
     "TransparencyDisclosure",
-    # Article 14 — Human Oversight (TEAM+)
+    # Article 14 — Human Oversight
     "HumanOversightGateway",
     "OversightDecision",
     "OversightOutcome",
-    # Risk Classification — Article 6 + Annex III (PRO+)
+    # Risk Classification — Article 6 + Annex III
     "RiskClassifier",
     "RiskLevel",
     "SystemDescription",
     "ClassificationResult",
-    # Compliance Checklist (PRO+)
+    # Compliance Checklist
     "ComplianceChecklist",
     "ChecklistItem",
     "ChecklistStatus",
-    # Helpers
-    "LicenseError",
-    "check_license",
 ]
 
 EU_AI_ACT_HIGH_RISK_DEADLINE = "2026-08-02"

@@ -94,6 +94,33 @@ except (ImportError, ValueError):
                 return {}
 
 
+def _is_explicit_dev_or_test_mode() -> bool:
+    """Allow fallback tenant extraction only in explicit development/test runtimes."""
+    runtime_values: tuple[str | None, ...] = (
+        os.getenv("AGENT_RUNTIME_ENVIRONMENT"),
+        os.getenv("ACGS_ENV"),
+        os.getenv("APP_ENV"),
+        os.getenv("ENVIRONMENT"),
+    )
+    allowed_modes = {"dev", "development", "local", "test", "testing", "ci", "qa"}
+    production_like_modes = {"production", "prod", "staging", "stage", "preprod"}
+
+    # Block if ANY environment variable indicates a production-like runtime,
+    # even when PYTEST_CURRENT_TEST is set (e.g. integration smoke-tests
+    # against staging-configured services).
+    for raw_value in runtime_values:
+        if raw_value and raw_value.strip().lower() in production_like_modes:
+            return False
+
+    for raw_value in runtime_values:
+        if raw_value and raw_value.strip().lower() in allowed_modes:
+            return True
+
+    # pytest sets this for active tests; allow fallback only when no
+    # production-like environment was detected (checked above).
+    return bool(os.getenv("PYTEST_CURRENT_TEST"))
+
+
 # Try to import tenant context helper
 try:
     from enhanced_agent_bus._compat.security.tenant_context import get_tenant_id
@@ -101,32 +128,6 @@ try:
     USING_FALLBACK_TENANT = False
 except ImportError:
     USING_FALLBACK_TENANT = True
-
-    def _is_explicit_dev_or_test_mode() -> bool:
-        """Allow fallback tenant extraction only in explicit development/test runtimes."""
-        runtime_values: tuple[str | None, ...] = (
-            os.getenv("AGENT_RUNTIME_ENVIRONMENT"),
-            os.getenv("ACGS_ENV"),
-            os.getenv("APP_ENV"),
-            os.getenv("ENVIRONMENT"),
-        )
-        allowed_modes = {"dev", "development", "local", "test", "testing", "ci", "qa"}
-        production_like_modes = {"production", "prod", "staging", "stage", "preprod"}
-
-        # Block if ANY environment variable indicates a production-like runtime,
-        # even when PYTEST_CURRENT_TEST is set (e.g. integration smoke-tests
-        # against staging-configured services).
-        for raw_value in runtime_values:
-            if raw_value and raw_value.strip().lower() in production_like_modes:
-                return False
-
-        for raw_value in runtime_values:
-            if raw_value and raw_value.strip().lower() in allowed_modes:
-                return True
-
-        # pytest sets this for active tests; allow fallback only when no
-        # production-like environment was detected (checked above).
-        return bool(os.getenv("PYTEST_CURRENT_TEST"))
 
     async def get_tenant_id(  # type: ignore[misc]
         x_tenant_id: str | None = Header(None, alias="X-Tenant-ID"),

@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from acgs_lite.errors import ConstitutionalViolationError
+
 
 @dataclass(frozen=True)
 class SandboxOutcome:
@@ -206,5 +208,5 @@ class PolicySandbox:
             if hasattr(result, "decision"):
                 decision = result.decision
             return {"decision": decision, "violations": violations}
-        except Exception:
+        except (ValueError, TypeError, RuntimeError, AttributeError, ConstitutionalViolationError):
             return {"decision": "deny", "violations": ["EXCEPTION"]}

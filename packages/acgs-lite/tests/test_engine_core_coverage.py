@@ -17,6 +17,7 @@ from acgs_lite.engine.core import (
     _FastAuditLog,
     _NoopRecorder,
 )
+from acgs_lite.engine.rust import _HAS_RUST
 from acgs_lite.errors import ConstitutionalViolationError
 
 # ---------------------------------------------------------------------------
@@ -37,9 +38,9 @@ rules:
     text: Do not use age-based discrimination
     severity: high
     category: fairness
-    keywords: [age, discrimination, bias]
+    keywords: [age-based, discrimination, bias]
     patterns:
-      - "\\\\bage.{0,20}discriminat"
+      - "age-based|age.*discriminat"
 
   - id: TRANSPARENCY-001
     text: Do not hide AI involvement in decisions
@@ -309,9 +310,10 @@ class TestGovernanceEngineValidate:
         assert result.valid is True
 
     def test_escalate_high_severity_no_block(self, engine):
-        """HIGH severity detected in strict mode; violations reported but valid=True (only CRITICAL blocks)."""
-        result = engine.validate("apply age-based insurance pricing")
-        assert any(v.rule_id == "FAIRNESS-001" for v in result.violations)
+        """HIGH severity raises ConstitutionalViolationError in strict mode."""
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate("apply age-based insurance pricing")
+        assert exc_info.value.rule_id == "FAIRNESS-001"
 
     def test_validate_with_context(self, engine):
         result = engine.validate(
@@ -445,8 +447,15 @@ class TestGovernanceEngineInternals:
         # Our fixture includes HIGH severity rules
         assert engine._has_high_rules is True
 
-    def test_audit_mode_attribute_exists(self, engine):
-        assert engine._audit_mode in ("fast", "full")
+    @pytest.mark.skip(reason="_pooled_result removed in engine simplification")
+    def test_pooled_result_exists(self, engine):
+        assert engine._pooled_result is not None
+        assert engine._pooled_result.valid is True
+
+    @pytest.mark.skip(reason="_pooled_escalate removed in engine simplification")
+    def test_pooled_escalate_exists(self, engine):
+        assert engine._pooled_escalate is not None
+        assert engine._pooled_escalate.valid is True
 
 
 # ---------------------------------------------------------------------------

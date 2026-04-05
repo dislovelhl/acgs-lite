@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -109,6 +110,42 @@ class TestTokenRevocationIntegration:
             assert exc_info.value.status_code == 401
             assert "revoked" in exc_info.value.detail.lower()
 
+    async def test_get_current_user_lazy_initializes_revocation_service_in_async_flow(self):
+        """Async auth should initialize the Redis-backed revocation service on first use."""
+        from src.core.shared.security.auth import UserClaims, get_current_user
+
+        mock_creds = MagicMock()
+        mock_creds.credentials = "test-token"
+
+        claims = UserClaims(
+            sub="user-1",
+            jti="token-jti-123",
+            aud="acgs2-api",
+            iss="acgs2",
+            exp=int(datetime.now(UTC).timestamp()) + 3600,
+            iat=int(datetime.now(UTC).timestamp()),
+            tenant_id="tenant-1",
+            roles=["user"],
+            permissions=["read"],
+        )
+
+        mock_revocation = AsyncMock()
+        mock_revocation.is_token_revoked = AsyncMock(return_value=False)
+
+        with (
+            patch.dict(os.environ, {"REDIS_URL": "redis://redis.example:6379/0"}, clear=True),
+            patch("src.core.shared.security.auth.verify_token", return_value=claims),
+            patch(
+                "src.core.shared.security.token_revocation.create_token_revocation_service",
+                new=AsyncMock(return_value=mock_revocation),
+            ) as create_service,
+        ):
+            result = await get_current_user(credentials=mock_creds)
+
+        assert result.sub == "user-1"
+        create_service.assert_awaited_once_with("redis://redis.example:6379/0")
+        mock_revocation.is_token_revoked.assert_awaited_once_with("token-jti-123")
+
     async def test_get_current_user_fails_closed_when_revocation_backend_missing_in_production(
         self,
     ):
@@ -140,6 +177,82 @@ class TestTokenRevocationIntegration:
             with pytest.raises(HTTPException) as exc_info:
                 await get_current_user(credentials=mock_creds)
             assert exc_info.value.status_code == 503
+
+    async def test_get_current_user_optional_returns_none_for_revoked_token(self):
+        """Optional auth must not treat revoked JWTs as authenticated users."""
+        from fastapi import HTTPException
+
+        from src.core.shared.security.auth import UserClaims, get_current_user_optional
+
+        request = MagicMock()
+        request.headers = {"Authorization": "Bearer revoked-token"}
+
+        claims = UserClaims(
+            sub="user-1",
+            jti="revoked-jti",
+            aud="acgs2-api",
+            iss="acgs2",
+            exp=int(datetime.now(UTC).timestamp()) + 3600,
+            iat=int(datetime.now(UTC).timestamp()),
+            tenant_id="tenant-1",
+            roles=["user"],
+            permissions=["read"],
+        )
+
+        with (
+            patch("src.core.shared.security.auth.verify_token", return_value=claims),
+            patch(
+                "src.core.shared.security.auth._check_token_revocation",
+                new=AsyncMock(
+                    side_effect=HTTPException(status_code=401, detail="Token has been revoked")
+                ),
+            ),
+        ):
+            result = await get_current_user_optional(request, credentials=None)
+
+        assert result is None
+
+    async def test_authentication_middleware_skips_request_state_for_revoked_token(self):
+        """AuthenticationMiddleware must not populate request.state from revoked tokens."""
+        from fastapi import HTTPException
+
+        from src.core.shared.security.auth import AuthenticationMiddleware, UserClaims
+
+        request = MagicMock()
+        request.headers = {"Authorization": "Bearer revoked-token"}
+        request.state = SimpleNamespace()
+
+        response = MagicMock()
+        call_next = AsyncMock(return_value=response)
+
+        claims = UserClaims(
+            sub="user-1",
+            jti="revoked-jti",
+            aud="acgs2-api",
+            iss="acgs2",
+            exp=int(datetime.now(UTC).timestamp()) + 3600,
+            iat=int(datetime.now(UTC).timestamp()),
+            tenant_id="tenant-1",
+            roles=["user"],
+            permissions=["read"],
+        )
+
+        middleware = AuthenticationMiddleware(app=MagicMock())
+
+        with (
+            patch("src.core.shared.security.auth.verify_token", return_value=claims),
+            patch(
+                "src.core.shared.security.auth._check_token_revocation",
+                new=AsyncMock(
+                    side_effect=HTTPException(status_code=401, detail="Token has been revoked")
+                ),
+            ),
+        ):
+            result = await middleware.dispatch(request, call_next)
+
+        assert result is response
+        assert not hasattr(request.state, "user")
+        assert not hasattr(request.state, "tenant_id")
 
 
 # ── C-2: Service auth env var mismatch ──────────────────────────────

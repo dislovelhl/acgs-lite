@@ -1,8 +1,11 @@
 {
   "mcpServers": {
     "acgs-governance": {
-      "command": "python",
-      "args": ["-m", "acgs_lite.integrations.mcp_server"],
+      "command": "bash",
+      "args": [
+        "-lc",
+        "ROOT=\"$(git rev-parse --show-toplevel)\" && exec bash \"$ROOT/scripts/codex-mcp-acgs-governance.sh\""
+      ],
       "env": {
         "ACGS_CONSTITUTION": "default"
       },
@@ -16,9 +19,15 @@
       ]
     },
     "acgs-agent-bus": {
-      "command": "python",
-      "args": ["-m", "enhanced_agent_bus.mcp_server.cli"],
-      "env": {},
+      "command": "bash",
+      "args": [
+        "-lc",
+        "ROOT=\"$(git rev-parse --show-toplevel)\" && exec bash \"$ROOT/scripts/codex-mcp-acgs-agent-bus.sh\""
+      ],
+      "env": {
+        "ACGS_ENV": "development",
+        "LOG_LEVEL": "INFO"
+      },
       "description": "ACGS-2 Enhanced Agent Bus — governance workflows, MACI enforcement, precedent queries",
       "tools": [
         "validate_constitutional_compliance",

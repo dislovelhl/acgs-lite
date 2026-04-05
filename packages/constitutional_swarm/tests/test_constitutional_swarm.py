@@ -732,3 +732,83 @@ class TestDNASwarmIntegration:
         # Cross-domain bypass blocked
         with pytest.raises(ConstitutionalViolationError):
             backend_dna.validate("cross-domain bypass to access frontend DB")
+
+
+# ---------------------------------------------------------------------------
+# Breakthrough A+: Risk Scoring (semantic layer on top of DNA)
+# ---------------------------------------------------------------------------
+
+
+class TestRiskScoring:
+    """Test opt-in semantic risk scoring integrated into AgentDNA."""
+
+    def test_default_dna_has_zero_risk_score(self) -> None:
+        dna = AgentDNA.default(agent_id="worker-01")
+        result = dna.validate("analyze code quality")
+        assert result.risk_score == 0.0
+        assert result.risk_level == "unknown"
+        assert result.scoring_method == "keyword"
+
+    def test_risk_scoring_enabled_populates_fields(self) -> None:
+        dna = AgentDNA.default(agent_id="worker-01", risk_scoring=True)
+        result = dna.validate("delete all user records from production database")
+        assert result.risk_score > 0.0
+        assert result.risk_level in ("low", "medium", "high", "critical")
+        assert result.scoring_method in ("rule", "ml", "rust", "shadow-python")
+
+    def test_high_risk_action_scores_high(self) -> None:
+        dna = AgentDNA.default(agent_id="worker-01", risk_scoring=True)
+        result = dna.validate("delete all user records from production database")
+        assert result.risk_score >= 0.5
+
+    def test_low_risk_action_scores_low(self) -> None:
+        dna = AgentDNA.default(agent_id="worker-01", risk_scoring=True)
+        result = dna.validate("read user profile")
+        assert result.risk_score < 0.5
+        assert result.risk_level in ("low", "medium")
+
+    def test_risk_score_does_not_change_validity(self) -> None:
+        """Risk scoring is advisory — does not override constitutional validity."""
+        dna = AgentDNA.default(agent_id="worker-01", risk_scoring=True)
+        # High-risk but not constitutionally blocked
+        result = dna.validate("delete all database records")
+        assert result.valid is True  # no constitutional keyword triggered
+        assert result.risk_score > 0.0  # but risk is flagged
+
+    def test_from_rules_forwards_risk_scoring(self) -> None:
+        dna = AgentDNA.from_rules(
+            [Rule(id="T-001", text="no bypasses", severity="critical", keywords=["bypass"])],
+            agent_id="w",
+            risk_scoring=True,
+        )
+        result = dna.validate("deploy to production")
+        assert result.risk_score > 0.0
+
+    def test_from_yaml_forwards_risk_scoring(self, tmp_path) -> None:
+        yaml_file = tmp_path / "constitution.yaml"
+        yaml_file.write_text(
+            "name: test\nrules:\n  - id: T-001\n    text: no bypasses\n"
+            "    severity: critical\n    keywords:\n      - bypass\n"
+        )
+        dna = AgentDNA.from_yaml(str(yaml_file), agent_id="w", risk_scoring=True)
+        result = dna.validate("deploy to production")
+        assert result.risk_score >= 0.0  # scorer is active
+
+    def test_risk_scoring_flag_false_is_default(self) -> None:
+        dna_off = AgentDNA.default(agent_id="a", risk_scoring=False)
+        dna_on = AgentDNA.default(agent_id="b", risk_scoring=True)
+        r_off = dna_off.validate("delete all records")
+        r_on = dna_on.validate("delete all records")
+        assert r_off.risk_score == 0.0
+        assert r_on.risk_score > 0.0
+
+    def test_risk_level_categories(self) -> None:
+        from acgs_lite.scoring import _risk_level
+        assert _risk_level(0.0) == "low"
+        assert _risk_level(0.29) == "low"
+        assert _risk_level(0.3) == "medium"
+        assert _risk_level(0.49) == "medium"
+        assert _risk_level(0.5) == "high"
+        assert _risk_level(0.79) == "high"
+        assert _risk_level(0.8) == "critical"
+        assert _risk_level(1.0) == "critical"

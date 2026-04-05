@@ -42,7 +42,7 @@ from .skills.validate_clinical import validate_clinical_action
 
 logger = logging.getLogger(__name__)
 
-CONSTITUTIONAL_HASH = "608508a9bd224290"
+CONSTITUTIONAL_HASH = "8494a847758c08dc"
 
 # Security limits
 MAX_REQUEST_BODY_BYTES = 64 * 1024  # 64 KB max request body

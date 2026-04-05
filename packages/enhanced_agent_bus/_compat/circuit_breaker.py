@@ -6,8 +6,17 @@ from typing import Any, Callable, TypeVar
 
 try:
     from src.core.shared.circuit_breaker import *  # noqa: F403
+    from src.core.shared.circuit_breaker import _registry  # noqa: F401
 except ImportError:
     F = TypeVar("F", bound=Callable[..., Any])
+
+    class _CircuitBreakerRegistry:
+        """Lightweight registry stub for standalone mode."""
+
+        def __init__(self) -> None:
+            self._breakers: dict[str, Any] = {}
+
+    _registry = _CircuitBreakerRegistry()
 
     class CircuitBreakerConfig:
         failure_threshold: int = 5
@@ -35,8 +44,12 @@ except ImportError:
         def reset(self) -> None:
             self.state = "closed"
 
-    def get_circuit_breaker(name: str = "", **kwargs: Any) -> CircuitBreaker:
-        return CircuitBreaker(**kwargs)
+    def get_circuit_breaker(
+        service_name: str = "",
+        config: CircuitBreakerConfig | None = None,
+        **kwargs: Any,
+    ) -> CircuitBreaker:
+        return CircuitBreaker(config=config, **kwargs)
 
     def circuit_breaker(name: str = "", **kwargs: Any) -> Callable[[F], F]:
         """No-op decorator."""
