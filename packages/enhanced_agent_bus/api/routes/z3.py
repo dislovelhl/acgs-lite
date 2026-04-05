@@ -24,7 +24,7 @@ import time
 from collections import deque
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, Depends, HTTPException, Request, Security
 from fastapi.responses import ORJSONResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
@@ -41,6 +41,8 @@ except ImportError:
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 logger = get_logger(__name__)
+
+from ..rate_limiting import limiter
 
 router = APIRouter(tags=["Z3 Verification"])
 
@@ -236,7 +238,8 @@ class PolicyVerifyRequest(BaseModel):
     description="Aggregated Z3 SMT verification metrics plus a recent verification feed.",
     response_class=ORJSONResponse,
 )
-async def get_z3_metrics() -> ORJSONResponse:
+@limiter.limit("60/minute")
+async def get_z3_metrics(request: Request) -> ORJSONResponse:
     """Return Z3 verification metrics aggregated from in-process state.
 
     This endpoint is intentionally unauthenticated so the web-console
@@ -273,7 +276,9 @@ async def get_z3_metrics() -> ORJSONResponse:
     description="Run Z3 SMT verification on a policy specification.",
     response_class=ORJSONResponse,
 )
+@limiter.limit("20/minute")
 async def verify_policy(
+    http_request: Request,
     request: PolicyVerifyRequest,
     _api_key: str = Depends(_verify_api_key),
 ) -> ORJSONResponse:

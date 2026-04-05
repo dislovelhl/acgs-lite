@@ -21,6 +21,8 @@ from fastapi import (
     HTTPException,
     Request,
 )
+
+from ..rate_limiting import limiter
 from pydantic import BaseModel, Field
 
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
@@ -106,7 +108,9 @@ get_ccai_governance = _load_governance_dependency()
     response_model=StabilityMetricsResponse,
     tags=["Governance"],
 )
+@limiter.limit("60/minute")
 async def get_stability_metrics(
+    request: Request,
     _user: UserClaims = Depends(get_current_user),
 ) -> StabilityMetricsResponse:
     """
@@ -871,7 +875,9 @@ def _maci_validation_response(
     tags=["MACI"],
     status_code=201,
 )
+@limiter.limit("20/minute")
 async def register_maci_agent(
+    request: Request,
     body: MACIAgentRegisterRequest,
     _tenant_id: str = Depends(get_tenant_id),
     registry: Annotated[MACIRoleRegistry, Depends(_get_maci_registry)] = None,
@@ -905,7 +911,9 @@ async def register_maci_agent(
     tags=["MACI"],
     status_code=201,
 )
+@limiter.limit("20/minute")
 async def record_maci_output(
+    request: Request,
     body: MACIOutputRecordRequest,
     _tenant_id: str = Depends(get_tenant_id),
     registry: Annotated[MACIRoleRegistry, Depends(_get_maci_registry)] = None,
@@ -928,7 +936,9 @@ async def record_maci_output(
     response_model=MACIActionValidationResponse,
     tags=["MACI"],
 )
+@limiter.limit("20/minute")
 async def validate_maci_action(
+    request: Request,
     body: MACIActionValidationRequest,
     _tenant_id: str = Depends(get_tenant_id),
     enforcer: Annotated[MACIEnforcer, Depends(_get_maci_enforcer)] = None,
@@ -957,6 +967,7 @@ async def validate_maci_action(
     tags=["MACI"],
     status_code=201,
 )
+@limiter.limit("20/minute")
 async def create_maci_record(
     body: MACIRecordCreateRequest,
     request: Request,
@@ -1017,6 +1028,7 @@ async def create_maci_record(
     response_model=MACIRecordResponse,
     tags=["MACI"],
 )
+@limiter.limit("20/minute")
 async def update_maci_record(
     record_id: str,
     body: MACIRecordUpdateRequest,
@@ -1070,8 +1082,10 @@ async def update_maci_record(
     response_model=MACIRecordResponse,
     tags=["MACI"],
 )
+@limiter.limit("60/minute")
 async def get_maci_record(
     record_id: str,
+    request: Request,
     _tenant_id: str = Depends(get_tenant_id),
     store: Annotated[MACIRecordStore | None, Depends(_get_maci_record_store)] = None,
 ) -> MACIRecordResponse:
@@ -1095,8 +1109,10 @@ async def get_maci_record(
     response_model=MACIRecordResponse,
     tags=["MACI"],
 )
+@limiter.limit("20/minute")
 async def delete_maci_record(
     record_id: str,
+    request: Request,
     _tenant_id: str = Depends(get_tenant_id),
     store: Annotated[MACIRecordStore | None, Depends(_get_maci_record_store)] = None,
 ) -> MACIRecordResponse:

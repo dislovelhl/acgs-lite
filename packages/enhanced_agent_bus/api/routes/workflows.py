@@ -6,7 +6,7 @@ Constitutional Hash: 608508a9bd224290
 
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict
 
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
@@ -15,6 +15,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 from ...persistence.executor import DurableWorkflowExecutor
 from ...persistence.models import WorkflowStatus
 from ..dependencies import get_workflow_executor
+from ..rate_limiting import limiter
 
 logger = get_logger(__name__)
 
@@ -71,7 +72,9 @@ def _resolve_tenant_id(user: UserClaims, requested_tenant_id: str | None) -> str
 
 
 @router.post("", response_model=CreateWorkflowResponse)
+@limiter.limit("20/minute")
 async def create_workflow(
+    request: Request,
     req: CreateWorkflowRequest,
     tenant_id: str | None = Query(None, description="Tenant ID (must match authenticated tenant)"),
     user: UserClaims = Depends(get_current_user),
@@ -105,7 +108,9 @@ async def create_workflow(
 
 
 @router.get("", response_model=WorkflowListResponse)
+@limiter.limit("60/minute")
 async def list_workflows(
+    request: Request,
     tenant_id: str | None = Query(None, description="Tenant ID (must match authenticated tenant)"),
     status: WorkflowStatus | None = Query(None, description="Filter by status"),
     limit: int = Query(100, ge=1, le=1000),
@@ -133,8 +138,10 @@ async def list_workflows(
 
 
 @router.get("/{workflow_id}", response_model=WorkflowInspectResponse)
+@limiter.limit("60/minute")
 async def inspect_workflow(
     workflow_id: str,
+    request: Request,
     tenant_id: str | None = Query(None, description="Tenant ID (must match authenticated tenant)"),
     user: UserClaims = Depends(get_current_user),
     executor: DurableWorkflowExecutor = Depends(get_workflow_executor),
@@ -185,8 +192,10 @@ async def inspect_workflow(
 
 
 @router.post("/{workflow_id}/cancel")
+@limiter.limit("20/minute")
 async def cancel_workflow(
     workflow_id: str,
+    request: Request,
     req: CancelRequest,
     tenant_id: str | None = Query(None, description="Tenant ID (must match authenticated tenant)"),
     user: UserClaims = Depends(get_current_user),
@@ -207,8 +216,10 @@ async def cancel_workflow(
 
 
 @router.post("/{workflow_id}/retry")
+@limiter.limit("20/minute")
 async def retry_workflow(
     workflow_id: str,
+    request: Request,
     tenant_id: str | None = Query(None, description="Tenant ID (must match authenticated tenant)"),
     user: UserClaims = Depends(get_current_user),
     executor: DurableWorkflowExecutor = Depends(get_workflow_executor),

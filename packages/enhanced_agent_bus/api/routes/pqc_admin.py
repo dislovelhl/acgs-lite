@@ -17,6 +17,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
+from ..rate_limiting import limiter
+
 try:
     from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 except ImportError:  # pragma: no cover - fallback for isolated test runs
@@ -101,7 +103,9 @@ def _require_admin(user: UserClaims) -> None:
     summary="Change PQC enforcement mode",
     status_code=status.HTTP_200_OK,
 )
+@limiter.limit("5/minute")
 async def patch_pqc_enforcement(
+    request: Request,
     body: EnforcementModeRequest,
     user: Annotated[UserClaims, Depends(get_current_user)],
     svc: Annotated[EnforcementModeConfigService, Depends(get_enforcement_service)],
@@ -152,7 +156,9 @@ async def patch_pqc_enforcement(
     summary="Read current PQC enforcement mode",
     status_code=status.HTTP_200_OK,
 )
+@limiter.limit("20/minute")
 async def get_pqc_enforcement(
+    request: Request,
     user: Annotated[UserClaims, Depends(get_current_user)],
     svc: Annotated[EnforcementModeConfigService, Depends(get_enforcement_service)],
     scope: str = Query(default="global", description="Enforcement scope"),

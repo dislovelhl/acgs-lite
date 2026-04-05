@@ -7,10 +7,11 @@ GET /v1/usage — returns remaining quota for the authenticated developer.
 
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
 from ..api_key_auth import require_api_key
+from ..rate_limiting import limiter
 from ..runtime_guards import require_sandbox_endpoint
 from .signup import get_account
 
@@ -52,7 +53,9 @@ def _resolve_usage_quota(api_key: str) -> tuple[int, int, str]:
 
 
 @router.get("/usage", response_model=UsageResponse)
+@limiter.limit("60/minute")
 async def get_usage(
+    request: Request,
     api_key: str = Depends(require_api_key),
 ) -> UsageResponse:
     """Return sandbox-only usage stats backed by the in-memory signup store."""

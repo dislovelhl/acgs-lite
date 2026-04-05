@@ -13,7 +13,10 @@ from fastapi import (
     APIRouter,
     Body,
     Depends,
+    Request,
 )
+
+from ..rate_limiting import limiter
 
 from enhanced_agent_bus._compat.security.auth import UserClaims, get_current_user
 
@@ -63,7 +66,9 @@ router = APIRouter()
     summary="Validate policy",
     tags=["Policies"],
 )
+@limiter.limit("20/minute")
 async def validate_policy(
+    request: Request,
     _payload: JSONDict = Body(...),
     user: UserClaims = Depends(get_current_user),
     _bus: MessageProcessor | dict = Depends(get_agent_bus),

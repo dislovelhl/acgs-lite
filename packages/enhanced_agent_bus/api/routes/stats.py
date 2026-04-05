@@ -6,7 +6,7 @@ GET /v1/stats — returns real aggregated validation statistics.
 Requires API key authentication.
 """
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
 try:
@@ -15,6 +15,7 @@ except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 from ..api_key_auth import require_api_key
+from ..rate_limiting import limiter
 from ..runtime_guards import require_sandbox_endpoint
 from ..validation_store import (
     RecentValidationRecord,
@@ -37,7 +38,9 @@ class StatsResponse(BaseModel):
 
 
 @router.get("/stats", response_model=StatsResponse)
+@limiter.limit("60/minute")
 async def get_stats(
+    request: Request,
     _api_key: str = Depends(require_api_key),
 ) -> StatsResponse:
     """Return sandbox-only validation statistics from the in-memory store."""

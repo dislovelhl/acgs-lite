@@ -6,10 +6,11 @@ GET /v1/badge/{agent_id} — returns an SVG compliance badge.
 No authentication required. Cached for 5 minutes.
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
 from ..badge_generator import generate_badge_svg
+from ..rate_limiting import limiter
 
 router = APIRouter(prefix="/v1", tags=["badge"])
 BADGE_CACHE_CONTROL = {"Cache-Control": "max-age=300, public"}
@@ -19,7 +20,8 @@ DEFAULT_BADGE_SCORE = 1.0
 
 
 @router.get("/badge/{agent_id}")
-async def get_badge(agent_id: str) -> Response:
+@limiter.limit("60/minute")
+async def get_badge(request: Request, agent_id: str) -> Response:
     """
     Return an SVG compliance badge for the given agent.
 

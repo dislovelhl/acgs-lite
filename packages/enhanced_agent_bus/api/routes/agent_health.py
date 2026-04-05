@@ -15,6 +15,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+
+from ..rate_limiting import limiter
 from pydantic import BaseModel, Field
 
 from enhanced_agent_bus.agent_health.models import (
@@ -172,8 +174,10 @@ async def require_operator_role(request: Request) -> str:
         "percentage, last event timestamp, and Autonomy Tier for the specified agent (FR-007)."
     ),
 )
+@limiter.limit("60/minute")
 async def get_agent_health(
     agent_id: str,
+    request: Request,
     operator: str = Depends(require_operator_role),
     store: AgentHealthStore = Depends(get_agent_health_store),
 ) -> AgentHealthResponse:
@@ -228,8 +232,10 @@ async def get_agent_health(
         "specified agent (FR-008). Written to the governance audit log before taking effect."
     ),
 )
+@limiter.limit("20/minute")
 async def create_healing_override(
     agent_id: str,
+    request: Request,
     body: HealingOverrideRequest,
     operator: str = Depends(require_operator_role),
     store: AgentHealthStore = Depends(get_agent_health_store),
@@ -329,8 +335,10 @@ async def create_healing_override(
         "automatic healing (FR-008). Written to the governance audit log."
     ),
 )
+@limiter.limit("20/minute")
 async def delete_healing_override(
     agent_id: str,
+    request: Request,
     operator: str = Depends(require_operator_role),
     store: AgentHealthStore = Depends(get_agent_health_store),
     audit_client: Any = Depends(get_audit_log_client),
