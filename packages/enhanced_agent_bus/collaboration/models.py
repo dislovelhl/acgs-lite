@@ -14,7 +14,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

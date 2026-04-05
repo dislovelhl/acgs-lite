@@ -14,14 +14,18 @@ Usage:
 
 from __future__ import annotations
 
+import copy
 import functools
 import inspect
 import logging
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
+
+_IMMUTABLE_TYPES = (type(None), bool, int, float, str, bytes, tuple, frozenset)
 
 
 class FailClosedError(Exception):
@@ -67,7 +71,10 @@ def fail_closed(
                         fn.__qualname__,
                         type(exc).__name__,
                     )
-                    return deny_value
+                    # Return a copy of mutable deny values to prevent cross-call contamination
+                    if isinstance(deny_value, _IMMUTABLE_TYPES):
+                        return deny_value
+                    return copy.deepcopy(deny_value)
 
             return async_wrapper  # type: ignore[return-value]
         else:
@@ -87,7 +94,10 @@ def fail_closed(
                         fn.__qualname__,
                         type(exc).__name__,
                     )
-                    return deny_value
+                    # Return a copy of mutable deny values to prevent cross-call contamination
+                    if isinstance(deny_value, _IMMUTABLE_TYPES):
+                        return deny_value
+                    return copy.deepcopy(deny_value)
 
             return sync_wrapper  # type: ignore[return-value]
 

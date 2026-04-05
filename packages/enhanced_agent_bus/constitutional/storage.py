@@ -8,7 +8,7 @@ Delegates to specialized modules in .storage_infra.
 """
 
 try:
-    from src.core.shared.types import JSONDict  # noqa: E402
+    from enhanced_agent_bus._compat.types import JSONDict  # noqa: E402
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

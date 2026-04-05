@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 import redis.asyncio as redis
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         CONSTITUTIONAL_HASH,
         JSONDict,
     )

@@ -30,7 +30,7 @@ except ImportError:
     _TELEMETRY_AVAILABLE = False
     tracer = None
 
-from src.core.shared.cache import workflow_cache
+from enhanced_agent_bus._compat.cache import workflow_cache
 
 from .metrics import (
     WORKFLOW_CANCELLED_TOTAL,

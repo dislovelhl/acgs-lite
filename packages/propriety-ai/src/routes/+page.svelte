@@ -281,7 +281,7 @@
 <section class="relative py-24 md:py-32 px-8 md:px-12">
 	<div class="mx-auto max-w-[1000px]">
 		<div class="fade-in mb-12 text-center" use:observe>
-			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">560 NANOSECONDS TO COMPLIANCE</p>
+			<p class="mb-4 font-mono text-xs tracking-[0.3em] text-fg-muted">GOVERNANCE WATCH</p>
 		</div>
 		<div class="fade-in aspect-video w-full overflow-hidden rounded-xl border border-border/50 shadow-2xl" use:observe>
 			<iframe
@@ -358,7 +358,7 @@
 						{ title: 'Live Stream', desc: 'acgs observe --watch: View governance decisions as they happen with microsecond precision.' },
 						{ title: 'Portable Bundles', desc: 'Generate auditor-ready telemetry bundles containing Prometheus metrics and OTel traces.' },
 						{ title: 'Fail-Closed Edge', desc: 'Deploy as a Cloudflare Worker proxy. Intercept jailbreaks at the edge before they hit your model.' }
-					] as point}
+					] as point (point.title)}
 						<div class="flex gap-5">
 							<div class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent shadow-[0_0_10px_rgba(37,99,235,0.5)]"></div>
 							<div>
@@ -384,12 +384,12 @@
 $ acgs observe --watch --interval 1
 
 --- Snapshot 1 ---
-{'{'}
+&#123;
   "total_decisions": 1142,
   "compliance_rate": 0.9982,
   "latency_p99_ms": 0.0039,
   "top_violation": "GL-004 (Destructive Ops)"
-{'}'}
+&#125;
 
 <span class="text-accent animate-pulse">▋</span> Streaming telemetry to telemetry-bundle/</pre>
 				</div>

@@ -7,7 +7,7 @@ The implementation moved, but these exception symbols are kept for import
 compatibility with existing consumers.
 """
 
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 
 class SessionGovernanceError(ACGSBaseError):

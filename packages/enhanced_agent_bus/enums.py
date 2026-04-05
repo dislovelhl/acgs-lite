@@ -61,7 +61,7 @@ class ValidationStatus(Enum):
 
 # RiskLevel is canonically defined in src.core.shared.enums.
 # Re-exported here for backward compatibility.
-from src.core.shared.enums import RiskLevel
+from enhanced_agent_bus._compat.enums import RiskLevel
 
 
 class AutonomyTier(Enum):

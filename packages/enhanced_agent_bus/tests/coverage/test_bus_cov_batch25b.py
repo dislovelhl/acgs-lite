@@ -1739,7 +1739,7 @@ class TestListTenantsPaginated:
 
     async def test_paginated_no_filter(self):
         session = _make_mock_session()
-        from src.core.shared.database.utils import Page, Pageable
+        from enhanced_agent_bus._compat.database.utils import Page, Pageable
 
         repo = _make_repo(session)
         mock_page = Page(content=[_make_mock_orm()], total_elements=1, page_number=0, page_size=20)
@@ -1752,8 +1752,7 @@ class TestListTenantsPaginated:
 
     async def test_paginated_with_status(self):
         session = _make_mock_session()
-        from src.core.shared.database.utils import Page, Pageable
-
+        from enhanced_agent_bus._compat.database.utils import Page, Pageable
         from enhanced_agent_bus.multi_tenancy.models import TenantStatus
 
         repo = _make_repo(session)
@@ -1787,7 +1786,7 @@ class TestListTenantSummaries:
 
         session.execute.side_effect = [mock_count_result, mock_data_result]
 
-        from src.core.shared.database.utils import Pageable
+        from enhanced_agent_bus._compat.database.utils import Pageable
 
         repo = _make_repo(session)
         pageable = Pageable(page=0, size=20, sort=[("created_at", "desc")])
@@ -1806,8 +1805,7 @@ class TestListTenantSummaries:
 
         session.execute.side_effect = [mock_count_result, mock_data_result]
 
-        from src.core.shared.database.utils import Pageable
-
+        from enhanced_agent_bus._compat.database.utils import Pageable
         from enhanced_agent_bus.multi_tenancy.models import TenantStatus
 
         repo = _make_repo(session)
@@ -1825,7 +1823,7 @@ class TestListTenantSummaries:
 
         session.execute.side_effect = [mock_count_result, mock_data_result]
 
-        from src.core.shared.database.utils import Pageable
+        from enhanced_agent_bus._compat.database.utils import Pageable
 
         repo = _make_repo(session)
         pageable = Pageable(page=0, size=20, sort=[("nonexistent_col", "asc")])

@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 # ---------------------------------------------------------------------------
 # Helpers to build a minimal EnhancedAgentBus with full mock injections
 # ---------------------------------------------------------------------------
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 def _make_mock_governance() -> MagicMock:

@@ -13,8 +13,8 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.mcp_server.protocol.types import ToolDefinition, ToolInputSchema
 from enhanced_agent_bus.mcp_server.tools.get_principles import (
     ConstitutionalPrinciple,

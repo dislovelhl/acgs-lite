@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import cast
 
 try:
-    from src.core.shared.types import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"  # type: ignore[misc,assignment]
 

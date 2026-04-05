@@ -9,7 +9,7 @@ Constitutional Hash: 608508a9bd224290
 import json
 from unittest.mock import AsyncMock, MagicMock
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from ..resources.audit_trail import AuditEntry, AuditEventType, AuditTrailResource
 from ..resources.decisions import DecisionsResource

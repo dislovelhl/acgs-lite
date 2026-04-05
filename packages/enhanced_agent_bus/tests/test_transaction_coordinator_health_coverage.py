@@ -12,7 +12,7 @@ from dataclasses import fields
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-from src.core.shared.types import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 
 # Import via the metrics module to avoid circular import issues.
 # transaction_coordinator_metrics re-exports everything from the health module.

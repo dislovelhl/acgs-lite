@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 
 try:
-    from src.core.shared.policy_index import PolicyMetadata, get_policy_index
+    from enhanced_agent_bus._compat.policy import PolicyMetadata, get_policy_index
 
     POLICY_INDEX_AVAILABLE = True
 except ImportError:
@@ -31,11 +31,11 @@ except ImportError:
     PolicyMetadata = object  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

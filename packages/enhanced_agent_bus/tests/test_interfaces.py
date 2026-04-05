@@ -8,7 +8,8 @@ Tests for Protocol interface definitions.
 from typing import Any, Optional
 
 import pytest
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.types import JSONDict
 
 try:
     from interfaces import (

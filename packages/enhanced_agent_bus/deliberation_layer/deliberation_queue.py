@@ -44,7 +44,7 @@ except (ImportError, ValueError):
 from enum import Enum
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

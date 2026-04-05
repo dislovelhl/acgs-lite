@@ -17,7 +17,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 # Initialize logging
 try:
-    from src.core.shared.acgs_logging import (
+    from enhanced_agent_bus._compat.acgs_logging import (
         create_correlation_middleware,
         init_service_logging,
     )
@@ -32,12 +32,12 @@ except ImportError:
 
 # Security imports
 try:
-    from src.core.shared.security.cors_config import get_cors_config
-    from src.core.shared.security.security_headers import (
+    from enhanced_agent_bus._compat.security.cors_config import get_cors_config
+    from enhanced_agent_bus._compat.security.security_headers import (
         SecurityHeadersConfig,
         SecurityHeadersMiddleware,
     )
-    from src.core.shared.security.tenant_context import (
+    from enhanced_agent_bus._compat.security.tenant_context import (
         TenantContextConfig,
         TenantContextMiddleware,
     )
@@ -56,7 +56,7 @@ except ImportError:
 # API Versioning Middleware
 API_VERSIONING_AVAILABLE = False
 try:
-    from src.core.shared.api_versioning import (
+    from enhanced_agent_bus._compat.api_versioning import (
         APIVersioningMiddleware,
         VersioningConfig,
         get_api_version,

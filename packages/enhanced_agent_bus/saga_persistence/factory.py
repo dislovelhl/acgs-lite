@@ -22,7 +22,7 @@ import os
 from enum import Enum
 
 try:
-    from src.core.shared.constants import (
+    from enhanced_agent_bus._compat.constants import (
         CONSTITUTIONAL_HASH,
         DEFAULT_REDIS_URL,
     )

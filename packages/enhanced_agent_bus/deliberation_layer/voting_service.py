@@ -11,7 +11,7 @@ from enum import Enum
 from typing import cast
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )
@@ -40,7 +40,7 @@ except ImportError:
     get_election_store = None  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
     # Fallback to local config or mock
     settings = None

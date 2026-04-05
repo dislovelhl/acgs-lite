@@ -18,14 +18,14 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse, Response
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
-    from src.core.shared.acgs_logging import init_service_logging
+    from enhanced_agent_bus._compat.acgs_logging import init_service_logging
 
     logger = init_service_logging("enhanced-agent-bus", level="INFO", json_format=True)
 except ImportError:

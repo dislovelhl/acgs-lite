@@ -13,11 +13,11 @@ from enum import Enum
 
 # Constitutional Hash - immutable reference
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -112,7 +112,7 @@ class DatabasePerformanceAgent(PerformanceProfiler):
     async def profile(self) -> PerformanceProfile:
         """Profile database performance using real SQLAlchemy engine stats."""
         try:
-            from src.core.shared.database.session import engine
+            from enhanced_agent_bus._compat.database.session import engine
 
             pool = engine.pool
             pool_stats = {
@@ -236,7 +236,7 @@ class CachePerformanceAgent(PerformanceProfiler):
 
     async def profile(self) -> PerformanceProfile:
         """Profile cache performance using real TieredCacheManager stats."""
-        from src.core.shared.cache.manager import TieredCacheManager
+        from enhanced_agent_bus._compat.cache.manager import TieredCacheManager
 
         # Try to get stats from a default/known cache manager
         try:

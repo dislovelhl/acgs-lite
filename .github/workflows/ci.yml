@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
+          version: "0.10.9"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
+          version: "0.10.9"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -62,6 +62,14 @@ jobs:
           restore-keys: uv-${{ runner.os }}-
       - name: Make setup
         run: make setup
+      - name: Install workspace packages
+        run: |
+          .venv/bin/python -m pip install -e packages/enhanced_agent_bus -e packages/acgs-lite -e packages/acgs-deliberation --no-deps --quiet 2>/dev/null || \
+          uv pip install -e packages/enhanced_agent_bus -e packages/acgs-lite -e packages/acgs-deliberation --no-deps --quiet 2>/dev/null || \
+          true
+      - name: Verify workspace packages
+        run: |
+          .venv/bin/python -c "import enhanced_agent_bus; print('enhanced_agent_bus:', enhanced_agent_bus.__file__)" || echo "WARN: enhanced_agent_bus not importable"
       - name: Test (quick)
         run: make test-quick
 
@@ -72,7 +80,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
         with:
-          version: "latest"
+          version: "0.10.9"
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}

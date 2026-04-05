@@ -11,9 +11,9 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.enums import RiskLevel
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.enums import RiskLevel
 from enhanced_agent_bus.session_context import (
     _SESSION_CONTEXT_OPERATION_ERRORS,
     DUAL_READ_MIGRATION_ENABLED,

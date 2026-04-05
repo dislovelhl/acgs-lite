@@ -18,7 +18,7 @@ from enum import Enum
 from typing import ClassVar, cast
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -409,7 +409,7 @@ def validate_constitutional_compliance(action: dict) -> bool:
             "type": RemediationType.MODIFY_CODE,
             "effort": "low",
             "snippet": """# Replace incorrect hash with valid constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH  # Valid ACGS-2 hash""",
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH  # Valid ACGS-2 hash""",
         },
         GapCategory.SELF_VALIDATION: {
             "title": "Implement Separation of Powers",

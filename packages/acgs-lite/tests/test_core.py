@@ -735,3 +735,301 @@ class TestIntegration:
         # No self-validation
         with pytest.raises(MACIViolationError):
             maci.check_no_self_validation("agent-1", "agent-1")
+
+
+# ─── Retry on Output Violation ──────────────────────────────────────────
+
+
+@pytest.mark.constitutional
+class TestGovernedAgentRetry:
+    """Tests for retry-on-output-violation behavior."""
+
+    def test_default_no_retry(self):
+        """max_retries=0 (default): violation raises immediately, same as before."""
+
+        def leaky_agent(input: str) -> str:
+            return "password is hunter2"
+
+        agent = GovernedAgent(leaky_agent, strict=True, validate_output=True)
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("get credential")
+
+    def test_retry_succeeds_on_second_attempt(self):
+        """Agent produces violating output first, compliant output on retry."""
+        call_count = 0
+
+        def smart_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "I cannot share credentials"
+
+        agent = GovernedAgent(
+            smart_agent, strict=True, validate_output=True, max_retries=2
+        )
+        result = agent.run("get credential")
+        assert result == "I cannot share credentials"
+        assert call_count == 2
+
+    def test_retry_exhausted_raises(self):
+        """All retries produce violations → raises the last violation."""
+        call_count = 0
+
+        def stubborn_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            return "password is hunter2"
+
+        agent = GovernedAgent(
+            stubborn_agent, strict=True, validate_output=True, max_retries=3
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("get credential")
+        # 1 original + 3 retries = 4 total calls, then stops
+        assert call_count == 4
+
+    def test_retry_prompt_contains_violation_info(self):
+        """Retry prompt should include which rule was violated."""
+        prompts_received: list[str] = []
+        call_count = 0
+
+        def recording_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            prompts_received.append(input)
+            if call_count == 1:
+                return "password is hunter2"
+            return "I cannot share that"
+
+        agent = GovernedAgent(
+            recording_agent, strict=True, validate_output=True, max_retries=1
+        )
+        agent.run("get credential")
+        assert len(prompts_received) == 2
+        retry_prompt = prompts_received[1]
+        # Retry prompt must reference the violation
+        assert "violated" in retry_prompt.lower() or "violation" in retry_prompt.lower()
+
+    def test_retry_does_not_apply_to_input_violations(self):
+        """Input violations should NOT trigger retries — only output violations do."""
+
+        def safe_agent(input: str) -> str:
+            return "safe output"
+
+        rules = Constitution.from_rules([
+            Rule(
+                id="NO-CAT", text="No cats allowed",
+                severity=Severity.CRITICAL, keywords=["cat"],
+            ),
+        ])
+        agent = GovernedAgent(
+            safe_agent, constitution=rules, strict=True,
+            validate_output=True, max_retries=3,
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("I love my cat")
+
+    def test_retry_audit_trail(self):
+        """Retries should appear in the audit log."""
+        call_count = 0
+
+        def retry_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "safe response"
+
+        agent = GovernedAgent(
+            retry_agent, strict=True, validate_output=True, max_retries=1
+        )
+        agent.run("do something")
+        # Audit log should have entries for the retry
+        entries = agent.audit_log.entries
+        actions = [e.action for e in entries]
+        assert any("retry" in a.lower() for a in actions)
+
+
+@pytest.mark.constitutional
+class TestGovernedAgentRetryAsync:
+    """Async retry tests."""
+
+    async def test_async_retry_succeeds(self):
+        call_count = 0
+
+        async def smart_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "I cannot share credentials"
+
+        agent = GovernedAgent(
+            smart_agent, strict=True, validate_output=True, max_retries=2
+        )
+        result = await agent.arun("get credential")
+        assert result == "I cannot share credentials"
+        assert call_count == 2
+
+    async def test_async_retry_exhausted(self):
+        async def stubborn(input: str) -> str:
+            return "password is hunter2"
+
+        agent = GovernedAgent(
+            stubborn, strict=True, validate_output=True, max_retries=1
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            await agent.arun("get credential")
+
+    async def test_async_input_violation_no_retry(self):
+        """Async: input violations do NOT trigger retries."""
+
+        async def safe(input: str) -> str:
+            return "safe"
+
+        rules = Constitution.from_rules([
+            Rule(id="NO-CAT", text="No cats", severity=Severity.CRITICAL, keywords=["cat"]),
+        ])
+        agent = GovernedAgent(
+            safe, constitution=rules, strict=True, validate_output=True, max_retries=3,
+        )
+        with pytest.raises(ConstitutionalViolationError):
+            await agent.arun("I love my cat")
+
+    async def test_async_audit_trail(self):
+        """Async retries appear in audit log."""
+        call_count = 0
+
+        async def retry_agent(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count == 1:
+                return "password is hunter2"
+            return "safe response"
+
+        agent = GovernedAgent(
+            retry_agent, strict=True, validate_output=True, max_retries=1,
+        )
+        await agent.arun("do something")
+        entries = agent.audit_log.entries
+        actions = [e.action for e in entries]
+        assert any("retry" in a.lower() for a in actions)
+
+
+@pytest.mark.constitutional
+class TestGovernedAgentRetryEdgeCases:
+    """Edge cases for retry behavior."""
+
+    def test_negative_max_retries_clamped_to_zero(self):
+        """Negative max_retries is treated as 0."""
+
+        def leaky(input: str) -> str:
+            return "password is hunter2"
+
+        agent = GovernedAgent(leaky, strict=True, validate_output=True, max_retries=-5)
+        assert agent.max_retries == 0
+        with pytest.raises(ConstitutionalViolationError):
+            agent.run("get credential")
+
+    def test_max_retries_capped_at_limit(self):
+        """max_retries above 10 is clamped to 10."""
+        agent = GovernedAgent(lambda x: x, max_retries=999)
+        assert agent.max_retries == 10
+
+    def test_validate_output_false_skips_retry(self):
+        """When validate_output=False, no output validation or retry occurs."""
+        call_count = 0
+
+        def leaky(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            return "password is hunter2"
+
+        agent = GovernedAgent(
+            leaky, strict=True, validate_output=False, max_retries=3,
+        )
+        result = agent.run("anything")
+        assert result == "password is hunter2"
+        assert call_count == 1
+
+    def test_retry_audit_metadata_semantics(self):
+        """Verify exact audit metadata fields on retry entries."""
+        call_count = 0
+
+        def agent_fn(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            if call_count <= 2:
+                return "password is hunter2"
+            return "safe response"
+
+        agent = GovernedAgent(
+            agent_fn, strict=True, validate_output=True, max_retries=3,
+        )
+        agent.run("do it")
+        retry_entries = [e for e in agent.audit_log.entries if e.type == "output_retry"]
+        assert len(retry_entries) == 2  # 2 retries before success on call 3
+
+        first = retry_entries[0]
+        assert first.metadata["attempt"] == 1
+        assert first.metadata["retries_after_this"] == 2  # 3 max - 1 used = 2 left
+        assert first.metadata["rule_id"] is not None
+        assert not first.valid
+
+        second = retry_entries[1]
+        assert second.metadata["attempt"] == 2
+        assert second.metadata["retries_after_this"] == 1
+
+    def test_retry_prompt_uses_rule_text_not_raw_error(self):
+        """Retry prompt should contain rule text from constitution, not raw str(error)."""
+        prompts: list[str] = []
+        call_count = 0
+
+        def recording(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            prompts.append(input)
+            if call_count == 1:
+                return "password is hunter2"
+            return "safe"
+
+        rules = Constitution.from_rules([
+            Rule(
+                id="CRED-001", text="No credentials in output",
+                severity=Severity.CRITICAL, keywords=["password"],
+            ),
+        ])
+        agent = GovernedAgent(
+            recording, constitution=rules, strict=True,
+            validate_output=True, max_retries=1,
+        )
+        agent.run("get info")
+        retry_prompt = prompts[1]
+        # Should reference rule ID and rule text (trusted)
+        assert "CRED-001" in retry_prompt
+        assert "No credentials in output" in retry_prompt
+        # Original input should be quoted
+        assert '"""get info"""' in retry_prompt
+
+    def test_multiple_runs_produce_unique_audit_ids(self):
+        """Two run() calls on same instance produce distinct audit entry IDs."""
+        call_count = 0
+
+        def flaky(input: str) -> str:
+            nonlocal call_count
+            call_count += 1
+            # Odd calls violate, even calls pass
+            if call_count % 2 == 1:
+                return "password is hunter2"
+            return "safe"
+
+        agent = GovernedAgent(
+            flaky, strict=True, validate_output=True, max_retries=1,
+        )
+        agent.run("first")
+        agent.run("second")
+
+        retry_entries = [e for e in agent.audit_log.entries if e.type == "output_retry"]
+        ids = [e.id for e in retry_entries]
+        assert len(ids) == len(set(ids)), f"Duplicate audit IDs: {ids}"

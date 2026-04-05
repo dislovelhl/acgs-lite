@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

@@ -73,7 +73,7 @@ except ImportError:
     HAS_SHARED_BRIDGE = False
 
 try:
-    from src.core.shared.orchestration.intent_graph import SwarmTask, TaskIntent
+    from enhanced_agent_bus._compat.orchestration.intent_graph import SwarmTask, TaskIntent
 except ImportError:
     # Provide minimal stubs if the shared module is unavailable
     try:

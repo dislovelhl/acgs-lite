@@ -12,7 +12,8 @@ from uuid import uuid4
 
 import httpx
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Base URL for API tests - can be overridden via environment variable
 API_BASE_URL = os.getenv("ACGS2_API_BASE_URL", "http://localhost:8000/api/v1")

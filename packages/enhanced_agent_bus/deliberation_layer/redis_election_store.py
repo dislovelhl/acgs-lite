@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from typing import cast
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -26,9 +26,9 @@ except ImportError:
     REDIS_AVAILABLE = False
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[import-untyped]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
 
 logger = get_logger(__name__)
 

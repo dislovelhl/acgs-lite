@@ -344,6 +344,7 @@ async def _eval_explain(action: str, context: dict[str, Any]) -> dict[str, Any]:
             ExplanationDetail,
             GovernanceDecisionExplainer,
         )
+
         from .x402_marketplace import _build_triggered_rules, _evaluate_governance_action
 
         constitution, result = _evaluate_governance_action(action, context)
@@ -405,6 +406,7 @@ async def _eval_simulate(action: str, context: dict[str, Any]) -> dict[str, Any]
     """Run the /simulate policy change simulation logic."""
     try:
         from acgs_lite.constitution.policy_simulator import GovernancePolicySimulator
+
         from .x402_marketplace import _build_governance_engine
 
         baseline, _ = _build_governance_engine("general")

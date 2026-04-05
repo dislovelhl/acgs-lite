@@ -571,7 +571,13 @@ class TestExtChaosAvailableBranch:
 # ---------------------------------------------------------------------------
 # Section 3: JSON utilities
 # ---------------------------------------------------------------------------
-from src.core.shared.json_utils import dump_bytes, dump_compact, dump_pretty, dumps, loads
+from enhanced_agent_bus._compat.json_utils import (
+    dump_bytes,
+    dump_compact,
+    dump_pretty,
+    dumps,
+    loads,
+)
 
 
 class TestJsonDumps:

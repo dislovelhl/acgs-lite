@@ -25,7 +25,16 @@ Use package-specific commands when possible:
 - repository pytest runs must include `--import-mode=importlib`
 - run the narrowest meaningful verification first
 - expand to broader checks when shared, security-sensitive, or governance-critical paths change
+- all three gates must pass before work is complete: `make lint`, `make test-quick`, package tests
 - do not hand off code without reporting what you ran and what still remains unverified
+
+## Post-Codex Fixes
+
+When fixing code issues introduced by Codex/omx:
+- run the affected package test suite **before** starting fixes (baseline)
+- fix one regression at a time, re-run package tests after each fix
+- run `make test-quick` after all fixes to confirm no new regressions
+- never batch Codex regression fixes without test gates between them
 
 ## Refactoring
 
@@ -40,3 +49,23 @@ Use package-specific commands when possible:
 - keep governance, auth, and policy behavior fail-closed
 - never self-validate agent output in violation of MACI role separation
 - do not rely on unchecked PM2 entries as operational truth
+
+## Skill routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke investigate
+- Ship, deploy, push, create PR → invoke ship
+- QA, test the site, find bugs → invoke qa
+- Code review, check my diff → invoke review
+- Update docs after shipping → invoke document-release
+- Weekly retro → invoke retro
+- Design system, brand → invoke design-consultation
+- Visual audit, design polish → invoke design-review
+- Architecture review → invoke plan-eng-review
+- Save progress, checkpoint, resume → invoke checkpoint
+- Code quality, health check → invoke health

@@ -1,5 +1,5 @@
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -13,11 +13,11 @@ governance decisions are formally proven against constitutional axioms.
 
 import uuid
 
-from src.core.shared.policy.models import PolicySpecification, VerificationStatus
-from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator
+from enhanced_agent_bus._compat.policy.models import PolicySpecification, VerificationStatus
+from enhanced_agent_bus._compat.policy.unified_generator import UnifiedVerifiedPolicyGenerator
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

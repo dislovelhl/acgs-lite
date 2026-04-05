@@ -28,7 +28,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from cryptography.hazmat.primitives.asymmetric import ed25519
-from src.core.shared.errors.exceptions import (
+
+from enhanced_agent_bus._compat.errors import (
     ConstitutionalViolationError as ACGSConstitutionalViolationError,
 )
 

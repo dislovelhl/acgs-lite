@@ -10,7 +10,7 @@ import ssl
 from collections.abc import Callable
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -37,9 +37,9 @@ except ImportError:
     )
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[import-untyped]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
 
 logger = get_logger(__name__)
 _KAFKA_BUS_OPERATION_ERRORS = (
@@ -215,7 +215,7 @@ class KafkaEventBus:
 
     def _sanitize_error(self, error: Exception) -> str:
         """Strip sensitive metadata from error messages (VULN-008)."""
-        from src.core.shared.security.error_sanitizer import sanitize_error
+        from enhanced_agent_bus._compat.security.error_sanitizer import sanitize_error
 
         return str(sanitize_error(error))
 

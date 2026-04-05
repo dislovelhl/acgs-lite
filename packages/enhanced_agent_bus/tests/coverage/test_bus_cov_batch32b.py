@@ -20,19 +20,19 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.security.pqc import (
+
+from enhanced_agent_bus._compat.security.pqc import (
     CONSTITUTIONAL_HASH,
     ClassicalKeyRejectedError,
     KeyRegistryUnavailableError,
     UnsupportedAlgorithmError,
 )
-from src.core.shared.security.pqc_crypto import (
+from enhanced_agent_bus._compat.security.pqc_crypto import (
     HybridSignature,
     PQCConfig,
     PQCMetadata,
     ValidationResult,
 )
-
 from enhanced_agent_bus.collaboration.models import (
     ActivityEventType,
     ChatMessage,
@@ -1120,7 +1120,7 @@ class TestEnforcementEdgeCases:
     async def test_create_config_timeout_error_defaults_strict(self):
         config = MagicMock()
         config.get_mode = AsyncMock(side_effect=TimeoutError("timed out"))
-        from src.core.shared.security.pqc import PQCKeyRequiredError
+        from enhanced_agent_bus._compat.security.pqc import PQCKeyRequiredError
 
         with pytest.raises(PQCKeyRequiredError):
             await check_enforcement_for_create(None, None, config)
@@ -1133,7 +1133,7 @@ class TestEnforcementEdgeCases:
     async def test_update_config_error_defaults_strict(self):
         config = MagicMock()
         config.get_mode = AsyncMock(side_effect=ValueError("bad"))
-        from src.core.shared.security.pqc import MigrationRequiredError
+        from enhanced_agent_bus._compat.security.pqc import MigrationRequiredError
 
         with pytest.raises(MigrationRequiredError):
             await check_enforcement_for_update("classical", config)

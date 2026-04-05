@@ -30,7 +30,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

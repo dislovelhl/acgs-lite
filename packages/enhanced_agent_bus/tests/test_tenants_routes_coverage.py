@@ -16,13 +16,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ACGSBaseError
 
 # ---------------------------------------------------------------------------
 # Import the module under test once (after conftest has been loaded)
 # ---------------------------------------------------------------------------
 import enhanced_agent_bus.routes.tenants as _tenants_mod
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 # The admin key that we will patch into the module for each test.
 _TEST_ADMIN_KEY = "test-coverage-admin-key-xyz"

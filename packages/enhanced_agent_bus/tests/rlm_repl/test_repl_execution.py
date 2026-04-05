@@ -124,7 +124,7 @@ class TestExecuteSync:
         assert result == 3
 
     def test_eval_raises_governance_error_on_execution_timeout(self):
-        from src.core.shared.security.execution_time_limit import ExecutionTimeout
+        from enhanced_agent_bus._compat.security.execution_time_limit import ExecutionTimeout
 
         repl = _make_repl()
 

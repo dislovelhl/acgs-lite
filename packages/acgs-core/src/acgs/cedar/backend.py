@@ -112,7 +112,7 @@ class CedarBackend(PolicyBackend):
                 latency_ms=latency,
                 backend="cedar",
             )
-        except Exception as exc:
+        except (TypeError, ValueError, RuntimeError, OSError) as exc:
             self._stats["errors"] += 1
             latency = (time.perf_counter() - start) * 1000
             logger.error("Cedar evaluation failed: %s", type(exc).__name__)

@@ -394,7 +394,7 @@ class TestGovernanceMACISettingsPydantic:
     """MACISettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.governance import MACISettings
+        from enhanced_agent_bus._compat.config.governance import MACISettings
 
         s = MACISettings()
         assert s.strict_mode is True
@@ -402,7 +402,7 @@ class TestGovernanceMACISettingsPydantic:
         assert s.config_path is None
 
     def test_explicit_values_via_env(self):
-        from src.core.shared.config.governance import MACISettings
+        from enhanced_agent_bus._compat.config.governance import MACISettings
 
         env = {
             "MACI_STRICT_MODE": "false",
@@ -420,7 +420,7 @@ class TestGovernanceVotingSettingsPydantic:
     """VotingSettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.governance import VotingSettings
+        from enhanced_agent_bus._compat.config.governance import VotingSettings
 
         s = VotingSettings()
         assert s.default_timeout_seconds == 30
@@ -433,7 +433,7 @@ class TestGovernanceVotingSettingsPydantic:
         assert s.timeout_check_interval_seconds == 5
 
     def test_explicit_values_via_env(self):
-        from src.core.shared.config.governance import VotingSettings
+        from enhanced_agent_bus._compat.config.governance import VotingSettings
 
         env = {
             "VOTING_DEFAULT_TIMEOUT_SECONDS": "60",
@@ -452,7 +452,7 @@ class TestGovernanceCircuitBreakerSettingsPydantic:
     """CircuitBreakerSettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.governance import CircuitBreakerSettings
+        from enhanced_agent_bus._compat.config.governance import CircuitBreakerSettings
 
         s = CircuitBreakerSettings()
         assert s.default_failure_threshold == 5
@@ -624,7 +624,7 @@ class TestInfraRedisSettingsPydantic:
     """RedisSettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.infrastructure import RedisSettings
+        from enhanced_agent_bus._compat.config.infrastructure import RedisSettings
 
         s = RedisSettings()
         assert s.url == "redis://localhost:6379"
@@ -641,7 +641,7 @@ class TestInfraRedisSettingsPydantic:
         assert s.health_check_interval == 30
 
     def test_explicit_values_via_env(self):
-        from src.core.shared.config.infrastructure import RedisSettings
+        from enhanced_agent_bus._compat.config.infrastructure import RedisSettings
 
         env = {
             "REDIS_URL": "redis://custom:6380",
@@ -670,7 +670,7 @@ class TestInfraDatabaseSettingsPydantic:
     """DatabaseSettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.infrastructure import DatabaseSettings
+        from enhanced_agent_bus._compat.config.infrastructure import DatabaseSettings
 
         s = DatabaseSettings()
         assert "asyncpg" in s.url
@@ -680,21 +680,21 @@ class TestInfraDatabaseSettingsPydantic:
         assert s.echo is False
 
     def test_normalize_postgres_url(self):
-        from src.core.shared.config.infrastructure import DatabaseSettings
+        from enhanced_agent_bus._compat.config.infrastructure import DatabaseSettings
 
         with patch.dict(os.environ, {"DATABASE_URL": "postgres://localhost/mydb"}, clear=False):
             s = DatabaseSettings()
             assert s.url == "postgresql+asyncpg://localhost/mydb"
 
     def test_normalize_postgresql_url(self):
-        from src.core.shared.config.infrastructure import DatabaseSettings
+        from enhanced_agent_bus._compat.config.infrastructure import DatabaseSettings
 
         with patch.dict(os.environ, {"DATABASE_URL": "postgresql://localhost/mydb"}, clear=False):
             s = DatabaseSettings()
             assert s.url == "postgresql+asyncpg://localhost/mydb"
 
     def test_already_asyncpg_url(self):
-        from src.core.shared.config.infrastructure import DatabaseSettings
+        from enhanced_agent_bus._compat.config.infrastructure import DatabaseSettings
 
         with patch.dict(
             os.environ, {"DATABASE_URL": "postgresql+asyncpg://localhost/mydb"}, clear=False
@@ -707,7 +707,7 @@ class TestInfraAISettingsPydantic:
     """AISettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.infrastructure import AISettings
+        from enhanced_agent_bus._compat.config.infrastructure import AISettings
 
         s = AISettings()
         assert s.openrouter_api_key is None
@@ -716,7 +716,7 @@ class TestInfraAISettingsPydantic:
         assert s.constitutional_hash == "608508a9bd224290"
 
     def test_explicit_keys_via_env(self):
-        from src.core.shared.config.infrastructure import AISettings
+        from enhanced_agent_bus._compat.config.infrastructure import AISettings
 
         env = {
             "OPENROUTER_API_KEY": "or-key",
@@ -734,7 +734,7 @@ class TestInfraBlockchainSettingsPydantic:
     """BlockchainSettings when pydantic-settings IS available."""
 
     def test_defaults(self):
-        from src.core.shared.config.infrastructure import BlockchainSettings
+        from enhanced_agent_bus._compat.config.infrastructure import BlockchainSettings
 
         s = BlockchainSettings()
         assert s.eth_l2_network == "optimism"
@@ -743,7 +743,7 @@ class TestInfraBlockchainSettingsPydantic:
         assert s.private_key is None
 
     def test_explicit_values_via_env(self):
-        from src.core.shared.config.infrastructure import BlockchainSettings
+        from enhanced_agent_bus._compat.config.infrastructure import BlockchainSettings
 
         env = {
             "ETH_L2_NETWORK": "arbitrum",
@@ -919,12 +919,12 @@ class TestHasPydanticSettingsFlag:
     """Verify the HAS_PYDANTIC_SETTINGS flag is set correctly."""
 
     def test_governance_flag(self):
-        from src.core.shared.config.governance import HAS_PYDANTIC_SETTINGS
+        from enhanced_agent_bus._compat.config.governance import HAS_PYDANTIC_SETTINGS
 
         # In test env pydantic-settings should be installed
         assert HAS_PYDANTIC_SETTINGS is True
 
     def test_infrastructure_flag(self):
-        from src.core.shared.config.infrastructure import HAS_PYDANTIC_SETTINGS
+        from enhanced_agent_bus._compat.config.infrastructure import HAS_PYDANTIC_SETTINGS
 
         assert HAS_PYDANTIC_SETTINGS is True

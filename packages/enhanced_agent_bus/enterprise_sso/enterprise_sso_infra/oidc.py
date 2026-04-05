@@ -9,7 +9,7 @@ import time
 from urllib.parse import urlencode
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -190,7 +190,7 @@ class OIDCHandler(BaseProtocolHandler):
         code_verifier: str | None = None,
     ) -> JSONDict:
         """Exchange authorization code for tokens."""
-        from src.core.shared.http_client import HttpClient
+        from enhanced_agent_bus._compat.http_client import HttpClient
 
         data = {
             "grant_type": "authorization_code",
@@ -295,7 +295,7 @@ class OIDCHandler(BaseProtocolHandler):
 
     async def _get_userinfo(self, access_token: str) -> ProtocolValidationResult:
         """Get user information from userinfo endpoint."""
-        from src.core.shared.http_client import HttpClient
+        from enhanced_agent_bus._compat.http_client import HttpClient
 
         try:
             async with HttpClient() as client:

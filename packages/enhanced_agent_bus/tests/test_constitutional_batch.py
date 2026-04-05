@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 # Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Mark all tests as governance tests (95% coverage required)
 # Constitutional Hash: 608508a9bd224290

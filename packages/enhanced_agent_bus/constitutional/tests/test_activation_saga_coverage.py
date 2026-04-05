@@ -13,7 +13,8 @@ from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from .. import activation_saga as _saga_module
 from ..activation_saga import (
@@ -1304,7 +1305,7 @@ class TestActivationSagaErrorClass:
         assert err.http_status_code == 500
 
     def test_error_is_acgs_base(self):
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         err = ActivationSagaError("boom")
         assert isinstance(err, ACGSBaseError)

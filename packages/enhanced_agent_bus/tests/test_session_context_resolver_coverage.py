@@ -19,8 +19,8 @@ import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.enums import RiskLevel
 
+from enhanced_agent_bus._compat.enums import RiskLevel
 from enhanced_agent_bus.config import BusConfiguration
 from enhanced_agent_bus.core_models import AgentMessage
 from enhanced_agent_bus.session_context_resolver import (

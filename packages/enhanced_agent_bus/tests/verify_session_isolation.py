@@ -8,10 +8,14 @@ import asyncio
 import logging
 import time
 
-from src.core.breakthrough.verification.z3_smt_verifier import (
-    ConstitutionalVerifier,
-    PolicySpecification,
-)
+try:
+    from src.core.breakthrough.verification.z3_smt_verifier import (
+        ConstitutionalVerifier,
+        PolicySpecification,
+    )
+except ImportError:
+    ConstitutionalVerifier = None  # type: ignore[assignment,misc]
+    PolicySpecification = None  # type: ignore[assignment,misc]
 
 from enhanced_agent_bus.message_processor import MessageProcessor
 from enhanced_agent_bus.models import AgentMessage, MessageType, Priority

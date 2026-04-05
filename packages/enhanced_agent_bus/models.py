@@ -26,13 +26,13 @@ if _module is not None:
 
 # Import constitutional hash
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
 # Import type aliases from shared types
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
         MetadataDict,
@@ -60,16 +60,28 @@ except ImportError:
 
 # Re-export enums
 # Re-export agent models
-from .agent_models import SwarmAgent
+try:
+    from .agent_models import SwarmAgent
+except ImportError:
+    from enhanced_agent_bus.agent_models import SwarmAgent  # type: ignore[no-redef]
 
 # Re-export batch models
-from .batch_models import (
-    BatchRequest,
-    BatchRequestItem,
-    BatchResponse,
-    BatchResponseItem,
-    BatchResponseStats,
-)
+try:
+    from .batch_models import (
+        BatchRequest,
+        BatchRequestItem,
+        BatchResponse,
+        BatchResponseItem,
+        BatchResponseStats,
+    )
+except ImportError:
+    from enhanced_agent_bus.batch_models import (  # type: ignore[no-redef]
+        BatchRequest,
+        BatchRequestItem,
+        BatchResponse,
+        BatchResponseItem,
+        BatchResponseStats,
+    )
 
 # Re-export core models
 from .core_models import (

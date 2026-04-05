@@ -67,9 +67,8 @@ if "asyncpg" not in sys.modules:
 # ---------------------------------------------------------------------------
 from uuid import UUID, uuid4
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 import enhanced_agent_bus.persistence.postgres_repository as _pg_repo_module
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.persistence.models import (
     CheckpointData,
     EventType,

@@ -12,7 +12,7 @@ from enum import Enum
 from typing import ClassVar
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

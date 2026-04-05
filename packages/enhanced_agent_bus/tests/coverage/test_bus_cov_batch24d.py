@@ -28,24 +28,24 @@ class TestParseBoolEnv:
     """Test _parse_bool_env helper."""
 
     def test_none_returns_none(self):
-        from src.core.shared.security.rate_limiter import _parse_bool_env
+        from enhanced_agent_bus._compat.security.rate_limiter import _parse_bool_env
 
         assert _parse_bool_env(None) is None
 
     def test_true_variants(self):
-        from src.core.shared.security.rate_limiter import _parse_bool_env
+        from enhanced_agent_bus._compat.security.rate_limiter import _parse_bool_env
 
         for val in ["true", "1", "yes", "on", "TRUE", " True ", " YES ", " On "]:
             assert _parse_bool_env(val) is True, f"Expected True for {val!r}"
 
     def test_false_variants(self):
-        from src.core.shared.security.rate_limiter import _parse_bool_env
+        from enhanced_agent_bus._compat.security.rate_limiter import _parse_bool_env
 
         for val in ["false", "0", "no", "off", "FALSE", " False ", " NO ", " Off "]:
             assert _parse_bool_env(val) is False, f"Expected False for {val!r}"
 
     def test_unrecognized_returns_none(self):
-        from src.core.shared.security.rate_limiter import _parse_bool_env
+        from enhanced_agent_bus._compat.security.rate_limiter import _parse_bool_env
 
         assert _parse_bool_env("maybe") is None
         assert _parse_bool_env("") is None
@@ -56,12 +56,12 @@ class TestModuleAvailable:
     """Test _module_available helper."""
 
     def test_available_module(self):
-        from src.core.shared.security.rate_limiter import _module_available
+        from enhanced_agent_bus._compat.security.rate_limiter import _module_available
 
         assert _module_available("os") is True
 
     def test_unavailable_module(self):
-        from src.core.shared.security.rate_limiter import _module_available
+        from enhanced_agent_bus._compat.security.rate_limiter import _module_available
 
         assert _module_available("nonexistent_module_xyz_123") is False
 
@@ -69,7 +69,7 @@ class TestModuleAvailable:
         """Test that stub modules without __spec__ are detected via sys.modules fallback."""
         import sys
 
-        from src.core.shared.security.rate_limiter import _module_available
+        from enhanced_agent_bus._compat.security.rate_limiter import _module_available
 
         stub = MagicMock(spec=[])  # no __spec__ attribute
         del stub.__spec__  # ensure ValueError from find_spec
@@ -89,25 +89,25 @@ class TestRateLimitRule:
     """Test RateLimitRule dataclass properties."""
 
     def test_limit_alias(self):
-        from src.core.shared.security.rate_limiter import RateLimitRule
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitRule
 
         rule = RateLimitRule(requests=100)
         assert rule.limit == 100
 
     def test_burst_limit(self):
-        from src.core.shared.security.rate_limiter import RateLimitRule
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitRule
 
         rule = RateLimitRule(requests=100, burst_multiplier=2.0)
         assert rule.burst_limit == 200
 
     def test_key_prefix(self):
-        from src.core.shared.security.rate_limiter import RateLimitRule, RateLimitScope
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitRule, RateLimitScope
 
         rule = RateLimitRule(requests=50, scope=RateLimitScope.TENANT)
         assert rule.key_prefix == "ratelimit:tenant"
 
     def test_default_values(self):
-        from src.core.shared.security.rate_limiter import (
+        from enhanced_agent_bus._compat.security.rate_limiter import (
             RateLimitAlgorithm,
             RateLimitRule,
             RateLimitScope,
@@ -125,7 +125,7 @@ class TestRateLimitResult:
     """Test RateLimitResult to_headers method."""
 
     def test_to_headers_without_retry(self):
-        from src.core.shared.security.rate_limiter import RateLimitResult, RateLimitScope
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitResult, RateLimitScope
 
         result = RateLimitResult(
             allowed=True,
@@ -142,7 +142,7 @@ class TestRateLimitResult:
         assert "Retry-After" not in headers
 
     def test_to_headers_with_retry(self):
-        from src.core.shared.security.rate_limiter import RateLimitResult, RateLimitScope
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitResult, RateLimitScope
 
         result = RateLimitResult(
             allowed=False,
@@ -162,7 +162,7 @@ class TestRateLimitConfig:
     """Test RateLimitConfig.from_env()."""
 
     def test_from_env_defaults(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         env = {
             "RATE_LIMIT_ENABLED": "true",
@@ -191,7 +191,7 @@ class TestRateLimitConfig:
                             os.environ["RATE_LIMIT_FAIL_OPEN"] = old
 
     def test_from_env_disabled(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         with patch.dict(
             "os.environ",
@@ -203,7 +203,7 @@ class TestRateLimitConfig:
             assert len(config.rules) == 0
 
     def test_from_env_explicit_fail_open_false(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         with patch.dict(
             "os.environ",
@@ -217,7 +217,7 @@ class TestRateLimitConfig:
         """In production env with no explicit setting, fail_open should be False."""
         import os
 
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         env_copy = {
             "RATE_LIMIT_ENABLED": "true",
@@ -234,7 +234,7 @@ class TestRateLimitConfig:
                 assert config.fail_open is False
 
     def test_from_env_zero_requests_per_minute(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         with patch.dict(
             "os.environ",
@@ -254,13 +254,13 @@ class TestTenantQuota:
     """Test TenantQuota dataclass."""
 
     def test_effective_limit(self):
-        from src.core.shared.security.rate_limiter import TenantQuota
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantQuota
 
         q = TenantQuota(tenant_id="t1", requests=100, burst_multiplier=1.5)
         assert q.effective_limit == 150
 
     def test_to_rule(self):
-        from src.core.shared.security.rate_limiter import RateLimitScope, TenantQuota
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitScope, TenantQuota
 
         q = TenantQuota(tenant_id="t1", requests=200, window_seconds=120, burst_multiplier=2.0)
         rule = q.to_rule()
@@ -274,7 +274,7 @@ class TestTenantRateLimitProvider:
     """Test TenantRateLimitProvider."""
 
     def test_get_tenant_quota_default(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider(default_requests=500)
         q = provider.get_tenant_quota("unknown-tenant")
@@ -282,7 +282,7 @@ class TestTenantRateLimitProvider:
         assert q.requests == 500
 
     def test_set_and_get_tenant_quota(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=2000, window_seconds=120, burst_multiplier=1.5)
@@ -291,7 +291,7 @@ class TestTenantRateLimitProvider:
         assert q.window_seconds == 120
 
     def test_get_quota_alias(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=100)
@@ -300,7 +300,10 @@ class TestTenantRateLimitProvider:
         assert q.requests == 100
 
     def test_set_quota_with_object(self):
-        from src.core.shared.security.rate_limiter import TenantQuota, TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            TenantQuota,
+            TenantRateLimitProvider,
+        )
 
         provider = TenantRateLimitProvider()
         quota = TenantQuota(tenant_id="t2", requests=300)
@@ -308,7 +311,7 @@ class TestTenantRateLimitProvider:
         assert provider.get_quota("t2").requests == 300
 
     def test_set_quota_with_params(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_quota("t3", requests=400, window_seconds=30)
@@ -317,7 +320,7 @@ class TestTenantRateLimitProvider:
         assert q.window_seconds == 30
 
     def test_set_quota_defaults_from_provider(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider(
             default_requests=999, default_window_seconds=120, default_burst_multiplier=2.0
@@ -329,7 +332,7 @@ class TestTenantRateLimitProvider:
         assert q.burst_multiplier == 2.0
 
     def test_remove_quota(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=100)
@@ -337,7 +340,7 @@ class TestTenantRateLimitProvider:
         assert provider.remove_quota("t1") is False
 
     def test_remove_tenant_quota_alias(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=100)
@@ -345,7 +348,7 @@ class TestTenantRateLimitProvider:
         assert provider.remove_tenant_quota("t1") is False
 
     def test_get_all_tenant_quotas_returns_deep_copy(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=100)
@@ -358,13 +361,13 @@ class TestTenantRateLimitProvider:
         assert provider.get_tenant_quota("t1").requests == 100
 
     def test_get_constitutional_hash(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         assert provider.get_constitutional_hash() == "608508a9bd224290"
 
     def test_from_env(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         with patch.dict(
             "os.environ",
@@ -383,7 +386,7 @@ class TestTenantRateLimitProvider:
             assert provider._use_registry is True
 
     def test_set_tenant_quota_disabled(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=100, enabled=False)
@@ -395,21 +398,21 @@ class TestTokenBucket:
     """Test TokenBucket dataclass."""
 
     def test_initial_state(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=10, refill_rate=1.0)
         assert bucket.tokens == 10
         assert bucket.capacity == 10
 
     def test_consume_success(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=10, refill_rate=1.0)
         assert bucket.consume(5) is True
         assert bucket.tokens <= 5.1  # allow small refill
 
     def test_consume_failure(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=2, refill_rate=0.001)
         assert bucket.consume(1) is True
@@ -417,20 +420,20 @@ class TestTokenBucket:
         assert bucket.consume(1) is False
 
     def test_get_remaining_tokens(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=10, refill_rate=1.0)
         remaining = bucket.get_remaining_tokens()
         assert remaining >= 9.9  # allow small time delta
 
     def test_get_reset_time_full(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=10, refill_rate=1.0)
         assert bucket.get_reset_time() == 0.0
 
     def test_get_reset_time_partial(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=10, refill_rate=1.0)
         bucket.tokens = 0
@@ -439,7 +442,7 @@ class TestTokenBucket:
         assert reset_time > 0
 
     def test_refill(self):
-        from src.core.shared.security.rate_limiter import TokenBucket
+        from enhanced_agent_bus._compat.security.rate_limiter import TokenBucket
 
         bucket = TokenBucket(capacity=10, refill_rate=10000.0)
         bucket.tokens = 0
@@ -452,7 +455,7 @@ class TestSlidingWindowRateLimiter:
     """Test SlidingWindowRateLimiter."""
 
     async def test_memory_allow(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         limiter = SlidingWindowRateLimiter()
         result = await limiter.is_allowed("test:key", limit=5, window_seconds=60)
@@ -460,7 +463,7 @@ class TestSlidingWindowRateLimiter:
         assert result.remaining == 4
 
     async def test_memory_deny_after_limit(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         limiter = SlidingWindowRateLimiter()
         for _i in range(5):
@@ -472,7 +475,7 @@ class TestSlidingWindowRateLimiter:
         assert result.retry_after >= 1
 
     async def test_redis_allowed(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         mock_redis = MagicMock()
         mock_pipe = MagicMock()
@@ -489,7 +492,7 @@ class TestSlidingWindowRateLimiter:
         assert result.remaining == 7  # 10 - (2+1)
 
     async def test_redis_denied(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         mock_redis = MagicMock()
         mock_pipe = MagicMock()
@@ -507,7 +510,7 @@ class TestSlidingWindowRateLimiter:
         assert result.retry_after == 60
 
     async def test_redis_fallback_on_connection_error(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         mock_redis = MagicMock()
         mock_pipe = MagicMock()
@@ -523,7 +526,7 @@ class TestSlidingWindowRateLimiter:
         assert result.allowed is True  # memory fallback allows first request
 
     async def test_redis_no_fallback_raises(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         mock_redis = MagicMock()
         mock_pipe = MagicMock()
@@ -540,7 +543,7 @@ class TestSlidingWindowRateLimiter:
 
     async def test_redis_generic_error_fallback(self):
         """Test that non-builtin exceptions (like redis AuthenticationError) also trigger fallback."""
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         mock_redis = MagicMock()
         mock_pipe = MagicMock()
@@ -556,7 +559,7 @@ class TestSlidingWindowRateLimiter:
         assert result.allowed is True
 
     async def test_redis_generic_error_no_fallback_raises(self):
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         mock_redis = MagicMock()
         mock_pipe = MagicMock()
@@ -573,7 +576,7 @@ class TestSlidingWindowRateLimiter:
 
     async def test_memory_metrics_update(self):
         """Test that _check_memory calls update_rate_limit_metrics."""
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         limiter = SlidingWindowRateLimiter()
         with patch(
@@ -584,7 +587,7 @@ class TestSlidingWindowRateLimiter:
 
     async def test_memory_metrics_key_parsing_short_key(self):
         """Test key parsing with short key (fewer than 3 parts)."""
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         limiter = SlidingWindowRateLimiter()
         with patch(
@@ -598,7 +601,7 @@ class TestSlidingWindowRateLimiter:
 
     async def test_memory_metrics_error_swallowed(self):
         """Test that metrics errors are silently swallowed."""
-        from src.core.shared.security.rate_limiter import SlidingWindowRateLimiter
+        from enhanced_agent_bus._compat.security.rate_limiter import SlidingWindowRateLimiter
 
         limiter = SlidingWindowRateLimiter()
         with patch(
@@ -613,7 +616,10 @@ class TestRateLimitMiddleware:
     """Test RateLimitMiddleware ASGI middleware."""
 
     def _make_middleware(self, config=None, tenant_provider=None):
-        from src.core.shared.security.rate_limiter import RateLimitConfig, RateLimitMiddleware
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            RateLimitConfig,
+            RateLimitMiddleware,
+        )
 
         app = AsyncMock()
         cfg = config or RateLimitConfig(enabled=True, rules=[], fail_open=True)
@@ -628,7 +634,7 @@ class TestRateLimitMiddleware:
         mw.app.assert_awaited_once()
 
     async def test_disabled_passes_through(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         config = RateLimitConfig(enabled=False)
         mw = self._make_middleware(config=config)
@@ -639,7 +645,7 @@ class TestRateLimitMiddleware:
         mw.app.assert_awaited_once()
 
     async def test_exempt_path_passes_through(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         config = RateLimitConfig(enabled=True, exempt_paths=["/health", "/metrics"])
         mw = self._make_middleware(config=config)
@@ -650,7 +656,7 @@ class TestRateLimitMiddleware:
         mw.app.assert_awaited_once()
 
     def test_is_exempt_path_empty(self):
-        from src.core.shared.security.rate_limiter import RateLimitConfig
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitConfig
 
         config = RateLimitConfig(enabled=True, exempt_paths=[])
         mw = self._make_middleware(config=config)
@@ -671,7 +677,7 @@ class TestRateLimitMiddleware:
         assert mw._get_tenant_quota("t1") is None
 
     def test_get_tenant_quota_with_provider(self):
-        from src.core.shared.security.rate_limiter import TenantRateLimitProvider
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantRateLimitProvider
 
         provider = TenantRateLimitProvider()
         provider.set_tenant_quota("t1", requests=500)
@@ -687,7 +693,7 @@ class TestRateLimitMiddleware:
         assert mw._get_tenant_quota("t1") is None
 
     async def test_check_tenant_rate_limit_disabled(self):
-        from src.core.shared.security.rate_limiter import RateLimitScope, TenantQuota
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitScope, TenantQuota
 
         mw = self._make_middleware()
         await mw._ensure_initialized()
@@ -698,7 +704,7 @@ class TestRateLimitMiddleware:
         assert result.scope == RateLimitScope.TENANT
 
     async def test_check_tenant_rate_limit_enabled(self):
-        from src.core.shared.security.rate_limiter import TenantQuota
+        from enhanced_agent_bus._compat.security.rate_limiter import TenantQuota
 
         mw = self._make_middleware()
         await mw._ensure_initialized()
@@ -708,7 +714,7 @@ class TestRateLimitMiddleware:
         assert result.allowed is True
 
     def test_check_rule_match_no_endpoints(self):
-        from src.core.shared.security.rate_limiter import RateLimitRule
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitRule
 
         mw = self._make_middleware()
         rule = RateLimitRule(requests=10, endpoints=None)
@@ -717,7 +723,7 @@ class TestRateLimitMiddleware:
         assert mw._check_rule_match(request, rule) is True
 
     def test_check_rule_match_with_endpoints(self):
-        from src.core.shared.security.rate_limiter import RateLimitRule
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitRule
 
         mw = self._make_middleware()
         rule = RateLimitRule(requests=10, endpoints=["/api/"])
@@ -729,7 +735,7 @@ class TestRateLimitMiddleware:
         assert mw._check_rule_match(request, rule) is False
 
     def test_build_key(self):
-        from src.core.shared.security.rate_limiter import RateLimitRule
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitRule
 
         mw = self._make_middleware()
         rule = RateLimitRule(requests=10)
@@ -741,7 +747,7 @@ class TestRateLimitMiddleware:
         assert "ratelimit:ip" in key
 
     def test_create_429_response_without_tenant(self):
-        from src.core.shared.security.rate_limiter import RateLimitResult, RateLimitScope
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitResult, RateLimitScope
 
         mw = self._make_middleware()
         result = RateLimitResult(
@@ -756,7 +762,7 @@ class TestRateLimitMiddleware:
         assert response.status_code == 429
 
     def test_create_429_response_with_tenant(self):
-        from src.core.shared.security.rate_limiter import RateLimitResult, RateLimitScope
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitResult, RateLimitScope
 
         mw = self._make_middleware()
         result = RateLimitResult(
@@ -815,7 +821,7 @@ class TestCreateRateLimitMiddleware:
     """Test create_rate_limit_middleware factory."""
 
     async def test_allowed_request(self):
-        from src.core.shared.security.rate_limiter import create_rate_limit_middleware
+        from enhanced_agent_bus._compat.security.rate_limiter import create_rate_limit_middleware
 
         middleware_fn = create_rate_limit_middleware(
             requests_per_minute=100, burst_limit=10, burst_multiplier=1.5
@@ -830,7 +836,7 @@ class TestCreateRateLimitMiddleware:
         call_next.assert_awaited_once()
 
     async def test_rate_limited_request(self):
-        from src.core.shared.security.rate_limiter import (
+        from enhanced_agent_bus._compat.security.rate_limiter import (
             SlidingWindowRateLimiter,
             create_rate_limit_middleware,
             rate_limiter,
@@ -871,7 +877,7 @@ class TestRateLimitDecorator:
     """Test @rate_limit decorator."""
 
     async def test_decorator_allows(self):
-        from src.core.shared.security.rate_limiter import rate_limit
+        from enhanced_agent_bus._compat.security.rate_limiter import rate_limit
 
         @rate_limit(requests_per_minute=100)
         async def my_endpoint(request):
@@ -886,7 +892,7 @@ class TestRateLimitDecorator:
         assert result == {"ok": True}
 
     async def test_decorator_no_request_passes_through(self):
-        from src.core.shared.security.rate_limiter import rate_limit
+        from enhanced_agent_bus._compat.security.rate_limiter import rate_limit
 
         @rate_limit(requests_per_minute=100)
         async def my_func(data):
@@ -896,7 +902,7 @@ class TestRateLimitDecorator:
         assert result == "hello"
 
     async def test_decorator_request_in_kwargs(self):
-        from src.core.shared.security.rate_limiter import rate_limit
+        from enhanced_agent_bus._compat.security.rate_limiter import rate_limit
 
         @rate_limit(requests_per_minute=100)
         async def my_endpoint(request=None):
@@ -915,14 +921,14 @@ class TestResolveRateLimitIdentifier:
     """Test _resolve_rate_limit_identifier."""
 
     def test_custom_key_func(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         result = _resolve_rate_limit_identifier(request, "user", lambda r: "custom-key")
         assert result == "custom-key"
 
     def test_user_type(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         request.state.user_id = "user-123"
@@ -930,7 +936,7 @@ class TestResolveRateLimitIdentifier:
         assert result == "user-123"
 
     def test_user_type_fallback_to_ip(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock(spec=["state", "client"])
         request.state = MagicMock(spec=[])  # no user_id
@@ -939,7 +945,7 @@ class TestResolveRateLimitIdentifier:
         assert result == "5.6.7.8"
 
     def test_ip_type(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         request.client.host = "9.8.7.6"
@@ -947,7 +953,7 @@ class TestResolveRateLimitIdentifier:
         assert result == "9.8.7.6"
 
     def test_ip_type_no_client(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         request.client = None
@@ -955,7 +961,7 @@ class TestResolveRateLimitIdentifier:
         assert result == "unknown"
 
     def test_endpoint_type(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         request.url.path = "/api/endpoint"
@@ -963,14 +969,14 @@ class TestResolveRateLimitIdentifier:
         assert result == "/api/endpoint"
 
     def test_global_type(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         result = _resolve_rate_limit_identifier(request, "global", None)
         assert result == "global"
 
     def test_unknown_type(self):
-        from src.core.shared.security.rate_limiter import _resolve_rate_limit_identifier
+        from enhanced_agent_bus._compat.security.rate_limiter import _resolve_rate_limit_identifier
 
         request = MagicMock()
         result = _resolve_rate_limit_identifier(request, "banana", None)
@@ -982,7 +988,8 @@ class TestExtractRequestFromCall:
 
     def test_request_in_args(self):
         from fastapi import Request
-        from src.core.shared.security.rate_limiter import _extract_request_from_call
+
+        from enhanced_agent_bus._compat.security.rate_limiter import _extract_request_from_call
 
         req = MagicMock(spec=Request)
         result = _extract_request_from_call((req,), {})
@@ -990,14 +997,15 @@ class TestExtractRequestFromCall:
 
     def test_request_in_kwargs(self):
         from fastapi import Request
-        from src.core.shared.security.rate_limiter import _extract_request_from_call
+
+        from enhanced_agent_bus._compat.security.rate_limiter import _extract_request_from_call
 
         req = MagicMock(spec=Request)
         result = _extract_request_from_call((), {"request": req})
         assert result is req
 
     def test_no_request(self):
-        from src.core.shared.security.rate_limiter import _extract_request_from_call
+        from enhanced_agent_bus._compat.security.rate_limiter import _extract_request_from_call
 
         result = _extract_request_from_call(("hello",), {"data": 123})
         assert result is None
@@ -1007,7 +1015,7 @@ class TestAddRateLimitHeaders:
     """Test add_rate_limit_headers middleware factory."""
 
     async def test_adds_headers_when_missing(self):
-        from src.core.shared.security.rate_limiter import add_rate_limit_headers
+        from enhanced_agent_bus._compat.security.rate_limiter import add_rate_limit_headers
 
         middleware_fn = add_rate_limit_headers()
 
@@ -1021,7 +1029,7 @@ class TestAddRateLimitHeaders:
         assert result.headers["X-RateLimit-Limit"] == "60"
 
     async def test_skips_when_headers_present(self):
-        from src.core.shared.security.rate_limiter import add_rate_limit_headers
+        from enhanced_agent_bus._compat.security.rate_limiter import add_rate_limit_headers
 
         middleware_fn = add_rate_limit_headers()
 
@@ -1038,7 +1046,10 @@ class TestConfigureRateLimits:
     """Test configure_rate_limits global config."""
 
     def test_configure_with_redis(self):
-        from src.core.shared.security.rate_limiter import configure_rate_limits, rate_limiter
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            configure_rate_limits,
+            rate_limiter,
+        )
 
         old_client = rate_limiter.redis_client
         old_rpm = getattr(rate_limiter, "default_rpm", None)
@@ -1056,7 +1067,10 @@ class TestConfigureRateLimits:
                 rate_limiter.default_burst = old_burst
 
     def test_configure_without_redis(self):
-        from src.core.shared.security.rate_limiter import configure_rate_limits, rate_limiter
+        from enhanced_agent_bus._compat.security.rate_limiter import (
+            configure_rate_limits,
+            rate_limiter,
+        )
 
         old_burst = getattr(rate_limiter, "default_burst", None)
         try:
@@ -1071,13 +1085,13 @@ class TestUpdateRateLimitMetrics:
     """Test update_rate_limit_metrics."""
 
     def test_allowed_request(self):
-        from src.core.shared.security.rate_limiter import update_rate_limit_metrics
+        from enhanced_agent_bus._compat.security.rate_limiter import update_rate_limit_metrics
 
         # Should not raise
         update_rate_limit_metrics("ip", "1.2.3.4", "/api/test", True)
 
     def test_denied_request(self):
-        from src.core.shared.security.rate_limiter import update_rate_limit_metrics
+        from enhanced_agent_bus._compat.security.rate_limiter import update_rate_limit_metrics
 
         # Should increment exceeded counter
         update_rate_limit_metrics("ip", "1.2.3.4", "/api/test", False)
@@ -1087,7 +1101,7 @@ class TestRateLimitEnums:
     """Test enum values."""
 
     def test_scope_values(self):
-        from src.core.shared.security.rate_limiter import RateLimitScope
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitScope
 
         assert RateLimitScope.USER == "user"
         assert RateLimitScope.IP == "ip"
@@ -1096,7 +1110,7 @@ class TestRateLimitEnums:
         assert RateLimitScope.TENANT == "tenant"
 
     def test_algorithm_values(self):
-        from src.core.shared.security.rate_limiter import RateLimitAlgorithm
+        from enhanced_agent_bus._compat.security.rate_limiter import RateLimitAlgorithm
 
         assert RateLimitAlgorithm.TOKEN_BUCKET == "token_bucket"
         assert RateLimitAlgorithm.SLIDING_WINDOW == "sliding_window"
@@ -1112,20 +1126,23 @@ class TestSecuritySettings:
     """Test SecuritySettings (pydantic-settings or dataclass fallback)."""
 
     def test_defaults(self):
-        from src.core.shared.config.security import SecuritySettings
+        from enhanced_agent_bus._compat.config.security import SecuritySettings
 
         s = SecuritySettings()
         assert s.jwt_public_key == "SYSTEM_PUBLIC_KEY_PLACEHOLDER"
 
     def test_with_env_vars(self):
-        from src.core.shared.config.security import SecuritySettings
+        from enhanced_agent_bus._compat.config.security import SecuritySettings
 
         with patch.dict("os.environ", {"JWT_PUBLIC_KEY": "test-key"}, clear=False):
             s = SecuritySettings()
             assert s.jwt_public_key == "test-key"
 
     def test_placeholder_validation(self):
-        from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS, SecuritySettings
+        from enhanced_agent_bus._compat.config.security import (
+            HAS_PYDANTIC_SETTINGS,
+            SecuritySettings,
+        )
 
         if HAS_PYDANTIC_SETTINGS:
             with pytest.raises(ValidationError):
@@ -1137,14 +1154,14 @@ class TestOPASettings:
     """Test OPASettings."""
 
     def test_defaults(self):
-        from src.core.shared.config.security import OPASettings
+        from enhanced_agent_bus._compat.config.security import OPASettings
 
         s = OPASettings()
         assert s.url == "http://localhost:8181"
         assert s.fail_closed is True
 
     def test_with_custom_values(self):
-        from src.core.shared.config.security import OPASettings
+        from enhanced_agent_bus._compat.config.security import OPASettings
 
         with patch.dict(
             "os.environ",
@@ -1156,7 +1173,7 @@ class TestOPASettings:
             assert s.mode == "embedded"
 
     def test_ssl_fields(self):
-        from src.core.shared.config.security import OPASettings
+        from enhanced_agent_bus._compat.config.security import OPASettings
 
         with patch.dict(
             "os.environ",
@@ -1176,13 +1193,13 @@ class TestAuditSettings:
     """Test AuditSettings."""
 
     def test_defaults(self):
-        from src.core.shared.config.security import AuditSettings
+        from enhanced_agent_bus._compat.config.security import AuditSettings
 
         s = AuditSettings()
         assert s.url == "http://localhost:8001"
 
     def test_custom_url(self):
-        from src.core.shared.config.security import AuditSettings
+        from enhanced_agent_bus._compat.config.security import AuditSettings
 
         with patch.dict("os.environ", {"AUDIT_SERVICE_URL": "http://audit:9000"}, clear=False):
             s = AuditSettings()
@@ -1193,7 +1210,7 @@ class TestVaultSettings:
     """Test VaultSettings."""
 
     def test_defaults(self):
-        from src.core.shared.config.security import VaultSettings
+        from enhanced_agent_bus._compat.config.security import VaultSettings
 
         s = VaultSettings()
         assert s.address == "http://127.0.0.1:8200"
@@ -1205,7 +1222,7 @@ class TestVaultSettings:
         assert s.kv_mount == "secret"
 
     def test_with_token(self):
-        from src.core.shared.config.security import VaultSettings
+        from enhanced_agent_bus._compat.config.security import VaultSettings
 
         with patch.dict("os.environ", {"VAULT_TOKEN": "hvs.test-token"}, clear=False):
             s = VaultSettings()
@@ -1213,7 +1230,7 @@ class TestVaultSettings:
             assert s.token.get_secret_value() == "hvs.test-token"
 
     def test_all_optional_fields(self):
-        from src.core.shared.config.security import VaultSettings
+        from enhanced_agent_bus._compat.config.security import VaultSettings
 
         with patch.dict(
             "os.environ",
@@ -1246,7 +1263,7 @@ class TestSSOSettings:
     """Test SSOSettings."""
 
     def test_defaults(self, monkeypatch: pytest.MonkeyPatch):
-        from src.core.shared.config.security import SSOSettings
+        from enhanced_agent_bus._compat.config.security import SSOSettings
 
         for env_var in (
             "SSO_ENABLED",
@@ -1276,7 +1293,7 @@ class TestSSOSettings:
         assert s.workos_enabled is False
 
     def test_oidc_fields(self):
-        from src.core.shared.config.security import SSOSettings
+        from enhanced_agent_bus._compat.config.security import SSOSettings
 
         with patch.dict(
             "os.environ",
@@ -1296,7 +1313,7 @@ class TestSSOSettings:
             assert s.oidc_enabled is False
 
     def test_saml_fields(self):
-        from src.core.shared.config.security import SSOSettings
+        from enhanced_agent_bus._compat.config.security import SSOSettings
 
         with patch.dict(
             "os.environ",
@@ -1323,7 +1340,7 @@ class TestSSOSettings:
             assert s.saml_enabled is False
 
     def test_workos_fields(self):
-        from src.core.shared.config.security import SSOSettings
+        from enhanced_agent_bus._compat.config.security import SSOSettings
 
         with patch.dict(
             "os.environ",
@@ -1349,7 +1366,7 @@ class TestSSOSettings:
             assert s.workos_webhook_secret is not None
 
     def test_allowed_domains(self):
-        from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS, SSOSettings
+        from enhanced_agent_bus._compat.config.security import HAS_PYDANTIC_SETTINGS, SSOSettings
 
         if HAS_PYDANTIC_SETTINGS:
             # pydantic-settings expects JSON for list fields
@@ -1372,7 +1389,7 @@ class TestSSOSettings:
                 assert "example.com" in s.allowed_domains
 
     def test_provisioning_and_session(self):
-        from src.core.shared.config.security import SSOSettings
+        from enhanced_agent_bus._compat.config.security import SSOSettings
 
         with patch.dict(
             "os.environ",
@@ -1398,23 +1415,23 @@ class TestSecuritySettingsDataclassFallback:
     """
 
     def test_security_settings_with_api_key_env(self):
-        from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS
+        from enhanced_agent_bus._compat.config.security import HAS_PYDANTIC_SETTINGS
 
         if not HAS_PYDANTIC_SETTINGS:
             with patch.dict("os.environ", {"API_KEY_INTERNAL": "test-key-123"}, clear=False):
-                from src.core.shared.config.security import SecuritySettings
+                from enhanced_agent_bus._compat.config.security import SecuritySettings
 
                 s = SecuritySettings()
                 assert s.api_key_internal is not None
 
     def test_security_settings_cors_origins(self):
-        from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS
+        from enhanced_agent_bus._compat.config.security import HAS_PYDANTIC_SETTINGS
 
         if not HAS_PYDANTIC_SETTINGS:
             with patch.dict(
                 "os.environ", {"CORS_ORIGINS": "http://a.com,http://b.com"}, clear=False
             ):
-                from src.core.shared.config.security import SecuritySettings
+                from enhanced_agent_bus._compat.config.security import SecuritySettings
 
                 s = SecuritySettings()
                 assert len(s.cors_origins) == 2
@@ -1429,7 +1446,7 @@ class TestMACISettings:
     """Test MACISettings."""
 
     def test_defaults(self):
-        from src.core.shared.config.governance import MACISettings
+        from enhanced_agent_bus._compat.config.governance import MACISettings
 
         s = MACISettings()
         assert s.strict_mode is True
@@ -1437,7 +1454,7 @@ class TestMACISettings:
         assert s.config_path is None
 
     def test_custom_values(self):
-        from src.core.shared.config.governance import MACISettings
+        from enhanced_agent_bus._compat.config.governance import MACISettings
 
         with patch.dict(
             "os.environ",
@@ -1458,7 +1475,7 @@ class TestVotingSettings:
     """Test VotingSettings."""
 
     def test_defaults(self):
-        from src.core.shared.config.governance import VotingSettings
+        from enhanced_agent_bus._compat.config.governance import VotingSettings
 
         s = VotingSettings()
         assert s.default_timeout_seconds == 30
@@ -1471,7 +1488,7 @@ class TestVotingSettings:
         assert s.timeout_check_interval_seconds == 5
 
     def test_custom_values(self):
-        from src.core.shared.config.governance import VotingSettings
+        from enhanced_agent_bus._compat.config.governance import VotingSettings
 
         with patch.dict(
             "os.environ",
@@ -1501,7 +1518,7 @@ class TestCircuitBreakerSettings:
     """Test CircuitBreakerSettings."""
 
     def test_defaults(self):
-        from src.core.shared.config.governance import CircuitBreakerSettings
+        from enhanced_agent_bus._compat.config.governance import CircuitBreakerSettings
 
         s = CircuitBreakerSettings()
         assert s.default_failure_threshold == 5
@@ -1530,7 +1547,7 @@ class TestCircuitBreakerSettings:
         assert s.metrics_enabled is True
 
     def test_custom_values(self):
-        from src.core.shared.config.governance import CircuitBreakerSettings
+        from enhanced_agent_bus._compat.config.governance import CircuitBreakerSettings
 
         with patch.dict(
             "os.environ",
@@ -1591,17 +1608,17 @@ class TestHasPydanticSettings:
     """Test the HAS_PYDANTIC_SETTINGS flag is consistent."""
 
     def test_security_has_flag(self):
-        from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS
+        from enhanced_agent_bus._compat.config.security import HAS_PYDANTIC_SETTINGS
 
         assert isinstance(HAS_PYDANTIC_SETTINGS, bool)
 
     def test_governance_has_flag(self):
-        from src.core.shared.config.governance import HAS_PYDANTIC_SETTINGS
+        from enhanced_agent_bus._compat.config.governance import HAS_PYDANTIC_SETTINGS
 
         assert isinstance(HAS_PYDANTIC_SETTINGS, bool)
 
     def test_flags_are_consistent(self):
-        from src.core.shared.config.governance import HAS_PYDANTIC_SETTINGS as gov_flag
-        from src.core.shared.config.security import HAS_PYDANTIC_SETTINGS as sec_flag
+        from enhanced_agent_bus._compat.config.governance import HAS_PYDANTIC_SETTINGS as gov_flag
+        from enhanced_agent_bus._compat.config.security import HAS_PYDANTIC_SETTINGS as sec_flag
 
         assert gov_flag == sec_flag

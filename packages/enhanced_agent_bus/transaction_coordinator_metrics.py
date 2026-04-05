@@ -27,7 +27,7 @@ from typing import Protocol, cast
 
 # Constitutional compliance
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         CONSTITUTIONAL_HASH,
         JSONDict,
     )
@@ -1015,7 +1015,7 @@ def get_transaction_metrics() -> TransactionMetrics:
     Returns:
         TransactionMetrics singleton instance
     """
-    from src.core.shared.di_container import DIContainer
+    from enhanced_agent_bus._compat.di_container import DIContainer
 
     try:
         result: TransactionMetrics = DIContainer.get(TransactionMetrics)  # type: ignore[no-any-return]
@@ -1028,7 +1028,7 @@ def get_transaction_metrics() -> TransactionMetrics:
 
 def reset_transaction_metrics() -> None:
     """Reset the global metrics instance. Useful for testing."""
-    from src.core.shared.di_container import DIContainer
+    from enhanced_agent_bus._compat.di_container import DIContainer
 
     DIContainer.register(TransactionMetrics, TransactionMetrics())
     reset_metrics_cache()

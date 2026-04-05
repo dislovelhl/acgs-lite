@@ -16,11 +16,11 @@ from fastapi import Header, HTTPException, status
 from pydantic import BaseModel
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -96,7 +96,7 @@ except (ImportError, ValueError):
 
 # Try to import tenant context helper
 try:
-    from src.core.shared.security.tenant_context import get_tenant_id
+    from enhanced_agent_bus._compat.security.tenant_context import get_tenant_id
 
     USING_FALLBACK_TENANT = False
 except ImportError:
