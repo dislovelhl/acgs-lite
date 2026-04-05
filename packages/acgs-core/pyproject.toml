@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "acgs"
-version = "1.0.0a1"
+version = "1.0.0a2"
 description = "Thin public ACGS namespace package backed by acgs-lite"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "AGPL-3.0-or-later"
+authors = [{name = "ACGS Team", email = "hello@acgs.dev"}]
 keywords = ["ai", "governance", "constitutional", "agent", "maci"]
 dependencies = [
     "acgs-lite>=2.5",
@@ -25,10 +26,10 @@ langchain = ["langchain-core>=0.2"]
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/acgs-core"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
+Documentation = "https://github.com/dislovelhl/acgs-core"
+Repository = "https://github.com/dislovelhl/acgs-core"
+Issues = "https://github.com/dislovelhl/acgs-core/issues"
+Changelog = "https://github.com/dislovelhl/acgs-core/releases"
 PyPI = "https://pypi.org/project/acgs/"
 
 [tool.hatch.build.targets.wheel]

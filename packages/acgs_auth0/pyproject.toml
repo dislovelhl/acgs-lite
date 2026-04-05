@@ -4,11 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-auth0"
-version = "0.1.0"
+version = "0.1.1"
 description = "Constitutional Token Governance for AI Agents — ACGS × Auth0 Token Vault"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "AGPL-3.0-or-later" }
+authors = [{name = "ACGS Team", email = "hello@acgs.dev"}]
 keywords = ["acgs", "auth0", "token-vault", "ai-agents", "governance", "maci"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -26,10 +27,10 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/acgs_auth0"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
+Documentation = "https://github.com/dislovelhl/acgs-auth0"
+Repository = "https://github.com/dislovelhl/acgs-auth0"
+Issues = "https://github.com/dislovelhl/acgs-auth0/issues"
+Changelog = "https://github.com/dislovelhl/acgs-auth0/releases"
 PyPI = "https://pypi.org/project/acgs-auth0/"
 
 [project.optional-dependencies]

@@ -5,6 +5,7 @@ description = "Multi-agent Hierarchical Constitutional governance — re-export 
 readme = "README.md"
 requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"
+authors = [{name = "ACGS Team", email = "hello@acgs.dev"}]
 dependencies = ["constitutional-swarm"]
 
 [project.optional-dependencies]
@@ -12,10 +13,10 @@ dev = ["pytest>=8.0", "pytest-asyncio>=1.0"]
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/mhc"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
+Documentation = "https://github.com/dislovelhl/mhc"
+Repository = "https://github.com/dislovelhl/mhc"
+Issues = "https://github.com/dislovelhl/mhc/issues"
+Changelog = "https://github.com/dislovelhl/mhc/releases"
 PyPI = "https://pypi.org/project/mhc/"
 
 [build-system]

@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "enhanced-agent-bus"
-version = "3.0.1"
+version = "3.0.2"
 description = "ACGS-2 Enhanced Agent Bus with Constitutional Compliance"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -37,10 +37,10 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/enhanced_agent_bus"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
+Documentation = "https://github.com/dislovelhl/enhanced-agent-bus"
+Repository = "https://github.com/dislovelhl/enhanced-agent-bus"
+Issues = "https://github.com/dislovelhl/enhanced-agent-bus/issues"
+Changelog = "https://github.com/dislovelhl/enhanced-agent-bus/releases"
 PyPI = "https://pypi.org/project/enhanced-agent-bus/"
 
 [project.optional-dependencies]

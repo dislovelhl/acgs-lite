@@ -1,18 +1,19 @@
 [project]
 name = "constitutional-swarm"
-version = "0.1.0"
+version = "0.1.1"
 description = "Constitutional Swarm Mesh — orchestrator-free multi-agent governance via embedded Agent DNA"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "AGPL-3.0-or-later"
-dependencies = ["acgs"]
+authors = [{name = "ACGS Team", email = "hello@acgs.dev"}]
+dependencies = ["acgs-lite>=2.5"]
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/constitutional_swarm"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
+Documentation = "https://github.com/dislovelhl/constitutional-swarm"
+Repository = "https://github.com/dislovelhl/constitutional-swarm"
+Issues = "https://github.com/dislovelhl/constitutional-swarm/issues"
+Changelog = "https://github.com/dislovelhl/constitutional-swarm/releases"
 PyPI = "https://pypi.org/project/constitutional-swarm/"
 
 [project.optional-dependencies]

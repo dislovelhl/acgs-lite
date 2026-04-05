@@ -4,21 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-deliberation"
-version = "0.1.0"
+version = "0.1.1"
 description = "ACGS deliberation and HITL orchestration package"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
+authors = [{name = "ACGS Team", email = "hello@acgs.dev"}]
 dependencies = [
     "enhanced-agent-bus>=3.0.0",
 ]
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/acgs-deliberation"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
+Documentation = "https://github.com/dislovelhl/acgs-deliberation"
+Repository = "https://github.com/dislovelhl/acgs-deliberation"
+Issues = "https://github.com/dislovelhl/acgs-deliberation/issues"
+Changelog = "https://github.com/dislovelhl/acgs-deliberation/releases"
 PyPI = "https://pypi.org/project/acgs-deliberation/"
 
 [project.optional-dependencies]
