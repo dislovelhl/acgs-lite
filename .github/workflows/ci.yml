@@ -45,7 +45,7 @@ jobs:
         run: uv run ruff check --extend-exclude .codex-home .
 
       - name: ruff format check
-        run: uv run ruff format --check --extend-exclude .codex-home .
+        run: uv run ruff format --check --exclude .codex-home .
 
   # ── Type check ─────────────────────────────────────────────────────────────
   typecheck:
@@ -88,7 +88,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --extra dev --extra test
+        run: uv sync --frozen --extra dev --extra test --extra anthropic
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust
@@ -125,17 +125,16 @@ jobs:
 
       - name: Install workspace + acgs-core
         run: |
-          uv sync --frozen --extra dev --extra test
+          uv sync --frozen --extra dev --extra test --extra anthropic --extra ml
           uv pip install -e packages/acgs-core --no-deps
 
       - name: pytest (acgs-core)
-        # PYTHONPATH prepend ensures acgs-core/src/acgs/ shadows the shim in
+        # --pythonpath ensures acgs-core/src/acgs/ is found before the shim in
         # acgs-lite/src/acgs/ (both packages provide an acgs/ namespace).
-        env:
-          PYTHONPATH: ${{ github.workspace }}/packages/acgs-core/src
         run: |
           uv run pytest packages/acgs-core/tests/ \
             --import-mode=importlib \
+            --pythonpath packages/acgs-core/src \
             -x -q \
             --timeout=60 \
             --tb=short
@@ -156,7 +155,7 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Install workspace
-        run: uv sync --frozen --extra dev --extra test
+        run: uv sync --frozen --extra dev --extra test --extra ml
 
       - name: MessageProcessor wrapper audit
         run: make health-bus-wrappers
@@ -189,7 +188,7 @@ jobs:
 
       - name: Install workspace + acgs-core
         run: |
-          uv sync --frozen --extra dev --extra test
+          uv sync --frozen --extra dev --extra test --extra anthropic --extra ml
           uv pip install -e packages/acgs-core --no-deps
 
       - name: Build Rust extension (optional)
@@ -211,11 +210,10 @@ jobs:
             -p no:benchmark
 
       - name: pytest (acgs-core — full)
-        env:
-          PYTHONPATH: ${{ github.workspace }}/packages/acgs-core/src
         run: |
           uv run pytest packages/acgs-core/tests/ \
             --import-mode=importlib \
+            --pythonpath packages/acgs-core/src \
             -q \
             --timeout=120 \
             --tb=short
