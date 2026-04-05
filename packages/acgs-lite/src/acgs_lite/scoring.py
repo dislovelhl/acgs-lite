@@ -19,6 +19,8 @@ import os
 import re
 from typing import Any, ClassVar
 
+_log = logging.getLogger(__name__)
+
 try:
     from transformers import pipeline
 
@@ -37,8 +39,6 @@ try:
     RUST_SCORER_AVAILABLE = True
 except ImportError:
     RUST_SCORER_AVAILABLE = False
-
-_log = logging.getLogger(__name__)
 
 # Feature flag: "python" | "rust" | "shadow"
 # shadow = run both, log divergences, use python result
