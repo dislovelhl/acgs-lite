@@ -6,9 +6,20 @@ and helper function edge cases across integration modules.
 
 from __future__ import annotations
 
+import importlib
 from unittest.mock import MagicMock, patch
 
 import pytest
+
+
+class TestIntegrationsPackageSurface:
+    """Smoke tests for the integrations package surface."""
+
+    def test_integrations_package_imports_cleanly(self):
+        mod = importlib.import_module("acgs_lite.integrations")
+        assert mod.__name__ == "acgs_lite.integrations"
+        assert hasattr(mod, "__all__")
+        assert "GovernedOpenAI" not in mod.__dict__
 
 
 class TestAnthropicStrictKwargFix:
