@@ -72,10 +72,6 @@ jobs:
           .venv/bin/python -c "import enhanced_agent_bus; print('enhanced_agent_bus:', enhanced_agent_bus.__file__)" || echo "WARN: enhanced_agent_bus not importable"
       - name: Test (quick)
         run: make test-quick
-        continue-on-error: true
-      - name: Test key packages
-        run: |
-          .venv/bin/python -m pytest packages/acgs-lite/tests/ packages/clinicalguard/tests/ -m "not slow" -x -q --import-mode=importlib --timeout=120
 
   test-full:
     if: github.ref == 'refs/heads/main'
