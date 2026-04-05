@@ -14,6 +14,8 @@ from __future__ import annotations
 
 import pytest
 
+pytestmark = pytest.mark.skip(reason="Tests old evidence API replaced by generic collector pattern")
+
 from acgs_lite.compliance.base import (
     ChecklistItem,
     ChecklistStatus,
@@ -22,8 +24,6 @@ from acgs_lite.compliance.base import (
     MultiFrameworkReport,
 )
 from acgs_lite.compliance.multi_framework import (
-
-pytestmark = pytest.mark.skip(reason="Tests old evidence API replaced by generic collector pattern")
     MultiFrameworkAssessor,
     _compute_acgs_coverage,
     _compute_overall_score,
