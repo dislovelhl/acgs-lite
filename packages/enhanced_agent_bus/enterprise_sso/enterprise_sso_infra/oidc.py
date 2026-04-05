@@ -178,9 +178,10 @@ class OIDCHandler(BaseProtocolHandler):
             )
 
         except _OIDC_HANDLER_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] OIDC validation error: {e}")
+            logger.exception(f"[{CONSTITUTIONAL_HASH}] OIDC validation error")
+            logger.debug(f"[{CONSTITUTIONAL_HASH}] OIDC validation error detail: {e}")
             return ProtocolValidationResult(
-                success=False, error=str(e), error_code="VALIDATION_ERROR"
+                success=False, error="OIDC validation failed", error_code="VALIDATION_ERROR"
             )
 
     async def _exchange_code(
@@ -212,8 +213,9 @@ class OIDCHandler(BaseProtocolHandler):
                 )
                 return response.json()
         except _OIDC_HANDLER_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] Token exchange failed: {e}")
-            return {"error": "token_exchange_failed", "error_description": str(e)}
+            logger.exception(f"[{CONSTITUTIONAL_HASH}] Token exchange failed")
+            logger.debug(f"[{CONSTITUTIONAL_HASH}] Token exchange error detail: {e}")
+            return {"error": "token_exchange_failed", "error_description": "Token exchange failed"}
 
     def _parse_id_token(
         self, id_token: str, expected_nonce: str | None = None

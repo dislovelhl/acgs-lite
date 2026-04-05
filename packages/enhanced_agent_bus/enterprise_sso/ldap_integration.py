@@ -656,10 +656,11 @@ class LDAPIntegration:
             if self.circuit_breaker:
                 self.circuit_breaker.record_failure()
 
+            logger.debug("[%s] LDAP authentication error detail: %s", CONSTITUTIONAL_HASH, e)
             self._log_authentication_attempt(
                 username=username,
                 success=False,
-                error=str(e),
+                error="Authentication failed",
                 constitutional_hash=CONSTITUTIONAL_HASH,
             )
 
@@ -671,7 +672,7 @@ class LDAPIntegration:
                 session_token=None,
                 expires_at=None,
                 tenant_id=None,
-                error=str(e),
+                error="Authentication failed",
                 error_code="AUTHENTICATION_ERROR",
             )
 
@@ -892,7 +893,8 @@ class LDAPIntegration:
 
         except (RuntimeError, ValueError, TypeError, OSError, LDAPIntegrationError) as e:
             health["status"] = "unhealthy"
-            health["error"] = str(e)
+            logger.debug("[%s] LDAP health check error detail: %s", CONSTITUTIONAL_HASH, e)
+            health["error"] = "Health check failed"
 
         # Circuit breaker status
         if self.circuit_breaker:

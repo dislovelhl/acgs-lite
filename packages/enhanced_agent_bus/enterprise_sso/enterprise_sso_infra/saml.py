@@ -186,9 +186,10 @@ class SAML2Handler(BaseProtocolHandler):
             return result
 
         except _SAML_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] SAML validation error: {e}")
+            logger.exception(f"[{CONSTITUTIONAL_HASH}] SAML validation error")
+            logger.debug(f"[{CONSTITUTIONAL_HASH}] SAML validation error detail: {e}")
             return ProtocolValidationResult(
-                success=False, error=str(e), error_code="VALIDATION_ERROR"
+                success=False, error="SAML validation failed", error_code="VALIDATION_ERROR"
             )
 
     def _parse_saml_response(self, xml_response: str) -> ProtocolValidationResult:
@@ -512,8 +513,9 @@ class SAML2Handler(BaseProtocolHandler):
             return LogoutResult(success=False, error=error_message, error_code="LOGOUT_FAILED")
 
         except _SAML_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] SLO response validation error: {e}")
-            return LogoutResult(success=False, error=str(e), error_code="VALIDATION_ERROR")
+            logger.exception(f"[{CONSTITUTIONAL_HASH}] SLO response validation error")
+            logger.debug(f"[{CONSTITUTIONAL_HASH}] SLO response validation error detail: {e}")
+            return LogoutResult(success=False, error="Logout validation failed", error_code="VALIDATION_ERROR")
 
     async def handle_logout_request(self, request_data: JSONDict) -> LogoutRequestResult:
         """Handle IdP-initiated LogoutRequest."""
@@ -558,5 +560,6 @@ class SAML2Handler(BaseProtocolHandler):
             )
 
         except _SAML_OPERATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] IdP logout request handling error: {e}")
-            return LogoutRequestResult(success=False, error=str(e))
+            logger.exception(f"[{CONSTITUTIONAL_HASH}] IdP logout request handling error")
+            logger.debug(f"[{CONSTITUTIONAL_HASH}] IdP logout request error detail: {e}")
+            return LogoutRequestResult(success=False, error="Logout request processing failed")

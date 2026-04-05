@@ -464,10 +464,11 @@ class EnterpriseSSOService:
             )
 
         except SSO_AUTHENTICATION_ERRORS as e:
-            logger.error(f"[{CONSTITUTIONAL_HASH}] SSO authentication failed: {e}")
+            logger.exception(f"[{CONSTITUTIONAL_HASH}] SSO authentication failed")
+            logger.debug(f"[{CONSTITUTIONAL_HASH}] SSO authentication error detail: {e}")
             return SSOAuthenticationResult(
                 success=False,
-                error=str(e),
+                error="Authentication failed",
                 error_code="AUTH_FAILED",
             )
 
