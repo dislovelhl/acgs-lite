@@ -9,10 +9,10 @@ dependencies = ["acgs"]
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/constitutional_swarm"
-Repository = "https://github.com/acgs2_admin/acgs"
-Issues = "https://github.com/acgs2_admin/acgs/issues"
-Changelog = "https://github.com/acgs2_admin/acgs/releases"
+Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/constitutional_swarm"
+Repository = "https://github.com/dislovelhl/acgs"
+Issues = "https://github.com/dislovelhl/acgs/issues"
+Changelog = "https://github.com/dislovelhl/acgs/releases"
 PyPI = "https://pypi.org/project/constitutional-swarm/"
 
 [project.optional-dependencies]

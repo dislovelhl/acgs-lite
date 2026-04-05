@@ -97,10 +97,10 @@ AGPL-3.0-or-later. Commercial licensing is available; contact `hello@acgs.ai`.
 ## Links
 
 - [Homepage](https://acgs.ai)
-- [Documentation](https://github.com/acgs2_admin/acgs/tree/main/packages/enhanced_agent_bus)
+- [Documentation](https://github.com/dislovelhl/acgs/tree/main/packages/enhanced_agent_bus)
 - [PyPI](https://pypi.org/project/enhanced-agent-bus/)
-- [Repository](https://github.com/acgs2_admin/acgs)
-- [Issues](https://github.com/acgs2_admin/acgs/issues)
-- [Changelog](https://github.com/acgs2_admin/acgs/releases)
+- [Repository](https://github.com/dislovelhl/acgs)
+- [Issues](https://github.com/dislovelhl/acgs/issues)
+- [Changelog](https://github.com/dislovelhl/acgs/releases)
 
 Constitutional Hash: `608508a9bd224290`

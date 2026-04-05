@@ -12,10 +12,10 @@ dev = ["pytest>=8.0", "pytest-asyncio>=1.0"]
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/mhc"
-Repository = "https://github.com/acgs2_admin/acgs"
-Issues = "https://github.com/acgs2_admin/acgs/issues"
-Changelog = "https://github.com/acgs2_admin/acgs/releases"
+Documentation = "https://github.com/dislovelhl/acgs/tree/main/packages/mhc"
+Repository = "https://github.com/dislovelhl/acgs"
+Issues = "https://github.com/dislovelhl/acgs/issues"
+Changelog = "https://github.com/dislovelhl/acgs/releases"
 PyPI = "https://pypi.org/project/mhc/"
 
 [build-system]

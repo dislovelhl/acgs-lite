@@ -118,10 +118,10 @@ AGPL-3.0-or-later. Commercial licensing is available; contact `hello@acgs.ai`.
 ## Links
 
 - [Homepage](https://acgs.ai)
-- [Documentation](https://github.com/acgs2_admin/acgs/tree/main/packages/acgs-core)
+- [Documentation](https://github.com/dislovelhl/acgs/tree/main/packages/acgs-core)
 - [PyPI](https://pypi.org/project/acgs/)
-- [Repository](https://github.com/acgs2_admin/acgs)
-- [Issues](https://github.com/acgs2_admin/acgs/issues)
-- [Changelog](https://github.com/acgs2_admin/acgs/releases)
+- [Repository](https://github.com/dislovelhl/acgs)
+- [Issues](https://github.com/dislovelhl/acgs/issues)
+- [Changelog](https://github.com/dislovelhl/acgs/releases)
 
 Constitutional Hash: `608508a9bd224290`
