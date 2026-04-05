@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "acgs"
 version = "1.0.0a1"
 description = "Thin public ACGS namespace package backed by acgs-lite"
+readme = "README.md"
 requires-python = ">=3.10"
 license = "AGPL-3.0-or-later"
 keywords = ["ai", "governance", "constitutional", "agent", "maci"]
@@ -21,8 +22,6 @@ fastapi = ["fastapi>=0.100", "uvicorn>=0.20"]
 anthropic = ["anthropic>=0.20"]
 openai = ["openai>=1.0"]
 langchain = ["langchain-core>=0.2"]
-
-readme = "README.md"
 
 [project.urls]
 Homepage = "https://acgs.ai"
