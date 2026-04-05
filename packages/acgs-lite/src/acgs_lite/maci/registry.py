@@ -1,6 +1,6 @@
 # ACGS - Constitutional AI Governance
 # Copyright (C) 2024-2026 ACGS Contributors
-# Licensed under AGPL-3.0-or-later. See LICENSE for details.
+# Licensed under Apache-2.0. See LICENSE for details.
 # Commercial license: https://acgs.ai
 
 """Domain-scoped and delegated MACI registries.
