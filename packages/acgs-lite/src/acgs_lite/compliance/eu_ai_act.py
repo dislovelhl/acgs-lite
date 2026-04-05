@@ -402,24 +402,20 @@ class EUAIActFramework:
         items: list[ChecklistItem] = []
         for ref, req, citation, feature, blocking in _EU_AI_ACT_ITEMS:
             # Skip GPAI-only articles unless system is GPAI
-            if ref in ("EU-AIA Art.53(1)", "EU-AIA Art.53(2)", "EU-AIA Art.55(1)"):
-                if not is_gpai:
-                    continue
+            if ref in ("EU-AIA Art.53(1)", "EU-AIA Art.53(2)", "EU-AIA Art.55(1)") and not is_gpai:
+                continue
             # For "unacceptable" tier, skip all non-Art.5 items entirely
-            if risk_tier == "unacceptable":
-                if not (ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50")):
-                    continue
+            if risk_tier == "unacceptable" and not (ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50")):
+                continue
 
             # Determine if this item is applicable for the risk tier
             applicable = True
-            if risk_tier in ("minimal", "limited"):
+            if risk_tier in ("minimal", "limited") and not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
                 # Skip entirely — keeps list shorter than "high" (tier ordering tests)
-                if not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
-                    continue
-            elif risk_tier == "low":
+                continue
+            elif risk_tier == "low" and not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
                 # Include as NOT_APPLICABLE (allows na_items count tests to pass)
-                if not ref.startswith("EU-AIA Art.5") and not ref.startswith("EU-AIA Art.50"):
-                    applicable = False
+                applicable = False
             item = ChecklistItem(
                 ref=ref,
                 requirement=req,

@@ -85,11 +85,17 @@ exclude = ["examples", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+    "E501",
+    "E402",
+    "SIM102",
+]
 
 [tool.ruff.lint.per-file-ignores]
 # Autoresearch-optimized hot path: semicolons, import order, and line length are deliberate
 "src/acgs_lite/engine.py" = ["E702", "E402", "E501", "SIM102"]
 "src/acgs_lite/constitution.py" = ["SIM102"]
+"src/acgs_lite/__init__.py" = ["F401"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

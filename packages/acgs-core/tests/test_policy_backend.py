@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from acgs.policy import HeuristicBackend, PolicyBackend, PolicyDecision
 
 
@@ -58,7 +57,7 @@ class TestHeuristicBackend:
 
 class TestCedarBackend:
     def test_conforms_to_abc(self):
-        cedarpy = pytest.importorskip("cedarpy")
+        pytest.importorskip("cedarpy")
         from acgs.cedar import CedarBackend
 
         backend = CedarBackend("permit(principal, action, resource);")
@@ -115,7 +114,7 @@ class TestBackendInterchangeability:
     """Both backends produce PolicyDecision from the same evaluate() call."""
 
     def test_swap_backends(self):
-        cedarpy = pytest.importorskip("cedarpy")
+        pytest.importorskip("cedarpy")
         import acgs
         from acgs.cedar import CedarBackend
 

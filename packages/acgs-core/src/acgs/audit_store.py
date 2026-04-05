@@ -6,10 +6,7 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from acgs_lite.audit import AuditEntry
+from typing import Any
 
 
 class AuditStore(ABC):
