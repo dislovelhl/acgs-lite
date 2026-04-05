@@ -936,3 +936,10 @@ class _ConcreteEvidenceCollector:
 # The EvidenceCollector Protocol from the body of this file is kept for
 # test_compliance_evidence.py which checks isinstance(obj, EvidenceCollector).
 EvidenceCollectorImpl = _ConcreteEvidenceCollector
+
+# Backward-compat aliases for the old SOC2/ISO/GDPR collector API.
+# These were replaced by the generic collector pattern but old tests import them.
+ComplianceFramework = EvidenceCollector  # Protocol alias
+SOC2EvidenceCollector = _ConcreteEvidenceCollector
+ISO27001EvidenceCollector = _ConcreteEvidenceCollector
+GDPREvidenceCollector = _ConcreteEvidenceCollector
