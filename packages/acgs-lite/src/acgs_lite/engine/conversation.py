@@ -83,11 +83,12 @@ def _safe_validate(
             action=action[:200],
             agent_id=agent_id,
         )
-    except Exception:
+    except Exception as exc:
         # Any other engine error should not crash the
         # conversation layer.
         logger.exception(
-            "unexpected error during governance validation"
+            "unexpected error during governance validation: %s",
+            exc,
         )
         return ValidationResult(
             valid=False,

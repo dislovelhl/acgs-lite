@@ -106,8 +106,8 @@ class JSONLAuditBackend:
     def __del__(self) -> None:
         try:
             self._fd.close()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("failed to close JSONL audit backend file handle: %s", exc, exc_info=True)
 
 
 @dataclass
@@ -192,8 +192,8 @@ class AuditLog:
         if self._backend is not None:
             try:
                 self._backend.write(entry.to_dict(), chain_hash)
-            except Exception:
-                logger.warning("audit backend write failed", exc_info=True)
+            except Exception as exc:
+                logger.warning("audit backend write failed: %s", exc, exc_info=True)
 
         # Trim if over max; recompute the first retained entry's hash against
         # 'genesis' so verify_chain() remains valid over the trimmed window.

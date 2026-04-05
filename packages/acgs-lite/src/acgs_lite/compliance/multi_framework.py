@@ -148,12 +148,12 @@ def _load_plugins() -> None:
                 cls = ep.load()
                 _FRAMEWORK_REGISTRY[ep.name] = cls
                 logger.debug("plugin framework registered: %s", ep.name)
-            except Exception:
+            except Exception as exc:
                 logger.warning(
-                    "failed to load compliance plugin %s", ep.name, exc_info=True
+                    "failed to load compliance plugin %s: %s", ep.name, exc, exc_info=True
                 )
-    except Exception:
-        logger.debug("entry point discovery failed", exc_info=True)
+    except Exception as exc:
+        logger.debug("entry point discovery failed: %s", exc, exc_info=True)
 
 
 def register_framework(framework_id: str, cls: type) -> None:

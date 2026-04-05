@@ -114,8 +114,8 @@ class GovernanceCircuitBreaker:
                 self.system_id,
                 reason,
             )
-        except Exception:
-            logger.debug("failed to write signal file", exc_info=True)
+        except Exception as exc:
+            logger.debug("failed to write signal file: %s", exc, exc_info=True)
 
     def reset(self) -> None:
         """Reset the circuit breaker, allowing operations to resume."""
@@ -128,8 +128,8 @@ class GovernanceCircuitBreaker:
         try:
             self._signal_path.unlink(missing_ok=True)
             logger.info("circuit breaker reset: system=%s", self.system_id)
-        except Exception:
-            logger.debug("failed to remove signal file", exc_info=True)
+        except Exception as exc:
+            logger.debug("failed to remove signal file: %s", exc, exc_info=True)
 
     @property
     def is_tripped(self) -> bool:
@@ -148,7 +148,8 @@ class GovernanceCircuitBreaker:
         if self._check_file and self._signal_path.exists():
             try:
                 return self._signal_path.read_text().strip()
-            except Exception:
+            except Exception as exc:
+                logger.debug("failed to read signal file: %s", exc, exc_info=True)
                 return "halted (reason unavailable)"
         return ""
 

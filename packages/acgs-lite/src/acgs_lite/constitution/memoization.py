@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from collections import OrderedDict
 from dataclasses import dataclass
 from threading import Lock
@@ -46,6 +47,8 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .core import Constitution
+
+logger = logging.getLogger(__name__)
 
 
 def _cache_key(action: str, context: dict[str, Any]) -> str:
@@ -250,7 +253,13 @@ class MemoizedConstitution:
 
             engine = GovernanceEngine(self._constitution)
             result: dict[str, Any] = engine.validate(action, context=ctx).to_dict()
-        except Exception:
+        except Exception as exc:
+            logger.debug(
+                "memoized constitution validation failed for %r; falling back to explain(): %s",
+                action,
+                exc,
+                exc_info=True,
+            )
             # Fallback: use explain() which always works
             result = self._constitution.explain(action)
 
