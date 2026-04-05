@@ -39,12 +39,28 @@
 			ctaHref: 'https://pypi.org/project/acgs/'
 		},
 		{
+			name: 'Starter',
+			price: '$49',
+			period: '/month',
+			desc: 'Cloud audit sync, compliance basics, perfect for small teams.',
+			items: [
+				'Everything in Community',
+				'100K validations/month',
+				'Cloud audit sync (7-day retention)',
+				'EU AI Act quick assessment',
+				'Basic compliance dashboard',
+				'Community + email support (72h SLA)'
+			],
+			cta: 'Start free trial',
+			ctaHref: '#'
+		},
+		{
 			name: 'Pro',
 			price: '$299',
 			period: '/month',
-			desc: 'Compliance reports, cloud audit, 3 regulatory frameworks.',
+			desc: 'Full compliance, 3 frameworks, real-time observability.',
 			items: [
-				'Everything in Community',
+				'Everything in Starter',
 				'1M validations/month',
 				'Real-time observability stream',
 				'EU AI Act Article 12 audit logger',
@@ -121,7 +137,7 @@
 			</p>
 		</div>
 
-		<div class="fade-in mt-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4" use:observe>
+		<div class="fade-in mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" use:observe>
 				{#each tiers as tier (tier.name)}
 				<div
 					class="relative flex flex-col rounded-2xl border bg-[#0a0a0a] p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1
