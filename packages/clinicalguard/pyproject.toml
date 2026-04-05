@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clinicalguard"
+version = "1.0.0"
+description = "Constitutional AI governance for clinical decision support — Agents Assemble hackathon"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "AGPL-3.0-or-later"
+
+[project.urls]
+Homepage = "https://acgs.ai"
+Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/clinicalguard"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/clinicalguard/"
+
+dependencies = [
+    "starlette>=0.37",
+    "uvicorn[standard]>=0.29",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+    "pydantic>=2.0",
+    # acgs-lite is a local dependency — install with: pip install -e ../acgs-lite
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.30"]
+openai = ["openai>=1.0"]
+all = ["clinicalguard[anthropic,openai]"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-cov",
+    "httpx",  # for Starlette TestClient
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["clinicalguard"]

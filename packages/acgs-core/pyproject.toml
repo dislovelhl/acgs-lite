@@ -10,6 +10,7 @@ requires-python = ">=3.10"
 license = "AGPL-3.0-or-later"
 keywords = ["ai", "governance", "constitutional", "agent", "maci"]
 dependencies = [
+    "acgs-lite>=2.5",
     "pydantic>=2.0",
     "pyyaml>=6.0",
 ]
@@ -20,6 +21,16 @@ fastapi = ["fastapi>=0.100", "uvicorn>=0.20"]
 anthropic = ["anthropic>=0.20"]
 openai = ["openai>=1.0"]
 langchain = ["langchain-core>=0.2"]
+
+readme = "README.md"
+
+[project.urls]
+Homepage = "https://acgs.ai"
+Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/acgs-core"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/acgs/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/acgs"]
