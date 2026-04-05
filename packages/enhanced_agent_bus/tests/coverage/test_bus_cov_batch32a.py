@@ -20,9 +20,9 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import ConfigurationError
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
+from enhanced_agent_bus._compat.errors import ConfigurationError
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 from enhanced_agent_bus.models import (
     CONSTITUTIONAL_HASH,
     AgentMessage,

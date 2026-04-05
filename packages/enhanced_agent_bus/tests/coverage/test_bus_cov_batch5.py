@@ -20,7 +20,8 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
-from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
+
+from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
 
 # ---------------------------------------------------------------------------
 # 2. caching

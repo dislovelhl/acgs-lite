@@ -8,12 +8,11 @@ import pytest
 cedarpy = pytest.importorskip("cedarpy", reason="cedarpy required for Cedar engine tests")
 
 from enhanced_agent_bus.cedar.engine import (
+    CONSTITUTIONAL_HASH,
     AuthzRequest,
     AuthzResult,
     CedarPolicyEngine,
-    CONSTITUTIONAL_HASH,
 )
-
 
 SIMPLE_PERMIT_ALL = "permit(principal, action, resource);"
 SIMPLE_DENY_ALL = "forbid(principal, action, resource);"

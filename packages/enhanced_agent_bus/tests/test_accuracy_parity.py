@@ -24,7 +24,8 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.types import JSONDict
 
 # Import the module under test
 from enhanced_agent_bus.deliberation_layer.impact_scorer import (

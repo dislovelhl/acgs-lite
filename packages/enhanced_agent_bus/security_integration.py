@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.structured_logging import get_logger
+    from enhanced_agent_bus._compat.structured_logging import get_logger
 except ImportError:
     import logging
 

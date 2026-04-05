@@ -27,11 +27,11 @@ from re import Pattern
 from typing import IO
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -606,7 +606,7 @@ def clear_trace_context() -> None:
 
 # Re-export canonical get_logger so EAB modules import from within the package.
 try:
-    from src.core.shared.structured_logging import get_logger
+    from enhanced_agent_bus._compat.structured_logging import get_logger
 except ImportError:
     import logging
 

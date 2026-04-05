@@ -8,8 +8,8 @@ FastAPI router setup, lifecycle management, and route registration.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
-from src.core.shared.security.auth import get_current_user
 
+from enhanced_agent_bus._compat.security.auth import get_current_user
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
 from . import endpoints

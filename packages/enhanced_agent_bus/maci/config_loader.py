@@ -11,10 +11,10 @@ import json
 import os
 from pathlib import Path
 
-from src.core.shared.type_guards import get_str, get_str_list, is_json_dict
+from enhanced_agent_bus._compat.type_guards import get_str, get_str_list, is_json_dict
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

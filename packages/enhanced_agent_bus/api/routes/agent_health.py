@@ -129,7 +129,7 @@ async def require_operator_role(request: Request) -> str:
     """
     # Attempt to delegate to the shared JWT RBAC validator when available.
     try:
-        from src.core.shared.security.rbac import validate_operator_token
+        from enhanced_agent_bus._compat.security.rbac import validate_operator_token
 
         result: str = await validate_operator_token(request)
         return result
@@ -270,7 +270,7 @@ async def create_healing_override(
     audit_event_id = str(uuid.uuid4())
 
     # --- Write audit log entry BEFORE storing override (FR-009) ---
-    from src.core.shared.audit.logger import AuditEventType, AuditSeverity
+    from enhanced_agent_bus._compat.audit.logger import AuditEventType, AuditSeverity
 
     await audit_client.log(
         event_type=AuditEventType.APPROVAL,
@@ -344,7 +344,7 @@ async def delete_healing_override(
         )
 
     # --- Write audit log entry before removing override (FR-009) ---
-    from src.core.shared.audit.logger import AuditEventType, AuditSeverity
+    from enhanced_agent_bus._compat.audit.logger import AuditEventType, AuditSeverity
 
     await audit_client.log(
         event_type=AuditEventType.APPROVAL,

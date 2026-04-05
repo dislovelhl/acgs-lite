@@ -9,9 +9,9 @@ import json
 from unittest.mock import AsyncMock
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
 
 import enhanced_agent_bus.siem_integration as siem_integration_module
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 from enhanced_agent_bus.runtime_security import (
     SecurityEvent,
     SecurityEventType,

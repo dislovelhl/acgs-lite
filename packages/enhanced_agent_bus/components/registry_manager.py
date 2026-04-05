@@ -9,7 +9,7 @@ import asyncio
 from datetime import UTC, datetime
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -20,7 +20,7 @@ from ..registry import InMemoryAgentRegistry, RedisAgentRegistry
 from ..security_helpers import normalize_tenant_id
 
 try:
-    from src.core.shared.types import AgentInfo
+    from enhanced_agent_bus._compat.types import AgentInfo
 except ImportError:
     AgentInfo = JSONDict  # type: ignore[misc, assignment]
 

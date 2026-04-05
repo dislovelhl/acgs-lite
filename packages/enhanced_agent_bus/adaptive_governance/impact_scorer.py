@@ -25,10 +25,10 @@ import sys
 from collections import deque
 from datetime import UTC, datetime
 
-from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         MessagePayload,
         PolicyContext,
     )

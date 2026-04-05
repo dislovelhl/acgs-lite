@@ -192,14 +192,14 @@ async def _call_llm_pi_rpc(action_text: str) -> dict[str, Any]:
     finally:
         try:
             proc.stdin.close()
-        except Exception:
-            pass
+        except OSError:
+            pass  # stdin may already be closed
         if proc.returncode is None:
             proc.kill()
         try:
             await asyncio.wait_for(proc.wait(), timeout=2.0)
-        except Exception:
-            pass
+        except (TimeoutError, OSError):
+            pass  # best-effort cleanup
 
     full_text = "".join(collected).strip()
     if full_text.startswith("```"):
@@ -260,7 +260,7 @@ async def get_llm_assessment(action_text: str) -> LLMClinicalAssessment:
             conditions=conditions,
             llm_available=True,
         )
-    except Exception as exc:
+    except (TimeoutError, OSError, ValueError, KeyError) as exc:
         logger.warning("%s clinical reasoning failed: %s — rule-only fallback", label, type(exc).__name__)
         return LLMClinicalAssessment(
             llm_available=False,
@@ -390,8 +390,8 @@ async def validate_clinical_action(
     constitutional_hash = ""
     try:
         constitutional_hash = engine.constitution.hash
-    except Exception:
-        pass
+    except (AttributeError, TypeError):
+        pass  # hash property may not be available on all constitution types
 
     entry = AuditEntry(
         id=audit_id,
@@ -418,7 +418,7 @@ async def validate_clinical_action(
     if on_persist is not None:
         try:
             on_persist(audit_log)
-        except Exception as exc:
+        except OSError as exc:
             logger.warning("Audit persistence callback failed: %s", type(exc).__name__)
 
     return {

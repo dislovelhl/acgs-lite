@@ -13,9 +13,9 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.resilience.retry import RetryConfig as SharedRetryConfig
 
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.resilience.retry import RetryConfig as SharedRetryConfig
 from enhanced_agent_bus.llm_adapters.base import (
     LEGACY_RATE_LIMIT_ERRORS,
     LEGACY_SERVER_ERRORS,

@@ -19,7 +19,7 @@ try:
     OPA_CLIENT_AVAILABLE: bool = is_feature_available("OPA")
     get_opa_client = get_dependency("get_opa_client")
 except (ImportError, ValueError):
-    from models import AgentMessage  # type: ignore[import-untyped]
+    from .models import AgentMessage  # type: ignore[import-untyped]
 
     OPA_CLIENT_AVAILABLE = False
     get_opa_client = None
@@ -27,7 +27,7 @@ except (ImportError, ValueError):
 try:
     from .models import CONSTITUTIONAL_HASH, AgentMessage
 except ImportError:
-    from models import CONSTITUTIONAL_HASH, AgentMessage  # type: ignore[import-untyped]
+    from .models import CONSTITUTIONAL_HASH, AgentMessage  # type: ignore[import-untyped]
 
 # Import Protocol types for type safety
 try:

@@ -8,7 +8,8 @@ Integration tests validating health aggregator with real circuit breakers.
 import asyncio
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 try:
     from enhanced_agent_bus.health_aggregator import (
@@ -44,7 +45,7 @@ pytestmark = [
 @pytest.fixture
 def registry():
     """Get circuit breaker registry with clean state."""
-    from src.core.shared.circuit_breaker import CircuitBreakerRegistry
+    from enhanced_agent_bus._compat.circuit_breaker import CircuitBreakerRegistry
 
     # Get the singleton instance
     registry_instance = CircuitBreakerRegistry()
@@ -90,7 +91,7 @@ class TestHealthAggregatorIntegration:
         self, aggregator_with_registry, registry
     ):
         """Test integration with real CircuitBreakerRegistry."""
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Create some circuit breakers through registry
         cb1 = get_circuit_breaker("test_service_1")
@@ -106,7 +107,8 @@ class TestHealthAggregatorIntegration:
     async def test_health_degradation_detection(self, aggregator_with_registry, registry):
         """Test detecting health degradation as circuits open."""
         import pybreaker
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Create breakers
         cb1 = get_circuit_breaker("service_1")
@@ -141,7 +143,7 @@ class TestHealthAggregatorIntegration:
 
     async def test_health_monitoring_lifecycle(self, aggregator_with_registry, registry):
         """Test complete health monitoring lifecycle."""
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Create breakers
         cb1 = get_circuit_breaker("monitored_1")
@@ -181,7 +183,8 @@ class TestHealthAggregatorIntegration:
     async def test_custom_breaker_with_registry(self, aggregator_with_registry, registry):
         """Test mixing custom breakers with registry breakers."""
         import pybreaker
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Add registry breakers
         cb1 = get_circuit_breaker("registry_service")
@@ -208,7 +211,8 @@ class TestHealthAggregatorIntegration:
     async def test_real_world_monitoring_scenario(self, aggregator_with_registry, registry):
         """Test realistic monitoring scenario with multiple services."""
         import pybreaker
-        from src.core.shared.circuit_breaker import (
+
+        from enhanced_agent_bus._compat.circuit_breaker import (
             CircuitBreakerConfig,
             get_circuit_breaker,
         )
@@ -294,7 +298,7 @@ class TestHealthAggregatorIntegration:
 
     async def test_metrics_accuracy(self, aggregator_with_registry, registry):
         """Test accuracy of aggregator metrics."""
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Create some breakers
         cb1 = get_circuit_breaker("metrics_test_1")
@@ -322,7 +326,7 @@ class TestHealthAggregatorIntegration:
 
     async def test_health_history_accuracy(self, aggregator_with_registry, registry):
         """Test health history collection accuracy."""
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Create breakers
         cb = get_circuit_breaker("history_test")
@@ -348,7 +352,7 @@ class TestHealthAggregatorIntegration:
         self, aggregator_with_registry, registry
     ):
         """Test constitutional compliance is maintained throughout lifecycle."""
-        from src.core.shared.circuit_breaker import get_circuit_breaker
+        from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
 
         # Verify config has constitutional hash
         assert aggregator_with_registry.config.constitutional_hash == CONSTITUTIONAL_HASH
@@ -385,7 +389,7 @@ class TestGlobalSingletonIntegration:
 
     async def test_singleton_with_real_registry(self):
         """Test global singleton with real circuit breaker registry."""
-        from src.core.shared.circuit_breaker import _registry, get_circuit_breaker
+        from enhanced_agent_bus._compat.circuit_breaker import _registry, get_circuit_breaker
 
         # Clear global registry for isolation
         _registry._breakers.clear()

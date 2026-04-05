@@ -15,9 +15,9 @@ from enum import Enum
 from io import StringIO
 from typing import Any
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ACGSBaseError
-from src.core.shared.security.execution_time_limit import (
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ACGSBaseError
+from enhanced_agent_bus._compat.security.execution_time_limit import (
     ExecutionTimeout,
     python_execution_time_limit,
 )

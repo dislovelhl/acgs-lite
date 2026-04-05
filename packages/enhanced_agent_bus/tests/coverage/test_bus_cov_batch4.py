@@ -463,13 +463,13 @@ class TestDimensionSpec:
         assert ds.weight == 1.5
 
     def test_invalid_threshold(self):
-        from src.core.shared.errors.exceptions import ValidationError as VE
+        from enhanced_agent_bus._compat.errors import ValidationError as VE
 
         with pytest.raises(VE):
             DimensionSpec(name="x", threshold=1.5)
 
     def test_negative_weight(self):
-        from src.core.shared.errors.exceptions import ValidationError as VE
+        from enhanced_agent_bus._compat.errors import ValidationError as VE
 
         with pytest.raises(VE):
             DimensionSpec(name="x", threshold=0.5, weight=-1.0)
@@ -607,7 +607,7 @@ class TestResponseQualityValidator:
         assert len(results) == 2
 
     def test_validate_batch_mismatched_lengths(self, validator):
-        from src.core.shared.errors.exceptions import ValidationError as VE
+        from enhanced_agent_bus._compat.errors import ValidationError as VE
 
         with pytest.raises(VE):
             validator.validate_batch(["r1", "r2"], contexts=[None])
@@ -625,13 +625,13 @@ class TestResponseQualityValidator:
         assert validator.thresholds["accuracy"] == 0.5
 
     def test_update_threshold_unknown_dimension(self, validator):
-        from src.core.shared.errors.exceptions import ValidationError as VE
+        from enhanced_agent_bus._compat.errors import ValidationError as VE
 
         with pytest.raises(VE):
             validator.update_threshold("nonexistent", 0.5)
 
     def test_update_threshold_invalid_value(self, validator):
-        from src.core.shared.errors.exceptions import ValidationError as VE
+        from enhanced_agent_bus._compat.errors import ValidationError as VE
 
         with pytest.raises(VE):
             validator.update_threshold("accuracy", 1.5)

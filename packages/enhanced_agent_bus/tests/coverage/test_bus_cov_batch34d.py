@@ -42,7 +42,7 @@ class TestCacheClientStubBodies:
     """Exercise CacheClient Protocol stub bodies via bare subclass."""
 
     async def test_get_stub(self):
-        from src.core.shared.interfaces import CacheClient
+        from enhanced_agent_bus._compat.interfaces import CacheClient
 
         Bare = _make_bare_subclass(CacheClient)
         obj = Bare()
@@ -50,35 +50,35 @@ class TestCacheClientStubBodies:
         assert result is None
 
     async def test_set_stub(self):
-        from src.core.shared.interfaces import CacheClient
+        from enhanced_agent_bus._compat.interfaces import CacheClient
 
         Bare = _make_bare_subclass(CacheClient)
         result = await Bare().set("k", "v", ex=60)
         assert result is None
 
     async def test_setex_stub(self):
-        from src.core.shared.interfaces import CacheClient
+        from enhanced_agent_bus._compat.interfaces import CacheClient
 
         Bare = _make_bare_subclass(CacheClient)
         result = await Bare().setex("k", 60, "v")
         assert result is None
 
     async def test_delete_stub(self):
-        from src.core.shared.interfaces import CacheClient
+        from enhanced_agent_bus._compat.interfaces import CacheClient
 
         Bare = _make_bare_subclass(CacheClient)
         result = await Bare().delete("k")
         assert result is None
 
     async def test_exists_stub(self):
-        from src.core.shared.interfaces import CacheClient
+        from enhanced_agent_bus._compat.interfaces import CacheClient
 
         Bare = _make_bare_subclass(CacheClient)
         result = await Bare().exists("k")
         assert result is None
 
     async def test_expire_stub(self):
-        from src.core.shared.interfaces import CacheClient
+        from enhanced_agent_bus._compat.interfaces import CacheClient
 
         Bare = _make_bare_subclass(CacheClient)
         result = await Bare().expire("k", 60)
@@ -87,35 +87,35 @@ class TestCacheClientStubBodies:
 
 class TestPolicyEvaluatorStubBodies:
     async def test_evaluate_stub(self):
-        from src.core.shared.interfaces import PolicyEvaluator
+        from enhanced_agent_bus._compat.interfaces import PolicyEvaluator
 
         Bare = _make_bare_subclass(PolicyEvaluator)
         result = await Bare().evaluate("path", {})
         assert result is None
 
     async def test_evaluate_batch_stub(self):
-        from src.core.shared.interfaces import PolicyEvaluator
+        from enhanced_agent_bus._compat.interfaces import PolicyEvaluator
 
         Bare = _make_bare_subclass(PolicyEvaluator)
         result = await Bare().evaluate_batch("path", [{}])
         assert result is None
 
     async def test_get_policy_stub(self):
-        from src.core.shared.interfaces import PolicyEvaluator
+        from enhanced_agent_bus._compat.interfaces import PolicyEvaluator
 
         Bare = _make_bare_subclass(PolicyEvaluator)
         result = await Bare().get_policy("path")
         assert result is None
 
     async def test_list_policies_stub(self):
-        from src.core.shared.interfaces import PolicyEvaluator
+        from enhanced_agent_bus._compat.interfaces import PolicyEvaluator
 
         Bare = _make_bare_subclass(PolicyEvaluator)
         result = await Bare().list_policies()
         assert result is None
 
     async def test_list_policies_with_path(self):
-        from src.core.shared.interfaces import PolicyEvaluator
+        from enhanced_agent_bus._compat.interfaces import PolicyEvaluator
 
         Bare = _make_bare_subclass(PolicyEvaluator)
         result = await Bare().list_policies(path="/some/path")
@@ -124,7 +124,7 @@ class TestPolicyEvaluatorStubBodies:
 
 class TestAuditServiceStubBodies:
     async def test_log_event_stub(self):
-        from src.core.shared.interfaces import AuditService
+        from enhanced_agent_bus._compat.interfaces import AuditService
 
         Bare = _make_bare_subclass(AuditService)
         result = await Bare().log_event("t", "a", "act", "res", "ok")
@@ -133,7 +133,7 @@ class TestAuditServiceStubBodies:
     async def test_log_event_with_kwargs(self):
         from datetime import datetime, timezone
 
-        from src.core.shared.interfaces import AuditService
+        from enhanced_agent_bus._compat.interfaces import AuditService
 
         Bare = _make_bare_subclass(AuditService)
         result = await Bare().log_event(
@@ -149,14 +149,14 @@ class TestAuditServiceStubBodies:
         assert result is None
 
     async def test_log_events_batch_stub(self):
-        from src.core.shared.interfaces import AuditService
+        from enhanced_agent_bus._compat.interfaces import AuditService
 
         Bare = _make_bare_subclass(AuditService)
         result = await Bare().log_events_batch([{"event": "x"}])
         assert result is None
 
     async def test_get_event_stub(self):
-        from src.core.shared.interfaces import AuditService
+        from enhanced_agent_bus._compat.interfaces import AuditService
 
         uid = UUID("12345678-1234-5678-1234-567812345678")
         Bare = _make_bare_subclass(AuditService)
@@ -164,7 +164,7 @@ class TestAuditServiceStubBodies:
         assert result is None
 
     async def test_query_events_stub(self):
-        from src.core.shared.interfaces import AuditService
+        from enhanced_agent_bus._compat.interfaces import AuditService
 
         Bare = _make_bare_subclass(AuditService)
         result = await Bare().query_events(
@@ -178,7 +178,7 @@ class TestAuditServiceStubBodies:
         assert result is None
 
     async def test_verify_integrity_stub(self):
-        from src.core.shared.interfaces import AuditService
+        from enhanced_agent_bus._compat.interfaces import AuditService
 
         Bare = _make_bare_subclass(AuditService)
         result = await Bare().verify_integrity()
@@ -187,35 +187,35 @@ class TestAuditServiceStubBodies:
 
 class TestDatabaseSessionStubBodies:
     async def test_execute_stub(self):
-        from src.core.shared.interfaces import DatabaseSession
+        from enhanced_agent_bus._compat.interfaces import DatabaseSession
 
         Bare = _make_bare_subclass(DatabaseSession)
         result = await Bare().execute("SELECT 1")
         assert result is None
 
     async def test_execute_with_params(self):
-        from src.core.shared.interfaces import DatabaseSession
+        from enhanced_agent_bus._compat.interfaces import DatabaseSession
 
         Bare = _make_bare_subclass(DatabaseSession)
         result = await Bare().execute("SELECT 1", params={"id": 1})
         assert result is None
 
     async def test_commit_stub(self):
-        from src.core.shared.interfaces import DatabaseSession
+        from enhanced_agent_bus._compat.interfaces import DatabaseSession
 
         Bare = _make_bare_subclass(DatabaseSession)
         result = await Bare().commit()
         assert result is None
 
     async def test_rollback_stub(self):
-        from src.core.shared.interfaces import DatabaseSession
+        from enhanced_agent_bus._compat.interfaces import DatabaseSession
 
         Bare = _make_bare_subclass(DatabaseSession)
         result = await Bare().rollback()
         assert result is None
 
     async def test_close_stub(self):
-        from src.core.shared.interfaces import DatabaseSession
+        from enhanced_agent_bus._compat.interfaces import DatabaseSession
 
         Bare = _make_bare_subclass(DatabaseSession)
         result = await Bare().close()
@@ -224,14 +224,14 @@ class TestDatabaseSessionStubBodies:
 
 class TestNotificationServiceStubBodies:
     async def test_send_email_stub(self):
-        from src.core.shared.interfaces import NotificationService
+        from enhanced_agent_bus._compat.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
         result = await Bare().send_email("to@x.com", "subj", "body")
         assert result is None
 
     async def test_send_email_with_kwargs(self):
-        from src.core.shared.interfaces import NotificationService
+        from enhanced_agent_bus._compat.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
         result = await Bare().send_email(
@@ -245,28 +245,28 @@ class TestNotificationServiceStubBodies:
         assert result is None
 
     async def test_send_sms_stub(self):
-        from src.core.shared.interfaces import NotificationService
+        from enhanced_agent_bus._compat.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
         result = await Bare().send_sms("+1234", "msg")
         assert result is None
 
     async def test_send_webhook_stub(self):
-        from src.core.shared.interfaces import NotificationService
+        from enhanced_agent_bus._compat.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
         result = await Bare().send_webhook("http://x", {"k": "v"})
         assert result is None
 
     async def test_send_in_app_stub(self):
-        from src.core.shared.interfaces import NotificationService
+        from enhanced_agent_bus._compat.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
         result = await Bare().send_in_app("user1", "msg")
         assert result is None
 
     async def test_send_in_app_with_kwargs(self):
-        from src.core.shared.interfaces import NotificationService
+        from enhanced_agent_bus._compat.interfaces import NotificationService
 
         Bare = _make_bare_subclass(NotificationService)
         result = await Bare().send_in_app("user1", "msg", title="Title", data={"k": "v"})
@@ -275,14 +275,14 @@ class TestNotificationServiceStubBodies:
 
 class TestMessageProcessorStubBodies:
     async def test_process_stub(self):
-        from src.core.shared.interfaces import MessageProcessor
+        from enhanced_agent_bus._compat.interfaces import MessageProcessor
 
         Bare = _make_bare_subclass(MessageProcessor)
         result = await Bare().process({"m": 1})
         assert result is None
 
     async def test_process_batch_stub(self):
-        from src.core.shared.interfaces import MessageProcessor
+        from enhanced_agent_bus._compat.interfaces import MessageProcessor
 
         Bare = _make_bare_subclass(MessageProcessor)
         result = await Bare().process_batch([{"m": 1}])
@@ -291,28 +291,28 @@ class TestMessageProcessorStubBodies:
 
 class TestCircuitBreakerStubBodies:
     async def test_record_success_stub(self):
-        from src.core.shared.interfaces import CircuitBreaker
+        from enhanced_agent_bus._compat.interfaces import CircuitBreaker
 
         Bare = _make_bare_subclass(CircuitBreaker)
         result = await Bare().record_success()
         assert result is None
 
     async def test_record_failure_stub(self):
-        from src.core.shared.interfaces import CircuitBreaker
+        from enhanced_agent_bus._compat.interfaces import CircuitBreaker
 
         Bare = _make_bare_subclass(CircuitBreaker)
         result = await Bare().record_failure()
         assert result is None
 
     async def test_allow_request_stub(self):
-        from src.core.shared.interfaces import CircuitBreaker
+        from enhanced_agent_bus._compat.interfaces import CircuitBreaker
 
         Bare = _make_bare_subclass(CircuitBreaker)
         result = await Bare().allow_request()
         assert result is None
 
     async def test_get_state_stub(self):
-        from src.core.shared.interfaces import CircuitBreaker
+        from enhanced_agent_bus._compat.interfaces import CircuitBreaker
 
         Bare = _make_bare_subclass(CircuitBreaker)
         result = await Bare().get_state()
@@ -321,49 +321,49 @@ class TestCircuitBreakerStubBodies:
 
 class TestMetricsCollectorStubBodies:
     async def test_increment_counter_stub(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().increment_counter("c")
         assert result is None
 
     async def test_increment_counter_with_tags(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().increment_counter("c", value=5.0, tags={"env": "test"})
         assert result is None
 
     async def test_record_timing_stub(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().record_timing("t", 1.5)
         assert result is None
 
     async def test_record_timing_with_tags(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().record_timing("t", 1.5, tags={"service": "api"})
         assert result is None
 
     async def test_record_gauge_stub(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().record_gauge("g", 42.0)
         assert result is None
 
     async def test_record_gauge_with_tags(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().record_gauge("g", 42.0, tags={"region": "us"})
         assert result is None
 
     async def test_get_metrics_stub(self):
-        from src.core.shared.interfaces import MetricsCollector
+        from enhanced_agent_bus._compat.interfaces import MetricsCollector
 
         Bare = _make_bare_subclass(MetricsCollector)
         result = await Bare().get_metrics()
@@ -374,13 +374,13 @@ class TestRetryStrategyStubBodies:
     """RetryStrategy is ABC so we test both abstract enforcement and sub-class calls."""
 
     def test_cannot_instantiate_directly(self):
-        from src.core.shared.interfaces import RetryStrategy
+        from enhanced_agent_bus._compat.interfaces import RetryStrategy
 
         with pytest.raises(TypeError):
             RetryStrategy()
 
     async def test_subclass_with_delegation(self):
-        from src.core.shared.interfaces import RetryStrategy
+        from enhanced_agent_bus._compat.interfaces import RetryStrategy
 
         class DelegatingRetry(RetryStrategy):
             async def should_retry(self, attempt: int, error: Exception) -> bool:
@@ -426,7 +426,7 @@ class TestInterfacesModuleLevel:
     """Cover module-level import and type alias."""
 
     def test_all_interfaces_importable(self):
-        from src.core.shared.interfaces import (
+        from enhanced_agent_bus._compat.interfaces import (
             AuditService,
             CacheClient,
             CircuitBreaker,
@@ -453,13 +453,13 @@ class TestInterfacesModuleLevel:
 
     def test_uuid_import_used(self):
         """interfaces.py imports UUID at module level."""
-        from src.core.shared import interfaces
+        from enhanced_agent_bus._compat import interfaces
 
         # The module uses UUID in type annotations
         assert "UUID" in dir(interfaces) or hasattr(interfaces, "AuditService")
 
     def test_abc_and_protocol_imported(self):
-        from src.core.shared import interfaces
+        from enhanced_agent_bus._compat import interfaces
 
         # Verify ABC and Protocol are used
         assert hasattr(interfaces, "RetryStrategy")
@@ -477,7 +477,7 @@ class TestRedisConfigGetUrl:
     """Cover get_url branches not tested elsewhere."""
 
     def test_get_url_from_env_var(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         with patch.dict("os.environ", {"REDIS_URL": "redis://custom:1234"}):
             url = RedisConfig.get_url()
@@ -485,14 +485,14 @@ class TestRedisConfigGetUrl:
 
     def test_get_url_from_env_var_with_db_already(self):
         """URL with existing db path segment should be returned as-is."""
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         with patch.dict("os.environ", {"REDIS_URL": "redis://host:6379/5"}):
             url = RedisConfig.get_url()
         assert url == "redis://host:6379/5"
 
     def test_get_url_with_trailing_slash(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         with patch.dict("os.environ", {"REDIS_URL": "redis://host:6379/"}):
             url = RedisConfig.get_url()
@@ -500,14 +500,14 @@ class TestRedisConfigGetUrl:
         assert not url.endswith("/")
 
     def test_get_url_explicit_db_nonzero(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         with patch.dict("os.environ", {"REDIS_URL": "redis://host:6379"}):
             url = RedisConfig.get_url(db=3)
         assert url == "redis://host:6379/3"
 
     def test_get_url_from_settings_with_ssl(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         mock_settings = MagicMock()
         mock_settings.redis.ssl = True
@@ -531,7 +531,7 @@ class TestRedisConfigGetUrl:
         assert "secure-host" in url
 
     def test_get_url_custom_env_var(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         with patch.dict("os.environ", {"MY_REDIS": "redis://alt:9999"}):
             url = RedisConfig.get_url(env_var="MY_REDIS")
@@ -539,7 +539,7 @@ class TestRedisConfigGetUrl:
 
     def test_get_url_settings_db_nonzero(self):
         """When db=0 passed but settings.redis.db > 0, use settings db."""
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         mock_settings = MagicMock()
         mock_settings.redis.ssl = False
@@ -564,7 +564,7 @@ class TestRedisConfigGetUrl:
 
 class TestRedisConfigGetConnectionParams:
     def test_get_connection_params_returns_dict(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         params = RedisConfig.get_connection_params()
         assert isinstance(params, dict)
@@ -579,7 +579,7 @@ class TestRedisConfigGetConnectionParams:
 
 class TestRedisConfigGetOrCreateClient:
     def test_returns_existing_client(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         fake_client = MagicMock()
@@ -587,7 +587,7 @@ class TestRedisConfigGetOrCreateClient:
         assert config._get_or_create_client() is fake_client
 
     def test_redis_import_error_returns_none(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
 
@@ -603,7 +603,7 @@ class TestRedisConfigGetOrCreateClient:
         assert result is None
 
     def test_connection_error_returns_none(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         mock_redis_mod = MagicMock()
@@ -624,7 +624,7 @@ class TestRedisConfigGetOrCreateClient:
 class TestRedisConfigHealthCheckEdgeCases:
     def test_health_check_no_client_available(self):
         """When _get_or_create_client returns None, health check should fail."""
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
 
@@ -634,7 +634,7 @@ class TestRedisConfigHealthCheckEdgeCases:
         assert latency is not None
 
     def test_health_check_timeout_error(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         mock_client = MagicMock()
@@ -644,7 +644,7 @@ class TestRedisConfigHealthCheckEdgeCases:
         assert is_healthy is False
 
     def test_health_check_os_error(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         mock_client = MagicMock()
@@ -654,7 +654,7 @@ class TestRedisConfigHealthCheckEdgeCases:
         assert is_healthy is False
 
     def test_listener_error_on_success_is_swallowed(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthListener
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthListener
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
@@ -669,7 +669,7 @@ class TestRedisConfigHealthCheckEdgeCases:
         assert is_healthy is True
 
     def test_listener_error_on_failure_is_swallowed(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthListener
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthListener
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
@@ -683,7 +683,7 @@ class TestRedisConfigHealthCheckEdgeCases:
         assert is_healthy is False
 
     def test_listener_error_on_state_change_is_swallowed(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthListener
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthListener
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
@@ -698,7 +698,7 @@ class TestRedisConfigHealthCheckEdgeCases:
         assert is_healthy is True
 
     def test_callback_error_is_swallowed(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
 
@@ -717,7 +717,7 @@ class TestRedisConfigHealthCheckEdgeCases:
 
 class TestRedisConfigAsyncHealthCheckEdgeCases:
     async def test_async_no_client(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         # No client set, no redis_client passed
@@ -725,7 +725,7 @@ class TestRedisConfigAsyncHealthCheckEdgeCases:
         assert is_healthy is False
 
     async def test_async_timeout_error(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         mock_client = AsyncMock()
@@ -736,7 +736,7 @@ class TestRedisConfigAsyncHealthCheckEdgeCases:
         assert latency is not None
 
     async def test_async_listener_error_on_success(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthListener
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthListener
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
@@ -752,7 +752,7 @@ class TestRedisConfigAsyncHealthCheckEdgeCases:
         assert is_healthy is True
 
     async def test_async_listener_error_on_failure(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthListener
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthListener
 
         config = RedisConfig()
         bad_listener = RedisHealthListener(name="bad")
@@ -771,7 +771,7 @@ class TestRedisConfigAsyncHealthCheckEdgeCases:
 class TestRedisConfigRecoveringState:
     def test_unhealthy_to_healthy_transition(self):
         """After going UNHEALTHY and getting one success, state goes to HEALTHY."""
-        from src.core.shared.redis_config import (
+        from enhanced_agent_bus._compat.redis_config import (
             RedisConfig,
             RedisHealthCheckConfig,
             RedisHealthState,
@@ -796,7 +796,7 @@ class TestRedisConfigRecoveringState:
 
     def test_multiple_failures_below_threshold(self):
         """Failures below threshold should not transition to UNHEALTHY."""
-        from src.core.shared.redis_config import (
+        from enhanced_agent_bus._compat.redis_config import (
             RedisConfig,
             RedisHealthCheckConfig,
             RedisHealthState,
@@ -813,7 +813,7 @@ class TestRedisConfigRecoveringState:
 
 class TestRedisConfigResetFromHealthy:
     def test_reset_triggers_state_change_notification(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthState
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthState
 
         config = RedisConfig()
         state_changes: list[tuple] = []
@@ -835,7 +835,7 @@ class TestRedisConfigResetFromHealthy:
         assert state_changes[0] == (RedisHealthState.HEALTHY, RedisHealthState.UNKNOWN)
 
     def test_reset_from_unknown_no_notification(self):
-        from src.core.shared.redis_config import RedisConfig, RedisHealthState
+        from enhanced_agent_bus._compat.redis_config import RedisConfig, RedisHealthState
 
         config = RedisConfig()
         state_changes: list[tuple] = []
@@ -851,7 +851,7 @@ class TestRedisConfigResetFromHealthy:
 
 class TestRedisConfigGetHealthStatsWithCheckTime:
     def test_stats_after_health_check(self):
-        from src.core.shared.redis_config import RedisConfig
+        from enhanced_agent_bus._compat.redis_config import RedisConfig
 
         config = RedisConfig()
         mock_client = MagicMock()
@@ -870,7 +870,8 @@ class TestRedisConfigGetHealthStatsWithCheckTime:
 class TestRedisConfigSingleton:
     def test_get_redis_config_singleton(self):
         import src.core.shared.redis_config as rc_mod
-        from src.core.shared.redis_config import get_redis_config
+
+        from enhanced_agent_bus._compat.redis_config import get_redis_config
 
         original = rc_mod._global_redis_config
         try:
@@ -882,7 +883,7 @@ class TestRedisConfigSingleton:
             rc_mod._global_redis_config = original
 
     def test_get_redis_url_convenience(self):
-        from src.core.shared.redis_config import get_redis_url
+        from enhanced_agent_bus._compat.redis_config import get_redis_url
 
         url = get_redis_url(db=0)
         assert isinstance(url, str)
@@ -891,7 +892,7 @@ class TestRedisConfigSingleton:
 
 class TestRedisHealthCheckConfigDefaults:
     def test_defaults(self):
-        from src.core.shared.redis_config import RedisHealthCheckConfig
+        from enhanced_agent_bus._compat.redis_config import RedisHealthCheckConfig
 
         cfg = RedisHealthCheckConfig()
         assert cfg.check_interval == 30.0
@@ -902,7 +903,7 @@ class TestRedisHealthCheckConfigDefaults:
 
 class TestRedisHealthStateRecovering:
     def test_recovering_value(self):
-        from src.core.shared.redis_config import RedisHealthState
+        from enhanced_agent_bus._compat.redis_config import RedisHealthState
 
         assert RedisHealthState.RECOVERING.value == "recovering"
 
@@ -916,7 +917,7 @@ class TestDetectNPlus1:
     """Cover the detect_n_plus_1 async context manager."""
 
     async def test_no_warning_under_threshold(self):
-        from src.core.shared.database.utils import detect_n_plus_1
+        from enhanced_agent_bus._compat.database.utils import detect_n_plus_1
 
         mock_session = AsyncMock()
         mock_session.bind = None
@@ -926,7 +927,7 @@ class TestDetectNPlus1:
 
     async def test_with_mock_engine(self):
         """Test with a mock engine that supports event.listen/remove."""
-        from src.core.shared.database.utils import detect_n_plus_1
+        from enhanced_agent_bus._compat.database.utils import detect_n_plus_1
 
         mock_session = AsyncMock()
         mock_engine = MagicMock()
@@ -944,7 +945,7 @@ class TestDetectNPlus1:
 
     async def test_with_engine_exceeding_threshold(self):
         """Simulate queries exceeding threshold to trigger warning."""
-        from src.core.shared.database.utils import detect_n_plus_1
+        from enhanced_agent_bus._compat.database.utils import detect_n_plus_1
 
         mock_session = AsyncMock()
         mock_engine = MagicMock()
@@ -968,7 +969,7 @@ class TestDetectNPlus1:
                     handler(None, None, f"SELECT * FROM table_{i}", None, None, False)
 
     async def test_no_engine_skips_listener(self):
-        from src.core.shared.database.utils import detect_n_plus_1
+        from enhanced_agent_bus._compat.database.utils import detect_n_plus_1
 
         mock_session = AsyncMock()
         mock_session.bind = None
@@ -982,7 +983,7 @@ class TestPaginateFunction:
     """Cover the paginate() helper function."""
 
     async def test_paginate_basic(self):
-        from src.core.shared.database.utils import Page, Pageable, paginate
+        from enhanced_agent_bus._compat.database.utils import Page, Pageable, paginate
 
         mock_session = AsyncMock()
 
@@ -1019,7 +1020,7 @@ class TestPaginateFunction:
         assert page.page_size == 10
 
     async def test_paginate_with_custom_count_stmt(self):
-        from src.core.shared.database.utils import Pageable, paginate
+        from enhanced_agent_bus._compat.database.utils import Pageable, paginate
 
         mock_session = AsyncMock()
 
@@ -1042,7 +1043,7 @@ class TestPaginateFunction:
         assert page.total_elements == 10
 
     async def test_paginate_with_sort(self):
-        from src.core.shared.database.utils import Pageable, paginate
+        from enhanced_agent_bus._compat.database.utils import Pageable, paginate
 
         mock_session = AsyncMock()
 
@@ -1085,7 +1086,7 @@ class TestPaginateFunction:
         mock_stmt.order_by.assert_called()
 
     async def test_paginate_with_asc_sort(self):
-        from src.core.shared.database.utils import Pageable, paginate
+        from enhanced_agent_bus._compat.database.utils import Pageable, paginate
 
         mock_session = AsyncMock()
 
@@ -1127,7 +1128,7 @@ class TestPaginateFunction:
 
     async def test_paginate_count_returns_none(self):
         """When count query returns None, total should be 0."""
-        from src.core.shared.database.utils import Pageable, paginate
+        from enhanced_agent_bus._compat.database.utils import Pageable, paginate
 
         mock_session = AsyncMock()
 
@@ -1160,7 +1161,7 @@ class TestPaginateFunction:
 
     async def test_paginate_sort_column_not_found(self):
         """When sort field not found on table, sorting is skipped."""
-        from src.core.shared.database.utils import Pageable, paginate
+        from enhanced_agent_bus._compat.database.utils import Pageable, paginate
 
         mock_session = AsyncMock()
 
@@ -1218,7 +1219,7 @@ class TestBaseRepositoryFindAllWithFilters:
 
     @pytest.fixture()
     def repo(self, session, model):
-        from src.core.shared.database.utils import BaseRepository
+        from enhanced_agent_bus._compat.database.utils import BaseRepository
 
         return BaseRepository(session, model)
 
@@ -1276,7 +1277,7 @@ class TestBulkOperationsAdditional:
         )
 
     async def test_bulk_update_custom_id_column(self, session, table):
-        from src.core.shared.database.utils import BulkOperations
+        from enhanced_agent_bus._compat.database.utils import BulkOperations
 
         exec_result = MagicMock()
         exec_result.rowcount = 1
@@ -1290,7 +1291,7 @@ class TestBulkOperationsAdditional:
         assert count == 2
 
     async def test_bulk_update_batching(self, session, table):
-        from src.core.shared.database.utils import BulkOperations
+        from enhanced_agent_bus._compat.database.utils import BulkOperations
 
         exec_result = MagicMock()
         exec_result.rowcount = 1
@@ -1304,7 +1305,8 @@ class TestBulkOperationsAdditional:
 
     async def test_bulk_insert_on_conflict_batching(self, session, table):
         from sqlalchemy.dialects.postgresql import insert as pg_insert
-        from src.core.shared.database.utils import BulkOperations
+
+        from enhanced_agent_bus._compat.database.utils import BulkOperations
 
         values = [{"tenant_id": f"t{i}", "name": f"n{i}"} for i in range(5)]
 
@@ -1320,7 +1322,7 @@ class TestBulkOperationsAdditional:
         assert session.execute.await_count == 3
 
     async def test_bulk_delete_custom_id_column(self, session, table):
-        from src.core.shared.database.utils import BulkOperations
+        from enhanced_agent_bus._compat.database.utils import BulkOperations
 
         exec_result = MagicMock()
         exec_result.rowcount = 2
@@ -1336,14 +1338,14 @@ class TestProjectionProtocol:
     """Cover the Projection protocol import."""
 
     def test_projection_protocol_importable(self):
-        from src.core.shared.database.utils import Projection
+        from enhanced_agent_bus._compat.database.utils import Projection
 
         assert Projection is not None
 
     def test_projection_conformance(self):
         from dataclasses import dataclass
 
-        from src.core.shared.database.utils import Projection
+        from enhanced_agent_bus._compat.database.utils import Projection
 
         @dataclass
         class MyProjection:
@@ -1356,7 +1358,7 @@ class TestProjectionProtocol:
 
 class TestPageEdgeCases:
     def test_page_is_last_with_zero_elements(self):
-        from src.core.shared.database.utils import Page
+        from enhanced_agent_bus._compat.database.utils import Page
 
         p = Page(content=[], total_elements=0, page_number=0, page_size=10)
         assert p.is_last is True
@@ -1366,7 +1368,7 @@ class TestPageEdgeCases:
         assert p.total_pages == 0
 
     def test_page_single_element_single_page(self):
-        from src.core.shared.database.utils import Page
+        from enhanced_agent_bus._compat.database.utils import Page
 
         p = Page(content=["only"], total_elements=1, page_number=0, page_size=10)
         assert p.total_pages == 1
@@ -1377,7 +1379,7 @@ class TestPageEdgeCases:
 
 class TestPageableEdgeCases:
     def test_with_sort_chaining(self):
-        from src.core.shared.database.utils import Pageable
+        from enhanced_agent_bus._compat.database.utils import Pageable
 
         p = Pageable()
         p3 = p.with_sort("name", "asc")
@@ -1387,7 +1389,7 @@ class TestPageableEdgeCases:
         assert p.sort == []
 
     def test_next_page_preserves_sort(self):
-        from src.core.shared.database.utils import Pageable
+        from enhanced_agent_bus._compat.database.utils import Pageable
 
         p = Pageable(page=0, size=10, sort=[("id", "asc")])
         n = p.next_page()
@@ -1395,7 +1397,7 @@ class TestPageableEdgeCases:
         assert n.page == 1
 
     def test_previous_page_preserves_sort(self):
-        from src.core.shared.database.utils import Pageable
+        from enhanced_agent_bus._compat.database.utils import Pageable
 
         p = Pageable(page=3, size=10, sort=[("id", "desc")])
         prev = p.previous_page()

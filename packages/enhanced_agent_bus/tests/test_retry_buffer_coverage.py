@@ -11,7 +11,8 @@ from collections import deque
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # Block Rust extension before any imports
 _test_with_rust = os.environ.get("TEST_WITH_RUST", "0") == "1"

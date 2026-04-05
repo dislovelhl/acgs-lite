@@ -12,7 +12,7 @@ import json
 from hashlib import sha256
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -27,7 +27,7 @@ try:
     from enhanced_agent_bus.core_models import MessageType
     from enhanced_agent_bus.models import CONSTITUTIONAL_HASH, AgentMessage
 except ImportError:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     AgentMessage = None  # type: ignore[misc, assignment]
     MessageType = None  # type: ignore[misc, assignment]

@@ -2,7 +2,7 @@
 """Optional cache warming integration for FastAPI startup."""
 
 try:
-    from src.core.shared.cache_warming import (
+    from enhanced_agent_bus._compat.cache_warming import (
         CacheWarmer,
         WarmingConfig,
         WarmingProgress,

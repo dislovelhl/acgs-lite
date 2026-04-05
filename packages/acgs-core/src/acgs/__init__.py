@@ -11,13 +11,14 @@ server (such as OPA) is required.
 
 from __future__ import annotations
 
-from ._version import VERSION as __version__
 from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import Constitution, Rule, Severity
 from acgs_lite.engine import GovernanceEngine, ValidationResult, Violation
 from acgs_lite.errors import ConstitutionalViolationError
 from acgs_lite.fail_closed import fail_closed
 from acgs_lite.maci import MACIEnforcer, MACIRole
+
+from ._version import VERSION as __version__
 
 __all__ = [
     "AuditEntry",
@@ -31,8 +32,8 @@ __all__ = [
     "Severity",
     "ValidationResult",
     "Violation",
-    "fail_closed",
     "__version__",
+    "fail_closed",
 ]
 
 

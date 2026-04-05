@@ -12,10 +12,10 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 
-from src.core.shared.errors.exceptions import ACGSBaseError
+from enhanced_agent_bus._compat.errors import ACGSBaseError
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
     )

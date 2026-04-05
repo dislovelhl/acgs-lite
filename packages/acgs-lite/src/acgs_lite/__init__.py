@@ -30,12 +30,12 @@ from acgs_lite.constitution import (
     Severity,
 )
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
-from acgs_lite.fail_closed import fail_closed
 from acgs_lite.errors import (
     ConstitutionalViolationError,
     GovernanceError,
     MACIViolationError,
 )
+from acgs_lite.fail_closed import fail_closed as fail_closed
 from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole

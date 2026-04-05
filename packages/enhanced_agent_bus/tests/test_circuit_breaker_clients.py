@@ -20,10 +20,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-# Import centralized constitutional hash
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-
 import enhanced_agent_bus.cb_opa_client as cb_opa_client_module
+
+# Import centralized constitutional hash
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 try:
     AIKAFKA_AVAILABLE = importlib.util.find_spec("aiokafka") is not None

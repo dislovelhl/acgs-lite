@@ -35,7 +35,7 @@ class TestProtocolConformance:
     """Verify that concrete classes can satisfy Protocol interfaces."""
 
     def test_supports_cache_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsCache
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsCache
 
         class MyCache:
             def get(self, key: str):
@@ -49,7 +49,7 @@ class TestProtocolConformance:
         cache.set("k", "v", ttl=60)
 
     def test_supports_validation_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsValidation
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsValidation
 
         class MyValidator:
             def validate(self) -> bool:
@@ -59,7 +59,7 @@ class TestProtocolConformance:
         assert v.validate() is True
 
     async def test_supports_authentication_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsAuthentication
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsAuthentication
 
         class MyAuth:
             async def authenticate(self) -> bool:
@@ -69,7 +69,7 @@ class TestProtocolConformance:
         assert await auth.authenticate() is True
 
     def test_supports_serialization_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsSerialization
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsSerialization
 
         class MySerializable:
             def __init__(self, data):
@@ -89,7 +89,7 @@ class TestProtocolConformance:
         assert restored.to_dict() == {"key": "value"}
 
     def test_supports_logging_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsLogging
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsLogging
 
         class MyLogger:
             def __init__(self):
@@ -115,7 +115,7 @@ class TestProtocolConformance:
         assert len(log.messages) == 4  # type: ignore[attr-defined]
 
     async def test_supports_middleware_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsMiddleware
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsMiddleware
 
         class MyMiddleware:
             async def __call__(self, scope, receive, send):
@@ -125,7 +125,7 @@ class TestProtocolConformance:
         await mw({"type": "http"}, lambda: None, lambda x: None)
 
     async def test_supports_health_check_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsHealthCheck
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsHealthCheck
 
         class MyHealth:
             async def health_check(self):
@@ -136,7 +136,7 @@ class TestProtocolConformance:
         assert result["status"] == "ok"
 
     def test_supports_circuit_breaker_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsCircuitBreaker
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsCircuitBreaker
 
         class MyCB:
             def __init__(self):
@@ -159,7 +159,7 @@ class TestProtocolConformance:
         assert cb.is_open() is False
 
     async def test_supports_audit_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsAudit
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsAudit
 
         class MyAudit:
             async def log_event(self, event_type, details, correlation_id=None):
@@ -169,7 +169,7 @@ class TestProtocolConformance:
         await a.log_event("test", {"detail": 1}, correlation_id="abc")
 
     async def test_agent_bus_protocol(self):
-        from src.core.shared.types.protocol_types import AgentBus
+        from enhanced_agent_bus._compat.types.protocol_types import AgentBus
 
         class MyBus:
             async def send_message(self, message):
@@ -183,7 +183,7 @@ class TestProtocolConformance:
         assert await bus.receive_message(timeout=0.5) is None
 
     async def test_governance_service_protocol(self):
-        from src.core.shared.types.protocol_types import GovernanceService
+        from enhanced_agent_bus._compat.types.protocol_types import GovernanceService
 
         class MyGov:
             async def evaluate_policy(self, policy_id, context):
@@ -197,7 +197,7 @@ class TestProtocolConformance:
         assert await g.register_policy({}) is True
 
     def test_supports_registry_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsRegistry
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsRegistry
 
         class MyRegistry:
             def __init__(self):
@@ -219,7 +219,7 @@ class TestProtocolConformance:
         assert r.get("k") is None
 
     async def test_supports_execution_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsExecution
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsExecution
 
         class MyExec:
             async def execute(self, *args, **kwargs):
@@ -229,7 +229,7 @@ class TestProtocolConformance:
         assert (await e.execute("a", b="c"))["done"] is True
 
     async def test_supports_compensation_protocol(self):
-        from src.core.shared.types.protocol_types import SupportsCompensation
+        from enhanced_agent_bus._compat.types.protocol_types import SupportsCompensation
 
         class MyComp:
             async def execute(self, context):
@@ -243,7 +243,7 @@ class TestProtocolConformance:
         assert (await c.compensate({}))["step"] == "rollback"
 
     def test_type_aliases_exist(self):
-        from src.core.shared.types.protocol_types import (
+        from enhanced_agent_bus._compat.types.protocol_types import (
             ArgsType,
             AsyncFunc,
             DecoratorFunc,

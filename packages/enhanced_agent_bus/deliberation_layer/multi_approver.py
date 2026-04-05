@@ -33,9 +33,9 @@ from enhanced_agent_bus.interfaces import ApprovalsValidatorProtocol
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 logger = get_logger(__name__)
 try:
     from acgs2_perf import fast_hash

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import urlencode
 
-from src.core.shared.json_utils import dumps as json_dumps
+from enhanced_agent_bus._compat.json_utils import dumps as json_dumps
 
 from .base import CONSTITUTIONAL_HASH, ACLAdapter, AdapterConfig, AdapterResult
 

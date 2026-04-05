@@ -23,7 +23,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Security",
     "Topic :: Office/Business :: Financial",
@@ -49,13 +48,11 @@ google = ["google-genai>=1.0"]
 llamaindex = ["llama-index-core>=0.10"]
 autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
 mcp = ["mcp>=1.0"]
-crewai = ["crewai>=0.30", "httpx>=0.27"]
+crewai = ["crewai>=0.30"]
 gitlab = ["httpx>=0.27", "starlette>=0.37"]
 google-cloud = ["google-cloud-logging>=3.0"]
-llguidance = ["llguidance>=1.0"]
 pdf = ["fpdf2>=2.7"]
-server = ["fastapi>=0.109", "uvicorn>=0.27"]
-all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,gitlab,google-cloud,llguidance,pdf,server]"]
+all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,gitlab,google-cloud,pdf]"]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -71,7 +68,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://acgs.ai"
-Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/acgs-lite"
+Documentation = "https://acgs.ai"
 Repository = "https://github.com/acgs2_admin/acgs"
 Issues = "https://github.com/acgs2_admin/acgs/issues"
 Changelog = "https://github.com/acgs2_admin/acgs/releases"
@@ -89,9 +86,9 @@ exclude = ["examples", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 ignore = [
-    "E501",   # line too long — handled at review time
-    "E402",   # module-level import not at top — intentional for conditional/lazy imports
-    "SIM102", # nested if — readability preference in compliance modules
+    "E501",
+    "E402",
+    "SIM102",
 ]
 
 [tool.ruff.lint.per-file-ignores]

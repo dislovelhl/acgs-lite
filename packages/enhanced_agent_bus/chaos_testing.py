@@ -26,7 +26,7 @@ from functools import wraps
 from typing import NoReturn
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -39,11 +39,11 @@ MAX_DURATION_S = 300.0  # 5 minutes absolute max
 
 # Import centralized constitutional hash from shared module
 try:
-    from src.core.shared.circuit_breaker import get_circuit_breaker
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.circuit_breaker import get_circuit_breaker
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     # Fallback for standalone usage
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
     get_circuit_breaker = None
 

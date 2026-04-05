@@ -167,7 +167,7 @@ class TestAssessImpact:
         assert isinstance(result, ImpactFeatures)
         assert result.risk_score >= 0.0
         # Confidence should be fallback value
-        from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+        from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
         assert result.confidence_level == IMPACT_SCORER_CONFIG.confidence_fallback
 

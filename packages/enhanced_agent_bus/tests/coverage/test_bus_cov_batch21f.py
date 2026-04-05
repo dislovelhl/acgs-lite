@@ -720,7 +720,7 @@ class TestBundleManifest:
         assert m.verify_cosign_signature("digest", "00" * 32) is False
 
     def test_invalid_constitutional_hash_raises(self):
-        from src.core.shared.errors.exceptions import ConstitutionalViolationError
+        from enhanced_agent_bus._compat.errors import ConstitutionalViolationError
 
         with pytest.raises(ConstitutionalViolationError):
             BundleManifest(

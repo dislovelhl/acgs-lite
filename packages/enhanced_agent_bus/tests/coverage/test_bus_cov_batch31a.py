@@ -781,8 +781,7 @@ class TestBuildSSLContext:
                 client._build_ssl_context_if_needed()
 
     def test_ssl_disabled_prod_alias_raises(self):
-        from src.core.shared.errors.exceptions import ConfigurationError
-
+        from enhanced_agent_bus._compat.errors import ConfigurationError
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
         client = OPAClientCore(opa_url="https://opa.example.com", ssl_verify=False)

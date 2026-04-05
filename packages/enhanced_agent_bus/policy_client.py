@@ -8,7 +8,7 @@ from collections import OrderedDict
 import httpx
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -22,9 +22,9 @@ except (ImportError, ValueError):
     from validators import ValidationResult  # type: ignore[no-redef]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[no-redef]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[no-redef]
 
 logger = get_logger(__name__)
 # Default maximum cache size to prevent unbounded memory growth

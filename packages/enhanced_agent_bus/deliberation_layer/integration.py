@@ -117,7 +117,7 @@ def _truncate_content_for_hotl(content: object, limit: int = 500) -> str:
 
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONList,
     )
@@ -579,9 +579,9 @@ class DeliberationLayer(OPAGuardMixin):
 
         # Check medium-risk tier before committing to full deliberation
         if available("hotl_manager"):
-            from src.core.shared.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
+            from enhanced_agent_bus._compat.constants import RISK_TIER_HIGH_MIN, RISK_TIER_LOW_MAX
 
-            import_module(require("hotl_manager"))  # verify hotl_manager is available
+            import_module(require("hotl_manager"))  # verify importability
             if RISK_TIER_LOW_MAX <= impact_score < RISK_TIER_HIGH_MIN:
                 return await self._process_medium_risk(message, routing_decision, impact_score)
 

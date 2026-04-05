@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import pytest
-
-from acgs_lite.audit import AuditEntry
-
 from acgs.audit_memory import InMemoryAuditStore
 from acgs.audit_sqlite import SQLiteAuditStore
 from acgs.audit_store import AuditStore
+
+from acgs_lite.audit import AuditEntry
 
 
 def _make_entry(i: int, agent_id: str = "agent-1") -> AuditEntry:

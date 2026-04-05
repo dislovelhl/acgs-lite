@@ -928,7 +928,7 @@ class TestImpactScorerUpdateModel:
         scorer = self._make_scorer()
 
         # Pre-fill training samples just below the retrain threshold
-        from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+        from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
         min_samples = IMPACT_SCORER_CONFIG.min_training_samples
         retrain_freq = IMPACT_SCORER_CONFIG.retrain_frequency
@@ -992,7 +992,7 @@ class TestImpactScorerRetrainModel:
         mock_classifier = MagicMock()
         scorer.impact_classifier = mock_classifier
 
-        from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+        from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
         min_samples = IMPACT_SCORER_CONFIG.min_training_samples
 
@@ -1024,7 +1024,7 @@ class TestImpactScorerRetrainModel:
         mock_classifier = MagicMock()
         scorer.impact_classifier = mock_classifier
 
-        from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+        from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
         min_samples = IMPACT_SCORER_CONFIG.min_training_samples
 
@@ -1058,7 +1058,7 @@ class TestImpactScorerRetrainModel:
         mock_np.array.side_effect = RuntimeError("bad data")
         mock_np.mean.return_value = 0.15
 
-        from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
+        from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
 
         min_samples = IMPACT_SCORER_CONFIG.min_training_samples
         for i in range(min_samples):

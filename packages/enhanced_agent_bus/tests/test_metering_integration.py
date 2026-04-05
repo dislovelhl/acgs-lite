@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import metering integration module
 try:
-    from src.core.shared.acgs_logging import get_logger
+    from enhanced_agent_bus._compat.acgs_logging import get_logger
 except ImportError:
     try:
         from shared.acgs_logging import get_logger

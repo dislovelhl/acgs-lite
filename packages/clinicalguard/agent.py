@@ -160,7 +160,7 @@ class ClinicalGuardApp:
         cls,
         constitution_path: str | Path | None = None,
         audit_log_path: str | Path | None = None,
-    ) -> "ClinicalGuardApp":
+    ) -> ClinicalGuardApp:
         """Factory: load constitution from YAML, restore audit log from file."""
         if constitution_path is None:
             constitution_path = Path(__file__).parent / "constitution" / "healthcare_v1.yaml"
@@ -181,7 +181,7 @@ class ClinicalGuardApp:
                 try:
                     _restore_audit_log(audit_log, audit_log_path)
                     logger.info("Restored %d audit entries from %s", len(audit_log), audit_log_path)
-                except Exception as exc:
+                except (OSError, ValueError, KeyError) as exc:
                     logger.warning("Could not restore audit log: %s", exc)
 
         return cls(constitution=constitution, audit_log=audit_log, audit_log_path=audit_log_path)
@@ -191,7 +191,7 @@ class ClinicalGuardApp:
         if self.audit_log_path:
             try:
                 audit_log.export_json(self.audit_log_path)
-            except Exception as exc:
+            except OSError as exc:
                 logger.warning("Audit log persistence failed: %s", type(exc).__name__)
 
     def _check_auth(self, request: Request) -> bool:
@@ -343,7 +343,7 @@ class ClinicalGuardApp:
 
         try:
             result_data = await self._dispatch(skill_name, skill_input)
-        except Exception as exc:
+        except Exception:
             logger.exception("Skill dispatch error for skill=%r", skill_name)
             # Return JSON-RPC error — never fake a successful completion
             return JSONResponse(

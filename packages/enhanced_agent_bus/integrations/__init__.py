@@ -35,7 +35,7 @@ import os
 
 # Constitutional hash for governance validation
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = os.environ.get("CONSTITUTIONAL_HASH", CONSTITUTIONAL_HASH)
 

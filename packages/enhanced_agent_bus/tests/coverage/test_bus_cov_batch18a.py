@@ -19,8 +19,9 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from pydantic import ValidationError as PydanticValidationError
-from src.core.shared.constants import MACIRole
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+
+from enhanced_agent_bus._compat.constants import MACIRole
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 # ---------------------------------------------------------------------------
 # mcp.client

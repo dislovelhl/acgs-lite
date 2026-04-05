@@ -119,7 +119,7 @@ class TestPSVVerusPolicy:
 
     async def test_evaluate_proven_returns_allow(self, policy, mock_generator):
         """When verification status is PROVEN, allow should be True."""
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         verified = MagicMock()
         verified.verification_status = VerificationStatus.PROVEN
@@ -140,7 +140,7 @@ class TestPSVVerusPolicy:
 
     async def test_evaluate_failed_returns_deny(self, policy, mock_generator):
         """When verification status is not PROVEN, allow should be False."""
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         verified = MagicMock()
         verified.verification_status = VerificationStatus.FAILED
@@ -157,7 +157,7 @@ class TestPSVVerusPolicy:
 
     async def test_evaluate_unverified_returns_deny(self, policy, mock_generator):
         """When verification status is UNVERIFIED, allow should be False."""
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         verified = MagicMock()
         verified.verification_status = VerificationStatus.UNVERIFIED
@@ -216,7 +216,7 @@ class TestPSVVerusPolicy:
 
     async def test_evaluate_missing_user_defaults(self, policy, mock_generator):
         """Missing user in input data defaults to 'unknown'."""
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         verified = MagicMock()
         verified.verification_status = VerificationStatus.PROVEN
@@ -232,7 +232,7 @@ class TestPSVVerusPolicy:
 
     async def test_evaluate_missing_action_defaults(self, policy, mock_generator):
         """Missing action in input data defaults to 'unknown'."""
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         verified = MagicMock()
         verified.verification_status = VerificationStatus.PROVEN
@@ -441,7 +441,7 @@ class TestAsyncCircuitBreaker:
     """Tests for _AsyncCircuitBreaker."""
 
     def _make_cb(self, **kwargs):
-        from src.core.shared.http_client import _AsyncCircuitBreaker
+        from enhanced_agent_bus._compat.http_client import _AsyncCircuitBreaker
 
         return _AsyncCircuitBreaker(**kwargs)
 
@@ -514,7 +514,7 @@ class TestAsyncCircuitBreaker:
 
     def test_now_fallback(self):
         """_now uses time.monotonic when no event loop."""
-        from src.core.shared.http_client import _AsyncCircuitBreaker
+        from enhanced_agent_bus._compat.http_client import _AsyncCircuitBreaker
 
         # Outside async context, should use fallback
         t = _AsyncCircuitBreaker._now()
@@ -526,7 +526,7 @@ class TestHttpClient:
     """Tests for src.core.shared.http_client.HttpClient."""
 
     def _make_client(self, **kwargs):
-        from src.core.shared.http_client import HttpClient
+        from enhanced_agent_bus._compat.http_client import HttpClient
 
         return HttpClient(**kwargs)
 
@@ -620,7 +620,7 @@ class TestHttpClient:
 
     async def test_do_request_not_initialized_raises(self):
         """_do_request raises ServiceUnavailableError when client is None."""
-        from src.core.shared.errors.exceptions import ServiceUnavailableError
+        from enhanced_agent_bus._compat.errors import ServiceUnavailableError
 
         client = self._make_client()
         # Don't start the client
@@ -735,7 +735,7 @@ class TestN1Detector:
     """Tests for N1Detector context manager and query tracking."""
 
     def _make_detector(self):
-        from src.core.shared.database.n1_middleware import N1Detector
+        from enhanced_agent_bus._compat.database.n1_middleware import N1Detector
 
         return N1Detector()
 
@@ -766,7 +766,7 @@ class TestN1Detector:
             assert len(d.queries) == 2
 
     def test_record_query_outside_context_ignored(self):
-        from src.core.shared.database.n1_middleware import N1Detector
+        from enhanced_agent_bus._compat.database.n1_middleware import N1Detector
 
         N1Detector.record_query("SELECT 1", 0.1)
         # Should not raise or track
@@ -816,7 +816,7 @@ class TestN1Detector:
 
     def test_record_query_with_none_queries_list(self):
         """When _queries_executed is None, record_query creates a new list."""
-        from src.core.shared.database.n1_middleware import (
+        from enhanced_agent_bus._compat.database.n1_middleware import (
             N1Detector,
             _n1_detection_enabled,
             _queries_executed,
@@ -845,14 +845,14 @@ class TestN1DetectionMiddleware:
         return FastAPI()
 
     def test_setup_n1_detection(self):
-        from src.core.shared.database.n1_middleware import setup_n1_detection
+        from enhanced_agent_bus._compat.database.n1_middleware import setup_n1_detection
 
         app = self._make_app()
         setup_n1_detection(app, threshold=20, enabled=True)
         # Middleware should be added (no assertion on internals, just no crash)
 
     def test_setup_n1_detection_disabled(self):
-        from src.core.shared.database.n1_middleware import setup_n1_detection
+        from enhanced_agent_bus._compat.database.n1_middleware import setup_n1_detection
 
         app = self._make_app()
         setup_n1_detection(app, threshold=20, enabled=False)
@@ -860,7 +860,8 @@ class TestN1DetectionMiddleware:
     async def test_middleware_disabled_passes_through(self):
         from fastapi import FastAPI
         from httpx import ASGITransport, AsyncClient
-        from src.core.shared.database.n1_middleware import N1DetectionMiddleware
+
+        from enhanced_agent_bus._compat.database.n1_middleware import N1DetectionMiddleware
 
         app = FastAPI()
         app.add_middleware(N1DetectionMiddleware, enabled=False)
@@ -878,7 +879,8 @@ class TestN1DetectionMiddleware:
     async def test_middleware_enabled_adds_headers(self):
         from fastapi import FastAPI
         from httpx import ASGITransport, AsyncClient
-        from src.core.shared.database.n1_middleware import N1DetectionMiddleware
+
+        from enhanced_agent_bus._compat.database.n1_middleware import N1DetectionMiddleware
 
         app = FastAPI()
         app.add_middleware(N1DetectionMiddleware, threshold=10, enabled=True, add_headers=True)
@@ -900,7 +902,7 @@ class TestSQLAlchemyEventHandlers:
     """Tests for before_cursor_execute and after_cursor_execute."""
 
     async def test_before_cursor_execute_sets_start_time(self):
-        from src.core.shared.database.n1_middleware import before_cursor_execute
+        from enhanced_agent_bus._compat.database.n1_middleware import before_cursor_execute
 
         context: dict = {}
         await before_cursor_execute(None, None, "SELECT 1", (), context, False)
@@ -908,7 +910,7 @@ class TestSQLAlchemyEventHandlers:
         assert isinstance(context["_query_start_time"], float)
 
     async def test_after_cursor_execute_records_query(self):
-        from src.core.shared.database.n1_middleware import (
+        from enhanced_agent_bus._compat.database.n1_middleware import (
             N1Detector,
             after_cursor_execute,
             before_cursor_execute,
@@ -923,14 +925,14 @@ class TestSQLAlchemyEventHandlers:
             assert detector.query_count == 1
 
     async def test_after_cursor_execute_no_start_time(self):
-        from src.core.shared.database.n1_middleware import after_cursor_execute
+        from enhanced_agent_bus._compat.database.n1_middleware import after_cursor_execute
 
         context: dict = {}
         # No start time set, should not raise
         await after_cursor_execute(None, None, "SELECT 1", (), context, False)
 
     def test_attach_query_listeners(self):
-        from src.core.shared.database.n1_middleware import attach_query_listeners
+        from enhanced_agent_bus._compat.database.n1_middleware import attach_query_listeners
 
         mock_engine = MagicMock()
         mock_event = MagicMock()

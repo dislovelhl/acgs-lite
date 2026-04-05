@@ -12,7 +12,7 @@ from contextlib import AbstractContextManager, nullcontext
 from typing import Literal, cast
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )
@@ -53,7 +53,7 @@ MCP_ENABLED: bool = _flags.get("MCP_ENABLED", False)
 
 # Direct canonical imports with fallbacks
 try:
-    from src.core.shared.circuit_breaker import (
+    from enhanced_agent_bus._compat.circuit_breaker import (
         CircuitBreakerConfig,
         get_circuit_breaker,
     )
@@ -179,7 +179,7 @@ except ImportError:
     FAST_HASH_AVAILABLE = False
 
 try:
-    from src.core.shared.agent_workflow_metrics import (
+    from enhanced_agent_bus._compat.agent_workflow_metrics import (
         get_agent_workflow_metrics_collector,
     )
 

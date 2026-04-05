@@ -7,10 +7,10 @@ Isolates complex initialization and cross-layer instantiation logic.
 from dataclasses import dataclass
 from typing import Literal
 
-from src.core.shared.security.pqc_crypto import PQCCryptoService
+from enhanced_agent_bus._compat.security.pqc_crypto import PQCCryptoService
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

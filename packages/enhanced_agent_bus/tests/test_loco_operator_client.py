@@ -10,8 +10,8 @@ import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
 
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 from enhanced_agent_bus.deliberation_layer.loco_operator_client import (
     GovernanceScoringResult,
     HealthCheckResult,

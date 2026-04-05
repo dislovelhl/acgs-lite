@@ -17,7 +17,8 @@ from typing import Any, Optional
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from src.core.shared.types import JSONDict
+
+from enhanced_agent_bus._compat.types import JSONDict
 
 # Import workflow components
 try:

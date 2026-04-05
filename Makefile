@@ -75,7 +75,7 @@ setup: lock-sync
 	else \
 		pre-commit install; \
 	fi
-	cd packages/propriety-ai && npm install
+	cd packages/propriety-ai && if [ "$${CI:-}" = "true" ]; then npm ci; else npm install; fi
 
 lock-sync:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS)

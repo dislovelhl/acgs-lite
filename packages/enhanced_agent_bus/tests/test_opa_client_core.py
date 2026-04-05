@@ -689,7 +689,7 @@ class TestValidateConstitutional:
             assert result.is_valid is False
 
     async def test_validation_error(self, client):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         with patch.object(
             client,

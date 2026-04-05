@@ -9,7 +9,8 @@ and the new DependencyRegistry.
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.core.shared.utilities import DependencyRegistry, FeatureFlag
+
+from enhanced_agent_bus._compat.utilities import DependencyRegistry, FeatureFlag
 
 
 @pytest.fixture(autouse=True)
