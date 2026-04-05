@@ -39,8 +39,6 @@ from acgs_lite.fail_closed import fail_closed as fail_closed
 from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
-from acgs_lite.scoring import ConstitutionalImpactScorer, RuleBasedScorer, score_impact
-from acgs_lite.z3_verify import Z3ConstraintVerifier, Z3VerifyResult, Z3_AVAILABLE, Z3_RISK_THRESHOLD
 from acgs_lite.openshell import (
     ActionContext,
     ActionEnvelope,
@@ -76,6 +74,13 @@ from acgs_lite.openshell import (
     SQLiteGovernanceStateBackend,
     create_openshell_governance_app,
     create_openshell_governance_router,
+)
+from acgs_lite.scoring import ConstitutionalImpactScorer, RuleBasedScorer, score_impact
+from acgs_lite.z3_verify import (
+    Z3_AVAILABLE,
+    Z3_RISK_THRESHOLD,
+    Z3ConstraintVerifier,
+    Z3VerifyResult,
 )
 
 __version__ = VERSION

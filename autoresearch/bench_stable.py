@@ -113,7 +113,7 @@ def _cascade_check(t1: dict[str, float], tie_band: float = _DEFAULT_TIE_BAND) ->
             _dir = str(Path(__file__).parent)
             if _dir not in sys.path:
                 sys.path.insert(0, _dir)
-            from results_utils import best_kept_row, load_rows  # noqa: PLC0415
+            from results_utils import best_kept_row, load_rows
             rows = load_rows(_RESULTS_TSV)
             best = best_kept_row(rows, "hot-path")
             if best:
@@ -344,10 +344,10 @@ Examples:
     if cascade_aborted:
         print("\n→ CASCADE ABORTED — no need to log_run this result.")
     else:
-        print(f"\nLog with:")
+        print("\nLog with:")
         print(f'  python3 autoresearch/log_run.py {args.out} \\')
-        print(f'    --commit "$(git rev-parse --short HEAD)" \\')
-        print(f'    --description "your hypothesis"')
+        print('    --commit "$(git rev-parse --short HEAD)" \\')
+        print('    --description "your hypothesis"')
 
     return 0
 

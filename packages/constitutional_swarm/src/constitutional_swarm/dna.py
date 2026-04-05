@@ -24,8 +24,8 @@ from acgs_lite import (
     MACIRole,
     Rule,
 )
-from acgs_lite.scoring import ConstitutionalImpactScorer, _risk_level
-from acgs_lite.z3_verify import Z3ConstraintVerifier, Z3VerifyResult, Z3_RISK_THRESHOLD
+from acgs_lite.scoring import ConstitutionalImpactScorer
+from acgs_lite.z3_verify import Z3_RISK_THRESHOLD, Z3ConstraintVerifier, Z3VerifyResult
 
 F = TypeVar("F", bound=Callable[..., Any])
 

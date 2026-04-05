@@ -16,7 +16,6 @@ sys.path.insert(0, str(REPO_ROOT / "packages" / "acgs-lite" / "src"))
 
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
-from acgs_lite.engine.types import ValidationResult
 from acgs_lite.errors import ConstitutionalViolationError
 
 CONSTITUTION_FILE = Path(__file__).parent / "constitution.yaml"

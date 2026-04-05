@@ -20,7 +20,6 @@ from pathlib import Path
 
 from results_utils import (
     KEPT_STATUSES,
-    ceiling_detected,
     ceiling_tightness,
     extract_family,
     infer_scope,
@@ -105,7 +104,7 @@ def print_grid(
         print(row_str)
 
     print(sep)
-    print(f"  Status key: I=improved  N=neutral-kept  B=baseline  D=discard")
+    print("  Status key: I=improved  N=neutral-kept  B=baseline  D=discard")
 
     # Ceiling warnings per scope — differentiate tight vs loose
     print()
@@ -119,7 +118,7 @@ def print_grid(
                     print(f"     Pivot now: try '{best_family}' family.")
             else:
                 print(f"  ⚠  CEILING in {scope} (LOOSE): composite spread ≥ 0.0001 — noise may mask signal.")
-                print(f"     Run bench_stable.py --trials 7 to verify before pivoting.")
+                print("     Run bench_stable.py --trials 7 to verify before pivoting.")
                 if best_family:
                     print(f"     If ceiling confirmed: try '{best_family}' family.")
     print()

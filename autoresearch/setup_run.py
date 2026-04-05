@@ -30,7 +30,7 @@ _GIT_BIN = shutil.which("git") or "git"
 
 
 def _git(*args: str) -> str:
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [_GIT_BIN, *args],
         capture_output=True,
         text=True,
@@ -40,7 +40,7 @@ def _git(*args: str) -> str:
 
 
 def _git_check(*args: str) -> bool:
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         [_GIT_BIN, *args],
         capture_output=True,
         text=True,
@@ -109,14 +109,14 @@ def main() -> int:
     elif _git_check("show-ref", "--verify", "--quiet", f"refs/heads/{branch_name}"):
         print(f"Branch exists — switching: git checkout {branch_name}")
         if not args.dry_run:
-            subprocess.run([_GIT_BIN, "checkout", branch_name], check=True)  # noqa: S603
+            subprocess.run([_GIT_BIN, "checkout", branch_name], check=True)
     else:
         if not _git_check("rev-parse", "--verify", args.base):
             print(f"ERROR: base branch not found: {args.base}", file=sys.stderr)
             return 1
         print(f"Creating branch: git checkout -b {branch_name} {args.base}")
         if not args.dry_run:
-            subprocess.run(  # noqa: S603
+            subprocess.run(
                 [_GIT_BIN, "checkout", "-b", branch_name, args.base],
                 check=True,
             )

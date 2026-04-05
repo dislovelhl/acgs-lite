@@ -476,8 +476,8 @@ class TestBenchStable:
 
         # Use timeout=0 to force immediate expiry on any subprocess
         # We patch subprocess.run to raise TimeoutExpired
-        import unittest.mock as mock
         import subprocess as sp
+        import unittest.mock as mock
         with mock.patch("bench_stable.subprocess.run",
                         side_effect=sp.TimeoutExpired(cmd="python3", timeout=0)):
             result = bs._run_trial(1, quiet=True, timeout=0)
