@@ -173,7 +173,7 @@ embedding; contact `hello@acgs.ai`.
 
 - [Homepage](https://acgs.ai)
 - [PyPI](https://pypi.org/project/acgs-lite/)
-- [GitHub](https://github.com/dislovelhl/acgs-lite)
-- [Issues](https://github.com/dislovelhl/acgs-lite/issues)
+- [GitHub](https://github.com/dislovelhl/acgs)
+- [Issues](https://github.com/dislovelhl/acgs/issues)
 
 Constitutional Hash: `608508a9bd224290`

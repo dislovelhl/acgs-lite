@@ -71,9 +71,9 @@ dev = [
 [project.urls]
 Homepage = "https://acgs.ai"
 Documentation = "https://acgs.ai"
-Repository = "https://github.com/dislovelhl/acgs-lite"
-Issues = "https://github.com/dislovelhl/acgs-lite/issues"
-Changelog = "https://github.com/dislovelhl/acgs-lite/releases"
+Repository = "https://github.com/dislovelhl/acgs"
+Issues = "https://github.com/dislovelhl/acgs/issues"
+Changelog = "https://github.com/dislovelhl/acgs/releases"
 PyPI = "https://pypi.org/project/acgs-lite/"
 
 [tool.setuptools.packages.find]
