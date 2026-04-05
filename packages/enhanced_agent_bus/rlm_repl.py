@@ -325,7 +325,14 @@ class RLMREPLEnvironment:
                     compiled_eval = compile(code, "<rlm-repl>", "eval")
                 except SyntaxError:
                     compiled_exec = compile(code, "<rlm-repl>", "exec")
-                    exec(compiled_exec, self._namespace, self._namespace)
+                    # Security: exec is intentional here. All user input passes through
+                    # _validate_code() first, which:
+                    #   1. Rejects code matching BLOCKED_PATTERNS (import, open, exec, eval,
+                    #      __import__, os, sys, subprocess, etc.)
+                    #   2. Validates AST nodes to block disallowed constructs
+                    # The namespace uses SAFE_BUILTINS (restricted allowlist, no __import__).
+                    # Execution is bounded by python_execution_time_limit / HARD_EXECUTION_TIMEOUT_SECONDS.
+                    exec(compiled_exec, self._namespace, self._namespace)  # noqa: S102 S307
                     if "_" in self._namespace:
                         return self._namespace["_"]
                     output = buffer.getvalue()
