@@ -3,12 +3,18 @@ ACGS-Lite Visualizer
 ====================
 Debug tool for inspecting constitutions, audit trails, and benchmark results.
 
-Usage:
-    python scripts/visualizer.py rules   --constitution path/to/constitution.yaml
-    python scripts/visualizer.py audit   --path path/to/audit.jsonl
-    python scripts/visualizer.py audit   --path path/to/audit.jsonl --agent my-agent
-    python scripts/visualizer.py bench   --path output/checkpoints/
-    python scripts/visualizer.py summary --constitution path/to/rules.yaml --audit path/to/audit.jsonl
+Run from packages/acgs-lite/:
+
+    python scripts/visualizer.py rules   -c examples/basic_governance/constitution.yaml
+    python scripts/visualizer.py audit   -p examples/audit_trail/audit_sample.jsonl
+    python scripts/visualizer.py audit   -p examples/audit_trail/audit_sample.jsonl --agent planner
+    python scripts/visualizer.py bench   -p examples/bench_sample/
+    python scripts/visualizer.py summary -c examples/basic_governance/constitution.yaml \\
+                                          --audit examples/audit_trail/audit_sample.jsonl
+
+Generate sample data:
+    python examples/audit_trail/main.py   # runs in-memory; see audit_sample.jsonl
+    make test-cov                         # produces htmlcov/ benchmark data
 """
 
 from __future__ import annotations
@@ -70,7 +76,9 @@ def cmd_rules(args: argparse.Namespace) -> None:
     """Display the rule tree for a constitution YAML."""
     path = Path(args.constitution)
     if not path.exists():
-        print(f"File not found: {path}", file=sys.stderr)
+        print(f"File not found: {path.resolve()}", file=sys.stderr)
+        print(f"Hint: run from packages/acgs-lite/ and use a path like", file=sys.stderr)
+        print(f"      examples/basic_governance/constitution.yaml", file=sys.stderr)
         sys.exit(1)
 
     data = _load_yaml(path)
@@ -145,7 +153,10 @@ def cmd_audit(args: argparse.Namespace) -> None:
     """Display and summarise an audit trail JSONL file."""
     path = Path(args.path)
     if not path.exists():
-        print(f"File not found: {path}", file=sys.stderr)
+        print(f"File not found: {path.resolve()}", file=sys.stderr)
+        print(f"Hint: generate sample data with:", file=sys.stderr)
+        print(f"  OPENAI_API_KEY=test-key python examples/audit_trail/main.py", file=sys.stderr)
+        print(f"  # then use: -p examples/audit_trail/audit_sample.jsonl", file=sys.stderr)
         sys.exit(1)
 
     records = _read_jsonl(path)
@@ -182,12 +193,15 @@ def cmd_audit(args: argparse.Namespace) -> None:
             print(f"    {CYAN(f'{agent:<18}')} {bar}  {count}{deny_str}")
 
     # Rule hit breakdown (violations)
+    # violations is list[str] (rule IDs) in the JSONL format
     violations = [r for r in records if not r.get("valid", True)]
     if violations:
         rule_hits: Counter[str] = Counter()
         for v in violations:
             for vi in v.get("violations", []):
-                rule_hits[vi.get("rule_id", "?")] += 1
+                # vi is a rule_id string, not a dict
+                rule_id = vi if isinstance(vi, str) else vi.get("rule_id", "?")
+                rule_hits[rule_id] += 1
         print()
         print(BOLD(f"  Violations by rule ({len(violations)} total)"))
         for rule_id, count in rule_hits.most_common(10):
@@ -234,8 +248,12 @@ def cmd_bench(args: argparse.Namespace) -> None:
     """Visualise benchmark score progression from checkpoint files."""
     base = Path(args.path)
     if not base.exists():
-        print(f"Path not found: {base}", file=sys.stderr)
-        sys.exit(1)
+        print(f"Path not found: {base.resolve()}", file=sys.stderr)
+        print(f"Hint: use the bundled sample data:", file=sys.stderr)
+        print(f"  python scripts/visualizer.py bench -p examples/bench_sample/", file=sys.stderr)
+        print(f"Or point to any directory containing *.json files with", file=sys.stderr)
+        print(f"  latency_p50_us / latency_p99_us / score / throughput fields.", file=sys.stderr)
+        sys.exit(0)
 
     files = _find_bench_files(base)
     if not files:
