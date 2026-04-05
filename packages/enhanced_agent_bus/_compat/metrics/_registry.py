@@ -44,11 +44,11 @@ except ImportError:
         def __exit__(self, *args: Any) -> None:
             pass
 
-    def _get_or_create_counter(name: str, description: str = "", **kwargs: Any) -> _NoOpCounter:
+    def _get_or_create_counter(name: str, description: str = "", labelnames: Any = None, **kwargs: Any) -> _NoOpCounter:
         return _NoOpCounter()
 
-    def _get_or_create_histogram(name: str, description: str = "", **kwargs: Any) -> _NoOpHistogram:
+    def _get_or_create_histogram(name: str, description: str = "", labelnames: Any = None, buckets: Any = None, **kwargs: Any) -> _NoOpHistogram:
         return _NoOpHistogram()
 
-    def _get_or_create_gauge(name: str, description: str = "", **kwargs: Any) -> _NoOpGauge:
+    def _get_or_create_gauge(name: str, description: str = "", labelnames: Any = None, **kwargs: Any) -> _NoOpGauge:
         return _NoOpGauge()
