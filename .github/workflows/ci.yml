@@ -64,7 +64,7 @@ jobs:
         run: make setup
       - name: Install workspace packages
         run: |
-          .venv/bin/pip install -e packages/enhanced_agent_bus -e packages/acgs-lite -e packages/acgs-deliberation --no-deps --quiet
+          uv pip install -e packages/enhanced_agent_bus -e packages/acgs-lite -e packages/acgs-deliberation --no-deps --quiet
       - name: Test (quick)
         run: make test-quick
 
