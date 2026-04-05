@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 import time
 from collections import defaultdict
-from contextlib import suppress
+from contextlib import contextmanager, suppress
 from typing import Any, Literal
 
 from acgs_lite.audit import AuditEntry, AuditLog
@@ -1017,6 +1017,16 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
     def add_validator(self, validator: CustomValidator) -> None:
         """Register a custom validator function."""
         self.custom_validators.append(validator)
+
+    @contextmanager
+    def non_strict(self):
+        """Context manager to temporarily disable strict mode."""
+        prev = self.strict
+        self.strict = False
+        try:
+            yield self
+        finally:
+            self.strict = prev
 
     @property
     def audit_mode(self) -> str:

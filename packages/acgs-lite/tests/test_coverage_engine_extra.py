@@ -151,11 +151,16 @@ def _disable_rust_on_engine(engine: GovernanceEngine) -> None:
     """Neutralize the Rust validator on an already-built engine by setting _hot[10] to None.
 
     This forces the Python fallback paths (AC or regex) to execute.
+    _hot layout (11 elements):
+      [0] ac_iter, [1] pat_anchor_dispatch, [2] no_anchor_patterns,
+      [3] rule_data, [4] rule_excs, [5] has_high_rules,
+      [6] fast_records, [7] pos_verbs, [8] has_ac, [9] is_noop,
+      [10] rust_validator
     """
     _h = engine._hot
     engine._hot = (
         _h[0], _h[1], _h[2], _h[3], _h[4], _h[5],
-        _h[6], _h[7], _h[8], _h[9], None, _h[11],
+        _h[6], _h[7], _h[8], _h[9], None,
     )
     engine._rust_validator = None
 
@@ -172,7 +177,7 @@ def _disable_ac_on_engine(engine: GovernanceEngine) -> None:
         _h[1], _h[2], _h[3], _h[4], _h[5],
         _h[6], _h[7],
         False,      # [8] has_ac
-        _h[9], _h[10], _h[11],
+        _h[9], _h[10],
     )
     engine._ac_iter = None
 

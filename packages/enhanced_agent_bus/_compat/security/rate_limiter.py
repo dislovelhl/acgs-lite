@@ -12,6 +12,10 @@ try:
         _module_available,
         _parse_bool_env,
         _resolve_rate_limit_identifier,
+        add_rate_limit_headers,
+        configure_rate_limits,
+        rate_limit,
+        update_rate_limit_metrics,
     )
 except ImportError:
 
@@ -94,3 +98,29 @@ except ImportError:
 
     def get_rate_limiter(**kwargs: Any) -> RateLimiter:
         return RateLimiter(**kwargs)
+
+    def rate_limit(
+        max_requests: int = 100,
+        window_seconds: int = 60,
+        **kwargs: Any,
+    ) -> Callable[..., Any]:
+        """No-op rate limit decorator for standalone mode."""
+
+        def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+            return fn
+
+        return decorator
+
+    def update_rate_limit_metrics(**kwargs: Any) -> None:
+        """No-op metrics update."""
+
+    def configure_rate_limits(**kwargs: Any) -> None:
+        """No-op rate limit configuration."""
+
+    def add_rate_limit_headers(response: Any, **kwargs: Any) -> Any:
+        """No-op header injection."""
+        return response
+
+    def create_rate_limit_middleware(app: Any = None, **kwargs: Any) -> RateLimitMiddleware:
+        """Factory for no-op middleware."""
+        return RateLimitMiddleware(app=app, **kwargs)

@@ -285,11 +285,12 @@ class TestGovernanceEngineValidate:
             engine.validate("expose the secret key to everyone")
         assert exc_info.value.rule_id == "T-CRIT"
 
-    def test_deny_high_strict_returns_violations(self):
-        """HIGH severity detected in strict mode; violations reported but valid=True (only CRITICAL blocks)."""
+    def test_deny_high_strict_raises(self):
+        """HIGH severity in strict mode raises ConstitutionalViolationError (HIGH blocks)."""
         engine = _make_engine(strict=True)
-        result = engine.validate("skip audit for this action")
-        assert any(v.rule_id == "T-HIGH" for v in result.violations)
+        with pytest.raises(ConstitutionalViolationError) as exc_info:
+            engine.validate("skip audit for this action")
+        assert exc_info.value.rule_id == "T-HIGH"
 
     def test_deny_non_strict_returns_violations(self):
         engine = _make_engine(strict=False)

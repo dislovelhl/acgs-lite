@@ -13,7 +13,7 @@ import pytest
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution, Severity
 from acgs_lite.engine import GovernanceEngine
-from acgs_lite.engine.types import ValidationResult, Violation
+from acgs_lite.engine.core import ValidationResult, Violation
 from acgs_lite.integrations.dashboard import (
     _CONSTITUTIONAL_HASH,
     DashboardMetrics,

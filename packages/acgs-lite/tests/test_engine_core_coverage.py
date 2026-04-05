@@ -447,10 +447,12 @@ class TestGovernanceEngineInternals:
         # Our fixture includes HIGH severity rules
         assert engine._has_high_rules is True
 
+    @pytest.mark.skip(reason="_pooled_result removed in engine simplification")
     def test_pooled_result_exists(self, engine):
         assert engine._pooled_result is not None
         assert engine._pooled_result.valid is True
 
+    @pytest.mark.skip(reason="_pooled_escalate removed in engine simplification")
     def test_pooled_escalate_exists(self, engine):
         assert engine._pooled_escalate is not None
         assert engine._pooled_escalate.valid is True

@@ -23,7 +23,7 @@ import re
 from typing import Any
 
 from acgs_lite.constitution import Severity
-from acgs_lite.engine.models import Violation
+from acgs_lite.engine.core import Violation
 
 # ---------------------------------------------------------------------------
 # PHI Detector — catches HIPAA-defined identifiers in free text
