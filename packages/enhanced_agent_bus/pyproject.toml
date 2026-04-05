@@ -35,6 +35,14 @@ dependencies = [
     "python-multipart>=0.0.20",
 ]
 
+[project.urls]
+Homepage = "https://acgs.ai"
+Documentation = "https://github.com/acgs2_admin/acgs/tree/main/packages/enhanced_agent_bus"
+Repository = "https://github.com/acgs2_admin/acgs"
+Issues = "https://github.com/acgs2_admin/acgs/issues"
+Changelog = "https://github.com/acgs2_admin/acgs/releases"
+PyPI = "https://pypi.org/project/enhanced-agent-bus/"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
