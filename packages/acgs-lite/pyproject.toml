@@ -78,7 +78,7 @@ PyPI = "https://pypi.org/project/acgs-lite/"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["acgs_lite*"]
+include = ["acgs*", "acgs_lite*"]
 
 [tool.ruff]
 line-length = 100
