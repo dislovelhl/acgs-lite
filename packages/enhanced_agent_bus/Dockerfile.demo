@@ -31,28 +31,11 @@ RUN pip install --no-cache-dir \
     pybreaker
 
 # hadolint ignore=DL3059
-RUN mkdir -p /opt/acgs/src/core
-COPY src/core/enhanced_agent_bus/ /opt/acgs/src/core/enhanced_agent_bus/
-COPY src/core/shared/ /opt/acgs/src/core/shared/
+RUN mkdir -p /opt/acgs/enhanced_agent_bus
+COPY packages/enhanced_agent_bus/ /opt/acgs/enhanced_agent_bus/
 
-# Create __init__.py files and symlinks for bare module imports.
-# enhanced_agent_bus code uses both "from src.core.enhanced_agent_bus.X" and bare "from X".
-# Symlink each .py file and subdirectory (excluding types.py to avoid shadowing stdlib).
-RUN touch /opt/acgs/src/__init__.py /opt/acgs/src/core/__init__.py && \
-    for f in /opt/acgs/src/core/enhanced_agent_bus/*.py; do \
-        name=$(basename "$f"); \
-        [ "$name" = "types.py" ] && continue; \
-        ln -sf "$f" "/opt/acgs/$name"; \
-    done && \
-    for d in /opt/acgs/src/core/enhanced_agent_bus/*/; do \
-        name=$(basename "$d"); \
-        [ "$name" = "__pycache__" ] && continue; \
-        [ "$name" = "tests" ] && continue; \
-        [ "$name" = "policies" ] && continue; \
-        ln -sf "$d" "/opt/acgs/$name"; \
-    done
-
+# PYTHONPATH set to /opt/acgs so 'enhanced_agent_bus' is importable directly
 ENV PYTHONPATH="/opt/acgs"
 
 EXPOSE 8000
-CMD ["uvicorn", "src.core.enhanced_agent_bus.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+CMD ["uvicorn", "enhanced_agent_bus.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]

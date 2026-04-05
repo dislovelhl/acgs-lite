@@ -47,15 +47,14 @@ RUN pip install --no-cache-dir \
     email-validator>=2.0.0
 
 # Copy source code to the correct package path
-RUN mkdir -p /app/src/core/enhanced_agent_bus
-COPY src/core/enhanced_agent_bus/ /app/src/core/enhanced_agent_bus/
-COPY src/core/shared/ /app/src/core/shared/
+RUN mkdir -p /app/enhanced_agent_bus
+COPY packages/enhanced_agent_bus/ /app/enhanced_agent_bus/
 
-# Set PYTHONPATH
+# Set PYTHONPATH so 'enhanced_agent_bus' is importable directly
 ENV PYTHONPATH=/app
 
 # Expose port
 EXPOSE 8000
 
 # Default command
-CMD ["python", "-m", "uvicorn", "src.core.enhanced_agent_bus.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+CMD ["python", "-m", "uvicorn", "enhanced_agent_bus.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
