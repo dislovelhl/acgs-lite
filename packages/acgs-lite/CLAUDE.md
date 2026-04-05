@@ -13,9 +13,8 @@ src/acgs_lite/
 ├── audit.py          # Audit trail
 ├── governed.py       # Governed wrappers
 ├── maci.py           # MACI enforcement
+├── eu_ai_act/        # EU AI Act assessment subpackage
 └── server.py         # FastAPI wrapper
-
-src/eu_ai_act_tool/   # EU AI Act assessment app
 
 rust/
 ├── core/             # Core Rust crate
