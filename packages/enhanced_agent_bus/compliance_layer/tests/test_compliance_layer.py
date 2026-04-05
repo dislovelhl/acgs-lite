@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import pytest
 
 # Constitutional hash for validation
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ============================================================================
 # Models Tests

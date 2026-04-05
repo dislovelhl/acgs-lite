@@ -34,7 +34,7 @@ def _validate_fallback_tenant_id(raw_tenant_id: str) -> str:
 
 
 try:
-    from src.core.shared.security.tenant_context import get_tenant_id as _shared_get_tenant_id
+    from enhanced_agent_bus._compat.security.tenant_context import get_tenant_id as _shared_get_tenant_id
 
     _USE_FALLBACK = False
 except ImportError:

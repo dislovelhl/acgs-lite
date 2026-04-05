@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 from enhanced_agent_bus.bus_types import JSONDict, MetadataDict
 
 try:
-    from src.core.shared.types import AgentInfo
+    from enhanced_agent_bus._compat.types import AgentInfo
 except ImportError:
     AgentInfo = JSONDict  # type: ignore[misc, assignment]
 

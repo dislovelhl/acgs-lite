@@ -11,7 +11,7 @@ from uuid import UUID
 
 import pytest
 from pydantic import ValidationError
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.constitutional.version_model import (
     ConstitutionalStatus,
@@ -575,7 +575,7 @@ class TestEdgeCases:
         assert v.deactivated_at is not None
 
     def test_constitutional_hash_constant_is_imported(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         v = ConstitutionalVersion(version=VALID_VERSION, content=VALID_CONTENT)
         assert v.constitutional_hash == CONSTITUTIONAL_HASH

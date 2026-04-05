@@ -156,7 +156,7 @@ class TestHealthChecker:
         assert "constitutional_hash" in d
 
     def test_to_dict_constitutional_hash(self):
-        from src.core.shared.types import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 
         d = self.hc.to_dict()
         assert d["constitutional_hash"] == CONSTITUTIONAL_HASH
@@ -323,7 +323,7 @@ class TestGenerateAlertRulesYaml:
 
     def test_yaml_contains_constitutional_hash(self):
         try:
-            from src.core.shared.types import CONSTITUTIONAL_HASH
+            from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 
             result = generate_alert_rules_yaml()
             assert CONSTITUTIONAL_HASH in result
@@ -339,7 +339,7 @@ class TestGenerateAlertRulesYaml:
 class TestGlobalInstanceHelpers:
     def setup_method(self):
         reset_metrics_cache()
-        from src.core.shared.di_container import DIContainer
+        from enhanced_agent_bus._compat.di_container import DIContainer
 
         DIContainer.reset()
 

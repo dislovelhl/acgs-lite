@@ -19,11 +19,11 @@ from datetime import UTC
 import httpx
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -31,7 +31,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
     import pybreaker
-    from src.core.shared.circuit_breaker import CircuitBreakerConfig, get_circuit_breaker
+    from enhanced_agent_bus._compat.circuit_breaker import CircuitBreakerConfig, get_circuit_breaker
 
     CIRCUIT_BREAKER_AVAILABLE = True
 except ImportError:

@@ -19,7 +19,7 @@ import sys
 sys.path.insert(0, "packages/enhanced_agent_bus")
 
 import pytest
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.response_quality import (
     ConstitutionalHashError,

@@ -972,7 +972,7 @@ class TestOPAClientCoreValidatePolicyPath:
         client._validate_policy_path("data.acgs.allow")
 
     def test_invalid_characters(self):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
@@ -981,7 +981,7 @@ class TestOPAClientCoreValidatePolicyPath:
             client._validate_policy_path("data/../etc/passwd")
 
     def test_path_traversal(self):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
@@ -990,7 +990,7 @@ class TestOPAClientCoreValidatePolicyPath:
             client._validate_policy_path("data..acgs..allow")
 
     def test_special_chars_rejected(self):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
@@ -1008,7 +1008,7 @@ class TestOPAClientCoreValidateInputData:
         client._validate_input_data({"key": "value"})
 
     def test_oversized_input(self):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         from enhanced_agent_bus.opa_client.core import OPAClientCore
 
@@ -1196,7 +1196,7 @@ class TestOPAClientCoreEvaluatePolicy:
             assert result["allowed"] is True
 
     async def test_evaluate_policy_validation_error(self):
-        from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+        from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
         from enhanced_agent_bus.opa_client.core import OPAClient
 

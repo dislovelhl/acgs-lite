@@ -7,10 +7,10 @@ Enforces the principle of least privilege.
 import os
 from dataclasses import dataclass
 
-from src.core.shared.crypto import CryptoService
+from enhanced_agent_bus._compat.crypto import CryptoService
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

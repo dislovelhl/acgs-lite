@@ -13,7 +13,7 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from src.core.shared.database.session import Base
+from enhanced_agent_bus._compat.database.session import Base
 
 from enhanced_agent_bus.multi_tenancy.rls import (
     ACGS2_RLS_TABLES,

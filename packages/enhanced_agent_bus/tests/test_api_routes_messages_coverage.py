@@ -23,7 +23,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from src.core.shared.security.auth import UserClaims
+from enhanced_agent_bus._compat.security.auth import UserClaims
 
 from enhanced_agent_bus.api.routes.messages import (
     MESSAGE_HANDLERS,
@@ -69,7 +69,7 @@ def _make_user_claims(tenant_id: str = "test-tenant") -> UserClaims:
 
 def _make_app(tenant_id: str = "test-tenant", bus: object = None) -> FastAPI:
     """Build a minimal FastAPI app with the messages router and mocked deps."""
-    from src.core.shared.security.auth import get_current_user
+    from enhanced_agent_bus._compat.security.auth import get_current_user
 
     from enhanced_agent_bus.api.dependencies import get_agent_bus
     from enhanced_agent_bus.api.rate_limiting import limiter

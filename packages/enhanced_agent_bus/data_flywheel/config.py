@@ -4,7 +4,7 @@ import sys
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 sys.modules.setdefault("enhanced_agent_bus.data_flywheel.config", sys.modules[__name__])
 

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 
 # Default Redis URL with fallback
 try:
-    from src.core.shared.redis_config import get_redis_url
+    from enhanced_agent_bus._compat.redis_config import get_redis_url
 
     DEFAULT_REDIS_URL = get_redis_url()
 except ImportError:
@@ -468,6 +468,6 @@ class BusConfiguration:
 
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
     settings = BusConfiguration()  # type: ignore[assignment]  # Use as fallback if shared settings not available

@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import httpx
 
 # Constitutional hash for tests
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.constitutional.opa_updater import (
     AIOFILES_AVAILABLE,

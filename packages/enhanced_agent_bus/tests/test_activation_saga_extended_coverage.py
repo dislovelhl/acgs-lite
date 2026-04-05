@@ -17,7 +17,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.constitutional import activation_saga as _saga_module
 
@@ -171,7 +171,7 @@ class TestActivationSagaErrorAttributes:
         assert "something went wrong" in str(err)
 
     def test_is_subclass_of_acgs_base(self):
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         assert issubclass(ActivationSagaError, ACGSBaseError)
 

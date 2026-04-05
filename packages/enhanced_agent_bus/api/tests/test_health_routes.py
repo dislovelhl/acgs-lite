@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.api.routes.health import router
 

@@ -12,7 +12,7 @@ import uuid
 from datetime import UTC, datetime, timedelta, timezone
 from typing import TypeAlias, cast
 
-from src.core.shared.type_guards import (
+from enhanced_agent_bus._compat.type_guards import (
     get_bool,
     get_float,
     get_str,
@@ -21,7 +21,7 @@ from src.core.shared.type_guards import (
 )
 
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

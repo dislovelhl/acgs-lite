@@ -11,7 +11,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from ..multi_approver import (
     ApprovalDecision,

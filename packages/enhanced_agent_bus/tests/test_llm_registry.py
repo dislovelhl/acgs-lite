@@ -9,7 +9,7 @@ import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ResourceNotFoundError,
     ServiceUnavailableError,
 )

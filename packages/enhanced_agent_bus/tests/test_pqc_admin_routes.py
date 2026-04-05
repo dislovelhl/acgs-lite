@@ -47,7 +47,7 @@ except ImportError:
     )
 
 try:
-    from src.core.shared.security.auth import UserClaims
+    from enhanced_agent_bus._compat.security.auth import UserClaims
 except ImportError:
     from unittest.mock import MagicMock as UserClaims  # type: ignore[assignment,misc]
 
@@ -81,7 +81,7 @@ def _build_app(user_claims: Any, enforcement_svc: Any) -> FastAPI:
 
     # Override auth dependency
     try:
-        from src.core.shared.security.auth import get_current_user
+        from enhanced_agent_bus._compat.security.auth import get_current_user
 
         app.dependency_overrides[get_current_user] = lambda: user_claims
     except ImportError:

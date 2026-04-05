@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import ServiceUnavailableError
+from enhanced_agent_bus._compat.errors import ServiceUnavailableError
 
 from enhanced_agent_bus.config import BusConfiguration
 from enhanced_agent_bus.mcp_server.config import MCPConfig
@@ -835,7 +835,7 @@ class TestMCPHandlerToolsCall:
         assert resp.result["content"][0]["text"] == "42"
 
     async def test_call_unknown_tool(self, handler):
-        from src.core.shared.errors.exceptions import ResourceNotFoundError
+        from enhanced_agent_bus._compat.errors import ResourceNotFoundError
 
         req = _make_request("tools/call", {"name": "nonexistent"})
         with pytest.raises(ResourceNotFoundError):
@@ -877,7 +877,7 @@ class TestMCPHandlerResourcesRead:
         assert resp.result["contents"][0]["text"] == "resource content"
 
     async def test_read_unknown_resource(self, handler):
-        from src.core.shared.errors.exceptions import ResourceNotFoundError
+        from enhanced_agent_bus._compat.errors import ResourceNotFoundError
 
         req = _make_request("resources/read", {"uri": "acgs://missing"})
         with pytest.raises(ResourceNotFoundError):
@@ -912,7 +912,7 @@ class TestMCPHandlerPromptsGet:
         assert resp.result == expected
 
     async def test_get_unknown_prompt(self, handler):
-        from src.core.shared.errors.exceptions import ResourceNotFoundError
+        from enhanced_agent_bus._compat.errors import ResourceNotFoundError
 
         req = _make_request("prompts/get", {"name": "nonexistent"})
         with pytest.raises(ResourceNotFoundError):

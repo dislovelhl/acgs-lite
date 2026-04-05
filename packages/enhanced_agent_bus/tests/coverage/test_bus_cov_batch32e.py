@@ -23,7 +23,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import numpy as np
 import pytest
-from src.core.shared.structured_logging import (
+from enhanced_agent_bus._compat.structured_logging import (
     BoundLogger,
     StructuredJSONFormatter,
     StructuredLogger,

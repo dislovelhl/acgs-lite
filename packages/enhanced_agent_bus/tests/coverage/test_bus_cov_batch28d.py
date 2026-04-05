@@ -20,7 +20,7 @@ import pytest
 # ---------------------------------------------------------------------------
 # 1. _registry.py imports
 # ---------------------------------------------------------------------------
-from src.core.shared.metrics._registry import (
+from enhanced_agent_bus._compat.metrics._registry import (
     _METRICS_CACHE,
     _find_existing_metric,
     _get_or_create_counter,

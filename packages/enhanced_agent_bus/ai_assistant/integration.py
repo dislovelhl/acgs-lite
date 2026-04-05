@@ -13,8 +13,8 @@ from datetime import UTC, datetime, timezone
 from typing import TypeAlias
 
 # Policy imports
-from src.core.shared.policy.models import PolicySpecification, VerificationStatus
-from src.core.shared.policy.unified_generator import UnifiedVerifiedPolicyGenerator
+from enhanced_agent_bus._compat.policy.models import PolicySpecification, VerificationStatus
+from enhanced_agent_bus._compat.policy.unified_generator import UnifiedVerifiedPolicyGenerator
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 
@@ -33,11 +33,11 @@ except ImportError:
 
 # Import centralized constitutional hash with fallback
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         JSONValue,
     )

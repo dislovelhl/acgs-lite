@@ -21,7 +21,7 @@ from collections.abc import Awaitable, Callable
 from typing import Any, Protocol, runtime_checkable
 
 import httpx
-from src.core.shared.types import AgentID
+from enhanced_agent_bus._compat.types import AgentID
 
 from enhanced_agent_bus.agent_health.models import (
     CONSTITUTIONAL_HASH,

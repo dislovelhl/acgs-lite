@@ -728,7 +728,7 @@ class TestCheckEnforcementForCreate:
 
     @pytest.mark.asyncio
     async def test_strict_no_key_raises(self):
-        from src.core.shared.security.pqc import PQCKeyRequiredError
+        from enhanced_agent_bus._compat.security.pqc import PQCKeyRequiredError
 
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
@@ -743,7 +743,7 @@ class TestCheckEnforcementForCreate:
 
     @pytest.mark.asyncio
     async def test_strict_classical_key_raises(self):
-        from src.core.shared.security.pqc import ClassicalKeyRejectedError
+        from enhanced_agent_bus._compat.security.pqc import ClassicalKeyRejectedError
 
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
@@ -770,7 +770,7 @@ class TestCheckEnforcementForCreate:
 
     @pytest.mark.asyncio
     async def test_strict_pqc_invalid_algorithm_raises(self):
-        from src.core.shared.security.pqc import UnsupportedPQCAlgorithmError
+        from enhanced_agent_bus._compat.security.pqc import UnsupportedPQCAlgorithmError
 
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_create
 
@@ -810,7 +810,7 @@ class TestCheckEnforcementForUpdate:
 
     @pytest.mark.asyncio
     async def test_strict_classical_raises(self):
-        from src.core.shared.security.pqc import MigrationRequiredError
+        from enhanced_agent_bus._compat.security.pqc import MigrationRequiredError
 
         from enhanced_agent_bus.pqc_validators import check_enforcement_for_update
 

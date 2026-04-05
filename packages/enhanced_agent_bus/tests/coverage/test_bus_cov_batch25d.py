@@ -463,7 +463,7 @@ class TestCheckGovernance:
         assert result["is_allowed"] is True
 
     async def test_governance_verified(self):
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
@@ -491,7 +491,7 @@ class TestCheckGovernance:
             assert result["confidence"] == 0.95
 
     async def test_governance_failed_verification(self):
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
@@ -518,7 +518,7 @@ class TestCheckGovernance:
             assert result["is_allowed"] is False
 
     async def test_governance_with_audit_ledger(self):
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 
@@ -552,7 +552,7 @@ class TestCheckGovernance:
             mock_ledger.add_validation_result.assert_awaited_once()
 
     async def test_governance_audit_ledger_failure(self):
-        from src.core.shared.policy.models import VerificationStatus
+        from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
         from enhanced_agent_bus.ai_assistant.integration import AgentBusIntegration
 

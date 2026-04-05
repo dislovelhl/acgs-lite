@@ -13,12 +13,12 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import (
+from enhanced_agent_bus._compat.errors import (
     ConstitutionalViolationError,
     ResourceNotFoundError,
     ServiceUnavailableError,
 )
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.core_models import AgentMessage, MessageType, get_enum_value
 from enhanced_agent_bus.enterprise_sso.tenant_sso_config import (

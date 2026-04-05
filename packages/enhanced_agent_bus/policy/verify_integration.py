@@ -8,7 +8,7 @@ NOTE: This is a standalone verification script, not a library module.
 import asyncio
 import logging
 
-from src.core.shared.policy.models import VerificationStatus
+from enhanced_agent_bus._compat.policy.models import VerificationStatus
 
 from enhanced_agent_bus.observability.structured_logging import get_logger
 

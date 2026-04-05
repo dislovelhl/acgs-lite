@@ -30,7 +30,7 @@ except ImportError:
     )
 
 try:
-    from src.core.shared.security.pqc import (
+    from enhanced_agent_bus._compat.security.pqc import (
         ClassicalKeyRejectedError,
         UnsupportedPQCAlgorithmError,
     )

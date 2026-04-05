@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 from ..bus_types import JSONDict
 
 try:
-    from src.core.shared.types import AgentInfo
+    from enhanced_agent_bus._compat.types import AgentInfo
 except ImportError:
     AgentInfo = dict[str, object]  # type: ignore[misc, assignment]
 
@@ -41,7 +41,7 @@ POLICY_CLIENT_AVAILABLE: bool = _flags.get("POLICY_CLIENT_AVAILABLE", False)
 
 # Direct canonical imports with fallbacks
 try:
-    from src.core.shared.redis_config import get_redis_url
+    from enhanced_agent_bus._compat.redis_config import get_redis_url
 except ImportError:
 
     def get_redis_url() -> str:
@@ -51,14 +51,14 @@ except ImportError:
 DEFAULT_REDIS_URL: str = get_redis_url()
 
 try:
-    from src.core.shared.circuit_breaker import (
+    from enhanced_agent_bus._compat.circuit_breaker import (
         initialize_core_circuit_breakers,
     )
 except ImportError:
     initialize_core_circuit_breakers = None  # type: ignore[assignment]
 
 try:
-    from src.core.shared.metrics import set_service_info
+    from enhanced_agent_bus._compat.metrics import set_service_info
 except ImportError:
     set_service_info = None  # type: ignore[assignment]
 
@@ -112,7 +112,7 @@ from .validation import MessageValidator
 
 # Rate Limiting imports
 try:
-    from src.core.shared.security.rate_limiter import (
+    from enhanced_agent_bus._compat.security.rate_limiter import (
         RateLimitScope,
         SlidingWindowRateLimiter,
         TenantRateLimitProvider,

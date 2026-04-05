@@ -16,7 +16,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.guardrails.sandbox_providers import (
     DockerSandboxProvider,

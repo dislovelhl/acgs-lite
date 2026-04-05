@@ -21,8 +21,8 @@ from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.core.shared.cache.manager import TieredCacheConfig, TieredCacheManager
-from src.core.shared.database.utils import (
+from enhanced_agent_bus._compat.cache.manager import TieredCacheConfig, TieredCacheManager
+from enhanced_agent_bus._compat.database.utils import (
     BulkOperations,
     Page,
     Pageable,
@@ -30,7 +30,7 @@ from src.core.shared.database.utils import (
 )
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 

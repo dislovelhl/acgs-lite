@@ -11,7 +11,7 @@ import json
 from datetime import UTC, datetime, timezone
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -40,9 +40,9 @@ except ImportError:
     VoteDecision = None  # type: ignore[misc, assignment]
 
 try:
-    from src.core.shared.config import settings
+    from enhanced_agent_bus._compat.config import settings
 except ImportError:
-    from src.core.shared.config import settings  # type: ignore[import-untyped]
+    from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
 
 logger = get_logger(__name__)
 _VOTE_CONSUMER_OPERATION_ERRORS = (

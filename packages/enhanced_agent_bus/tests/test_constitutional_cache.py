@@ -18,7 +18,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.types import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.types import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.constitutional_cache import (
     VALIDATION_CACHE_TTL_SECONDS,

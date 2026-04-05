@@ -6,7 +6,7 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.components.registry_manager import RegistryManager
 

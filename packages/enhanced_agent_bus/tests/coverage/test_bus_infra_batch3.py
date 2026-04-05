@@ -24,7 +24,7 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.core.shared.constants import MACIRole
+from enhanced_agent_bus._compat.constants import MACIRole
 
 # ---------------------------------------------------------------------------
 # agent_health/detectors.py

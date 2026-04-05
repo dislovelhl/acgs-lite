@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from src.core.shared.constants import MACIRole
+from enhanced_agent_bus._compat.constants import MACIRole
 
 ToolProjectionRole = Literal["proposer", "validator", "executor"]
 VerificationProjectionRole = Literal["executive", "legislative", "judicial", "monitor", "auditor"]

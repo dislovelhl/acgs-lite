@@ -18,7 +18,7 @@ import pytest
 # ---------------------------------------------------------------------------
 # OIDC Handler imports
 # ---------------------------------------------------------------------------
-from src.core.shared.auth.oidc_handler import (
+from enhanced_agent_bus._compat.auth.oidc_handler import (
     DEFAULT_SCOPES,
     OIDCAuthenticationError,
     OIDCConfigurationError,

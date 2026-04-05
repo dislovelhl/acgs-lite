@@ -1,5 +1,5 @@
-from src.core.shared.config.governance_constants import IMPACT_SCORER_CONFIG
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.config.governance_constants import IMPACT_SCORER_CONFIG
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 """
 Tests for ImpactScorer — targets ≥90% coverage.

@@ -9,7 +9,7 @@ import time
 from unittest.mock import MagicMock, call, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -346,7 +346,7 @@ class TestRecordBatchRequest:
         assert attrs["tenant_id"] == "tenant-xyz"
 
     def test_constitutional_hash_in_attributes(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         inst = self._instance()
         counter = _make_mock_counter()
@@ -608,7 +608,7 @@ class TestRecordConstitutionalValidation:
         viol_counter.add.assert_called_once()
 
     def test_expected_hash_in_attributes(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         inst = self._instance()
         val_counter = _make_mock_counter()
@@ -1166,7 +1166,7 @@ class TestBatchMetricsIntegrationNoOp:
         inst.record_retry("t1", 2, "backpressure")
 
     def test_record_constitutional_validation_valid(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         inst = self._instance()
         inst.record_constitutional_validation("t1", valid=True, hash_used=CONSTITUTIONAL_HASH)
@@ -1287,7 +1287,7 @@ class TestEdgeCases:
 
     def test_constitutional_hash_constant_in_attrs_matches_module(self):
         """The hash embedded in record_batch_request attrs must match CONSTITUTIONAL_HASH."""
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         from enhanced_agent_bus.observability import batch_metrics as bm_module
 

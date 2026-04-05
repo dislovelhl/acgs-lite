@@ -16,11 +16,11 @@ from datetime import UTC, datetime
 from enum import Enum
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 try:
-    from src.core.shared.types import (
+    from enhanced_agent_bus._compat.types import (
         JSONDict,
         SupportsCircuitBreaker,
     )
@@ -32,7 +32,7 @@ from enhanced_agent_bus.observability.structured_logging import get_logger
 
 try:
     import pybreaker
-    from src.core.shared.circuit_breaker import CircuitBreakerRegistry
+    from enhanced_agent_bus._compat.circuit_breaker import CircuitBreakerRegistry
 
     CIRCUIT_BREAKER_AVAILABLE = True
 except ImportError:

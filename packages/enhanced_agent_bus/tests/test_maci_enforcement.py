@@ -11,7 +11,7 @@ Comprehensive tests for MACI role separation enforcement including:
 """
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.maci_enforcement import (
     ROLE_PERMISSIONS,

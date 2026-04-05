@@ -10,8 +10,8 @@ from datetime import UTC, datetime, timedelta, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
-from src.core.shared.constants import CONSTITUTIONAL_HASH
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 from enhanced_agent_bus.mcp_integration.auth.mcp_auth_provider.enums import (
     ProviderType,

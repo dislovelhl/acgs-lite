@@ -6,7 +6,7 @@ import pytest
 
 pytest.importorskip("src.core.shared.agent_workflow_metrics")
 
-from src.core.shared.agent_workflow_metrics import (
+from enhanced_agent_bus._compat.agent_workflow_metrics import (
     reset_agent_workflow_metrics_collector,
 )
 

@@ -105,7 +105,7 @@ class TestREPLDisabledError:
         assert "disabled" in str(err)
 
     def test_is_acgs_base_error(self):
-        from src.core.shared.errors.exceptions import ACGSBaseError
+        from enhanced_agent_bus._compat.errors import ACGSBaseError
 
         from enhanced_agent_bus.rlm_repl import REPLDisabledError
 
@@ -148,7 +148,7 @@ class TestREPLConfig:
         assert cfg.max_operations_per_hour == 500
 
     def test_constitutional_hash_default(self):
-        from src.core.shared.constants import CONSTITUTIONAL_HASH
+        from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
         from enhanced_agent_bus.rlm_repl import REPLConfig
 

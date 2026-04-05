@@ -35,7 +35,7 @@ with patch.dict(os.environ, _IMPORT_ENV_OVERRIDES, clear=False):
     from uuid import uuid4
 
     import pytest
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 
     try:
         from fastapi import Body, Depends, FastAPI, Header, HTTPException, Request, status
@@ -60,7 +60,7 @@ with patch.dict(os.environ, _IMPORT_ENV_OVERRIDES, clear=False):
         IMPORTS_AVAILABLE = False
         TestClient = None
 
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 
 _mock_batch_processor = None

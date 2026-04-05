@@ -22,7 +22,7 @@ import hmac
 import time
 from typing import Any
 
-from src.core.shared.security.pqc import (
+from enhanced_agent_bus._compat.security.pqc import (
     APPROVED_CLASSICAL,
     APPROVED_PQC,
     CONSTITUTIONAL_HASH,
@@ -38,14 +38,14 @@ from src.core.shared.security.pqc import (
     UnsupportedPQCAlgorithmError,
     normalize_to_nist,
 )
-from src.core.shared.security.pqc_crypto import (
+from enhanced_agent_bus._compat.security.pqc_crypto import (
     HybridSignature,
     PQCConfig,
     PQCCryptoService,
     PQCMetadata,
     ValidationResult,
 )
-from src.core.shared.security.pqc_crypto import (
+from enhanced_agent_bus._compat.security.pqc_crypto import (
     verify_signature as pqc_verify_signature,
 )
 

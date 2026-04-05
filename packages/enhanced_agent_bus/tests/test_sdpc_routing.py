@@ -5,7 +5,7 @@ Constitutional Hash: 608508a9bd224290
 
 from datetime import UTC, datetime, timezone
 
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 from enhanced_agent_bus.deliberation_layer.adaptive_router import AdaptiveRouter
 from enhanced_agent_bus.deliberation_layer.intent_classifier import IntentType

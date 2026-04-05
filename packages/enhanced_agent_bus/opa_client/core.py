@@ -31,7 +31,7 @@ from httpx import HTTPStatusError
 from httpx import TimeoutException as HTTPTimeoutException
 
 try:
-    from src.core.shared.errors.exceptions import ConfigurationError
+    from enhanced_agent_bus._compat.errors import ConfigurationError
 except ImportError:
 
     class ConfigurationError(Exception):  # type: ignore[no-redef]
@@ -40,10 +40,10 @@ except ImportError:
             self.error_code = error_code
 
 
-from src.core.shared.errors.exceptions import ValidationError as ACGSValidationError
+from enhanced_agent_bus._compat.errors import ValidationError as ACGSValidationError
 
 try:
-    from src.core.shared.types import JSONDict
+    from enhanced_agent_bus._compat.types import JSONDict
 except ImportError:
     JSONDict = dict  # type: ignore[misc,assignment]
 
@@ -86,7 +86,7 @@ except (ImportError, ValueError):
             )
         except ImportError:
             # Fallback for sharing with shared package
-            from src.core.shared.config import settings  # type: ignore[import-untyped]
+            from enhanced_agent_bus._compat.config import settings  # type: ignore[import-untyped]
 
             from exceptions import OPANotInitializedError  # type: ignore[import-untyped]
             from models import CONSTITUTIONAL_HASH  # type: ignore[import-untyped]
@@ -503,7 +503,7 @@ class OPAClientCore:
 
     def _sanitize_error(self, error: Exception) -> str:
         """Strip sensitive metadata from error messages (VULN-008)."""
-        from src.core.shared.security import sanitize_error
+        from enhanced_agent_bus._compat.security import sanitize_error
 
         return sanitize_error(error)
 

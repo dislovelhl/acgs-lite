@@ -5,7 +5,7 @@ Constitutional Hash: 608508a9bd224290
 Re-exports from shared metrics/noop module for backward compatibility.
 """
 
-from src.core.shared.metrics.noop import (
+from enhanced_agent_bus._compat.metrics.noop import (
     PROMETHEUS_AVAILABLE,
     Counter,
     Gauge,

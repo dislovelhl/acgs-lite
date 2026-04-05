@@ -83,7 +83,7 @@ from enhanced_agent_bus.saga_persistence.repository import (
 
 SAGA_ID = str(uuid.uuid4())
 LOCK_HOLDER = "test-node-abc12345"
-from src.core.shared.constants import CONSTITUTIONAL_HASH
+from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
 # ---------------------------------------------------------------------------
 # Helpers

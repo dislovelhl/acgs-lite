@@ -175,7 +175,7 @@ class BatchValidationMiddleware(BaseMiddleware):
 
         # Validate constitutional hash if present
         if request.constitutional_hash:
-            from src.core.shared.constants import CONSTITUTIONAL_HASH
+            from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
             if request.constitutional_hash != CONSTITUTIONAL_HASH:
                 errors.append(f"Invalid constitutional hash: {request.constitutional_hash}")
@@ -245,7 +245,7 @@ class BatchValidationMiddleware(BaseMiddleware):
     ) -> None:
         """Validate per-item constitutional hash compliance."""
         if item.constitutional_hash:
-            from src.core.shared.constants import CONSTITUTIONAL_HASH
+            from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 
             if item.constitutional_hash != CONSTITUTIONAL_HASH:
                 errors.append(f"Invalid item constitutional hash: {item.constitutional_hash}")

@@ -9,7 +9,7 @@ Constitutional Hash: 608508a9bd224290
 
 from collections.abc import Callable
 
-from src.core.shared.type_guards import is_json_dict
+from enhanced_agent_bus._compat.type_guards import is_json_dict
 
 from ..maci_imports import (
     CONSTITUTIONAL_HASH,

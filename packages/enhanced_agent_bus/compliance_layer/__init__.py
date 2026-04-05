@@ -13,7 +13,7 @@ Phase 2.1 Layer 4 Requirements from docs/ROADMAP_2025.md
 __version__ = "1.0.0"
 
 try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
+    from enhanced_agent_bus._compat.constants import CONSTITUTIONAL_HASH
 except ImportError:
     CONSTITUTIONAL_HASH = "standalone"
 
