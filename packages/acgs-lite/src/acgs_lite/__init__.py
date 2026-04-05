@@ -89,6 +89,13 @@ from acgs_lite.z3_verify import (
     Z3ConstraintVerifier,
     Z3VerifyResult,
 )
+from acgs_lite.lean_verify import (
+    LEAN_AVAILABLE,
+    LeanstralVerifier,
+    LeanVerifyResult,
+    MISTRAL_AVAILABLE,
+    ProofCertificate,
+)
 
 __version__ = VERSION
 
@@ -149,6 +156,12 @@ __all__ = [
     "Z3VerifyResult",
     "Z3_AVAILABLE",
     "Z3_RISK_THRESHOLD",
+    # Leanstral formal verification (Lean 4 proof certificates)
+    "LeanstralVerifier",
+    "LeanVerifyResult",
+    "ProofCertificate",
+    "MISTRAL_AVAILABLE",
+    "LEAN_AVAILABLE",
     # OpenShell governance integration
     "ActionContext",
     "ActionEnvelope",
