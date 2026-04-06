@@ -11,22 +11,18 @@ that directory yet.
 | --- | --- | --- |
 | `.` | [../README.md](../README.md) | Product-level overview and public quickstart |
 | `.agents/` | [../.agents/skills/README.md](../.agents/skills/README.md) | Repo-local Codex skills and archived internal skill material |
-| `.learnings/` | [../.learnings/LEARNINGS.md](../.learnings/LEARNINGS.md) | Session learnings and retained observations |
-| `.remember/` | [../.remember/now.md](../.remember/now.md) | Local scratch memory and session carry-forward notes |
+| `.learnings/` | [../.learnings/README.md](../.learnings/README.md) | Session learnings and retained observations |
 | `autonoma/` | [../autonoma/AUTONOMA.md](../autonoma/AUTONOMA.md) | E2E planning knowledge base, skill flows, and scenario fixtures |
-| `autoresearch/` | [../autoresearch/AGENTS.md](../autoresearch/AGENTS.md) | Experiment-loop work for autoresearch and training methodology |
+| `autoresearch/` | [../autoresearch/README.md](../autoresearch/README.md) | Experiment-loop work for autoresearch and training methodology |
 | `claudedocs/` | [../claudedocs/INDEX.md](../claudedocs/INDEX.md) | Consolidated API, research, and architecture reference docs |
-| `constitutional-sentinel-demo/` | [../constitutional-sentinel-demo/README.md](../constitutional-sentinel-demo/README.md) | Demo harness for the constitutional sentinel flow |
-| `demo/` | [../demo/README.md](../demo/README.md) | GitLab hackathon demo assets and recording workflow |
 | `docs/` | [README.md](README.md) | Main engineering docs, strategy, launch, and reference guides |
-| `eval_results/` | [../eval_results/summary.md](../eval_results/summary.md) | Eval output summaries |
 | `examples/` | [../examples/governed_agents_web/README.md](../examples/governed_agents_web/README.md) | Standalone example applications |
 | `generated-hooks/` | [../generated-hooks/validate-tasks-down-with-codex/README.md](../generated-hooks/validate-tasks-down-with-codex/README.md) | Generated workflow hooks and installation notes |
-| `gitlab-duo/` | [../gitlab-duo/AGENTS.md](../gitlab-duo/AGENTS.md) | GitLab Duo-specific guidance and chat rules |
+| `gitlab-duo/` | [../gitlab-duo/README.md](../gitlab-duo/README.md) | GitLab Duo-specific guidance and chat rules |
 | `hackathon-demo/` | [../hackathon-demo/README.md](../hackathon-demo/README.md) | Governed Agent Vault demo using `acgs-auth0` |
-| `memory/` | [../memory/2026-03-30.md](../memory/2026-03-30.md) | Archived project memory snapshots |
+| `memory/` | [../memory/README.md](../memory/README.md) | Archived project memory snapshots |
 | `packages/` | [README.md](README.md) | Monorepo packages and deployable services |
-| `plans/` | [../plans/openai-cookbook-integration-plan.md](../plans/openai-cookbook-integration-plan.md) | One-off plan artifacts |
+| `plans/` | [../plans/README.md](../plans/README.md) | One-off plan artifacts |
 | `research/` | [../research/README.md](../research/README.md) | Focused research documents |
 | `rust/` | [../rust/README.md](../rust/README.md) | Rust/PyO3 governance engine notes |
 | `src/` | [README.md](README.md) | Core services and shared runtime code |
@@ -53,6 +49,7 @@ that directory yet.
 | `packages/enhanced_agent_bus/` | [../packages/enhanced_agent_bus/README.md](../packages/enhanced_agent_bus/README.md) | Bus service and platform runtime |
 | `packages/enhanced_agent_bus/docs/` | [../packages/enhanced_agent_bus/docs/README.md](../packages/enhanced_agent_bus/docs/README.md) | Bus architecture and cleanup-plan docs |
 | `packages/enhanced_agent_bus/agent_health/` | [../packages/enhanced_agent_bus/agent_health/README.md](../packages/enhanced_agent_bus/agent_health/README.md) | Agent health API surface |
+| `packages/enhanced_agent_bus/api/routes/` | [../packages/enhanced_agent_bus/api/routes/README.md](../packages/enhanced_agent_bus/api/routes/README.md) | Route-level auth and boundary notes |
 | `packages/enhanced_agent_bus/collaboration/` | [../packages/enhanced_agent_bus/collaboration/README.md](../packages/enhanced_agent_bus/collaboration/README.md) | Collaboration module docs |
 | `packages/enhanced_agent_bus/governance/stability/` | [../packages/enhanced_agent_bus/governance/stability/README.md](../packages/enhanced_agent_bus/governance/stability/README.md) | Stability theory notes for multi-agent governance |
 | `packages/enhanced_agent_bus/monitoring/` | [../packages/enhanced_agent_bus/monitoring/README.md](../packages/enhanced_agent_bus/monitoring/README.md) | Monitoring phase summaries |
@@ -65,8 +62,8 @@ that directory yet.
 | --- | --- | --- |
 | `src/core/services/api_gateway/` | [../src/core/services/api_gateway/README.md](../src/core/services/api_gateway/README.md) | API gateway service |
 | `src/core/shared/` | [../src/core/shared/AGENTS.md](../src/core/shared/AGENTS.md) | Shared types, helpers, and cross-service guidance |
-| `src/core/shared/security/` | [../src/core/shared/security/AGENTS.md](../src/core/shared/security/AGENTS.md) | Shared security-specific guidance |
-| `src/core/shared/utilities/` | [../src/core/shared/utilities/MIGRATION_GUIDE.md](../src/core/shared/utilities/MIGRATION_GUIDE.md) | Utility migration notes |
+| `src/core/shared/security/` | [../src/core/shared/security/README.md](../src/core/shared/security/README.md) | Shared security-specific guidance and quick-start docs |
+| `src/core/shared/utilities/` | [../src/core/shared/utilities/README.md](../src/core/shared/utilities/README.md) | Utility migration notes |
 
 ## Docs and Reference Areas
 
@@ -93,7 +90,6 @@ that directory yet.
 | --- | --- | --- |
 | `autonoma/skills/` | [../autonoma/skills/README.md](../autonoma/skills/README.md) | Human-readable navigation and API skill flows |
 | `autonoma/qa-tests/` | [../autonoma/qa-tests/README.md](../autonoma/qa-tests/README.md) | End-to-end test cases by surface |
-| `.claude/evals/` | [../.claude/evals/README.md](../.claude/evals/README.md) | Eval harness commands and eval definitions |
 
 ## Notes
 
