@@ -269,17 +269,8 @@ class TestGovernedGenAI:
 class TestMCPServer:
     @pytest.fixture(autouse=True)
     def _ensure_real_mcp(self):
-        """Skip tests if mcp is not installed. Fix MCP module shadowing from enhanced_agent_bus/mcp/."""  # noqa: E501
+        """Skip if mcp not installed; fix MCP shadowing from enhanced_agent_bus/mcp/."""
         pytest.importorskip("mcp", reason="mcp package required for MCP server tests")
-
-        # Fix MCP module shadowing caused by enhanced_agent_bus/mcp/ on sys.path.
-
-        When running the full test suite, the enhanced_agent_bus conftest adds its
-        package directory to sys.path, which causes ``import mcp`` to resolve to the
-        bus's local ``mcp/`` package instead of the pip-installed ``mcp`` package.
-        This fixture purges the wrong module, reloads the correct one, and reloads
-        ``acgs_lite.integrations.mcp_server`` so ``MCP_AVAILABLE`` is set correctly.
-        """
         # Snapshot current state for restoration
         saved_mcp_modules = {
             key: sys.modules[key]
