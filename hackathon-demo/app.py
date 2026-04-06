@@ -1,4 +1,4 @@
-"""Governed Agent Vault — ACGS × Auth0 Token Vault Demo.
+"""Governed Agent Vault -- ACGS x Auth0 Token Vault Demo.
 
 FastAPI app demonstrating constitutional governance over Token Vault.
 The constitution decides which OAuth scopes an agent can access.
@@ -11,27 +11,19 @@ from __future__ import annotations
 
 import os
 import time
-from dataclasses import asdict
 from pathlib import Path
-from typing import Any
-
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 
 from acgs_auth0 import (
     ConstitutionalTokenVault,
     MACIScopePolicy,
     TokenAuditLog,
 )
-from acgs_auth0.exceptions import (
-    ConstitutionalScopeViolation,
-    MACIRoleNotPermittedError,
-    StepUpAuthRequiredError,
-)
 from acgs_auth0.token_vault import TokenVaultRequest
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -125,7 +117,7 @@ async def get_constitution():
 
 @app.post("/api/validate", response_model=GovernanceDecision)
 async def validate_action(req: AgentActionRequest):
-    """Pre-flight constitutional validation — no token exchange, just governance check."""
+    """Pre-flight constitutional validation -- no token exchange, just governance check."""
     request = TokenVaultRequest(
         agent_id=req.agent_id,
         role=req.role,
@@ -165,7 +157,7 @@ async def execute_action(req: AgentActionRequest):
         role=req.role,
         connection=req.connection,
         scopes=req.scopes,
-        refresh_token="demo-refresh-token",
+        refresh_token="demo-refresh-token",  # noqa: S106
         user_id="demo-user|abc123",
         tool_name=req.action_description or f"{req.connection}:{','.join(req.scopes)}",
     )
@@ -251,7 +243,7 @@ async def get_scenarios():
     return [
         {
             "name": "Read GitHub repos (EXECUTIVE)",
-            "description": "Executive agent reads repos — ALLOWED by constitution",
+            "description": "Executive agent reads repos -- ALLOWED by constitution",
             "request": {
                 "agent_id": "exec-agent",
                 "role": "EXECUTIVE",
@@ -263,7 +255,7 @@ async def get_scenarios():
         },
         {
             "name": "Delete GitHub repo (EXECUTIVE)",
-            "description": "Executive agent tries to delete repos — DENIED: scope not permitted for this role",
+            "description": "Executive agent tries to delete repos -- DENIED: scope not permitted for this role",
             "request": {
                 "agent_id": "exec-agent",
                 "role": "EXECUTIVE",
@@ -275,7 +267,7 @@ async def get_scenarios():
         },
         {
             "name": "Delete GitHub repo (IMPLEMENTER)",
-            "description": "Implementer can delete repos — but STEP-UP required (high-risk scope)",
+            "description": "Implementer can delete repos -- but STEP-UP required (high-risk scope)",
             "request": {
                 "agent_id": "impl-agent",
                 "role": "IMPLEMENTER",
@@ -287,7 +279,7 @@ async def get_scenarios():
         },
         {
             "name": "Read Gmail (EXECUTIVE)",
-            "description": "Executive agent reads Gmail — ALLOWED",
+            "description": "Executive agent reads Gmail -- ALLOWED",
             "request": {
                 "agent_id": "exec-agent",
                 "role": "EXECUTIVE",
@@ -299,7 +291,7 @@ async def get_scenarios():
         },
         {
             "name": "Send Gmail (JUDICIAL)",
-            "description": "Judicial agent tries to send email — DENIED: role lacks send scope",
+            "description": "Judicial agent tries to send email -- DENIED: role lacks send scope",
             "request": {
                 "agent_id": "judicial-agent",
                 "role": "JUDICIAL",
@@ -311,7 +303,7 @@ async def get_scenarios():
         },
         {
             "name": "Send Slack message (EXECUTIVE)",
-            "description": "Executive writes to Slack — STEP-UP required (chat:write is high-risk)",
+            "description": "Executive writes to Slack -- STEP-UP required (chat:write is high-risk)",
             "request": {
                 "agent_id": "exec-agent",
                 "role": "EXECUTIVE",
