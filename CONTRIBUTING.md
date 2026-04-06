@@ -2,7 +2,9 @@
 
 ## Scope
 
-This repository publishes the ACGS library on PyPI as `acgs`. The compatibility import namespace `acgs_lite` remains supported inside the codebase. Naming rules are defined in [docs/brand-architecture.md](docs/brand-architecture.md).
+This repository publishes the ACGS library on PyPI as `acgs`. The compatibility import namespace
+`acgs_lite` remains supported inside the codebase. For current repo navigation and naming
+context, start with [README.md](README.md) and [docs/README.md](docs/README.md).
 
 ## Development Setup
 

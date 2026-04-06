@@ -45,6 +45,8 @@ Typical layout:
 `MEMORY.md` should be the human-readable entrypoint index. Keep it short and link out to focused
 files.
 
+Those filenames are examples, not tracked files in this repository.
+
 ### 2. claude-mem durable search memory
 
 The local `claude-mem` tool is available for cross-session retrieval, history search, and saving
@@ -76,9 +78,9 @@ Adapted for ACGS, these categories work well:
 Recommended format:
 
 ```markdown
-- [Governance workflow](project_governance_workflow.md) — package-health and eval-first reminders
-- [Testing feedback](feedback_testing.md) — import mode, baseline debt, verification habits
-- [External references](reference_deploy_urls.md) — dashboards, endpoints, service links
+- Governance workflow (`project_governance_workflow.md`) — package-health and eval-first reminders
+- Testing feedback (`feedback_testing.md`) — import mode, baseline debt, verification habits
+- External references (`reference_deploy_urls.md`) — dashboards, endpoints, service links
 ```
 
 Keep entries brief enough that a later session can decide relevance quickly.

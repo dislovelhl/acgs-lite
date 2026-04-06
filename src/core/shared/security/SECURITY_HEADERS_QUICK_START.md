@@ -136,7 +136,7 @@ config = SecurityHeadersConfig(
 
 ## Full Documentation
 
-See [src/core/docs/security/SECURITY_HEADERS.md](../../docs/security/SECURITY_HEADERS.md) for:
+See [README.md](README.md) and [security_headers.py](security_headers.py) for:
 
 - Complete configuration options
 - Environment-specific behavior
@@ -149,6 +149,6 @@ See [src/core/docs/security/SECURITY_HEADERS.md](../../docs/security/SECURITY_HE
 
 Contact the ACGS-2 Security Team or refer to:
 
-- Full docs: `src/core/docs/security/SECURITY_HEADERS.md`
+- Shared security docs: `src/core/shared/security/README.md`
 - Source code: `src/core/shared/security/security_headers.py`
 - Tests: `src/core/shared/security/tests/test_security_headers.py`

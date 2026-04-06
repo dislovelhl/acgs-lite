@@ -4,8 +4,9 @@
 **Last updated:** 2026-03-27
 
 Current naming reference: the public package is `acgs`, the compatibility namespace is
-`acgs_lite`, and `ACGS-2` is an internal historical platform label. See
-[../brand-architecture.md](../brand-architecture.md).
+`acgs_lite`, and `ACGS-2` is an internal historical platform label. Use the root
+[README.md](../../README.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md) as the current naming
+reference on this branch.
 
 ---
 

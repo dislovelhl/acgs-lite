@@ -262,8 +262,8 @@ fa8021d fix: resolve final 23 test failures — full suite now green (20,676 pas
 
 ## Cross-References
 
-- [CLAUDE.md](/CLAUDE.md) — AI agent instructions (root)
-- [packages/acgs-lite/CLAUDE.md](/packages/acgs-lite/CLAUDE.md) — acgs-lite specifics
-- [packages/enhanced_agent_bus/CLAUDE.md](/packages/enhanced_agent_bus/CLAUDE.md) — agent-bus specifics
-- [claudedocs/research_acgs_codebase_deep_dive_20260318.md](/claudedocs/research_acgs_codebase_deep_dive_20260318.md) — Deep dive research
-- [claudedocs/design_enhanced_agent_bus_decomposition_20260318.md](/claudedocs/design_enhanced_agent_bus_decomposition_20260318.md) — Bus decomposition design
+- [../../CLAUDE.md](../../CLAUDE.md) — AI agent instructions (root)
+- [../../packages/acgs-lite/CLAUDE.md](../../packages/acgs-lite/CLAUDE.md) — acgs-lite specifics
+- [../../packages/enhanced_agent_bus/CLAUDE.md](../../packages/enhanced_agent_bus/CLAUDE.md) — agent-bus specifics
+- [../research_acgs_codebase_deep_dive_20260318.md](../research_acgs_codebase_deep_dive_20260318.md) — Deep dive research
+- [../design_enhanced_agent_bus_decomposition_20260318.md](../design_enhanced_agent_bus_decomposition_20260318.md) — Bus decomposition design
