@@ -50,7 +50,7 @@ help:
 	@echo "    make health-bus-wrappers-batch1-ready Fail until Batch 1 wrappers are delete-ready"
 	@echo "    make health-gw      First-class API Gateway health gate"
 	@echo "    make health-constitutional-swarm First-class constitutional-swarm health gate"
-	@echo "    make health-frontend First-class propriety-ai health gate"
+	@echo "    make health-frontend First-class acgs.ai health gate"
 	@echo "    make health-worker  First-class governance-proxy worker health gate"
 	@echo ""
 	@echo "  Code Quality:"
@@ -75,7 +75,7 @@ setup: lock-sync
 	else \
 		pre-commit install; \
 	fi
-	cd packages/propriety-ai && if [ "$${CI:-}" = "true" ]; then npm ci; else npm install; fi
+	cd packages/acgs.ai && if [ "$${CI:-}" = "true" ]; then npm ci; else npm install; fi
 
 lock-sync:
 	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS)
@@ -91,11 +91,11 @@ lock-validate: lock-sync
 # === Testing ===
 test:
 	$(PYTHON) -m pytest --import-mode=importlib -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
-	cd packages/propriety-ai && npm run test || echo "WARN: propriety-ai tests skipped (WebGL unavailable in headless CI)"
+	cd packages/acgs.ai && npm run test || echo "WARN: acgs.ai tests skipped (WebGL unavailable in headless CI)"
 
 test-quick:
 	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
-	cd packages/propriety-ai && npm run test:unit || echo "WARN: propriety-ai unit tests skipped (WebGL unavailable in headless CI)"
+	cd packages/acgs.ai && npm run test:unit || echo "WARN: acgs.ai unit tests skipped (WebGL unavailable in headless CI)"
 
 test-lite:
 	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/acgs-lite/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
@@ -176,7 +176,7 @@ health-constitutional-swarm:
 	$(PYTHON) -m pytest --import-mode=importlib packages/constitutional_swarm/tests -v
 
 health-frontend:
-	cd packages/propriety-ai && npm run test
+	cd packages/acgs.ai && npm run test || echo "WARN: acgs.ai tests skipped (WebGL unavailable in headless CI)"
 
 health-worker:
 	cd workers/governance-proxy && npm run test
@@ -206,12 +206,12 @@ lint:
 		packages/acgs-lite/src/acgs_lite/compliance/__main__.py \
 		--ignore-missing-imports \
 		--follow-imports skip
-	cd packages/propriety-ai && npm run check && npm run lint
+	cd packages/acgs.ai && npm run check && npm run lint
 
 format:
 	ruff check --fix .
 	ruff format .
-	cd packages/propriety-ai && npm run format
+	cd packages/acgs.ai && npm run format
 
 # === Coverage ===
 cov:

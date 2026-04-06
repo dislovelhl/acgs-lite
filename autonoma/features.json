@@ -189,7 +189,7 @@
       "path": "/",
       "core": false,
       "description": "Hero section, problem statement, code examples, compliance receipt, frameworks table, architecture features, pricing teaser",
-      "package": "propriety-ai"
+      "package": "acgs.ai"
     },
     {
       "name": "Pricing Page",
@@ -197,7 +197,7 @@
       "path": "/pricing",
       "core": false,
       "description": "Four pricing tiers with feature comparison: Community, Pro, Team, Enterprise",
-      "package": "propriety-ai"
+      "package": "acgs.ai"
     },
     {
       "name": "Resources Page",
@@ -205,7 +205,7 @@
       "path": "/resources",
       "core": false,
       "description": "Video and presentation downloads for technical deep dives",
-      "package": "propriety-ai"
+      "package": "acgs.ai"
     },
     {
       "name": "Demo Page",
@@ -213,7 +213,7 @@
       "path": "/demo",
       "core": false,
       "description": "Interactive demo entry with link to Playwright E2E suite",
-      "package": "propriety-ai"
+      "package": "acgs.ai"
     }
   ]
 }

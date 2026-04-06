@@ -15,7 +15,7 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-npx sv@0.12.8 create --template minimal --types ts --add tailwindcss="plugins:none" vitest="usages:unit,component" playwright sveltekit-adapter="adapter:static" --no-install propriety-ai
+npx sv@0.12.8 create --template minimal --types ts --add tailwindcss="plugins:none" vitest="usages:unit,component" playwright sveltekit-adapter="adapter:static" --no-install acgs.ai
 ```
 
 ## Developing

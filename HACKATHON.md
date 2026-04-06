@@ -263,9 +263,9 @@ APPROACH B: Add minimal web demo (RECOMMENDED)
   Risk:    MEDIUM — needs Auth0 tenant setup
   Pros:    Published URL, Design score, visual video story, judges can click it
   Cons:    Auth0 tenant required for live demo
-  Reuses:  acgs_auth0 package, existing propriety-ai SvelteKit patterns
+  Reuses:  acgs_auth0 package, existing acgs.ai SvelteKit patterns
 
-APPROACH C: Full propriety-ai integration
+APPROACH C: Full acgs.ai integration
   Summary: Add Token Governance page to existing SvelteKit app, wire to enhanced_agent_bus.
   Effort:  CC ~3h / Human ~3 days
   Risk:    MEDIUM-HIGH — more surface area

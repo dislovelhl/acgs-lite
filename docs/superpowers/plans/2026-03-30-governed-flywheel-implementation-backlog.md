@@ -206,9 +206,9 @@ then moving to shadow and canary promotion once evidence and operator controls a
 ### FW-015: Add flywheel admin dashboard
 
 **Files**
-- `packages/propriety-ai/src/routes/admin/flywheel/+page.svelte`
-- `packages/propriety-ai/src/lib/api/flywheel.ts`
-- `packages/propriety-ai/tests/flywheel/`
+- `packages/acgs.ai/src/routes/admin/flywheel/+page.svelte`
+- `packages/acgs.ai/src/lib/api/flywheel.ts`
+- `packages/acgs.ai/tests/flywheel/`
 
 **Acceptance criteria**
 - Admin UI lists runs, statuses, and recent evidence bundles.
@@ -218,9 +218,9 @@ then moving to shadow and canary promotion once evidence and operator controls a
 ### FW-016: Add candidate comparison and evidence views
 
 **Files**
-- `packages/propriety-ai/src/routes/admin/flywheel/[runId]/+page.svelte`
-- `packages/propriety-ai/src/lib/components/flywheel/CandidateComparison.svelte`
-- `packages/propriety-ai/src/lib/components/flywheel/RunTable.svelte`
+- `packages/acgs.ai/src/routes/admin/flywheel/[runId]/+page.svelte`
+- `packages/acgs.ai/src/lib/components/flywheel/CandidateComparison.svelte`
+- `packages/acgs.ai/src/lib/components/flywheel/RunTable.svelte`
 
 **Acceptance criteria**
 - UI shows champion vs candidate comparisons with compliance and latency deltas.

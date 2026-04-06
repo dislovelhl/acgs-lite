@@ -47,7 +47,7 @@ When fixing code issues introduced by Codex/omx:
 
 - After making multi-file edits, always run the full test suite before committing
   - ACGS: `make lint && make test-quick`
-  - Svelte: `cd packages/propriety-ai && npm run check && npm run lint`
+  - Svelte: `cd packages/acgs.ai && npm run check && npm run lint`
   - Never commit without a green test run
 - When editing JSX/TSX/Svelte files, run the build after changes and fix syntax errors before considering the task complete
 

@@ -22,7 +22,7 @@ It intentionally cherry-picks the **workflow patterns**, not the source project'
 | Import mode | **Always** `--import-mode=importlib` for repository-level runs |
 | Async tests | `asyncio_mode = auto` |
 | Quality gates | `ruff`, scoped `mypy`, package-local health targets |
-| Frontend tests | `npm run test` / `npm run test:unit` under `packages/propriety-ai` |
+| Frontend tests | `npm run test` / `npm run test:unit` under `packages/acgs.ai` |
 | Worker tests | `npm run test` under `workers/governance-proxy` |
 
 ## 3. Test Layers
@@ -86,7 +86,7 @@ repo-wide verification.
 packages/
 ├── acgs-lite/tests/                    # library tests
 ├── enhanced_agent_bus/tests/           # runtime + governance tests
-├── propriety-ai/                       # frontend tests/scripts
+├── acgs.ai/                       # frontend tests/scripts
 └── constitutional_swarm/tests/         # package-local swarm tests
 src/core/
 ├── services/api_gateway/tests/         # API service tests

@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-Add an interactive, real-time governance pipeline visualization to the existing `propriety-ai` dashboard. Users see the 4-stage governance pipeline as a live flow diagram with per-stage latency sparklines, throughput gauges, and drill-down panels — all fed by SSE streaming and existing capacity metrics.
+Add an interactive, real-time governance pipeline visualization to the existing `acgs.ai` dashboard. Users see the 4-stage governance pipeline as a live flow diagram with per-stage latency sparklines, throughput gauges, and drill-down panels — all fed by SSE streaming and existing capacity metrics.
 
 ### Design Goals
 - **Easy to use**: Zero-config, auto-connects to existing SSE endpoint, works with demo fallback
@@ -36,7 +36,7 @@ Add an interactive, real-time governance pipeline visualization to the existing 
          │
          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Frontend (propriety-ai)                                        │
+│  Frontend (acgs.ai)                                        │
 │                                                                 │
 │  /dashboard (existing page, add new tab)                        │
 │  ┌─────────────────────────────────────────────────────────────┐│
@@ -135,7 +135,7 @@ interface PipelineStage {
 ### 3.1 File Structure (New Files)
 
 ```
-propriety-ai/
+acgs.ai/
 ├── components/
 │   └── dashboard/
 │       ├── pipeline-viz.tsx          # Main pipeline visualization container

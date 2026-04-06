@@ -275,7 +275,7 @@
 
 License keys are cryptographically signed (HMAC-SHA256) with optional expiry. Validation is offline (no network calls required).
 
-### Existing Propriety.ai SaaS (propriety-ai/)
+### Existing Propriety.ai SaaS (acgs.ai/)
 
 **Stack:** Next.js + React + TypeScript
 

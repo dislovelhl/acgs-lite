@@ -1,7 +1,7 @@
 # SvelteKit Migration Design
 
 ## Context
-The `propriety-ai` dashboard currently exists as an untracked Vite/React SPA in the root directory. To align with modern practices, improve performance, and establish a clean codebase free of legacy Next.js remnants, we are migrating the frontend entirely to SvelteKit and integrating it formally into the ACGS monorepo under the `packages/` directory.
+The `acgs.ai` dashboard currently exists as an untracked Vite/React SPA in the root directory. To align with modern practices, improve performance, and establish a clean codebase free of legacy Next.js remnants, we are migrating the frontend entirely to SvelteKit and integrating it formally into the ACGS monorepo under the `packages/` directory.
 
 ## Architecture
 
@@ -9,9 +9,9 @@ The `propriety-ai` dashboard currently exists as an untracked Vite/React SPA in 
 **Adapter**: `@sveltejs/adapter-static` configured as a Single Page Application (SPA) with a fallback to `index.html`. This ensures compatibility with the existing Python backend APIs without requiring a Node.js runtime for the frontend server.
 **Styling**: Tailwind CSS v4, maintaining the current design language but leveraging Svelte's native scoping and component styling.
 **Repository Integration**:
-  - The new project will live at `packages/propriety-ai`.
-  - The old, untracked `propriety-ai/` directory will be renamed to `propriety-ai-legacy/` temporarily to serve as a side-by-side reference during the porting process.
-  - The root `.gitignore` will be updated to stop ignoring `propriety-ai/` globally, ensuring `packages/propriety-ai/src/` is tracked, while SvelteKit build artifacts (`.svelte-kit/`, `build/`, `node_modules/`) are properly ignored.
+  - The new project will live at `packages/acgs.ai`.
+  - The old, untracked `acgs.ai/` directory will be renamed to `acgs.ai-legacy/` temporarily to serve as a side-by-side reference during the porting process.
+  - The root `.gitignore` will be updated to stop ignoring `acgs.ai/` globally, ensuring `packages/acgs.ai/src/` is tracked, while SvelteKit build artifacts (`.svelte-kit/`, `build/`, `node_modules/`) are properly ignored.
 
 ## Components & Ecosystem
 
@@ -36,6 +36,6 @@ To replace React-specific libraries:
 ## Next Steps
 
 1. Rename the legacy untracked folder.
-2. Scaffold SvelteKit in `packages/propriety-ai`.
+2. Scaffold SvelteKit in `packages/acgs.ai`.
 3. Update `.gitignore` and commit the initial structure.
 4. Begin incremental porting of UI components from the legacy React app to Svelte 5 syntax.

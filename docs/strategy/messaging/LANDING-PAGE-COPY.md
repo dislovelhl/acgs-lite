@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-27
 **Status:** Draft for implementation
-**Target:** `packages/propriety-ai` homepage and supporting pages
+**Target:** `packages/acgs.ai` homepage and supporting pages
 
 ---
 

@@ -27,7 +27,7 @@ person companies). AGPL copyleft triggered legal review that blocked evaluation.
 | ACGS Python library (`acgs-lite`) | Apache-2.0 |
 | ACGS integrations | Apache-2.0 |
 | `enhanced-agent-bus` | Apache-2.0 |
-| `propriety-ai` SaaS | Proprietary |
+| `acgs.ai` SaaS | Proprietary |
 
 **Why Apache-2.0:** Zero friction for `pip install`. The previous AGPL analysis
 (cloud provider protection, dual-license revenue) was theoretically sound but

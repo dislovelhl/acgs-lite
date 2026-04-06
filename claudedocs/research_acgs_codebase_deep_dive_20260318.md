@@ -16,7 +16,7 @@ ACGS (Advanced Constitutional Governance System) is a **339K-line Python/Rust/Ty
 |--------|-------|
 | Total Python LoC | ~339,000 |
 | Test count | ~3,820 |
-| Packages | 5 (acgs-lite, enhanced-agent-bus, api-gateway, propriety-ai, SDK) |
+| Packages | 5 (acgs-lite, enhanced-agent-bus, api-gateway, acgs.ai, SDK) |
 | Rust extension | PyO3, P50 = 560ns validation |
 | Compliance frameworks | 9 implemented |
 | LLM integrations | 14 adapters |
@@ -133,7 +133,7 @@ MCP, persistence, PQC, circuit breaker, context memory, cognitive architecture, 
 **Routes (30+):**
 Health, feedback, SSO, governance, autonomy tiers, decisions, data subject rights, compliance, audit, evolution control, PQC admin, billing, x402 payment governance, plus catch-all proxy to agent-bus.
 
-### 1.4 Frontend — propriety-ai
+### 1.4 Frontend — acgs.ai
 
 React 19 + Vite + TypeScript + Tailwind + Radix UI + Framer Motion + React Three Fiber.
 Pages: Home, Dashboard, Assessment, Pricing, About, Compliance, Privacy.
@@ -337,6 +337,6 @@ All findings based on direct source code analysis of:
 - `/home/martin/Documents/acgs-clean/packages/acgs-lite/` (187 files)
 - `/home/martin/Documents/acgs-clean/packages/enhanced_agent_bus/` (714+ files)
 - `/home/martin/Documents/acgs-clean/src/core/` (100+ files)
-- `/home/martin/Documents/acgs-clean/propriety-ai/` (frontend)
+- `/home/martin/Documents/acgs-clean/acgs.ai/` (frontend)
 - `/home/martin/Documents/acgs-clean/sdk/typescript/` (SDK)
 - `/home/martin/Documents/acgs-clean/pyproject.toml` (root config)

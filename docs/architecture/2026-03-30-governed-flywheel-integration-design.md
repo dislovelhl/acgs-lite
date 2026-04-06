@@ -2,7 +2,7 @@
 
 > Date: 2026-03-30
 > Constitutional Hash: `608508a9bd224290`
-> Scope: `packages/enhanced_agent_bus/`, `src/core/services/api_gateway/`, `src/core/self_evolution/`, `packages/propriety-ai/`
+> Scope: `packages/enhanced_agent_bus/`, `src/core/services/api_gateway/`, `src/core/self_evolution/`, `packages/acgs.ai/`
 
 ## Intent
 
@@ -125,16 +125,16 @@ bus rather than a separate MLOps service that can mutate behavior outside consti
 | `src/core/services/api_gateway/routes/flywheel_admin.py` | Create | Create/list runs, inspect candidates, promote, rollback, and view evidence bundles. |
 | `src/core/services/api_gateway/routes/pipeline_metrics.py` | Modify | Replace demo-only metrics with flywheel-aware pipeline metrics over time. |
 
-### 7. Add frontend admin surfaces in `packages/propriety-ai/`
+### 7. Add frontend admin surfaces in `packages/acgs.ai/`
 
 | Path | Action | Responsibility |
 | ---- | ------ | -------------- |
-| `packages/propriety-ai/src/routes/admin/flywheel/+page.svelte` | Create | Runs overview and status dashboard. |
-| `packages/propriety-ai/src/routes/admin/flywheel/[runId]/+page.svelte` | Create | Candidate comparisons, replay metrics, and evidence bundle links. |
-| `packages/propriety-ai/src/lib/components/flywheel/RunTable.svelte` | Create | Run list with pause/resume/stop actions. |
-| `packages/propriety-ai/src/lib/components/flywheel/CandidateComparison.svelte` | Create | Champion vs candidate metrics, constitutional diffs, and rollback state. |
-| `packages/propriety-ai/src/lib/api/flywheel.ts` | Create | Typed client for admin flywheel routes. |
-| `packages/propriety-ai/tests/flywheel/` | Create | UI tests for admin flows. |
+| `packages/acgs.ai/src/routes/admin/flywheel/+page.svelte` | Create | Runs overview and status dashboard. |
+| `packages/acgs.ai/src/routes/admin/flywheel/[runId]/+page.svelte` | Create | Candidate comparisons, replay metrics, and evidence bundle links. |
+| `packages/acgs.ai/src/lib/components/flywheel/RunTable.svelte` | Create | Run list with pause/resume/stop actions. |
+| `packages/acgs.ai/src/lib/components/flywheel/CandidateComparison.svelte` | Create | Champion vs candidate metrics, constitutional diffs, and rollback state. |
+| `packages/acgs.ai/src/lib/api/flywheel.ts` | Create | Typed client for admin flywheel routes. |
+| `packages/acgs.ai/tests/flywheel/` | Create | UI tests for admin flows. |
 
 ## Canonical Runtime Flow
 

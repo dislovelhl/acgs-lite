@@ -5,7 +5,7 @@ app_description: >
   against constitutional rules, produces tamper-evident audit trails, and maps
   decisions to 9 regulatory compliance frameworks. It consists of a Python SDK
   (acgs-lite), a FastAPI API gateway, a Svelte marketing/landing site
-  (propriety-ai), and a healthcare-specific A2A agent (ClinicalGuard).
+  (acgs.ai), and a healthcare-specific A2A agent (ClinicalGuard).
 core_flows:
   - feature: Governance Validation
     description: Submit an action to the governance engine and receive an ALLOW or DENY decision with rule attribution and audit trail entry
