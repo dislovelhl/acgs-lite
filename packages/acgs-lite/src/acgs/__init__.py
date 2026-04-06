@@ -20,6 +20,7 @@ Constitutional Hash: 608508a9bd224290
 
 from acgs_lite import (
     AcknowledgedTension,
+    ViolationAction,
     ActionContext,
     ActionEnvelope,
     ActionPayloadSummary,
@@ -94,6 +95,7 @@ __all__ = [
     "AcknowledgedTension",
     "RuleSnapshot",
     "Severity",
+    "ViolationAction",
     # Engine
     "GovernanceEngine",
     "ValidationResult",

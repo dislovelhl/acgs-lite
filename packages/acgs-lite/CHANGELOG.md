@@ -5,6 +5,39 @@ All notable changes to acgs-lite will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`ViolationAction` enum** (`src/acgs_lite/constitution/rule.py`): Replaces the
+  undocumented `workflow_action: str` hint-field with a proper `str, Enum` type.
+  Values: `warn`, `block` (default), `block_and_notify`, `require_human_review`,
+  `escalate_to_senior`, `halt_and_alert`.  Old string values are still accepted via
+  Pydantic coercion; empty string `""` coerces to `BLOCK`.
+- **Enforced dispatch in `GovernanceEngine.validate()`**: the engine now routes
+  violations by `workflow_action` instead of purely by severity:
+  - `WARN` — non-blocking; violation goes to `result.warnings`, not `result.violations`.
+  - `BLOCK / BLOCK_AND_NOTIFY / REQUIRE_HUMAN_REVIEW / ESCALATE` — blocks when `strict=True`,
+    recorded when `strict=False` (always in `result.violations`).
+  - `HALT` — always raises `ConstitutionalViolationError`, ignores `strict=False`.
+- **`ValidationResult.warnings`** field (was a severity-derived property): now a first-class
+  `list[Violation]` field populated by the engine with WARN-action violations.
+- **`ValidationResult.action_taken`**: new `ViolationAction | None` field recording which
+  enforcement action was applied (`HALT`, `BLOCK`, `WARN`, or `None` for allow).
+- **`ConstitutionalViolationError.enforcement_action`**: new `ViolationAction` attribute
+  (default `BLOCK`; set to `HALT` for circuit-breaker raises).
+- **`ViolationAction` exported** from `acgs_lite` and `acgs` top-level packages.
+
+### Changed
+- `Rule.workflow_action` default changed from `""` to `ViolationAction.BLOCK`.
+  MEDIUM/LOW advisory rules should now set `workflow_action=ViolationAction.WARN` explicitly.
+- CRITICAL rules with `workflow_action=WARN` skip the hot-path early-exit; they are
+  collected and dispatched non-blockingly like any other WARN violation.
+- `serialization.py` always emits `workflow_action` in YAML/bundle output (was omitted
+  when empty).
+- `conflict_resolution.py` / `constitution.py`: conflict detection no longer guards on
+  `workflow_action != ""` (now meaningless since the field always has a value).
+- `dependency_analysis._KNOWN_WORKFLOW_ACTIONS`: added `halt_and_alert`.
+
 ## [2.6.0] - 2026-04-05
 
 ### Added

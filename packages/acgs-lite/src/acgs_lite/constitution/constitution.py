@@ -1053,11 +1053,7 @@ class Constitution(BaseModel):
                     shared = sorted(rule_kws[rid_a] & rule_kws[rid_b])
 
                     sev_conflict = ra.severity != rb.severity
-                    wf_conflict = (
-                        ra.workflow_action != rb.workflow_action
-                        and ra.workflow_action != ""
-                        and rb.workflow_action != ""
-                    )
+                    wf_conflict = ra.workflow_action != rb.workflow_action
 
                     if sev_conflict or wf_conflict:
                         conflict_entry: dict[str, Any] = {
@@ -1071,8 +1067,8 @@ class Constitution(BaseModel):
                             conflict_entry["severity_a"] = ra.severity.value
                             conflict_entry["severity_b"] = rb.severity.value
                         if wf_conflict:
-                            conflict_entry["workflow_a"] = ra.workflow_action
-                            conflict_entry["workflow_b"] = rb.workflow_action
+                            conflict_entry["workflow_a"] = ra.workflow_action.value
+                            conflict_entry["workflow_b"] = rb.workflow_action.value
                         conflicts.append(conflict_entry)
 
         recommendation = ""

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from acgs_lite.constitution import Severity
+from acgs_lite.constitution.rule import ViolationAction
 from acgs_lite.errors import ConstitutionalViolationError
 
 from .models import ValidationResult, Violation
@@ -31,6 +32,7 @@ class GovernanceMatcherMixin:
     _rule_data: list[tuple[Any, ...]]
     _rule_excs: list[Any]
     _rule_id_to_exc_idx: dict[str, int]
+    _rule_id_to_wa: dict[str, ViolationAction]
     _rust_validator: Any
     strict: bool
 
@@ -79,13 +81,17 @@ class GovernanceMatcherMixin:
             _a200 = action[:200]
             _vlist: list[Violation] = []
             _bv: Violation | None = None
+            _wa_lkup = self._rule_id_to_wa
             while _bm:
                 _idx = (_bm & -_bm).bit_length() - 1
                 _bm &= _bm - 1
                 _rd = self._rule_data[_idx]
                 _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
                 _vlist.append(_v)
-                if _bv is None and _v.severity.blocks():
+                # Exclude WARN and HALT from the immediate-raise path;
+                # HALT is handled by _post_dispatch_result with correct enforcement_action.
+                _vwa = _wa_lkup.get(_rd[0], ViolationAction.BLOCK)
+                if _bv is None and _v.severity.blocks() and _vwa not in (ViolationAction.WARN, ViolationAction.HALT):
                     _bv = _v
             fast_records.append(None)
             # strict=True is guaranteed at this call site (outer validate() guard).
@@ -155,7 +161,8 @@ class GovernanceMatcherMixin:
                 _rd = self._rule_data[_idx]
                 _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
                 _vlist.append(_v)
-                if _bv_ctx is None and _v.severity.blocks():
+                _vwa_ctx = self._rule_id_to_wa.get(_rd[0], ViolationAction.BLOCK)
+                if _bv_ctx is None and _v.severity.blocks() and _vwa_ctx not in (ViolationAction.WARN, ViolationAction.HALT):
                     _bv_ctx = _v
             if _bv_ctx is not None and self.strict:
                 raise ConstitutionalViolationError(
@@ -165,7 +172,10 @@ class GovernanceMatcherMixin:
                     action=_a200,
                 )
             fast_records.append(None)
-            _has_blocking = any(v.severity.blocks() for v in _vlist)
+            _has_blocking = any(
+                v.severity.blocks() and self._rule_id_to_wa.get(v.rule_id) not in (ViolationAction.WARN, ViolationAction.HALT)
+                for v in _vlist
+            )
             return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
         fast_records.append(None)
         return self._new_fast_allow_result()
@@ -213,7 +223,8 @@ class GovernanceMatcherMixin:
                 _rd = self._rule_data[_idx]
                 _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
                 _vlist.append(_v)
-                if _bv_meta is None and _v.severity.blocks():
+                _vwa_meta = self._rule_id_to_wa.get(_rd[0], ViolationAction.BLOCK)
+                if _bv_meta is None and _v.severity.blocks() and _vwa_meta not in (ViolationAction.WARN, ViolationAction.HALT):
                     _bv_meta = _v
             if is_noop:
                 fast_records.append(None)

@@ -43,8 +43,7 @@ def to_yaml(constitution: Constitution) -> str:
             rule_dict["patterns"] = list(r.patterns)
         if r.subcategory:
             rule_dict["subcategory"] = r.subcategory
-        if r.workflow_action:
-            rule_dict["workflow_action"] = r.workflow_action
+        rule_dict["workflow_action"] = r.workflow_action.value
         if not r.enabled:
             rule_dict["enabled"] = False
         if r.hardcoded:
@@ -125,7 +124,7 @@ def to_bundle(constitution: Constitution) -> dict[str, Any]:
             "patterns": list(r.patterns),
             "category": r.category,
             "subcategory": r.subcategory,
-            "workflow_action": r.workflow_action,
+            "workflow_action": r.workflow_action.value,
             "enabled": r.enabled,
             "hardcoded": r.hardcoded,
             "depends_on": list(r.depends_on),

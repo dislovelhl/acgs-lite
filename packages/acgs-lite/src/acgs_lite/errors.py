@@ -5,6 +5,13 @@
 
 """ACGS-Lite error types."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from acgs_lite.constitution.rule import ViolationAction
+
 
 class GovernanceError(Exception):
     """Base error for all ACGS-Lite governance failures."""
@@ -19,7 +26,7 @@ class GovernanceError(Exception):
 class ConstitutionalViolationError(GovernanceError):
     """Raised when an action violates a constitutional rule."""
 
-    __slots__ = ("severity", "action")
+    __slots__ = ("severity", "action", "enforcement_action")
 
     def __init__(
         self,
@@ -28,12 +35,16 @@ class ConstitutionalViolationError(GovernanceError):
         rule_id: str,
         severity: str = "high",
         action: str = "",
+        enforcement_action: ViolationAction | None = None,
     ) -> None:
         # Bypass GovernanceError.__init__ to save one Python call frame:
         # set the GovernanceError slot directly, then call Exception.__init__.
+        from acgs_lite.constitution.rule import ViolationAction as _VA  # noqa: PLC0415
+
         self.rule_id = rule_id
         self.severity = severity
         self.action = action
+        self.enforcement_action = enforcement_action if enforcement_action is not None else _VA.BLOCK
         Exception.__init__(self, message)
 
 

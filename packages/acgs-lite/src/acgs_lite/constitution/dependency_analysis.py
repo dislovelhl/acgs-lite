@@ -142,6 +142,7 @@ def validate_integrity(constitution: Constitution) -> dict[str, Any]:
             "require_human_review",
             "escalate_to_senior",
             "warn",
+            "halt_and_alert",
         }
     )
     errors: list[str] = []

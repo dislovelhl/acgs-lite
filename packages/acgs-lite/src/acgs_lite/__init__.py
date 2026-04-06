@@ -36,6 +36,7 @@ from acgs_lite.constitution import (
     RuleSynthesisProvider,
     Severity,
 )
+from acgs_lite.constitution.rule import ViolationAction
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
 from acgs_lite.errors import (
     ConstitutionalViolationError,
@@ -128,6 +129,7 @@ __all__ = [
     "AcknowledgedTension",
     "RuleSnapshot",
     "Severity",
+    "ViolationAction",
     # Engine
     "GovernanceEngine",
     "ValidationResult",
