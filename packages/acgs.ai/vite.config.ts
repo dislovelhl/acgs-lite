@@ -6,6 +6,7 @@ export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
 	test: {
 		environment: 'jsdom',
+		setupFiles: ['vitest-webgl-canvas-mock'],
 		globals: true,
 		include: ['src/**/*.{test,spec}.{js,ts}']
 	},

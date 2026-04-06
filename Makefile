@@ -176,7 +176,7 @@ health-constitutional-swarm:
 	$(PYTHON) -m pytest --import-mode=importlib packages/constitutional_swarm/tests -v
 
 health-frontend:
-	cd packages/acgs.ai && npm run test || echo "WARN: acgs.ai tests skipped (WebGL unavailable in headless CI)"
+	cd packages/acgs.ai && npm run test
 
 health-worker:
 	cd workers/governance-proxy && npm run test
