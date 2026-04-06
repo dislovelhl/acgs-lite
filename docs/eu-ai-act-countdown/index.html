@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EU AI Act Countdown - Is Your AI Compliant? | ACGS</title>
+  <meta name="description" content="The EU AI Act high-risk AI provisions take effect August 2, 2026. Check your compliance now with acgs-lite. Up to 7% of global annual revenue in penalties.">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #16161f;
+      --border-subtle: #1e1e2e;
+      --text-primary: #e8e8ed;
+      --text-secondary: #9898a8;
+      --accent-red: #ef4444;
+      --accent-red-glow: rgba(239, 68, 68, 0.15);
+      --accent-blue: #3b82f6;
+      --accent-blue-glow: rgba(59, 130, 246, 0.15);
+      --accent-green: #10b981;
+      --accent-green-glow: rgba(16, 185, 129, 0.15);
+      --accent-amber: #f59e0b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ef4444, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text-blue {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Countdown digits */
+    .countdown-container {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .countdown-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+    }
+
+    .countdown-digit {
+      font-size: 5rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(180deg, #ffffff 0%, #9898a8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .countdown-digit.urgent {
+      background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .countdown-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+    }
+
+    .countdown-separator {
+      font-size: 4rem;
+      font-weight: 300;
+      color: #2a2a3a;
+      line-height: 1;
+      align-self: flex-start;
+      padding-top: 0.15em;
+    }
+
+    /* Card styles */
+    .value-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 2rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .value-card:hover {
+      transform: translateY(-2px);
+      border-color: #2a2a4a;
+    }
+
+    /* Code block */
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.875rem;
+      line-height: 1.7;
+    }
+
+    .code-header {
+      background: #111118;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.625rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .code-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .code-body {
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+    }
+
+    .code-prompt { color: var(--accent-green); }
+    .code-cmd { color: var(--text-primary); }
+    .code-flag { color: var(--accent-blue); }
+    .code-value { color: var(--accent-amber); }
+    .code-comment { color: #4a4a5a; }
+    .code-output { color: var(--text-secondary); }
+    .code-success { color: var(--accent-green); }
+    .code-score { color: var(--accent-amber); }
+
+    /* Button styles */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.875rem 2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      font-size: 1rem;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 600;
+      padding: 0.875rem 2rem;
+      border-radius: 8px;
+      border: 1px solid #2a2a3a;
+      text-decoration: none;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      font-size: 1rem;
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+      border-color: #4a4a5a;
+    }
+
+    /* Penalty badge */
+    .penalty-badge {
+      display: inline-block;
+      background: var(--accent-red-glow);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--accent-red);
+      font-weight: 700;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+    }
+
+    /* Stat accent colors */
+    .stat-red { color: var(--accent-red); }
+    .stat-amber { color: var(--accent-amber); }
+
+    /* Glow ring around countdown */
+    .countdown-ring {
+      position: relative;
+    }
+
+    .countdown-ring::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(245, 158, 11, 0.1));
+      z-index: -1;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      .countdown-digit { font-size: 3rem; }
+      .countdown-unit { min-width: 70px; }
+      .countdown-separator { font-size: 2.5rem; }
+    }
+
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .countdown-digit { font-size: 4rem; }
+      .countdown-unit { min-width: 85px; }
+    }
+
+    /* Subtle background grid */
+    .bg-grid {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* Icon circles */
+    .icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue { background: var(--accent-blue-glow); color: var(--accent-blue); }
+    .icon-green { background: var(--accent-green-glow); color: var(--accent-green); }
+    .icon-red { background: var(--accent-red-glow); color: var(--accent-red); }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+    }
+  </style>
+</head>
+<body class="bg-grid">
+
+  <!-- Nav -->
+  <nav style="background: rgba(10,10,15,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-subtle);" class="fixed w-full top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="https://github.com/dislovelhl/acgs" class="flex items-center gap-2 text-white no-underline">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span style="font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em;">ACGS</span>
+      </a>
+      <a href="https://pypi.org/project/acgs-lite/" class="btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.875rem;">
+        Get Started
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="min-h-screen flex flex-col justify-center items-center px-6 pt-24 pb-16">
+    <div class="max-w-4xl mx-auto text-center">
+
+      <!-- Urgency badge -->
+      <div class="mb-8">
+        <span class="penalty-badge">EU AI Act &mdash; High-Risk Provisions</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 style="font-size: clamp(2.25rem, 5vw, 3.75rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.03em;" class="mb-4">
+        Is Your AI <span class="gradient-text">Compliant</span>?
+      </h1>
+
+      <p style="font-size: 1.2rem; color: var(--text-secondary); max-width: 600px;" class="mx-auto mb-12">
+        The EU AI Act high-risk AI provisions take effect on
+        <strong style="color: var(--text-primary);">August 2, 2026</strong>.
+        The clock is ticking.
+      </p>
+
+      <!-- Countdown -->
+      <div class="countdown-ring" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 2.5rem 2rem; margin-bottom: 2.5rem;">
+        <div class="countdown-container" id="countdown">
+          <div class="countdown-unit">
+            <span class="countdown-digit" id="days">---</span>
+            <span class="countdown-label">Days</span>
+          </div>
+          <span class="countdown-separator">:</span>
+          <div class="countdown-unit">
+            <span class="countdown-digit" id="hours">--</span>
+            <span class="countdown-label">Hours</span>
+          </div>
+          <span class="countdown-separator">:</span>
+          <div class="countdown-unit">
+            <span class="countdown-digit" id="minutes">--</span>
+            <span class="countdown-label">Minutes</span>
+          </div>
+          <span class="countdown-separator">:</span>
+          <div class="countdown-unit">
+            <span class="countdown-digit" id="seconds">--</span>
+            <span class="countdown-label">Seconds</span>
+          </div>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 1.25rem;">
+          until enforcement of Article 6 high-risk AI system obligations
+        </p>
+      </div>
+
+      <!-- Penalty stats -->
+      <div class="flex flex-wrap justify-center gap-8 mb-12" style="font-size: 0.95rem;">
+        <div class="text-center">
+          <div style="font-size: 1.75rem; font-weight: 800;" class="stat-red">7%</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem;">of global annual revenue<br>in penalties</div>
+        </div>
+        <div style="width: 1px; background: var(--border-subtle);" class="hidden sm:block"></div>
+        <div class="text-center">
+          <div style="font-size: 1.75rem; font-weight: 800;" class="stat-amber">&euro;35M</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem;">maximum fine for<br>prohibited AI practices</div>
+        </div>
+        <div style="width: 1px; background: var(--border-subtle);" class="hidden sm:block"></div>
+        <div class="text-center">
+          <div style="font-size: 1.75rem; font-weight: 800; color: var(--text-primary);">All</div>
+          <div style="color: var(--text-secondary); font-size: 0.85rem;">high-risk AI systems<br>must comply</div>
+        </div>
+      </div>
+
+      <!-- CTA buttons -->
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="https://pypi.org/project/acgs-lite/" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          Get Started Free
+        </a>
+        <a href="https://github.com/dislovelhl/acgs" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          View Documentation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CLI Demo Section -->
+  <section class="py-20 px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;" class="mb-3">
+          Check compliance in <span class="gradient-text-blue">two commands</span>
+        </h2>
+        <p style="color: var(--text-secondary); max-width: 500px;" class="mx-auto">
+          Install acgs-lite and run an EU AI Act compliance scan against your system. Get a score and actionable checklist instantly.
+        </p>
+      </div>
+
+      <div class="code-block max-w-2xl mx-auto">
+        <div class="code-header">
+          <div class="code-dot" style="background: #ef4444;"></div>
+          <div class="code-dot" style="background: #f59e0b;"></div>
+          <div class="code-dot" style="background: #10b981;"></div>
+          <span style="color: var(--text-secondary); font-size: 0.75rem; margin-left: 0.5rem;">terminal</span>
+        </div>
+        <div class="code-body">
+          <div><span class="code-prompt">$</span> <span class="code-cmd">pip install</span> <span class="code-value">acgs-lite</span></div>
+          <div class="code-comment"># ...</div>
+          <div class="code-success">Successfully installed acgs-lite-2.6.0</div>
+          <br>
+          <div><span class="code-prompt">$</span> <span class="code-cmd">acgs-lite eu-ai-act</span> <span class="code-flag">--system-id</span> <span class="code-value">"my-system"</span> <span class="code-flag">--domain</span> <span class="code-value">healthcare</span></div>
+          <br>
+          <div class="code-output">EU AI Act Compliance Report</div>
+          <div class="code-output">==========================</div>
+          <div class="code-output">System:  my-system</div>
+          <div class="code-output">Domain:  healthcare (high-risk)</div>
+          <br>
+          <div class="code-output">Compliance Score: <span class="code-score">72 / 100</span></div>
+          <br>
+          <div class="code-output">Article Checklist:</div>
+          <div class="code-success">  [PASS]  Art. 9  &mdash; Risk Management System</div>
+          <div class="code-success">  [PASS]  Art. 10 &mdash; Data Governance</div>
+          <div style="color: var(--accent-red);">  [FAIL]  Art. 11 &mdash; Technical Documentation</div>
+          <div class="code-success">  [PASS]  Art. 12 &mdash; Record-Keeping</div>
+          <div style="color: var(--accent-red);">  [FAIL]  Art. 13 &mdash; Transparency</div>
+          <div class="code-success">  [PASS]  Art. 14 &mdash; Human Oversight</div>
+          <div class="code-success">  [PASS]  Art. 15 &mdash; Accuracy &amp; Robustness</div>
+          <br>
+          <div class="code-output">2 items require remediation. Run with <span class="code-flag">--report pdf</span> for auditor-ready output.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Value Props -->
+  <section class="py-20 px-6">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-14">
+        <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;" class="mb-3">
+          Why teams choose ACGS
+        </h2>
+        <p style="color: var(--text-secondary); max-width: 520px;" class="mx-auto">
+          Constitutional governance for AI systems. Validate compliance at build time, not after deployment.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1: Frameworks -->
+        <div class="value-card">
+          <div class="icon-circle icon-blue mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;" class="mb-1">
+            9 Frameworks
+          </h3>
+          <p style="color: var(--accent-blue); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">
+            Regulatory Coverage
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            EU AI Act, GDPR, NIST AI RMF, SOC 2, HIPAA, ISO 42001, CCPA, FDA SaMD, and more. One tool, all your compliance needs.
+          </p>
+        </div>
+
+        <!-- Card 2: Performance -->
+        <div class="value-card">
+          <div class="icon-circle icon-green mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;" class="mb-1">
+            560ns
+          </h3>
+          <p style="color: var(--accent-green); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">
+            Validation Latency
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Zero performance overhead. Constitutional validation runs in nanoseconds, directly in your pipeline. No external API calls required.
+          </p>
+        </div>
+
+        <!-- Card 3: Audit Reports -->
+        <div class="value-card">
+          <div class="icon-circle icon-red mb-5">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 12 15 16 10"/></svg>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;" class="mb-1">
+            Audit-Ready
+          </h3>
+          <p style="color: var(--accent-red); font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">
+            Compliance Reports
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Generate PDF compliance reports your auditor will accept. Full article-by-article assessment with remediation guidance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Final CTA -->
+  <section class="py-20 px-6">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;" class="mb-3">
+        Don't wait for enforcement day
+      </h2>
+      <p style="color: var(--text-secondary); max-width: 480px; margin-bottom: 2rem;" class="mx-auto">
+        Start your compliance assessment today. acgs-lite is open source, free to use, and takes less than a minute to install.
+      </p>
+
+      <div class="code-block max-w-md mx-auto mb-8">
+        <div class="code-body" style="padding: 1rem 1.25rem;">
+          <span class="code-prompt">$</span> <span class="code-cmd">pip install</span> <span class="code-value">acgs-lite</span>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="https://pypi.org/project/acgs-lite/" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+          Get Started Free
+        </a>
+        <a href="https://github.com/dislovelhl/acgs" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          View Documentation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="border-top: 1px solid var(--border-subtle); background: var(--bg-secondary);" class="py-10 px-6">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div>
+          <span style="font-weight: 700; font-size: 0.95rem;">ACGS</span>
+          <span style="color: var(--text-secondary); font-size: 0.85rem; margin-left: 0.5rem;">&mdash; HTTPS for AI</span>
+        </div>
+      </div>
+      <div style="color: var(--text-secondary); font-size: 0.8rem;" class="flex items-center gap-4">
+        <span>Apache-2.0 License</span>
+        <a href="https://github.com/dislovelhl/acgs" style="color: var(--text-secondary); text-decoration: none; transition: color 0.15s;" onmouseover="this.style.color='#e8e8ed'" onmouseout="this.style.color='#9898a8'">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Countdown Script -->
+  <script>
+    (function () {
+      var TARGET = new Date('2026-08-02T00:00:00+02:00');
+
+      function pad(n) {
+        return n < 10 ? '0' + n : String(n);
+      }
+
+      function update() {
+        var now = new Date();
+        var diff = TARGET.getTime() - now.getTime();
+
+        if (diff <= 0) {
+          document.getElementById('days').textContent = '0';
+          document.getElementById('hours').textContent = '00';
+          document.getElementById('minutes').textContent = '00';
+          document.getElementById('seconds').textContent = '00';
+
+          var daysEl = document.getElementById('days');
+          daysEl.classList.add('urgent');
+          return;
+        }
+
+        var totalSeconds = Math.floor(diff / 1000);
+        var days = Math.floor(totalSeconds / 86400);
+        var hours = Math.floor((totalSeconds % 86400) / 3600);
+        var minutes = Math.floor((totalSeconds % 3600) / 60);
+        var seconds = totalSeconds % 60;
+
+        document.getElementById('days').textContent = String(days);
+        document.getElementById('hours').textContent = pad(hours);
+        document.getElementById('minutes').textContent = pad(minutes);
+        document.getElementById('seconds').textContent = pad(seconds);
+
+        var daysEl = document.getElementById('days');
+        if (days <= 90) {
+          daysEl.classList.add('urgent');
+        } else {
+          daysEl.classList.remove('urgent');
+        }
+      }
+
+      update();
+      setInterval(update, 1000);
+    })();
+  </script>
+</body>
+</html>

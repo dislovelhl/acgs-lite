@@ -375,6 +375,15 @@ class TestEuAiActNoGating:
         assert info.has_tier(Tier.TEAM)
         assert info.has_tier(Tier.ENTERPRISE)
 
+    def test_check_license_pro_lists_compliance_checklist(self, pro_key: str) -> None:
+        LicenseManager().set_license(pro_key)
+        from acgs_lite.eu_ai_act import check_license
+
+        result = check_license()
+        assert result["tier"] == "PRO"
+        assert result["pro_features"] is True
+        assert "ComplianceChecklist" in result["available_classes"]
+
 
 # ---------------------------------------------------------------------------
 # LicenseInfo helpers

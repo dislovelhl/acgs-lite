@@ -103,6 +103,9 @@ class TransparencyDisclosure:
     maintenance_instructions: str = ""
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
+    def __post_init__(self) -> None:
+        pass
+
     def validate(self) -> list[str]:
         """Validate that all required Article 13 fields are populated.
 

@@ -437,11 +437,13 @@ class TestCustomValidators:
         def bad_validator(action: str, ctx: dict) -> list[Violation]:
             raise RuntimeError("Validator crashed")
 
+        # CUSTOM-ERROR uses Severity.MEDIUM (infrastructure error: warn, not block).
+        # Appears in result.warnings, not result.violations.
         engine = _make_engine(strict=False, custom_validators=[bad_validator])
         result = engine.validate("normal action")
-        error_violations = [v for v in result.violations if v.rule_id == "CUSTOM-ERROR"]
-        assert len(error_violations) == 1
-        assert "Validator crashed" in error_violations[0].rule_text
+        error_warnings = [v for v in result.warnings if v.rule_id == "CUSTOM-ERROR"]
+        assert len(error_warnings) == 1
+        assert "Validator crashed" in error_warnings[0].rule_text
 
     def test_add_validator_method(self):
         engine = _make_engine(strict=False)
@@ -1395,7 +1397,8 @@ class TestEdgeCases:
         )
         engine = GovernanceEngine(c, strict=False)
         result = engine.validate("this is forbidden text")
-        assert len(result.violations) == 1
+        # LOW severity → workflow_action=WARN → appears in result.warnings
+        assert len(result.warnings) == 1
 
     def test_disabled_rule_not_matched(self):
         c = Constitution.from_rules(

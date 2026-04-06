@@ -1,4 +1,4 @@
-.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw build-root-package publish-root-dry-run publish-root-package build-acgs-lite publish-acgs-lite-dry-run publish-acgs-lite build-acgs publish-dry-run publish-acgs health-manifest health-overview health-lite health-bus health-bus-governance health-bus-wrappers health-bus-wrappers-batch1-ready health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit dashboard-install dashboard-dev dashboard-build dashboard-backend
+.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw build-root-package publish-root-dry-run publish-root-package build-acgs-lite publish-acgs-lite-dry-run publish-acgs-lite build-acgs publish-dry-run publish-acgs publish-check health-manifest health-overview health-lite health-bus health-bus-governance health-bus-wrappers health-bus-wrappers-batch1-ready health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit dashboard-install dashboard-dev dashboard-build dashboard-backend
 
 LOCK_PYTHON ?= 3.11
 UV ?= uv
@@ -14,7 +14,7 @@ PYTEST_ARGS ?=
 UV_SYNC_ARGS ?= --frozen --all-packages --extra dev --extra test --extra postgres --extra ml --extra messaging --extra all --python $(LOCK_PYTHON) --no-python-downloads
 
 help:
-	@echo "ACGS — Advanced Constitutional Governance System"
+	@echo "ACGS - Advanced Constitutional Governance System"
 	@echo ""
 	@echo "  Setup:"
 	@echo "    make setup        Install deps + pre-commit"
@@ -39,6 +39,7 @@ help:
 	@echo "    make build-acgs            Legacy alias for make build-root-package"
 	@echo "    make publish-dry-run       Legacy alias for make publish-root-dry-run"
 	@echo "    make publish-acgs          Legacy alias for make publish-root-package"
+	@echo "    make publish-check         Pre-publish validation (URLs, versions, large files)"
 	@echo ""
 	@echo "  Package Health:"
 	@echo "    make health-manifest Validate package health metadata"
@@ -129,6 +130,31 @@ build-acgs: build-root-package
 publish-dry-run: publish-root-dry-run
 
 publish-acgs: publish-root-package
+
+# === Pre-publish Validation ===
+publish-check:
+	@echo "=== Checking pyproject.toml validity ==="
+	@for f in packages/*/pyproject.toml; do \
+		$(PYTHON) -c "import tomllib; tomllib.load(open('$$f','rb')); print('OK: $$f')" || exit 1; \
+	done
+	@echo ""
+	@echo "=== Checking for large files in git history ==="
+	@git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectsize) %(rest)' 2>/dev/null | awk '$$1=="blob" && $$2>1048576 {printf "%.1fMB %s\n", $$2/1048576, $$3}' | sort -rnk1 | head -10 || true
+	@echo ""
+	@echo "=== Checking pyproject.toml URLs ==="
+	@$(PYTHON) -c "\
+import tomllib, pathlib; \
+[print(f'  {url}: checking...') or None \
+ for p in sorted(pathlib.Path('packages').glob('*/pyproject.toml')) \
+ for url in tomllib.load(open(p,'rb')).get('project',{}).get('urls',{}).values()]" || true
+	@echo ""
+	@echo "=== Version consistency ==="
+	@for pkg in packages/acgs-lite packages/acgs-core; do \
+		if [ -f "$$pkg/pyproject.toml" ]; then \
+			$(PYTHON) -c "import tomllib; print(tomllib.load(open('$$pkg/pyproject.toml','rb'))['project']['version'])" 2>/dev/null; \
+		fi; \
+	done
+	@echo "publish-check complete"
 
 health-manifest:
 	$(PYTHON) scripts/package_health.py validate

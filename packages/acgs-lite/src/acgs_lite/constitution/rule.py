@@ -15,7 +15,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Protocol
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .analytics import _KW_NEGATIVE_RE, _NEGATIVE_VERBS_RE, _POSITIVE_VERBS_SET
 
@@ -226,6 +226,31 @@ class Rule(BaseModel):
     # Cached derived values (set in model_post_init, never mutated after)
     _kw_lower: list[str] = []
     _compiled_pats: list[re.Pattern[str]] = []
+
+    @model_validator(mode="before")
+    @classmethod
+    def default_workflow_action_from_severity(cls, data: Any) -> Any:
+        """When workflow_action is absent, derive it from severity.
+
+        CRITICAL/HIGH → BLOCK (severity.blocks() is True).
+        MEDIUM/LOW   → WARN  (severity.blocks() is False).
+
+        This preserves the documented Severity semantics:
+        ``MEDIUM = "medium"  # Warns but allows``
+        while still letting callers explicitly override to BLOCK on any severity.
+        """
+        if not isinstance(data, dict) or "workflow_action" in data:
+            return data
+        severity_val = data.get("severity", Severity.HIGH)
+        if isinstance(severity_val, str):
+            try:
+                severity_val = Severity(severity_val)
+            except ValueError:
+                severity_val = Severity.HIGH
+        data["workflow_action"] = (
+            ViolationAction.BLOCK if severity_val.blocks() else ViolationAction.WARN
+        )
+        return data
 
     @field_validator("workflow_action", mode="before")
     @classmethod

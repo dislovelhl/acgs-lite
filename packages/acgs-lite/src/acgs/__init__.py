@@ -20,7 +20,6 @@ Constitutional Hash: 608508a9bd224290
 
 from acgs_lite import (
     AcknowledgedTension,
-    ViolationAction,
     ActionContext,
     ActionEnvelope,
     ActionPayloadSummary,
@@ -79,6 +78,7 @@ from acgs_lite import (
     SQLiteGovernanceStateBackend,
     Tier,
     ValidationResult,
+    ViolationAction,
     __constitutional_hash__,
     __version__,
     create_openshell_governance_app,

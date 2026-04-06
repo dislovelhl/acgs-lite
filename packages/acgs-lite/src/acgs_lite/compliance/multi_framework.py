@@ -138,7 +138,7 @@ def _load_plugins() -> None:
         if hasattr(eps, "select"):
             group = eps.select(group="acgs_lite.compliance_frameworks")
         else:
-            group = eps.get("acgs_lite.compliance_frameworks", [])
+            group = eps.get("acgs_lite.compliance_frameworks", [])  # type: ignore[arg-type]
 
         for ep in group:
             if ep.name in _FRAMEWORK_REGISTRY:

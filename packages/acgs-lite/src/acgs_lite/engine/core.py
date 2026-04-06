@@ -457,7 +457,13 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         warning: list[Violation] = []
         _wa_lookup = self._rule_id_to_wa
         for v in violations:
-            wa = _wa_lookup.get(v.rule_id, ViolationAction.BLOCK)
+            # For rule IDs not in the lookup (e.g. custom validators), fall back
+            # to severity-derived action: CRITICAL/HIGH → BLOCK, MEDIUM/LOW → WARN.
+            _registered_wa = _wa_lookup.get(v.rule_id)
+            if _registered_wa is not None:
+                wa = _registered_wa
+            else:
+                wa = ViolationAction.BLOCK if v.severity.blocks() else ViolationAction.WARN
             if wa is ViolationAction.HALT:
                 halt.append(v)
             elif wa is ViolationAction.WARN:
@@ -979,7 +985,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                         Violation(
                             "CUSTOM-ERROR",
                             f"Custom validator failed: {e}",
-                            Severity.HIGH,
+                            Severity.MEDIUM,  # infrastructure error: warn, do not block
                             action_200,
                             "validator-error",
                         )

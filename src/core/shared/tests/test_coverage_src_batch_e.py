@@ -1040,7 +1040,9 @@ class TestGetCurrentUser:
 
         mock_revocation = AsyncMock()
         mock_revocation.is_token_revoked = AsyncMock(return_value=True)
-        monkeypatch.setattr(_auth_dep, "_revocation_service", mock_revocation)
+        # auth.get_current_user reads auth._revocation_service (not _auth_dep)
+        monkeypatch.setattr(auth, "_revocation_service", mock_revocation)
+        monkeypatch.setattr(auth, "_revocation_service_initialized", True)
 
         token = auth.create_access_token(
             user_id="user-1",
@@ -1084,7 +1086,9 @@ class TestGetCurrentUser:
 
         mock_revocation = AsyncMock()
         mock_revocation.is_token_revoked = AsyncMock(side_effect=Exception("redis down"))
-        monkeypatch.setattr(_auth_dep, "_revocation_service", mock_revocation)
+        # auth.get_current_user reads auth._revocation_service (not _auth_dep)
+        monkeypatch.setattr(auth, "_revocation_service", mock_revocation)
+        monkeypatch.setattr(auth, "_revocation_service_initialized", True)
 
         token = auth.create_access_token(
             user_id="user-1",
@@ -1279,11 +1283,14 @@ class TestRevocationService:
     """Test _get_revocation_service."""
 
     def test_returns_cached_after_init(self, monkeypatch):
-        monkeypatch.setattr(_auth_dep, "_revocation_service", "cached")
+        # _get_revocation_service reads auth._revocation_service, not _auth_dep
+        monkeypatch.setattr(auth, "_revocation_service", "cached")
+        monkeypatch.setattr(auth, "_revocation_service_initialized", True)
         assert auth._get_revocation_service() == "cached"
 
     def test_no_redis_url_returns_none(self, monkeypatch):
-        monkeypatch.setattr(_auth_dep, "_revocation_service", None)
+        monkeypatch.setattr(auth, "_revocation_service", None)
+        monkeypatch.setattr(auth, "_revocation_service_initialized", False)
         monkeypatch.delenv("REDIS_URL", raising=False)
         result = auth._get_revocation_service()
         assert result is None

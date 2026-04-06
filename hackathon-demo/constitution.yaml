@@ -1,0 +1,44 @@
+# Constitutional Token Governance Policy
+# Defines which MACI roles can access which OAuth scopes per connection.
+# The constitution — not the agent — decides what's permitted.
+
+token_vault:
+  constitutional_hash: "608508a9bd224290"
+  connections:
+    github:
+      EXECUTIVE:
+        permitted_scopes: ["read:user", "repo"]
+        high_risk_scopes: []
+      JUDICIAL:
+        permitted_scopes: ["read:user"]
+        high_risk_scopes: []
+      IMPLEMENTER:
+        permitted_scopes: ["read:user", "repo", "delete_repo"]
+        high_risk_scopes: ["delete_repo"]
+    google-oauth2:
+      EXECUTIVE:
+        permitted_scopes:
+          - "openid"
+          - "https://www.googleapis.com/auth/gmail.readonly"
+          - "https://www.googleapis.com/auth/calendar.readonly"
+        high_risk_scopes: []
+      JUDICIAL:
+        permitted_scopes:
+          - "openid"
+        high_risk_scopes: []
+      IMPLEMENTER:
+        permitted_scopes:
+          - "openid"
+          - "https://www.googleapis.com/auth/gmail.readonly"
+          - "https://www.googleapis.com/auth/gmail.send"
+          - "https://www.googleapis.com/auth/calendar"
+        high_risk_scopes:
+          - "https://www.googleapis.com/auth/gmail.send"
+          - "https://www.googleapis.com/auth/calendar"
+    slack:
+      EXECUTIVE:
+        permitted_scopes: ["channels:read", "chat:write"]
+        high_risk_scopes: ["chat:write"]
+      JUDICIAL:
+        permitted_scopes: ["channels:read"]
+        high_risk_scopes: []

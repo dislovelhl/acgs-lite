@@ -67,6 +67,26 @@ When fixing code issues introduced by Codex/omx:
 - never self-validate agent output in violation of MACI role separation
 - do not rely on unchecked PM2 entries as operational truth
 
+## CI/CD Debugging
+
+- Always reproduce the failure locally before pushing a fix
+- Never iterate via CI. Run `make lint && make test-quick` locally first
+- If local passes but CI fails, the delta is environment (Python version, deps, import mode)
+- Single push only per fix attempt. Do not enter commit-push-wait-fix loops
+- Narrow test scope incrementally: failing test file first, then package, then full suite
+- When fixing CI failures, identify the root cause before applying ANY fix
+- Do not skip or exclude tests without explicit user approval
+
+## Python Packaging
+
+Before publishing to PyPI:
+1. No duplicate keys in pyproject.toml
+2. All URLs are valid and point to correct repos
+3. _compat/shim packages are included
+4. Run `python -m build` locally before publishing
+5. Check git history for large files: `git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectsize) %(rest)' | awk '/^blob/ && $2>1048576 {print $2,$3}' | head -5`
+6. Verify ruff auto-fixes don't introduce untracked module imports
+
 ## Skill routing
 
 When the user's request matches an available skill, ALWAYS invoke it using the Skill

@@ -683,7 +683,8 @@ class TestPythonRegexFallback:
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
         result = engine.validate("deploy to prod now")
-        assert len(result.violations) > 0
+        # PAT-MED has MEDIUM severity → WARN → result.warnings
+        assert len(result.warnings) > 0
 
     def test_regex_allow_path(self):
         """Regex fallback with no matching content returns allow."""
@@ -900,9 +901,10 @@ class TestCustomValidatorsSlowPath:
         engine = _make_engine(strict=False, custom_validators=[bad_validator])
         _disable_rust_on_engine(engine)
         result = engine.validate("normal action")
-        error_vs = [v for v in result.violations if v.rule_id == "CUSTOM-ERROR"]
-        assert len(error_vs) == 1
-        assert "boom" in error_vs[0].rule_text
+        # CUSTOM-ERROR uses MEDIUM severity (infrastructure error: warn, not block)
+        error_ws = [v for v in result.warnings if v.rule_id == "CUSTOM-ERROR"]
+        assert len(error_ws) == 1
+        assert "boom" in error_ws[0].rule_text
 
     def test_custom_validators_skipped_after_critical(self):
         """Custom validators are skipped when critical violations already found."""
@@ -1418,7 +1420,8 @@ class TestRegexPositiveVerbPatternFallback:
         _disable_ac_on_engine(engine)
         # "deploy" does NOT match neg keyword "bypass", but pattern matches
         result = engine.validate("check deploy to prod status")
-        assert len(result.violations) > 0
+        # RPO-1 is MEDIUM → WARN → result.warnings
+        assert len(result.warnings) > 0
 
     def test_regex_pos_verb_pattern_critical_raises(self):
         """Positive verb regex: critical pattern match raises.
@@ -1557,7 +1560,8 @@ class TestRegexNonPositiveVerbMultiple:
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
         result = engine.validate("expose secret key deploy to prod")
-        assert len(result.violations) >= 2
+        # RNKP-KW (HIGH) → violations; RNKP-PAT (MEDIUM) → warnings
+        assert len(result.violations) + len(result.warnings) >= 2
 
     def test_regex_npos_pattern_only_no_keyword_match(self):
         """Non-positive verb regex: no keyword match, pattern-only path.
@@ -1582,7 +1586,8 @@ class TestRegexNonPositiveVerbMultiple:
         _disable_rust_on_engine(engine)
         _disable_ac_on_engine(engine)
         result = engine.validate("the deploy to prod is pending")
-        assert len(result.violations) > 0
+        # RPNO-1 is MEDIUM → WARN → result.warnings
+        assert len(result.warnings) > 0
 
     def test_regex_npos_pattern_only_critical_raises(self):
         """Non-positive verb regex: pattern-only path with critical severity.

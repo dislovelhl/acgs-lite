@@ -328,56 +328,25 @@ class TestLicenseManager:
 
 
 # ---------------------------------------------------------------------------
-# EU AI Act tier gating
+# EU AI Act availability
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.unit
-class TestEuAiActGating:
-    def test_article12_blocked_on_free(self) -> None:
-        from acgs_lite.eu_ai_act import Article12Logger
-
-        with pytest.raises(LicenseError, match="requires acgs-lite Pro"):
-            Article12Logger(system_id="test")
-
-    def test_article12_allowed_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
+class TestEuAiActNoGating:
+    def test_article12_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import Article12Logger
 
         logger = Article12Logger(system_id="test")
         assert logger is not None
 
-    def test_risk_classifier_blocked_on_free(self) -> None:
-        from acgs_lite.eu_ai_act import RiskClassifier
-
-        with pytest.raises(LicenseError):
-            RiskClassifier()
-
-    def test_risk_classifier_allowed_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
+    def test_risk_classifier_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import RiskClassifier
 
         classifier = RiskClassifier()
         assert classifier is not None
 
-    def test_transparency_blocked_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
-        from acgs_lite.eu_ai_act import TransparencyDisclosure
-
-        with pytest.raises(LicenseError, match="TEAM"):
-            TransparencyDisclosure(  # type: ignore[call-arg]
-                system_id="test",
-                system_name="Test",
-                provider="Test",
-                intended_purpose="Test",
-                capabilities=[],
-                limitations=[],
-                human_oversight_measures=[],
-                contact_email="test@example.com",
-            )
-
-    def test_transparency_allowed_on_team(self, team_key: str) -> None:
-        LicenseManager().set_license(team_key)
+    def test_transparency_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import TransparencyDisclosure
 
         td = TransparencyDisclosure(  # type: ignore[call-arg]
@@ -392,15 +361,7 @@ class TestEuAiActGating:
         )
         assert td is not None
 
-    def test_human_oversight_blocked_on_pro(self, pro_key: str) -> None:
-        LicenseManager().set_license(pro_key)
-        from acgs_lite.eu_ai_act import HumanOversightGateway
-
-        with pytest.raises(LicenseError, match="TEAM"):
-            HumanOversightGateway(system_id="test")
-
-    def test_human_oversight_allowed_on_team(self, team_key: str) -> None:
-        LicenseManager().set_license(team_key)
+    def test_human_oversight_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import HumanOversightGateway
 
         gw = HumanOversightGateway(system_id="test")
@@ -431,6 +392,7 @@ class TestEuAiActGating:
         assert result["pro_features"] is True
         assert result["team_features"] is False
         assert "Article12Logger" in result["available_classes"]
+        assert "ComplianceChecklist" in result["available_classes"]
         assert "TransparencyDisclosure" not in result["available_classes"]
 
 

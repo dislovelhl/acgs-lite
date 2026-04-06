@@ -129,6 +129,32 @@ __all__ = [
     "ComplianceChecklist",
     "ChecklistItem",
     "ChecklistStatus",
+    # License check
+    "check_license",
 ]
 
 EU_AI_ACT_HIGH_RISK_DEADLINE = "2026-08-02"
+
+
+def check_license() -> dict[str, object]:
+    """Return a summary of EU AI Act features included with the current license tier."""
+    from acgs_lite.licensing import LicenseManager, Tier
+
+    mgr = LicenseManager()
+    info = mgr.load()
+
+    pro_ok = info.has_tier(Tier.PRO)
+    team_ok = info.has_tier(Tier.TEAM)
+
+    available: list[str] = []
+    if pro_ok:
+        available.extend(["Article12Logger", "RiskClassifier", "ComplianceChecklist"])
+    if team_ok:
+        available.extend(["TransparencyDisclosure", "HumanOversightGateway"])
+
+    return {
+        "tier": info.tier.name,
+        "pro_features": pro_ok,
+        "team_features": team_ok,
+        "available_classes": available,
+    }

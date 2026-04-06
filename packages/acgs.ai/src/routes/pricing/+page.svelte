@@ -25,91 +25,69 @@
 			name: 'Community',
 			price: 'Free',
 			period: 'forever',
-			desc: 'Full engine, local audit, MACI separation of powers.',
+			desc: 'Full governance engine, single constitution, local audit.',
 			items: [
-				'Complete governance engine',
-				'YAML + code-first rules',
+				'Full governance engine',
+				'Single constitution',
+				'Local audit log',
 				'MACI separation of powers',
-				'Local tamper-evident audit trail',
-				'Real-time CLI watch mode',
+				'YAML + code-first rules',
 				'Optional Rust acceleration',
 				'Community support (GitHub)'
 			],
-			cta: 'pip install acgs',
+			cta: 'Install Free',
 			ctaHref: 'https://pypi.org/project/acgs/'
 		},
 		{
 			name: 'Starter',
 			price: '$49',
 			period: '/month',
-			desc: 'Cloud audit sync, compliance basics, perfect for small teams.',
+			desc: 'Cloud audit sync, 1 compliance framework, CLI reports.',
 			items: [
 				'Everything in Community',
+				'1 compliance framework (choose from 9)',
+				'CLI report generation (PDF/JSON)',
 				'100K validations/month',
 				'Cloud audit sync (7-day retention)',
-				'EU AI Act quick assessment',
-				'Basic compliance dashboard',
-				'Community + email support (72h SLA)'
+				'Email support'
 			],
-			cta: 'Start free trial',
+			cta: 'Start Free Trial',
 			ctaHref: '#'
 		},
 		{
 			name: 'Pro',
 			price: '$299',
 			period: '/month',
-			desc: 'Full compliance, 3 frameworks, real-time observability.',
+			desc: '3 frameworks, 1M validations, dashboard access.',
 			items: [
 				'Everything in Starter',
+				'3 compliance frameworks',
 				'1M validations/month',
-				'Real-time observability stream',
-				'EU AI Act Article 12 audit logger',
-				'Risk classification engine',
-				'Compliance gap report (PDF/JSON)',
 				'Cloud audit sync (30-day retention)',
+				'EU AI Act Articles 12/13/14',
+				'Risk classification engine',
+				'Dashboard access',
 				'Email support (48h SLA)'
 			],
-			cta: 'Start free trial',
+			cta: 'Start Free Trial',
 			ctaHref: '#',
 			highlight: true
-		},
-		{
-			name: 'Team',
-			price: '$999',
-			period: '/month',
-			desc: 'All 9 frameworks, SSO, multi-constitution management.',
-			items: [
-				'Everything in Pro',
-				'10M validations/month',
-				'Portable telemetry bundles',
-				'OpenTelemetry + Prometheus integration',
-				'Multi-constitution (dev/staging/prod)',
-				'Constitutional change approval workflow',
-				'Cloud audit (1-year retention)',
-				'SSO (SAML/OIDC)',
-				'Priority support (4h SLA)'
-			],
-			cta: 'Start free trial',
-			ctaHref: '#'
 		},
 		{
 			name: 'Enterprise',
 			price: 'Custom',
 			period: '',
-			desc: 'On-prem, unlimited, dedicated compliance engineer.',
+			desc: 'All 9+ frameworks, unlimited, on-prem, dedicated support.',
 			items: [
-				'Everything in Team',
+				'Everything in Pro',
+				'All 9+ frameworks',
 				'Unlimited validations',
-				'1.1M RPS throughput SLA',
-				'3.9µs P99 latency guarantee',
-				'Custom regulatory frameworks',
 				'On-premise / VPC deployment',
-				'Dedicated compliance engineer',
-				'Quarterly constitutional review',
-				'Audit integration (Splunk, Datadog, ELK)',
-				'Dedicated support (1h SLA)'
+				'SSO (SAML/OIDC)',
+				'Dedicated support',
+				'Custom rules'
 			],
-			cta: 'Contact sales',
+			cta: 'Contact Sales',
 			ctaHref: 'mailto:hello@acgs.ai'
 		}
 	];
@@ -137,7 +115,7 @@
 			</p>
 		</div>
 
-		<div class="fade-in mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5" use:observe>
+		<div class="fade-in mt-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4" use:observe>
 				{#each tiers as tier (tier.name)}
 				<div
 					class="relative flex flex-col rounded-2xl border bg-[#0a0a0a] p-10 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1
