@@ -55,11 +55,17 @@ help:
 	@echo ""
 
 # ── Setup ─────────────────────────────────────────────────────────────────────
+# Python 3.11 is the CI-pinned version. Use it when available; fall back to 3.12.
+# crewai/autogen extras require <=3.13 — they are intentionally excluded here.
+# For the full locked environment use: uv sync --all-extras && uv run make test
+PYTHON3_11 := $(shell which python3.11 2>/dev/null || which python3.12 2>/dev/null || echo python3)
+
 dev-setup:
-	@echo "Creating .venv and installing dev deps..."
-	python3 -m venv .venv
+	@echo "Creating .venv with $(PYTHON3_11) and installing dev deps..."
+	$(PYTHON3_11) -m venv .venv
 	.venv/bin/pip install --upgrade pip -q
-	.venv/bin/pip install -e ".[dev]" -q
+	.venv/bin/pip install -e ".[dev,openai,anthropic,langchain,mcp,mistral,google,llamaindex,litellm,otel]" -q
+	.venv/bin/pip install fastapi httpx -q   # root conftest deps (standalone mode)
 	@echo ""
 	@echo "  Virtual environment : .venv/"
 	@echo "  Activate (Unix/macOS): source .venv/bin/activate"
@@ -67,6 +73,8 @@ dev-setup:
 	@echo ""
 	@if [ ! -f .env.test ]; then cp .env.example .env.test 2>/dev/null || true; fi
 	@echo "  API keys: see .env.example (all placeholders, no real keys needed)"
+	@echo "  Note: crewai/autogen/a2a extras excluded (require Python <=3.13)"
+	@echo "  Full locked env: uv sync --all-extras && uv run make test"
 	@echo "  Ready.  Run: source .venv/bin/activate && make test"
 
 install:
@@ -81,23 +89,38 @@ install-dev:
 
 # ── Testing ───────────────────────────────────────────────────────────────────
 # ACGS tests use InMemory* stubs — zero external deps in CI.
-# Set placeholder key so any import-time validation passes:
+# Set placeholder key so any import-time validation passes.
+#
+# Canonical path (CI / full suite): uv run make test      (4687+ tests)
+# Standalone venv path: source .venv/bin/activate && make test
+#   Note: test_governed_constrained_output.py imports enhanced_agent_bus
+#   (a workspace-only package). It is excluded from the standalone run via
+#   PYTEST_IGNORE below; the uv workspace run covers it fully.
+PYTEST_IGNORE_STANDALONE := $(if $(wildcard ../../uv.lock),,--ignore=$(TEST_DIR)/test_governed_constrained_output.py)
 TEST_ENV = OPENAI_API_KEY=test-key-for-unit-tests \
            ANTHROPIC_API_KEY=test-key-for-unit-tests
 
+# --rootdir isolates pytest from the workspace root conftest.py when using a
+# standalone .venv.  uv run pytest (workspace mode) loads the root conftest
+# automatically via PYTHONPATH, so this flag is harmless there too.
+PYTEST_ROOTDIR := --rootdir=$(PACKAGE_DIR)
+
 test:
 	$(TEST_ENV) $(PYTEST) $(TEST_DIR)/ \
+	    $(PYTEST_ROOTDIR) $(PYTEST_IGNORE_STANDALONE) \
 	    --import-mode=importlib \
 	    -v
 
 test-quick:
 	$(TEST_ENV) $(PYTEST) $(TEST_DIR)/ \
+	    $(PYTEST_ROOTDIR) $(PYTEST_IGNORE_STANDALONE) \
 	    --import-mode=importlib \
 	    -m "not slow and not benchmark" \
 	    -x -v
 
 test-cov:
 	$(TEST_ENV) $(PYTEST) $(TEST_DIR)/ \
+	    $(PYTEST_ROOTDIR) $(PYTEST_IGNORE_STANDALONE) \
 	    --import-mode=importlib \
 	    --cov=$(SRC_DIR) \
 	    --cov-report=term-missing \

@@ -23,14 +23,18 @@ ACGS-Lite is a Python 3.10+ project. We use `ruff` for linting and `pytest` for 
 git clone https://github.com/dislovelhl/acgs-lite.git
 cd acgs-lite
 
-# 2. Install in editable mode with dev dependencies
-pip install -e ".[dev,mcp,all]"
+# Option A — uv workspace (recommended, matches CI exactly)
+uv sync --all-extras           # first-time: installs the locked venv
+uv run make test-quick         # runs tests inside the locked venv
 
-# 3. Verify the installation
+# Option B — standalone venv (standalone/offline use)
+python3 -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -e ".[dev,mcp,all]"
 make test-quick
 ```
 
-**Note**: All tests use `InMemory` stubs. You do **not** need live API keys for OpenAI or Anthropic to run the test suite.
+**Note**: All tests use `InMemory` stubs. You do **not** need live API keys for OpenAI or Anthropic to run the test suite. Any placeholder value (e.g. `OPENAI_API_KEY=test-key`) is sufficient — see `.env.example`.
 
 ## 🧪 Testing Policy (TDD)
 
@@ -53,9 +57,11 @@ We follow a strict **Test-Driven Development** workflow. Every feature or fix mu
 3.  Implement your changes and add tests.
 4.  Run the verification suite:
     ```bash
-    make lint
-    make typecheck
-    make test-cov
+    uv run make lint
+    uv run make typecheck
+    uv run make test-cov
+    # or with the standalone venv active:
+    # make lint && make typecheck && make test-cov
     ```
 5.  Submit your PR with a **Conventional Commit** message (e.g., `feat: add NIST AI RMF mapping`).
 
