@@ -91,7 +91,7 @@ jobs:
         run: |
           uv sync --frozen --all-extras
           # Ensure optional SDKs are present (workspace extras may not pull them all)
-          uv pip install "anthropic>=0.30" "google-genai>=1.0" "mcp>=1.0" --quiet
+          uv pip install "anthropic>=0.30" "google-genai>=1.0" "mcp>=1.0" "langchain-core>=0.3" --quiet
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust

@@ -53,6 +53,10 @@ except ImportError:
     logger.warning(
         f"[{CONSTITUTIONAL_HASH}] OpenTelemetry not available, using no-op implementations"
     )
+    # Provide module-level stubs so tests can patch these attributes even when
+    # opentelemetry is not installed.
+    trace = None  # type: ignore[assignment]
+    metrics = None  # type: ignore[assignment]
 
 
 def _get_env_default() -> str:

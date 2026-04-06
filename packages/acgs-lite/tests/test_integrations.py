@@ -225,6 +225,12 @@ class TestGovernedAnthropic:
 
 @pytest.mark.integration
 class TestGovernanceRunnable:
+    @pytest.fixture(autouse=True)
+    def _patch_langchain_available(self):
+        """Patch LANGCHAIN_AVAILABLE so tests work without langchain-core installed."""
+        with patch("acgs_lite.integrations.langchain.LANGCHAIN_AVAILABLE", True):
+            yield
+
     def test_wrap_and_invoke(self):
         mock_runnable = MagicMock()
         mock_runnable.invoke.return_value = "Processed result"
