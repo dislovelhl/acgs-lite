@@ -161,7 +161,7 @@ jobs:
         run: |
           uv sync --frozen --all-extras
           # Ensure aiofiles and anthropic are present for bus tests
-          uv pip install "aiofiles>=24.1.0" "anthropic>=0.30" \
+          uv pip install "aiofiles>=24.1.0" "anthropic>=0.30" "aiohttp>=3.9" \
             "opentelemetry-sdk>=1.20" \
             "opentelemetry-exporter-otlp-proto-grpc>=1.20" --quiet
 
@@ -198,6 +198,9 @@ jobs:
         run: |
           uv sync --frozen --all-extras
           uv pip install -e packages/acgs-core --no-deps
+          # Optional SDKs not pulled transitively by all-extras
+          uv pip install "anthropic>=0.30" "google-genai>=1.0" "mcp>=1.0" \
+            "langchain-core>=0.3" "opentelemetry-sdk>=1.20" --quiet
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust
