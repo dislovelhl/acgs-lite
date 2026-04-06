@@ -130,7 +130,7 @@ def _embedding_fingerprint(rules: list[Rule]) -> str:
         has_emb = "1" if r.embedding else "0"
         parts.append(f"{r.id}:{has_emb}:{r.text[:100]}")
     payload = "\n".join(parts)
-    return hashlib.md5(payload.encode()).hexdigest()[:12]
+    return hashlib.md5(payload.encode(), usedforsecurity=False).hexdigest()[:12]  # noqa: S324
 
 
 class SemanticRuleSearch:

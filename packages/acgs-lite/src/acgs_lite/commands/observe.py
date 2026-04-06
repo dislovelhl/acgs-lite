@@ -199,7 +199,7 @@ def _post_otlp_json(
         headers={"Content-Type": "application/json", **(headers or {})},
         method="POST",
     )
-    with urllib_request.urlopen(request, timeout=timeout_seconds) as response:
+    with urllib_request.urlopen(request, timeout=timeout_seconds) as response:  # nosec B310 — scheme validated above
         status = getattr(response, "status", None)
         return int(status if status is not None else response.getcode())
 

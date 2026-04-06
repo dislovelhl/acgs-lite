@@ -29,7 +29,7 @@ from . import (
     similarity,
     workflow_analytics,
 )
-from .rule import AcknowledgedTension, Rule, Severity
+from .rule import AcknowledgedTension, Rule, Severity, ViolationAction
 
 if TYPE_CHECKING:
     from .templates import ConstitutionBuilder
@@ -239,7 +239,7 @@ class Constitution(BaseModel):
                     keywords=["self-validate", "bypass validation", "skip check"],
                     category="integrity",
                     subcategory="self-modification",
-                    workflow_action="block",
+                    workflow_action=ViolationAction.BLOCK,
                     tags=["compliance", "eu-ai-act"],
                 ),
                 Rule(
@@ -249,7 +249,7 @@ class Constitution(BaseModel):
                     keywords=["no-audit", "skip audit", "disable logging"],
                     category="audit",
                     subcategory="trail-completeness",
-                    workflow_action="require_human_review",
+                    workflow_action=ViolationAction.REQUIRE_HUMAN_REVIEW,
                     tags=["compliance", "sox", "eu-ai-act"],
                 ),
                 Rule(
@@ -260,7 +260,7 @@ class Constitution(BaseModel):
                     category="access",
                     subcategory="scope-violation",
                     depends_on=["ACGS-002"],  # scope violations must be audited
-                    workflow_action="block",
+                    workflow_action=ViolationAction.BLOCK,
                     tags=["compliance", "gdpr", "eu-ai-act"],
                 ),
                 Rule(
@@ -271,7 +271,7 @@ class Constitution(BaseModel):
                     category="maci",
                     subcategory="separation-of-powers",
                     depends_on=["ACGS-001"],  # self-validation is a form of self-modification
-                    workflow_action="block",
+                    workflow_action=ViolationAction.BLOCK,
                     tags=["compliance", "eu-ai-act"],
                 ),
                 Rule(
@@ -282,7 +282,7 @@ class Constitution(BaseModel):
                     category="integrity",
                     subcategory="hash-verification",
                     depends_on=["ACGS-001"],  # hash bypass is a form of validation bypass
-                    workflow_action="require_human_review",
+                    workflow_action=ViolationAction.REQUIRE_HUMAN_REVIEW,
                     tags=["compliance", "eu-ai-act"],
                 ),
                 Rule(
@@ -297,7 +297,7 @@ class Constitution(BaseModel):
                     ],
                     category="data-protection",
                     subcategory="credential-exposure",
-                    workflow_action="block_and_notify",
+                    workflow_action=ViolationAction.BLOCK_AND_NOTIFY,
                     tags=["gdpr", "pci-dss", "hipaa"],
                 ),
             ],

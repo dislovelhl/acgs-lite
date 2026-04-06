@@ -149,7 +149,7 @@ def create_governance_app(
             return resolved_audit_store.verify_chain()
         return audit_log.verify_chain()
 
-    @app.post("/validate")  # type: ignore[untyped-decorator]
+    @app.post("/validate")
     def validate_action(payload: dict[str, Any]) -> dict[str, Any]:
         action = cast(str, payload.get("action", ""))
         if not action.strip():
@@ -172,7 +172,7 @@ def create_governance_app(
 
     # --- Rules CRUD ---
 
-    @app.get("/rules")  # type: ignore[untyped-decorator]
+    @app.get("/rules")
     def list_rules() -> list[dict[str, Any]]:
         return [
             {
@@ -191,14 +191,14 @@ def create_governance_app(
             for r in gov_constitution.rules
         ]
 
-    @app.get("/rules/{rule_id}")  # type: ignore[untyped-decorator]
+    @app.get("/rules/{rule_id}")
     def get_rule(rule_id: str) -> dict[str, Any]:
         for r in gov_constitution.rules:
             if r.id == rule_id:
                 return r.model_dump()
         raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
 
-    @app.post("/rules", status_code=201)  # type: ignore[untyped-decorator]
+    @app.post("/rules", status_code=201)
     def create_rule(payload: dict[str, Any]) -> dict[str, Any]:
         from acgs_lite.constitution import Rule, Severity
 
@@ -229,7 +229,7 @@ def create_governance_app(
         _rebuild_engine()
         return rule.model_dump()
 
-    @app.put("/rules/{rule_id}")  # type: ignore[untyped-decorator]
+    @app.put("/rules/{rule_id}")
     def update_rule(rule_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         from acgs_lite.constitution import Rule, Severity
 
@@ -262,7 +262,7 @@ def create_governance_app(
         _rebuild_engine()
         return updated.model_dump()
 
-    @app.delete("/rules/{rule_id}", status_code=204)  # type: ignore[untyped-decorator]
+    @app.delete("/rules/{rule_id}", status_code=204)
     def delete_rule(rule_id: str) -> None:
         if not any(r.id == rule_id for r in gov_constitution.rules):
             raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
@@ -281,7 +281,7 @@ def create_governance_app(
 
     # --- Audit Trail ---
 
-    @app.get("/audit/entries")  # type: ignore[untyped-decorator]
+    @app.get("/audit/entries")
     def list_audit_entries(
         limit: int = Query(default=100, ge=1, le=1000),
         offset: int = Query(default=0, ge=0),
@@ -292,24 +292,24 @@ def create_governance_app(
             for entry in _list_audit_entries(limit=limit, offset=offset, agent_id=agent_id)
         ]
 
-    @app.get("/audit/chain")  # type: ignore[untyped-decorator]
+    @app.get("/audit/chain")
     def audit_chain_status() -> dict[str, Any]:
         return {
             "valid": _audit_chain_valid(),
             "entry_count": _audit_count(),
         }
 
-    @app.get("/audit/count")  # type: ignore[untyped-decorator]
+    @app.get("/audit/count")
     def audit_count() -> dict[str, int]:
         return {"count": _audit_count()}
 
     # --- Health & Stats ---
 
-    @app.get("/health")  # type: ignore[untyped-decorator]
+    @app.get("/health")
     def health_check() -> dict[str, str]:
         return {"status": "ok", "engine": "ready"}
 
-    @app.get("/stats")  # type: ignore[untyped-decorator]
+    @app.get("/stats")
     def get_stats() -> dict[str, Any]:
         return {
             **engine.stats,
@@ -326,7 +326,7 @@ def create_governance_app(
             state_backend = JsonFileGovernanceStateBackend(openshell_state_path)
         app.include_router(
             create_openshell_governance_router(
-                audit_log=audit_log,
+                audit_log=cast(Any, audit_log),
                 observability_hook=openshell_observability_hook,
                 state_backend=state_backend,
             )

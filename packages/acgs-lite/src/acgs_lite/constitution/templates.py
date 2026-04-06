@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from .core import Constitution, Rule, Severity
+from .rule import ViolationAction
 
 
 class ConstitutionBuilder:
@@ -36,7 +37,7 @@ class ConstitutionBuilder:
                 severity="critical",
                 keywords=["invest", "buy stocks", "financial advice"],
                 category="regulatory",
-                workflow_action="block",
+                workflow_action=ViolationAction.BLOCK,
             )
             .add_rule(
                 "SAFE-002",
@@ -44,7 +45,7 @@ class ConstitutionBuilder:
                 severity="critical",
                 patterns=[r"\b\\d{3}-\\d{2}-\\d{4}\b"],
                 category="data-protection",
-                workflow_action="block_and_notify",
+                workflow_action=ViolationAction.BLOCK_AND_NOTIFY,
             )
             .build()
         )
@@ -84,7 +85,7 @@ class ConstitutionBuilder:
         patterns: list[str] | None = None,
         category: str = "general",
         subcategory: str = "",
-        workflow_action: str = "",
+        workflow_action: ViolationAction | str = "",
         enabled: bool = True,
         depends_on: list[str] | None = None,
         tags: list[str] | None = None,
@@ -114,6 +115,7 @@ class ConstitutionBuilder:
             raise ValueError(f"Rule ID {rule_id!r} already exists in this builder")
 
         _sev = Severity(severity) if isinstance(severity, str) else severity
+        _wa = ViolationAction(workflow_action) if isinstance(workflow_action, str) and workflow_action else workflow_action
         rule = Rule(
             id=rule_id,
             text=text,
@@ -122,7 +124,7 @@ class ConstitutionBuilder:
             patterns=patterns or [],
             category=category,
             subcategory=subcategory,
-            workflow_action=workflow_action,
+            workflow_action=_wa,  # type: ignore[arg-type]  # Pydantic coerces str→ViolationAction
             enabled=enabled,
             depends_on=depends_on or [],
             tags=tags or [],
