@@ -87,7 +87,14 @@ class TestWarnAction:
     def test_warn_does_not_raise(self) -> None:
         """A WARN rule violation should not raise; it appears in result.warnings."""
         engine = _engine(
-            [_rule("W1", ["plaintext"], severity=Severity.MEDIUM, workflow_action=ViolationAction.WARN)],
+            [
+                _rule(
+                    "W1",
+                    ["plaintext"],
+                    severity=Severity.MEDIUM,
+                    workflow_action=ViolationAction.WARN,
+                )
+            ],
             strict=True,
         )
         result = engine.validate("send data in plaintext format")
@@ -99,7 +106,11 @@ class TestWarnAction:
 
     def test_warn_does_not_raise_strict_false(self) -> None:
         engine = _engine(
-            [_rule("W1", ["plaintext"], severity=Severity.LOW, workflow_action=ViolationAction.WARN)],
+            [
+                _rule(
+                    "W1", ["plaintext"], severity=Severity.LOW, workflow_action=ViolationAction.WARN
+                )
+            ],
             strict=False,
         )
         result = engine.validate("send plaintext notice")
@@ -109,7 +120,14 @@ class TestWarnAction:
     def test_warn_critical_severity_still_non_blocking(self) -> None:
         """Even CRITICAL severity is non-blocking when workflow_action=WARN."""
         engine = _engine(
-            [_rule("W-CRIT", ["plaintext"], severity=Severity.CRITICAL, workflow_action=ViolationAction.WARN)],
+            [
+                _rule(
+                    "W-CRIT",
+                    ["plaintext"],
+                    severity=Severity.CRITICAL,
+                    workflow_action=ViolationAction.WARN,
+                )
+            ],
             strict=True,
         )
         result = engine.validate("send data in plaintext format")
@@ -128,7 +146,14 @@ class TestBlockAction:
     def test_block_raises_when_strict(self) -> None:
         """A BLOCK rule violation raises ConstitutionalViolationError when strict=True."""
         engine = _engine(
-            [_rule("B1", ["plaintext"], severity=Severity.HIGH, workflow_action=ViolationAction.BLOCK)],
+            [
+                _rule(
+                    "B1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.BLOCK,
+                )
+            ],
         )
         with pytest.raises(ConstitutionalViolationError) as exc:
             engine.validate("send data in plaintext format")
@@ -137,7 +162,14 @@ class TestBlockAction:
     def test_block_does_not_raise_when_not_strict(self) -> None:
         """When strict=False, BLOCK violations are recorded but don't raise."""
         engine = _engine(
-            [_rule("B1", ["plaintext"], severity=Severity.HIGH, workflow_action=ViolationAction.BLOCK)],
+            [
+                _rule(
+                    "B1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.BLOCK,
+                )
+            ],
             strict=False,
         )
         result = engine.validate("send data in plaintext")
@@ -158,7 +190,14 @@ class TestHaltAction:
     def test_halt_always_raises_when_not_strict(self) -> None:
         """A HALT rule violation always raises, even when strict=False."""
         engine = _engine(
-            [_rule("H1", ["plaintext"], severity=Severity.HIGH, workflow_action=ViolationAction.HALT)],
+            [
+                _rule(
+                    "H1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.HALT,
+                )
+            ],
             strict=False,
         )
         with pytest.raises(ConstitutionalViolationError) as exc:
@@ -168,7 +207,14 @@ class TestHaltAction:
     def test_halt_raises_when_strict(self) -> None:
         """A HALT violation raises when strict=True as well."""
         engine = _engine(
-            [_rule("H1", ["plaintext"], severity=Severity.HIGH, workflow_action=ViolationAction.HALT)],
+            [
+                _rule(
+                    "H1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.HALT,
+                )
+            ],
         )
         with pytest.raises(ConstitutionalViolationError) as exc:
             engine.validate("send data in plaintext format")
@@ -185,8 +231,12 @@ class TestMixedActions:
     def test_warn_and_block_mixed_raises_on_block(self) -> None:
         """Mixed rules: WARN fires silently, BLOCK raises."""
         rules = [
-            _rule("W1", ["plaintext"], severity=Severity.MEDIUM, workflow_action=ViolationAction.WARN),
-            _rule("B1", ["forbidden"], severity=Severity.HIGH, workflow_action=ViolationAction.BLOCK),
+            _rule(
+                "W1", ["plaintext"], severity=Severity.MEDIUM, workflow_action=ViolationAction.WARN
+            ),
+            _rule(
+                "B1", ["forbidden"], severity=Severity.HIGH, workflow_action=ViolationAction.BLOCK
+            ),
         ]
         engine = _engine(rules)
         with pytest.raises(ConstitutionalViolationError) as exc:
@@ -196,8 +246,12 @@ class TestMixedActions:
     def test_only_warn_fires_no_raise(self) -> None:
         """When only WARN rules fire, no exception raised."""
         rules = [
-            _rule("W1", ["plaintext"], severity=Severity.MEDIUM, workflow_action=ViolationAction.WARN),
-            _rule("B1", ["forbidden"], severity=Severity.HIGH, workflow_action=ViolationAction.BLOCK),
+            _rule(
+                "W1", ["plaintext"], severity=Severity.MEDIUM, workflow_action=ViolationAction.WARN
+            ),
+            _rule(
+                "B1", ["forbidden"], severity=Severity.HIGH, workflow_action=ViolationAction.BLOCK
+            ),
         ]
         engine = _engine(rules)
         result = engine.validate("send data in plaintext format")
@@ -272,14 +326,24 @@ class TestBlockingVariants:
 class TestMatchDetail:
     def test_match_detail_workflow_action_is_string(self) -> None:
         """match_detail() returns workflow_action as a plain string value."""
-        r = Rule(id="R1", text="advisory notice", keywords=["advisory"], workflow_action=ViolationAction.WARN)
+        r = Rule(
+            id="R1",
+            text="advisory notice",
+            keywords=["advisory"],
+            workflow_action=ViolationAction.WARN,
+        )
         detail = r.match_detail("handle advisory content carefully")
         assert detail["matched"] is True
         assert detail["workflow_action"] == "warn"
         assert isinstance(detail["workflow_action"], str)
 
     def test_match_detail_no_match_returns_value(self) -> None:
-        r = Rule(id="R1", text="forbidden content", keywords=["forbidden"], workflow_action=ViolationAction.BLOCK)
+        r = Rule(
+            id="R1",
+            text="forbidden content",
+            keywords=["forbidden"],
+            workflow_action=ViolationAction.BLOCK,
+        )
         detail = r.match_detail("safe action here")
         assert detail["matched"] is False
         assert detail["workflow_action"] == "block"
