@@ -1,172 +1,93 @@
-# acgs-lite
+# ACGS-Lite: Constitutional AI Governance for Agents
 
-[![PyPI](https://img.shields.io/pypi/v/acgs-lite)](https://pypi.org/project/acgs-lite/)
-[![Python](https://img.shields.io/pypi/pyversions/acgs-lite)](https://pypi.org/project/acgs-lite/)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![PyPI](https://img.shields.io/pypi/v/acgs-lite?color=blue&style=for-the-badge)](https://pypi.org/project/acgs-lite/)
+[![Python](https://img.shields.io/pypi/pyversions/acgs-lite?style=for-the-badge)](https://pypi.org/project/acgs-lite/)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-green.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
 
-**Constitutional AI governance for any agent — enforce rules, audit decisions, and prevent self-validation.**
+**The missing safety layer between your LLM and production.**
 
-`acgs-lite` is the core ACGS library. Load a constitution (a set of rules), wrap any agent or callable in `GovernedAgent`, and every action is validated before it executes. Violations are blocked; every decision is written to a tamper-evident audit log. MACI (separation of powers) prevents a single agent from proposing, validating, and executing the same action.
+`acgs-lite` is the core library for Constitutional AI Governance. It allows you to define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Stop bolting on security post-deployment; embed ethical principles and behavioral guidelines directly into your autonomous systems.
 
-## Installation
+Unlike traditional AI security that relies on prompt engineering, ACGS interposes a deterministic Governance Engine between your agent and its tools. Every action is validated before execution. Violations are blocked, and every decision is written to a cryptographic audit log.
+
+---
+
+## 🚀 5-Line Quickstart
+
+Wrap any LLM client, function, or LangChain/AutoGen agent in `GovernedAgent` to automatically apply constitutional constraints.
+
+```python
+from acgs_lite import Constitution, GovernedAgent
+
+# 1. Load rules from your Constitution (YAML or Code)
+constitution = Constitution.from_yaml("rules.yaml")
+
+# 2. Wrap your existing agent or callable
+agent = GovernedAgent(my_llm_agent, constitution=constitution)
+
+# 3. Every call is strictly validated against the constitution before execution!
+result = agent.run("Process this high-risk transaction") 
+```
+
+## 📦 Installation
 
 ```bash
 pip install acgs-lite
 ```
 
-Install with framework extras as needed:
-
+Install with your favorite framework extras to get native adapters:
 ```bash
 pip install "acgs-lite[openai]"       # OpenAI integration
 pip install "acgs-lite[anthropic]"    # Anthropic integration
 pip install "acgs-lite[langchain]"    # LangChain integration
-pip install "acgs-lite[a2a]"          # A2A SDK integration
+pip install "acgs-lite[mcp]"          # MCP Server integration
 pip install "acgs-lite[all]"          # All optional integrations
 ```
 
-## Quick Start
+## 🛡️ Why ACGS? Key Features
 
-### 1. Wrap an agent with constitutional governance
+### 1. The "Agentic Firewall"
+A protocol-layer defense that verifies an agent's compliance with its constitution before granting access to sensitive tools or infrastructure. Define rules using keyword, pattern, and context matching.
 
-```python
-from acgs_lite import Constitution, GovernedAgent
+### 2. MACI: Separation of Powers
+Without MACI, an agent can propose an action and approve it in the same step. MACI (Monitor-Approve-Control-Inspect) makes this structurally impossible by separating roles:
+*   **Proposer**: Generates proposed actions. Cannot execute or validate.
+*   **Validator**: Checks actions against the constitution. Cannot propose or execute.
+*   **Executor**: Carries out approved actions.
+*   **Observer**: Cryptographically records the audit trail.
 
-# Load rules from YAML
-constitution = Constitution.from_yaml("rules.yaml")
+### 3. Out-of-the-Box Compliance Coverage
+ACGS maps controls across 18 regulatory frameworks globally. Use `acgs assess` to see coverage for your jurisdiction.
 
-# Wrap any callable
-agent = GovernedAgent(my_llm_agent, constitution=constitution)
+| Framework | Business Risk | Auto-Coverage |
+|---|---|---|
+| **EU AI Act** | 7% global revenue penalty | 5/9 |
+| **NIST AI RMF** | US Federal procurement gate | 7/16 |
+| **SOC 2 + AI** | Enterprise gate / lost contracts | 10/16 |
+| **HIPAA + AI** | $1.5M fine per violation | 9/15 |
+| **GDPR Art. 22** | 4% global revenue penalty | 10/12 |
 
-# Every call is validated before execution
-result = agent.run("summarize the document")
-```
+### 4. Tamper-Evident Audit Trails
+Every governance decision produces an immutable `AuditEntry` chained via SHA-256 hashes (`JSONLAuditBackend` or `InMemoryAuditBackend`). Prove to auditors exactly why your agent made a decision, knowing the log cannot be retroactively altered.
 
-### 2. Validate actions directly
+### 5. Advanced Verification
+For the highest-risk scenarios, ACGS supports:
+*   **Z3 Formal Verification**: `Z3ConstraintVerifier` uses SMT solvers to mathematically prove safe states.
+*   **Leanstral Proof Certificates**: `LeanstralVerifier` generates Lean 4 proofs via Mistral.
 
-```python
-from acgs_lite import Constitution, GovernanceEngine, Rule, Severity
+## 📖 Documentation & Next Steps
 
-constitution = Constitution.from_rules([
-    Rule(id="no-pii", pattern="SSN|social security", severity=Severity.CRITICAL,
-         description="Block PII exposure"),
-    Rule(id="no-delete", pattern="delete|drop table", severity=Severity.HIGH,
-         description="Block destructive operations"),
-])
+*   [Documentation Home](https://acgs.ai/docs)
+*   [Integrations Guide](docs/integrations.md)
+*   [Compliance Assessment](docs/compliance.md)
+*   [MACI Architecture](docs/maci.md)
+*   [Why AI Governance?](docs/why-governance.md)
 
-engine = GovernanceEngine(constitution)
-result = engine.validate("summarize the quarterly report", agent_id="agent-1")
+## 🤝 Contributing
 
-if not result.valid:
-    for v in result.violations:
-        print(f"Blocked by rule {v.rule_id}: {v.message}")
-```
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
 
-### 3. MACI separation of powers
+## 📄 License
 
-```python
-from acgs_lite import MACIRole, MACIEnforcer, AuditLog
-
-audit = AuditLog()
-enforcer = MACIEnforcer(audit_log=audit)
-
-enforcer.assign_role("agent-a", MACIRole.PROPOSER)
-enforcer.assign_role("agent-b", MACIRole.VALIDATOR)
-
-# agent-a can propose but not validate
-enforcer.check("agent-a", "propose")   # OK
-enforcer.check("agent-a", "validate")  # raises MACIViolationError
-```
-
-### 4. Persistent audit log (JSONL)
-
-```python
-from acgs_lite import AuditLog, JSONLAuditBackend
-
-audit = AuditLog(backend=JSONLAuditBackend("audit.jsonl"))
-engine = GovernanceEngine(constitution, audit_log=audit)
-```
-
-## Key Features
-
-- **Constitutional rule engine** — YAML or programmatic rules with keyword, pattern, and context matching
-- **`GovernedAgent` wrapper** — add governance to any agent or callable in one line
-- **MACI enforcement** — PROPOSER / VALIDATOR / EXECUTOR / OBSERVER roles, enforced at runtime
-- **Tamper-evident audit log** — hash-chained entries; `InMemoryAuditBackend` (default) or `JSONLAuditBackend`
-- **Governance circuit breaker** — `GovernanceCircuitBreaker` halts an agent after repeated violations (Article 14 kill-switch)
-- **Fail-closed decorator** — `@fail_closed` ensures any governance error blocks execution
-- **Impact scoring** — `ConstitutionalImpactScorer` and `RuleBasedScorer` classify action risk
-- **Z3 formal verification** — `Z3ConstraintVerifier` for high-risk actions (requires `z3-solver`)
-- **Leanstral proof certificates** — `LeanstralVerifier` generates Lean 4 proofs (requires Mistral + Lean)
-- **OpenShell governance** — `create_openshell_governance_app` / `create_openshell_governance_router` for Starlette/FastAPI integration
-- **Framework integrations** — OpenAI, Anthropic, LangChain, LiteLLM, Google GenAI, LlamaIndex, AutoGen, CrewAI, MCP, A2A
-- **CLI** — `acgs` / `acgs-lite` command for constitution management
-- **Licensing tiers** — `set_license(key)` unlocks PRO/ENTERPRISE features
-
-## API Reference
-
-| Symbol | Description |
-|--------|-------------|
-| `Constitution` | Pydantic model holding a list of `Rule`s; load with `.from_yaml()`, `.from_rules()`, `.from_dict()` |
-| `ConstitutionBuilder` | Fluent builder for constructing constitutions programmatically |
-| `Rule` | A single governance rule with `id`, `pattern`, `severity`, `description`, `condition`, `valid_from/until` |
-| `Severity` | Enum: `CRITICAL`, `HIGH`, `MEDIUM`, `LOW` — CRITICAL/HIGH block execution |
-| `GovernanceEngine` | Validates actions against a constitution; `engine.validate(action, agent_id=...)` |
-| `ValidationResult` | Result of a validation: `valid`, `violations`, `latency_ms`, `constitutional_hash` |
-| `BatchValidationResult` | Result of bulk validation via `engine.validate_batch(...)` |
-| `GovernedAgent` | Wraps any agent; intercepts `.run()` calls with governance |
-| `GovernedCallable` | Wraps a plain function with governance (decorator or wrapper) |
-| `AuditLog` | Hash-chained audit trail; pluggable via `AuditBackend` protocol |
-| `AuditEntry` | Single immutable audit record |
-| `AuditBackend` | Protocol for custom backends |
-| `InMemoryAuditBackend` | Default in-memory backend |
-| `JSONLAuditBackend` | Append-only JSONL file backend with fsync |
-| `MACIRole` | Enum: `PROPOSER`, `VALIDATOR`, `EXECUTOR`, `OBSERVER` |
-| `MACIEnforcer` | Assigns roles and enforces separation of powers |
-| `GovernanceCircuitBreaker` | Halts an agent after a configurable violation threshold |
-| `GovernanceHaltError` | Raised when the circuit breaker trips |
-| `ConstitutionalImpactScorer` | Scores action impact using constitutional rules |
-| `RuleBasedScorer` | Keyword-based impact scorer |
-| `score_impact` | Convenience function for one-off scoring |
-| `Z3ConstraintVerifier` | Formal verification using Z3 SMT solver |
-| `LeanstralVerifier` | Lean 4 proof certificate generation via Mistral |
-| `fail_closed` | Decorator: any governance exception blocks execution |
-| `set_license(key)` | Activate a PRO/ENTERPRISE license for this process |
-
-## Configuration
-
-Rules YAML format:
-
-```yaml
-name: my-constitution
-rules:
-  - id: no-pii
-    pattern: "SSN|social security|date of birth"
-    severity: critical
-    description: Block PII exposure
-  - id: no-delete
-    pattern: "delete|drop table|truncate"
-    severity: high
-    description: Block destructive database operations
-    condition: "context.get('db_access', False)"
-  - id: rate-limit-warning
-    pattern: "bulk export"
-    severity: medium
-    description: Warn on bulk data operations
-```
-
-## Runtime dependencies
-
-- `pydantic>=2.0`
-- `pyyaml>=6.0`
-- `click>=8.0`
-
-## License
-
-Apache-2.0. Commercial license available at [https://acgs.ai](https://acgs.ai).
-
-## Links
-
-- [Homepage](https://acgs.ai)
-- [Documentation](https://acgs.ai/docs)
-- [PyPI](https://pypi.org/project/acgs-lite/)
-- [Issues](https://github.com/dislovelhl/acgs-lite/issues)
+Apache-2.0. Commercial enterprise licenses available at [https://acgs.ai](https://acgs.ai).

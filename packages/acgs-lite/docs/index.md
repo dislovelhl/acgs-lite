@@ -2,21 +2,28 @@
 
 **The missing safety layer between your LLM and production.**
 
-ACGS is constitutional governance infrastructure for AI agents. Define rules in YAML,
-enforce them at runtime with MACI role separation, and prove compliance with tamper-evident
-audit trails.
+ACGS is constitutional governance infrastructure for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. 
+
+As autonomous AI agents take on increasingly complex tasks, traditional "bolted-on" security measures fall short. ACGS introduces **Governed Autonomy**—a model where agents operate freely within mathematically and procedurally defined "safe zones" but must trigger escalation paths or human-in-the-loop (HITL) reviews for high-risk actions.
 
 ## 5-Line Quickstart
 
 ```python
-from acgs import Constitution, GovernedAgent, MACIRole
+from acgs_lite import Constitution, GovernedAgent
 
-constitution = Constitution.from_template("general")
-agent = GovernedAgent(my_agent, constitution=constitution)
-result = agent.run("process this request")  # Governed.
+# 1. Load rules from your Constitution
+constitution = Constitution.from_yaml("rules.yaml")
+
+# 2. Wrap your existing agent
+agent = GovernedAgent(my_llm_agent, constitution=constitution)
+
+# 3. Safely execute with deterministic validation
+result = agent.run("Process this request")
 ```
 
 ## Out-of-the-Box Compliance Coverage
+
+ACGS automatically maps governance constraints to 18 global regulatory frameworks, streamlining audits and risk assessments.
 
 | Framework | Business Risk | Auto-Coverage |
 |---|---|---|
@@ -30,16 +37,20 @@ result = agent.run("process this request")  # Governed.
 | **NYC LL 144** | $1,500/day | 6/12 |
 | **OECD AI** | Baseline standard | 10/15 |
 
-**18 frameworks available. Run `acgs assess` to see coverage for your jurisdiction.**
+**Run `acgs assess` to see coverage for your jurisdiction and domain.**
 
-## Next Steps
+## Next Steps & Guides
 
+Explore the architecture and setup guides to integrate ACGS into your agentic workflows:
+
+- [Why Constitutional Governance?](why-governance.md) -- Understand the Agentic Firewall and emerging AI risks
 - [Quickstart](quickstart.md) -- Install and govern your first agent
-- [Integrations](integrations.md) -- Anthropic, OpenAI, LangChain, and 8 more
-- [Compliance](compliance.md) -- Multi-framework assessment
-- [MACI Architecture](maci.md) -- Separation of powers for AI
-- [CLI Reference](cli.md) -- All CLI commands
-- [Contributing](contributing.md) -- How to contribute
+- [Integrations](integrations.md) -- Guides for Anthropic, OpenAI, LangChain, AutoGen, CrewAI, and more
+- [Compliance](compliance.md) -- Deep dive into multi-framework assessment
+- [MACI Architecture](maci.md) -- Implementing separation of powers for AI
+- [Architecture Overview](architecture.md) -- Internal engine and validation lifecycle
+- [CLI Reference](cli.md) -- All CLI commands for CI/CD and terminal use
 
+---
 !!! info "Constitutional Hash"
     `608508a9bd224290` -- documented constitutional hash for this release line. `acgs verify` currently validates license key integrity only.
