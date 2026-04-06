@@ -4,61 +4,88 @@
 [![Python](https://img.shields.io/pypi/pyversions/mhc)](https://pypi.org/project/mhc/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-**Short import path for the core `constitutional-swarm` primitives.**
+**Short-import-path alias for `constitutional-swarm` — Multi-agent Hierarchical Constitutional governance.**
 
-`mhc` depends on `constitutional-swarm` and re-exports the core top-level DNA, mesh,
-swarm, artifact, capability, and contract APIs under a shorter import namespace.
+`mhc` is a re-export package. It installs `constitutional-swarm` and re-exports a curated subset of its public symbols under the `mhc` namespace. There is no new code in this package; it exists so you can write `from mhc import AgentDNA` instead of `from constitutional_swarm import AgentDNA`.
+
+If you need the full `constitutional-swarm` API (including `GovernanceManifold`, `sinkhorn_knopp`, `SwarmBenchmark`, `DAGCompiler`, etc.), install `constitutional-swarm` directly.
 
 ## Installation
-
-`mhc` supports Python 3.11+.
 
 ```bash
 pip install mhc
 ```
 
+Requires Python 3.11+.
+
 ## Quick Start
 
 ```python
-from mhc import AgentDNA, ConstitutionalMesh, TaskDAG
-from constitutional_swarm import AgentDNA as ConstitutionalSwarmDNA
+from mhc import AgentDNA, ConstitutionalMesh, SwarmExecutor, TaskDAG
 
-assert AgentDNA is ConstitutionalSwarmDNA
+# Agent DNA — embedded constitutional validation
+dna = AgentDNA.default(agent_id="worker-1")
+result = dna.validate("propose deployment")
+print(result.valid, result.latency_ns)
+
+# Constitutional Mesh — Byzantine-tolerant peer validation
+from acgs_lite import Constitution
+constitution = Constitution.from_yaml("constitution.yaml")
+mesh = ConstitutionalMesh(constitution, peers_per_validation=3, quorum=2)
 ```
 
-## Exported API
+All `mhc` symbols are identical to the same-named `constitutional_swarm` symbols:
 
-`mhc` currently re-exports these top-level symbols:
+```python
+from mhc import AgentDNA
+from constitutional_swarm import AgentDNA as _AgentDNA
+assert AgentDNA is _AgentDNA  # True
+```
 
-| Category | Symbols |
-| --- | --- |
-| DNA | `AgentDNA`, `constitutional_dna` |
-| Swarm | `TaskDAG`, `TaskNode`, `SwarmExecutor` |
-| Mesh | `ConstitutionalMesh`, `MeshProof`, `MeshResult`, `PeerAssignment`, `ValidationVote` |
-| Artifacts | `Artifact`, `ArtifactStore` |
-| Capabilities | `Capability`, `CapabilityRegistry` |
-| Contracts | `TaskContract`, `ContractStatus` |
+## Exported Symbols
 
-For compiler, benchmark, manifold, or Bittensor-specific modules, import directly from
-`constitutional_swarm`.
+`mhc` re-exports exactly these symbols from `constitutional_swarm`:
 
-## When to Use `mhc`
+| Symbol | Description |
+|--------|-------------|
+| `AgentDNA` | Embedded constitutional co-processor; `.from_rules()`, `.from_yaml()`, `.default(agent_id=...)`, `.validate()`, `.govern` decorator |
+| `constitutional_dna` | Decorator factory for inline DNA governance |
+| `ConstitutionalMesh` | Byzantine-tolerant peer validation mesh |
+| `MeshProof` | Cryptographic proof of peer validation |
+| `MeshResult` | Full settle result including proof and vote list |
+| `PeerAssignment` | Links a producer's output to assigned peer validators |
+| `ValidationVote` | A peer's signed vote on a producer's output |
+| `SwarmExecutor` | Runs a `TaskDAG`; agents claim ready tasks by capability |
+| `TaskDAG` | Directed acyclic graph of tasks compiled from a goal |
+| `TaskNode` | Single unit of work in a `TaskDAG` |
+| `Artifact` | Task output record |
+| `ArtifactStore` | Stores and retrieves `Artifact`s by ID |
+| `Capability` | Named capability |
+| `CapabilityRegistry` | Maps agent IDs to their `Capability` sets |
+| `TaskContract` | Agreement record between a task and a claiming agent |
+| `ContractStatus` | Enum: `PENDING`, `ACTIVE`, `COMPLETED`, `FAILED` |
 
-- Use `mhc` when you want the shorter import path for the core multi-agent primitives.
-- Use `constitutional-swarm` when you want the full package surface and primary
-  documentation.
+## What is NOT re-exported
+
+The following `constitutional-swarm` symbols are not in `mhc.__all__` — import them from `constitutional_swarm` directly if needed:
+
+- `GovernanceManifold`, `ManifoldProjectionResult`, `sinkhorn_knopp`
+- `DAGCompiler`, `GoalSpec`
+- `SwarmBenchmark`, `BenchmarkResult`
+- `DNADisabledError`, `MeshHaltedError`
+- `WorkReceipt`, `ExecutionStatus`
+
+## Runtime dependencies
+
+- `constitutional-swarm` (which requires `acgs-lite>=2.5`)
 
 ## License
 
-AGPL-3.0-or-later. Commercial licensing is available; contact `hello@acgs.ai`.
+AGPL-3.0-or-later.
 
 ## Links
 
 - [Homepage](https://acgs.ai)
-- [Documentation](https://github.com/dislovelhl/acgs/tree/main/packages/mhc)
 - [PyPI](https://pypi.org/project/mhc/)
-- [Repository](https://github.com/dislovelhl/acgs)
-- [Issues](https://github.com/dislovelhl/acgs/issues)
-- [Changelog](https://github.com/dislovelhl/acgs/releases)
-
-Constitutional Hash: `608508a9bd224290`
+- [constitutional-swarm on PyPI](https://pypi.org/project/constitutional-swarm/)
+- [Issues](https://github.com/dislovelhl/mhc/issues)
