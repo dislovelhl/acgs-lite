@@ -43,6 +43,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     environment: production
+    # Skip silently when FLY_API_TOKEN is not configured
+    if: ${{ secrets.FLY_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
