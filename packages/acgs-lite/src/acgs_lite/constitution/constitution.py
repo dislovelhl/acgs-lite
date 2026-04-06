@@ -1100,6 +1100,12 @@ class Constitution(BaseModel):
         """Export constitution as a JSON-serializable bundle. See :mod:`serialization`."""
         return serialization.to_bundle(self)
 
+    def to_response_schema(self, *, strict: bool = False) -> dict[str, Any]:
+        """Export as a JSON Schema for constrained LLM output."""
+        from acgs_lite.constitution.response_schema import constitution_to_response_schema
+
+        return constitution_to_response_schema(self, strict=strict)
+
     def to_rego(self, package_name: str = "acgs.governance") -> str:
         """Export constitution as OPA Rego policy. See :mod:`serialization`."""
         return serialization.to_rego(self, package_name=package_name)

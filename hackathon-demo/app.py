@@ -138,7 +138,9 @@ async def validate_action(req: AgentActionRequest):
         requested_scopes=req.scopes,
         granted_scopes=list(result.permitted_scopes),
         denied_scopes=list(result.denied_scopes),
-        reason=str(result.error) if result.error else ("Step-up required" if result.step_up_required else "Permitted"),
+        reason=str(result.error)
+        if result.error
+        else ("Step-up required" if result.step_up_required else "Permitted"),
         step_up_required=bool(result.step_up_required),
         constitutional_hash="608508a9bd224290",
         timestamp=time.time(),
@@ -166,8 +168,11 @@ async def execute_action(req: AgentActionRequest):
 
     if not result.permitted:
         audit_log.record_denied(
-            agent_id=req.agent_id, role=req.role, connection=req.connection,
-            scopes=req.scopes, reason="constitutional_scope_violation",
+            agent_id=req.agent_id,
+            role=req.role,
+            connection=req.connection,
+            scopes=req.scopes,
+            reason="constitutional_scope_violation",
             error_message=str(result.error) if result.error else "Denied by constitution",
             user_id="demo-user",
         )
@@ -175,7 +180,9 @@ async def execute_action(req: AgentActionRequest):
             status_code=403,
             content={
                 "allowed": False,
-                "reason": str(result.error) if result.error else "Scope not permitted for this role",
+                "reason": str(result.error)
+                if result.error
+                else "Scope not permitted for this role",
                 "denied_scopes": list(result.denied_scopes),
                 "audit_entry": "logged",
                 "constitutional_hash": "608508a9bd224290",
@@ -184,7 +191,9 @@ async def execute_action(req: AgentActionRequest):
 
     if result.step_up_required:
         audit_log.record_step_up_initiated(
-            agent_id=req.agent_id, role=req.role, connection=req.connection,
+            agent_id=req.agent_id,
+            role=req.role,
+            connection=req.connection,
             scopes=req.scopes,
             binding_message=f"Approve high-risk scopes: {', '.join(result.step_up_required)}",
             user_id="demo-user",
@@ -202,8 +211,11 @@ async def execute_action(req: AgentActionRequest):
 
     # Simulate successful token exchange
     audit_log.record_granted(
-        agent_id=req.agent_id, role=req.role, connection=req.connection,
-        scopes=req.scopes, user_id="demo-user",
+        agent_id=req.agent_id,
+        role=req.role,
+        connection=req.connection,
+        scopes=req.scopes,
+        user_id="demo-user",
     )
     return {
         "allowed": True,
