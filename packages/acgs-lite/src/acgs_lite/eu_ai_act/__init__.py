@@ -137,24 +137,30 @@ EU_AI_ACT_HIGH_RISK_DEADLINE = "2026-08-02"
 
 
 def check_license() -> dict[str, object]:
-    """Return a summary of EU AI Act features included with the current license tier."""
-    from acgs_lite.licensing import LicenseManager, Tier
+    """Return a summary of EU AI Act features available with the current install.
+
+    All EU AI Act helpers are included in the open acgs-lite package and do not
+    require a paid license.  This function is kept for backwards compatibility
+    but the ``pro_features`` / ``team_features`` flags are always ``True`` and
+    ``available_classes`` always lists the full set.
+    """
+    from acgs_lite.licensing import LicenseManager
 
     mgr = LicenseManager()
     info = mgr.load()
 
-    pro_ok = info.has_tier(Tier.PRO)
-    team_ok = info.has_tier(Tier.TEAM)
-
-    available: list[str] = []
-    if pro_ok:
-        available.extend(["Article12Logger", "RiskClassifier", "ComplianceChecklist"])
-    if team_ok:
-        available.extend(["TransparencyDisclosure", "HumanOversightGateway"])
+    # All EU AI Act classes are available in the open package — no tier gate.
+    all_classes = [
+        "Article12Logger",
+        "RiskClassifier",
+        "ComplianceChecklist",
+        "TransparencyDisclosure",
+        "HumanOversightGateway",
+    ]
 
     return {
         "tier": info.tier.name,
-        "pro_features": pro_ok,
-        "team_features": team_ok,
-        "available_classes": available,
+        "pro_features": True,
+        "team_features": True,
+        "available_classes": all_classes,
     }

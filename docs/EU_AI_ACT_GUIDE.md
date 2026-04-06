@@ -94,26 +94,11 @@ data, model, and organizational processes.
 ### Step 1: Install and Configure
 
 ```bash
-pip install acgs
+pip install acgs-lite
 ```
 
-Set your license key (EU AI Act features require PRO tier or above):
-
-```python
-import acgs_lite
-acgs_lite.set_license("ACGS-PRO-...")  # Get yours at acgs.dev
-```
-
-Verify your license covers the features you need:
-
-```python
-from acgs_lite.eu_ai_act import check_license
-
-info = check_license()
-print(info["tier"])               # "PRO"
-print(info["pro_features"])       # True
-print(info["available_classes"])  # ["Article12Logger", "RiskClassifier", "ComplianceChecklist"]
-```
+All EU AI Act compliance helpers are included in the open `acgs-lite` package — no license
+key required.
 
 ### Step 2: Classify Your System
 
@@ -345,7 +330,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install acgs
+      - run: pip install acgs-lite
       - run: python ci/compliance_gate.py
 ```
 
