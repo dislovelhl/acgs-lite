@@ -24,10 +24,12 @@ except ImportError:
 async def run_governed_agent():
     # 1. Connect to the ACGS Governance Server
     # In this example, we spawn the server as a subprocess over stdio
-    server_params = {
-        "command": sys.executable,
-        "args": ["-m", "acgs_lite.integrations.mcp_server", "--constitution", "examples/constitution.yaml"],
-    }
+    from mcp import StdioServerParameters
+
+    server_params = StdioServerParameters(
+        command=sys.executable,
+        args=["-m", "acgs_lite.integrations.mcp_server", "--constitution", "examples/constitution.yaml"],
+    )
 
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:

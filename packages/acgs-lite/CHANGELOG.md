@@ -32,6 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   skill prefixes to the helpful-error path instead of falling through to `validate_clinical_action`.
 - CI: `deploy` steps gated on `env.FLY_API_TOKEN` presence; no more parse errors from
   invalid `secrets` context in job-level `if` conditions.
+- `examples/mcp_agent_client.py`: pass `StdioServerParameters` object to `stdio_client`
+  instead of a plain dict (mcp SDK no longer accepts dict for server params).
+
+### Deferred to post-v2.6.0
+- mypy strict errors in `integrations/` adapters (pre-existing, `ignore_errors = true`)
+- bandit security warnings in example scripts (pre-existing)
+- LaTeX paper PDF build in release workflow (requires full TeX Live; non-blocking)
 
 ## [2026.1.0] - 2026-04-05
 
