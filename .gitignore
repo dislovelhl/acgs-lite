@@ -145,3 +145,6 @@ output/
 
 # Session/task brief files
 brief.md
+
+# Scratch PDFs at repo root (generated reports; tracked copies live in docs/)
+/*.pdf
