@@ -27,6 +27,7 @@ that directory yet.
 | `memory/` | [../memory/2026-03-30.md](../memory/2026-03-30.md) | Archived project memory snapshots |
 | `packages/` | [README.md](README.md) | Monorepo packages and deployable services |
 | `plans/` | [../plans/openai-cookbook-integration-plan.md](../plans/openai-cookbook-integration-plan.md) | One-off plan artifacts |
+<<<<<<< HEAD
 | `research/` | [../research/README.md](../research/README.md) | Focused research documents |
 | `rust/` | [../rust/README.md](../rust/README.md) | Rust/PyO3 governance engine notes |
 | `src/` | [README.md](README.md) | Core services and shared runtime code |
@@ -40,6 +41,7 @@ that directory yet.
 | `packages/acgs-dashboard/` | [../packages/acgs-dashboard/README.md](../packages/acgs-dashboard/README.md) | React + Vite governance dashboard |
 | `packages/acgs-deliberation/` | [../packages/acgs-deliberation/README.md](../packages/acgs-deliberation/README.md) | Deliberation package plus scoped agent guidance |
 | `packages/acgs-lite/` | [../packages/acgs-lite/README.md](../packages/acgs-lite/README.md) | Main public governance package |
+<<<<<<< HEAD
 | `packages/acgs-lite/design/` | [../packages/acgs-lite/design/README.md](../packages/acgs-lite/design/README.md) | Design and product decision notes for `acgs-lite` |
 | `packages/acgs-lite/docs/` | [../packages/acgs-lite/docs/index.md](../packages/acgs-lite/docs/index.md) | `acgs-lite` deep-dive docs |
 | `packages/acgs-lite/examples/` | [../packages/acgs-lite/examples/README.md](../packages/acgs-lite/examples/README.md) | Example projects for `acgs-lite` |
@@ -70,6 +72,7 @@ that directory yet.
 | Directory | Start here | Purpose |
 | --- | --- | --- |
 | `docs/architecture/` | [architecture/2026-03-30-governed-flywheel-integration-design.md](architecture/2026-03-30-governed-flywheel-integration-design.md) | Architecture design docs |
+<<<<<<< HEAD
 | `docs/launch/` | [launch/README.md](launch/README.md) | Launch assets, marketplace materials, and outreach copy |
 | `docs/strategy/` | [strategy/README.md](strategy/README.md) | Strategy, pricing, and GTM docs |
 | `docs/superpowers/plans/` | [superpowers/plans/2026-03-19-sveltekit-migration.md](superpowers/plans/2026-03-19-sveltekit-migration.md) | Implementation plans |
@@ -82,6 +85,7 @@ that directory yet.
 
 | Directory | Start here | Purpose |
 | --- | --- | --- |
+<<<<<<< HEAD
 | `autonoma/skills/` | [../autonoma/skills/README.md](../autonoma/skills/README.md) | Human-readable navigation and API skill flows |
 | `autonoma/qa-tests/` | [../autonoma/qa-tests/README.md](../autonoma/qa-tests/README.md) | End-to-end test cases by surface |
 | `.claude/evals/` | [../.claude/evals/README.md](../.claude/evals/README.md) | Eval harness commands and eval definitions |
