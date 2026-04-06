@@ -27,7 +27,7 @@ that directory yet.
 | `memory/` | [../memory/2026-03-30.md](../memory/2026-03-30.md) | Archived project memory snapshots |
 | `packages/` | [README.md](README.md) | Monorepo packages and deployable services |
 | `plans/` | [../plans/openai-cookbook-integration-plan.md](../plans/openai-cookbook-integration-plan.md) | One-off plan artifacts |
-| `research/` | [../research/dag-as-coordinator-deep-dive.md](../research/dag-as-coordinator-deep-dive.md) | Focused research documents |
+| `research/` | [../research/README.md](../research/README.md) | Focused research documents |
 | `rust/` | [../rust/README.md](../rust/README.md) | Rust/PyO3 governance engine notes |
 | `src/` | [README.md](README.md) | Core services and shared runtime code |
 | `workers/` | [../workers/governance-proxy/README.md](../workers/governance-proxy/README.md) | Edge worker surfaces |
@@ -40,8 +40,10 @@ that directory yet.
 | `packages/acgs-dashboard/` | [../packages/acgs-dashboard/README.md](../packages/acgs-dashboard/README.md) | React + Vite governance dashboard |
 | `packages/acgs-deliberation/` | [../packages/acgs-deliberation/README.md](../packages/acgs-deliberation/README.md) | Deliberation package plus scoped agent guidance |
 | `packages/acgs-lite/` | [../packages/acgs-lite/README.md](../packages/acgs-lite/README.md) | Main public governance package |
+| `packages/acgs-lite/design/` | [../packages/acgs-lite/design/README.md](../packages/acgs-lite/design/README.md) | Design and product decision notes for `acgs-lite` |
 | `packages/acgs-lite/docs/` | [../packages/acgs-lite/docs/index.md](../packages/acgs-lite/docs/index.md) | `acgs-lite` deep-dive docs |
 | `packages/acgs-lite/examples/` | [../packages/acgs-lite/examples/README.md](../packages/acgs-lite/examples/README.md) | Example projects for `acgs-lite` |
+| `packages/acgs-lite/hackathon/` | [../packages/acgs-lite/hackathon/README.md](../packages/acgs-lite/hackathon/README.md) | Hackathon assets and submission docs |
 | `packages/acgs.ai/` | [../packages/acgs.ai/README.md](../packages/acgs.ai/README.md) | SvelteKit frontend for the public site and demos |
 | `packages/acgs_auth0/` | [../packages/acgs_auth0/README.md](../packages/acgs_auth0/README.md) | Auth0 Token Vault governance bridge |
 | `packages/clinicalguard/` | [../packages/clinicalguard/README.md](../packages/clinicalguard/README.md) | Healthcare A2A agent/service |
@@ -72,7 +74,7 @@ that directory yet.
 | `docs/strategy/` | [strategy/README.md](strategy/README.md) | Strategy, pricing, and GTM docs |
 | `docs/superpowers/plans/` | [superpowers/plans/2026-03-19-sveltekit-migration.md](superpowers/plans/2026-03-19-sveltekit-migration.md) | Implementation plans |
 | `docs/superpowers/specs/` | [superpowers/specs/2026-03-19-sveltekit-migration-design.md](superpowers/specs/2026-03-19-sveltekit-migration-design.md) | Design/spec docs |
-| `docs/generated/` | [generated/ACGS2-investor-brief.md](generated/ACGS2-investor-brief.md) | Generated long-form artifacts |
+| `docs/generated/` | [generated/README.md](generated/README.md) | Generated long-form artifacts |
 | `docs/test-plans/` | [test-plans/01-governance-core.md](test-plans/01-governance-core.md) | Test-planning docs |
 | `claudedocs/archive/` | [../claudedocs/INDEX.md](../claudedocs/INDEX.md) | Archived reference snapshots |
 
