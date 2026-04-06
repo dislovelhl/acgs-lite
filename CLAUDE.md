@@ -5,6 +5,22 @@ Compatibility note for tools that still read `CLAUDE.md`.
 `AGENTS.md` is the canonical repo guide. Start there first, then read the nearest scoped
 `AGENTS.md` for the package you are changing.
 
+## Documentation Entry Points
+
+Use the shortest path to the docs for the directory you are changing:
+
+- [docs/README.md](docs/README.md) - repo-wide documentation map
+- [packages/acgs-lite/README.md](packages/acgs-lite/README.md) - public Python package entry point
+- [packages/acgs-lite/docs/index.md](packages/acgs-lite/docs/index.md) - package guides and CLI/compliance docs
+- [packages/enhanced_agent_bus/README.md](packages/enhanced_agent_bus/README.md) - bus service overview and operations
+- [packages/acgs_auth0/README.md](packages/acgs_auth0/README.md) - Auth0 Token Vault governance bridge
+- [packages/clinicalguard/README.md](packages/clinicalguard/README.md) - healthcare A2A demo/service
+- [packages/constitutional_swarm/README.md](packages/constitutional_swarm/README.md) - governed multi-agent package
+- [packages/mhc/README.md](packages/mhc/README.md) - short-import alias package
+- [src/core/services/api_gateway/README.md](src/core/services/api_gateway/README.md) - API gateway service
+- [hackathon-demo/README.md](hackathon-demo/README.md) and [demo/README.md](demo/README.md) - demos and submission assets
+- [rust/README.md](rust/README.md) - Rust/PyO3 engine notes
+
 ## Commands
 
 ```bash

@@ -43,6 +43,7 @@ Every action validated against constitutional rules. Every decision recorded in 
 
 - **[PyPI](https://pypi.org/project/acgs-lite/)** -- `pip install acgs-lite`
 - **[Repository](https://gitlab.com/martin668/acgs-lite)** -- Source + docs
+- **[Engineering Docs Index](docs/README.md)** -- Repo guide by directory, package, and workflow
 - **[EU AI Act Tool](#eu-ai-act-compliance-in-60-seconds)** -- `acgs-lite eu-ai-act --domain healthcare`
 - **[ClinicalGuard](packages/clinicalguard/)** -- Healthcare A2A agent demo
 
