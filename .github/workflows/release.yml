@@ -25,17 +25,18 @@ jobs:
           cache-dependency-glob: "uv.lock"
 
       - name: Build wheel and sdist
-        working-directory: packages/acgs-lite
-        run: uv build
+        # Build from workspace root so uv resolves deps correctly;
+        # output goes to dist/ at the repo root.
+        run: uv build --package acgs-lite --out-dir dist/
 
       - name: Validate distributions
-        run: uvx twine check packages/acgs-lite/dist/*
+        run: uvx twine check dist/*
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: packages/acgs-lite/dist/
+          path: dist/
           if-no-files-found: error
 
   # ── 2. Build paper PDFs (optional — does not block release) ─────────────────
