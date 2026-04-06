@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write   # create GitHub Releases and upload assets
-  id-token: write   # PyPI Trusted Publisher (OIDC) — no token needed
 
 jobs:
   # ── 1. Build Python distribution ───────────────────────────────────────────
@@ -51,10 +50,11 @@ jobs:
           path: packages/acgs-lite/dist/
           if-no-files-found: error
 
-  # ── 2. Build paper PDFs ─────────────────────────────────────────────────────
+  # ── 2. Build paper PDFs (optional — does not block release) ─────────────────
   build-paper:
     name: Build paper PDF (${{ matrix.mode }})
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -89,12 +89,12 @@ jobs:
         with:
           name: paper-${{ matrix.mode }}-${{ matrix.submission }}
           path: docs/generated/dist/acgs_arxiv_skeleton-${{ matrix.mode }}-${{ matrix.submission }}.pdf
-          if-no-files-found: error
+          if-no-files-found: warn
 
   # ── 3. GitHub Release ───────────────────────────────────────────────────────
   github-release:
     name: Create GitHub Release
-    needs: [build, build-paper]
+    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
@@ -107,13 +107,6 @@ jobs:
         with:
           name: dist
           path: dist/
-
-      - name: Download paper artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: paper-*
-          path: paper-dist/
-          merge-multiple: true
 
       - name: Extract version from tag
         id: version
@@ -162,11 +155,10 @@ jobs:
             **[Documentation](https://acgs.ai)** · **[PyPI](https://pypi.org/project/acgs-lite/)** · **[Repository](https://github.com/acgs2_admin/acgs)**
           files: |
             dist/*
-            paper-dist/*.pdf
           draft: false
           prerelease: ${{ contains(github.ref_name, 'a') || contains(github.ref_name, 'b') || contains(github.ref_name, 'rc') }}
 
-  # ── 4. Publish to PyPI (Trusted Publisher — no token required) ─────────────
+  # ── 4. Publish to PyPI ────────────────────────────────────────────────────
   pypi-publish:
     name: Publish to PyPI
     needs: build
@@ -182,9 +174,11 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Install twine
+        run: pip install twine --quiet
+
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist/
-          print-hash: true
-          verbose: true
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: twine upload dist/* --non-interactive --skip-existing
