@@ -7,7 +7,9 @@ from typing import Any
 
 import pytest
 
-from acgs_lite.integrations.autogen import (
+pytest.importorskip("autogen_core", reason="autogen-core not installed; install acgs-lite[autogen]")
+
+from acgs_lite.integrations.autogen import (  # noqa: E402
     GovernedModelClient,
     _extract_message_text,
     _extract_result_text,

@@ -317,7 +317,7 @@ class TestDatabasePerformanceAgentProfile:
 
     async def test_profile_fallback_when_no_engine(self):
         """When engine import fails, uses fallback values."""
-        with patch.dict("sys.modules", {"src.core.shared.database.session": None}):
+        with patch.dict("sys.modules", {"enhanced_agent_bus._compat.database.session": None}):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
 
@@ -335,14 +335,14 @@ class TestDatabasePerformanceAgentProfile:
 
     async def test_profile_fallback_records_error(self):
         """Fallback path records the exception message."""
-        with patch.dict("sys.modules", {"src.core.shared.database.session": None}):
+        with patch.dict("sys.modules", {"enhanced_agent_bus._compat.database.session": None}):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
 
         assert "error" in profile.custom_metrics
 
     async def test_profile_fallback_recorded_in_history(self):
-        with patch.dict("sys.modules", {"src.core.shared.database.session": None}):
+        with patch.dict("sys.modules", {"enhanced_agent_bus._compat.database.session": None}):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
 
@@ -365,7 +365,7 @@ class TestDatabasePerformanceAgentProfile:
 
         with patch.dict(
             "sys.modules",
-            {"src.core.shared.database.session": mock_session_module},
+            {"enhanced_agent_bus._compat.database.session": mock_session_module},
         ):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
@@ -402,7 +402,7 @@ class TestDatabasePerformanceAgentProfile:
 
         with patch.dict(
             "sys.modules",
-            {"src.core.shared.database.session": mock_session_module},
+            {"enhanced_agent_bus._compat.database.session": mock_session_module},
         ):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
@@ -420,7 +420,7 @@ class TestDatabasePerformanceAgentProfile:
 
         with patch.dict(
             "sys.modules",
-            {"src.core.shared.database.session": mock_session_module},
+            {"enhanced_agent_bus._compat.database.session": mock_session_module},
         ):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
@@ -448,7 +448,7 @@ class TestDatabasePerformanceAgentProfile:
 
         with patch.dict(
             "sys.modules",
-            {"src.core.shared.database.session": mock_session_module},
+            {"enhanced_agent_bus._compat.database.session": mock_session_module},
         ):
             agent = DatabasePerformanceAgent()
             profile = await agent.profile()
@@ -457,7 +457,7 @@ class TestDatabasePerformanceAgentProfile:
         assert agent.get_history()[0] is profile
 
     async def test_profile_multiple_calls_accumulate_history(self):
-        with patch.dict("sys.modules", {"src.core.shared.database.session": None}):
+        with patch.dict("sys.modules", {"enhanced_agent_bus._compat.database.session": None}):
             agent = DatabasePerformanceAgent()
             await agent.profile()
             await agent.profile()
@@ -722,7 +722,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(return_value=mock_manager_instance)
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -755,7 +755,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(return_value=mock_manager_instance)
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -772,7 +772,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(return_value=mock_manager_instance)
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -786,7 +786,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(side_effect=RuntimeError("cache unavailable"))
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -808,7 +808,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(side_effect=Exception("fail"))
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -824,7 +824,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(return_value=mock_manager_instance)
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -843,7 +843,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(return_value=mock_manager_instance)
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -861,7 +861,7 @@ class TestCachePerformanceAgentProfile:
         mock_manager_cls = MagicMock(return_value=mock_manager_instance)
 
         with patch(
-            "src.core.shared.cache.manager.TieredCacheManager",
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
             mock_manager_cls,
         ):
             agent = CachePerformanceAgent()
@@ -1147,10 +1147,10 @@ class TestConcurrentProfiling:
                 return_value=mock_monitor,
             ),
             patch(
-                "src.core.shared.cache.manager.TieredCacheManager",
+                "enhanced_agent_bus._compat.cache.manager.TieredCacheManager",
                 mock_manager_cls,
             ),
-            patch.dict("sys.modules", {"src.core.shared.database.session": None}),
+            patch.dict("sys.modules", {"enhanced_agent_bus._compat.database.session": None}),
         ):
             db_agent = DatabasePerformanceAgent()
             app_agent = ApplicationPerformanceAgent()

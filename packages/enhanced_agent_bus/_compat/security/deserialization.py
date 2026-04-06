@@ -24,3 +24,13 @@ except ImportError:
     def safe_loads(data: bytes) -> Any:
         """Load pickled data using SafeUnpickler."""
         return SafeUnpickler(io.BytesIO(data)).load()
+
+
+# Stub constant: set of (module_name, class_name) tuples allowed during unpickling
+SAFE_MODEL_GLOBALS: set[tuple[str, str]] = {
+    ("builtins", "dict"),
+    ("builtins", "list"),
+    ("collections", "OrderedDict"),
+    ("datetime", "datetime"),
+    ("datetime", "date"),
+}

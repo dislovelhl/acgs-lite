@@ -1254,19 +1254,17 @@ class TestAgentHealthDependencies:
         mock_request = MagicMock()
         mock_request.headers = {}
 
-        # Force ImportError for the rbac module so fallback logic is used
-        original = sys.modules.get("src.core.shared.security.rbac")
-        sys.modules["src.core.shared.security.rbac"] = None  # type: ignore
-        try:
+        # Force ImportError for the compat rbac module so fallback logic is used
+        with patch(
+            "enhanced_agent_bus.api.routes.agent_health.require_operator_role.__globals__"
+            if False  # unused path
+            else "enhanced_agent_bus._compat.security.rbac.validate_operator_token",
+            side_effect=ImportError("rbac not available"),
+        ):
             with patch.dict("os.environ", {"ENVIRONMENT": "test"}):
                 with pytest.raises(HTTPException) as exc_info:
                     await require_operator_role(mock_request)
                 assert exc_info.value.status_code == 401
-        finally:
-            if original is not None:
-                sys.modules["src.core.shared.security.rbac"] = original
-            else:
-                sys.modules.pop("src.core.shared.security.rbac", None)
 
     async def test_require_operator_role_dev_env_valid_token(self):
         from enhanced_agent_bus.api.routes.agent_health import require_operator_role
@@ -1295,18 +1293,15 @@ class TestAgentHealthDependencies:
         mock_request = MagicMock()
         mock_request.headers = {"Authorization": "Bearer token"}
 
-        original = sys.modules.get("src.core.shared.security.rbac")
-        sys.modules["src.core.shared.security.rbac"] = None  # type: ignore
-        try:
+        # Patch the compat rbac module (not the old src path) to raise ImportError
+        with patch(
+            "enhanced_agent_bus._compat.security.rbac.validate_operator_token",
+            side_effect=ImportError("rbac not available"),
+        ):
             with patch.dict("os.environ", {"ENVIRONMENT": "production"}):
                 with pytest.raises(HTTPException) as exc_info:
                     await require_operator_role(mock_request)
                 assert exc_info.value.status_code == 503
-        finally:
-            if original is not None:
-                sys.modules["src.core.shared.security.rbac"] = original
-            else:
-                sys.modules.pop("src.core.shared.security.rbac", None)
 
     async def test_require_operator_role_empty_bearer(self):
         from fastapi import HTTPException
@@ -1316,18 +1311,14 @@ class TestAgentHealthDependencies:
         mock_request = MagicMock()
         mock_request.headers = {"Authorization": "Bearer "}
 
-        original = sys.modules.get("src.core.shared.security.rbac")
-        sys.modules["src.core.shared.security.rbac"] = None  # type: ignore
-        try:
+        with patch(
+            "enhanced_agent_bus._compat.security.rbac.validate_operator_token",
+            side_effect=ImportError("rbac not available"),
+        ):
             with patch.dict("os.environ", {"ENVIRONMENT": "dev"}):
                 with pytest.raises(HTTPException) as exc_info:
                     await require_operator_role(mock_request)
                 assert exc_info.value.status_code == 401
-        finally:
-            if original is not None:
-                sys.modules["src.core.shared.security.rbac"] = original
-            else:
-                sys.modules.pop("src.core.shared.security.rbac", None)
 
 
 # ===================================================================

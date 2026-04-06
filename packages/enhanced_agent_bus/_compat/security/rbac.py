@@ -8,9 +8,9 @@ try:
     from src.core.shared.security.rbac import *  # noqa: F403
 except ImportError:
 
-    async def validate_operator_token(token: str = "", **kwargs: Any) -> bool:
-        """Stub: always returns True in standalone mode."""
-        return True
+    async def validate_operator_token(token: str = "", **kwargs: Any) -> str:
+        """Stub: returns a dummy operator identity in standalone/dev mode."""
+        return f"dev-operator:{token[:16]}" if token else "dev-operator:anonymous"
 
     async def check_permission(
         user_id: str = "",

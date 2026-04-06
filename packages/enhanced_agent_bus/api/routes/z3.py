@@ -278,8 +278,8 @@ async def get_z3_metrics(request: Request) -> ORJSONResponse:
 )
 @limiter.limit("20/minute")
 async def verify_policy(
-    http_request: Request,
-    request: PolicyVerifyRequest,
+    request: Request,
+    body: PolicyVerifyRequest,
     _api_key: str = Depends(_verify_api_key),
 ) -> ORJSONResponse:
     """Verify a single policy specification using the Z3 backend.
@@ -294,10 +294,10 @@ async def verify_policy(
         # Synthetic path - Z3 not installed
         elapsed = (time.perf_counter() - t0) * 1000
         result_dict: JSONDict = {
-            "policy_id": request.policy_id,
+            "policy_id": body.policy_id,
             "is_satisfiable": True,
             "is_valid": True,
-            "policy_type": request.policy_type,
+            "policy_type": body.policy_type,
             "counterexample": None,
             "verification_time_ms": round(elapsed, 2),
             "solver_result": "sat",
@@ -305,7 +305,7 @@ async def verify_policy(
             "timestamp": time.time(),
             "metrics": {},
         }
-        _record_result(result_dict, request.policy_type, is_success=True, elapsed_ms=elapsed)
+        _record_result(result_dict, body.policy_type, is_success=True, elapsed_ms=elapsed)
         return ORJSONResponse(content=result_dict)
 
     try:
@@ -324,14 +324,14 @@ async def verify_policy(
             "constitutional": PolicyType.CONSTITUTIONAL,
             "general": PolicyType.GENERAL,
         }
-        policy_type_enum = ptype_map.get(request.policy_type, PolicyType.GENERAL)
+        policy_type_enum = ptype_map.get(body.policy_type, PolicyType.GENERAL)
 
         spec = PolicySpecification(
-            policy_id=request.policy_id,
-            name=request.policy_id,
-            description=request.description,
+            policy_id=body.policy_id,
+            name=body.policy_id,
+            description=body.description,
             policy_type=policy_type_enum,
-            rules=request.rules,
+            rules=body.rules,
         )
 
         result = await verifier.verify_policy(spec)
@@ -344,18 +344,18 @@ async def verify_policy(
         result_dict["timestamp"] = time.time()
 
         _record_result(
-            result_dict, request.policy_type, is_success=result.is_valid, elapsed_ms=elapsed
+            result_dict, body.policy_type, is_success=result.is_valid, elapsed_ms=elapsed
         )
         return ORJSONResponse(content=result_dict)
 
     except Exception as exc:
-        logger.exception(f"Z3 verification failed for policy {request.policy_id}: {exc}")
+        logger.exception(f"Z3 verification failed for policy {body.policy_id}: {exc}")
         elapsed = (time.perf_counter() - t0) * 1000
         err_dict: JSONDict = {
-            "policy_id": request.policy_id,
+            "policy_id": body.policy_id,
             "is_satisfiable": False,
             "is_valid": False,
-            "policy_type": request.policy_type,
+            "policy_type": body.policy_type,
             "counterexample": None,
             "verification_time_ms": round(elapsed, 2),
             "solver_result": "unknown",
@@ -363,5 +363,5 @@ async def verify_policy(
             "timestamp": time.time(),
             "metrics": {},
         }
-        _record_result(err_dict, request.policy_type, is_success=False, elapsed_ms=elapsed)
+        _record_result(err_dict, body.policy_type, is_success=False, elapsed_ms=elapsed)
         raise HTTPException(status_code=500, detail="Verification failed") from exc

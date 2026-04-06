@@ -191,36 +191,37 @@ class TestGlobalSettingsImport:
         assert isinstance(m.GLOBAL_SETTINGS_AVAILABLE, bool)
 
     def test_global_settings_none_when_import_fails(self) -> None:
-        """When src.core.shared.config raises ImportError, global_settings is None."""
-        original = sys.modules.get("src.core.shared.config")
+        """When _compat.config raises ImportError, global_settings is None."""
+        # maci_imports imports via _compat.config, not src.core.shared.config directly
+        original = sys.modules.get("enhanced_agent_bus._compat.config")
         try:
-            sys.modules["src.core.shared.config"] = None  # type: ignore[assignment]
+            sys.modules["enhanced_agent_bus._compat.config"] = None  # type: ignore[assignment]
             mod = _reload_maci_imports()
             assert mod.GLOBAL_SETTINGS_AVAILABLE is False
             assert mod.global_settings is None
         finally:
             if original is None:
-                sys.modules.pop("src.core.shared.config", None)
+                sys.modules.pop("enhanced_agent_bus._compat.config", None)
             else:
-                sys.modules["src.core.shared.config"] = original
+                sys.modules["enhanced_agent_bus._compat.config"] = original
 
     def test_global_settings_set_when_import_succeeds(self) -> None:
-        """When config imports cleanly, global_settings is non-None and flag is True."""
+        """When _compat.config imports cleanly, global_settings is set and flag is True."""
         fake_settings = MagicMock(name="settings")
         fake_config_module = MagicMock()
         fake_config_module.settings = fake_settings
 
-        original = sys.modules.get("src.core.shared.config")
+        original = sys.modules.get("enhanced_agent_bus._compat.config")
         try:
-            sys.modules["src.core.shared.config"] = fake_config_module
+            sys.modules["enhanced_agent_bus._compat.config"] = fake_config_module
             mod = _reload_maci_imports()
             assert mod.GLOBAL_SETTINGS_AVAILABLE is True
             assert mod.global_settings is fake_settings
         finally:
             if original is None:
-                sys.modules.pop("src.core.shared.config", None)
+                sys.modules.pop("enhanced_agent_bus._compat.config", None)
             else:
-                sys.modules["src.core.shared.config"] = original
+                sys.modules["enhanced_agent_bus._compat.config"] = original
 
 
 # ---------------------------------------------------------------------------

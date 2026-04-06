@@ -398,3 +398,19 @@ TEST_API_KEY = "test-api-key-for-unit-tests"
 def test_api_key():
     """Provide test API key for authentication tests."""
     return TEST_API_KEY
+
+
+@pytest.fixture(autouse=True)
+def _disable_slowapi_limiter(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Disable slowapi's in-memory rate-limit storage between tests.
+
+    Tests using TestClient hit real endpoints with real rate limiting.
+    Running multiple tests against the same endpoint in sequence can exhaust
+    per-minute limits.  Disabling the limiter avoids spurious 429 errors.
+    """
+    try:
+        from enhanced_agent_bus.api.rate_limiting import limiter
+
+        monkeypatch.setattr(limiter, "enabled", False)
+    except ImportError:
+        pass

@@ -810,7 +810,7 @@ class TestGovernanceRoutesIntegration:
             from fastapi import HTTPException
 
             with pytest.raises(HTTPException) as exc_info:
-                await get_stability_metrics(_user=MagicMock())
+                await get_stability_metrics(request=MagicMock(), _user=MagicMock())
             assert exc_info.value.status_code == 503
 
     async def test_get_stability_metrics_no_stability_layer(self):
@@ -825,7 +825,7 @@ class TestGovernanceRoutesIntegration:
             from fastapi import HTTPException
 
             with pytest.raises(HTTPException) as exc_info:
-                await get_stability_metrics(_user=MagicMock())
+                await get_stability_metrics(request=MagicMock(), _user=MagicMock())
             assert exc_info.value.status_code == 503
 
     async def test_get_stability_metrics_no_stats(self):
@@ -839,7 +839,7 @@ class TestGovernanceRoutesIntegration:
             "enhanced_agent_bus.api.routes.governance.get_ccai_governance",
             return_value=mock_gov,
         ):
-            result = await get_stability_metrics(_user=MagicMock())
+            result = await get_stability_metrics(request=MagicMock(), _user=MagicMock())
             assert result.stability_hash == "mhc_init"
 
     async def test_get_stability_metrics_with_stats(self):
@@ -861,7 +861,7 @@ class TestGovernanceRoutesIntegration:
             "enhanced_agent_bus.api.routes.governance.get_ccai_governance",
             return_value=mock_gov,
         ):
-            result = await get_stability_metrics(_user=MagicMock())
+            result = await get_stability_metrics(request=MagicMock(), _user=MagicMock())
             assert result.spectral_radius_bound == 0.99
             assert result.stability_hash == "mhc_abc123"
 
@@ -1017,7 +1017,7 @@ class TestGovernanceRoutesIntegration:
         from enhanced_agent_bus.api.routes.governance import get_maci_record
 
         with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
-            result = await get_maci_record(record_id="r1", _tenant_id="t1")
+            result = await get_maci_record(request=MagicMock(), record_id="r1", _tenant_id="t1")
         assert result.record_id == "r1"
         assert result.status == "ok"
 
@@ -1025,7 +1025,7 @@ class TestGovernanceRoutesIntegration:
         from enhanced_agent_bus.api.routes.governance import delete_maci_record
 
         with patch("enhanced_agent_bus.api.routes.governance.require_sandbox_endpoint"):
-            result = await delete_maci_record(record_id="r1", _tenant_id="t1")
+            result = await delete_maci_record(request=MagicMock(), record_id="r1", _tenant_id="t1")
         assert result.record_id == "r1"
         assert result.status == "deleted"
 
