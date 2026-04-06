@@ -174,7 +174,9 @@ class TestCachePerformanceAgent:
 
     async def test_profile_cache(self):
         """Test cache profiling."""
-        with patch("enhanced_agent_bus._compat.cache.manager.TieredCacheManager") as MockCacheManager:
+        with patch(
+            "enhanced_agent_bus._compat.cache.manager.TieredCacheManager"
+        ) as MockCacheManager:
             # Setup mock to return high hit rate
             mock_instance = MagicMock()
             mock_instance.get_stats.return_value = {

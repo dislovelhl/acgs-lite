@@ -327,21 +327,25 @@ class TestIsDevelopmentEnvironment:
 
     def test_development_env_returns_true(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as _m
+
         monkeypatch.setattr(_m, "_ENVIRONMENT", "development")
         assert _is_development_environment() is True
 
     def test_production_env_returns_false(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as _m
+
         monkeypatch.setattr(_m, "_ENVIRONMENT", "production")
         assert _is_development_environment() is False
 
     def test_test_env_returns_true(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as _m
+
         monkeypatch.setattr(_m, "_ENVIRONMENT", "test")
         assert _is_development_environment() is True
 
     def test_ci_env_returns_true(self, monkeypatch) -> None:
         import enhanced_agent_bus.api.routes.messages as _m
+
         monkeypatch.setattr(_m, "_ENVIRONMENT", "ci")
         assert _is_development_environment() is True
 
@@ -724,6 +728,7 @@ class TestGetMessageStatusEndpoint:
         monkeypatch.setenv("ENVIRONMENT", "production")
         # _ENVIRONMENT is captured at import time; patch the check function directly
         import enhanced_agent_bus.api.routes.messages as _msg_mod
+
         monkeypatch.setattr(_msg_mod, "_ENVIRONMENT", "production")
         app = _make_app()
         client = TestClient(app, raise_server_exceptions=False)
@@ -751,6 +756,7 @@ class TestGetMessageStatusEndpoint:
 
         monkeypatch.setenv("ENVIRONMENT", "production")
         import enhanced_agent_bus.api.routes.messages as _msg_mod
+
         monkeypatch.setattr(_msg_mod, "_ENVIRONMENT", "production")
         app = _make_app()
         client = TestClient(app, raise_server_exceptions=False)

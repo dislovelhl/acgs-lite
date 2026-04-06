@@ -172,7 +172,10 @@ class TestGovernedLiteLLM:
 @pytest.mark.integration
 class TestGovernedGenAI:
     def test_safe_generate(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
 
@@ -187,7 +190,10 @@ class TestGovernedGenAI:
             assert response.text == "Hello from Gemini!"
 
     def test_violation_blocked(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_cls.return_value = MagicMock()
 
             from acgs_lite.integrations.google_genai import GovernedGenAI
@@ -201,7 +207,10 @@ class TestGovernedGenAI:
 
     def test_list_contents(self):
         """Test with a list of content strings."""
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
 
@@ -219,7 +228,10 @@ class TestGovernedGenAI:
             assert response.text == "Response"
 
     def test_stream(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
             mock_client.models.generate_content_stream.return_value = iter(["c1", "c2"])
@@ -233,7 +245,10 @@ class TestGovernedGenAI:
             assert chunks == ["c1", "c2"]
 
     def test_stats(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
             mock_response = MagicMock()

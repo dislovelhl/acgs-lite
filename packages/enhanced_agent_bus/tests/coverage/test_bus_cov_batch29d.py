@@ -90,8 +90,13 @@ class TestListWorkflows:
         mock_executor = SimpleNamespace(repository=mock_repo)
         user = SimpleNamespace(tenant_id="t1")
 
-        result = await list_workflows(request=MagicMock(), 
-            tenant_id=None, status=None, limit=100, user=user, executor=mock_executor
+        result = await list_workflows(
+            request=MagicMock(),
+            tenant_id=None,
+            status=None,
+            limit=100,
+            user=user,
+            executor=mock_executor,
         )
         assert result["total"] == 1
         assert result["workflows"][0]["workflow_id"] == "wf-1"
@@ -112,8 +117,12 @@ class TestInspectWorkflow:
         user = SimpleNamespace(tenant_id="t1")
 
         with pytest.raises(HTTPException) as exc_info:
-            await inspect_workflow(request=MagicMock(), 
-                workflow_id="wf-missing", tenant_id=None, user=user, executor=mock_executor
+            await inspect_workflow(
+                request=MagicMock(),
+                workflow_id="wf-missing",
+                tenant_id=None,
+                user=user,
+                executor=mock_executor,
             )
         assert exc_info.value.status_code == 404
 
@@ -157,8 +166,12 @@ class TestInspectWorkflow:
         mock_executor = SimpleNamespace(repository=mock_repo)
         user = SimpleNamespace(tenant_id="t1")
 
-        result = await inspect_workflow(request=MagicMock(), 
-            workflow_id="wf-1", tenant_id=None, user=user, executor=mock_executor
+        result = await inspect_workflow(
+            request=MagicMock(),
+            workflow_id="wf-1",
+            tenant_id=None,
+            user=user,
+            executor=mock_executor,
         )
         assert result["instance"]["workflow_id"] == "wf-1"
         assert len(result["steps"]) == 1
@@ -203,8 +216,12 @@ class TestInspectWorkflow:
         mock_executor = SimpleNamespace(repository=mock_repo)
         user = SimpleNamespace(tenant_id="t1")
 
-        result = await inspect_workflow(request=MagicMock(), 
-            workflow_id="wf-2", tenant_id=None, user=user, executor=mock_executor
+        result = await inspect_workflow(
+            request=MagicMock(),
+            workflow_id="wf-2",
+            tenant_id=None,
+            user=user,
+            executor=mock_executor,
         )
         assert result["instance"]["created_at"] is None
         assert result["steps"][0]["started_at"] is None
@@ -225,8 +242,13 @@ class TestCancelWorkflow:
         req = SimpleNamespace(reason="done")
 
         with pytest.raises(HTTPException) as exc_info:
-            await cancel_workflow(request=MagicMock(), 
-                workflow_id="wf-x", req=req, tenant_id=None, user=user, executor=mock_executor
+            await cancel_workflow(
+                request=MagicMock(),
+                workflow_id="wf-x",
+                req=req,
+                tenant_id=None,
+                user=user,
+                executor=mock_executor,
             )
         assert exc_info.value.status_code == 404
 
@@ -239,8 +261,13 @@ class TestCancelWorkflow:
         user = SimpleNamespace(tenant_id="t1")
         req = SimpleNamespace(reason="done")
 
-        result = await cancel_workflow(request=MagicMock(), 
-            workflow_id="wf-1", req=req, tenant_id=None, user=user, executor=mock_executor
+        result = await cancel_workflow(
+            request=MagicMock(),
+            workflow_id="wf-1",
+            req=req,
+            tenant_id=None,
+            user=user,
+            executor=mock_executor,
         )
         assert result["message"] == "Workflow cancellation requested"
 
@@ -256,8 +283,12 @@ class TestRetryWorkflow:
         mock_executor.resume_workflow = AsyncMock(return_value=instance)
         user = SimpleNamespace(tenant_id="t1")
 
-        result = await retry_workflow(request=MagicMock(),
-            workflow_id="wf-1", tenant_id=None, user=user, executor=mock_executor
+        result = await retry_workflow(
+            request=MagicMock(),
+            workflow_id="wf-1",
+            tenant_id=None,
+            user=user,
+            executor=mock_executor,
         )
         assert result["message"] == "Workflow retry initiated"
 
@@ -271,8 +302,12 @@ class TestRetryWorkflow:
         user = SimpleNamespace(tenant_id="t1")
 
         with pytest.raises(HTTPException) as exc_info:
-            await retry_workflow(request=MagicMock(), 
-                workflow_id="wf-1", tenant_id=None, user=user, executor=mock_executor
+            await retry_workflow(
+                request=MagicMock(),
+                workflow_id="wf-1",
+                tenant_id=None,
+                user=user,
+                executor=mock_executor,
             )
         assert exc_info.value.status_code == 400
 

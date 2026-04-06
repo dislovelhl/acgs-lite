@@ -90,8 +90,8 @@ jobs:
       - name: Install workspace
         run: |
           uv sync --frozen --all-extras
-          # Ensure anthropic SDK is present (workspace extra may not pull it)
-          uv pip install "anthropic>=0.30" --quiet
+          # Ensure optional SDKs are present (workspace extras may not pull them all)
+          uv pip install "anthropic>=0.30" "google-genai>=1.0" --quiet
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust

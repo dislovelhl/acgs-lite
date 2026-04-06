@@ -8,9 +8,7 @@ from typing import Any, List
 # ContextVars defined before the try/except so the stub class can reference them
 # directly at method call time (no circular import needed).
 _n1_detection_enabled: ContextVar[bool] = ContextVar("_n1_detection_enabled", default=False)
-_queries_executed: ContextVar[List[str] | None] = ContextVar(
-    "_queries_executed", default=None
-)
+_queries_executed: ContextVar[List[str] | None] = ContextVar("_queries_executed", default=None)
 _query_count: ContextVar[int] = ContextVar("_query_count", default=0)
 
 
@@ -20,6 +18,7 @@ def setup_n1_detection(**kwargs: Any) -> None:
 
 try:
     from src.core.shared.database.n1_middleware import *  # noqa: F403
+
     # If the real module has its own ContextVars, re-export them so they
     # stay consistent with what N1Detector.record_query internally uses.
     try:
