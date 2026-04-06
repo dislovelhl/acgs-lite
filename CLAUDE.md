@@ -23,7 +23,7 @@ Use the shortest path to the docs for the directory you are changing:
 - [packages/mhc/README.md](packages/mhc/README.md) - short-import alias package
 - [src/core/services/api_gateway/README.md](src/core/services/api_gateway/README.md) - API gateway service
 - [workers/governance-proxy/README.md](workers/governance-proxy/README.md) - Cloudflare Worker governance proxy
-- [hackathon-demo/README.md](hackathon-demo/README.md) and [demo/README.md](demo/README.md) - demos and submission assets
+- [hackathon-demo/README.md](hackathon-demo/README.md) - governed Auth0 Token Vault demo
 - [rust/README.md](rust/README.md) - Rust/PyO3 engine notes
 
 ## Commands

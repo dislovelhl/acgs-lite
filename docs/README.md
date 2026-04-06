@@ -67,7 +67,6 @@ directories, or generated third-party bundles.
 
 | Doc | Focus |
 | --- | --- |
-| [`../demo/README.md`](../demo/README.md) | GitLab hackathon demo assets and recording workflow |
 | [`../hackathon-demo/README.md`](../hackathon-demo/README.md) | Governed Agent Vault demo using `acgs-auth0` |
 | [`../packages/acgs-lite/examples/README.md`](../packages/acgs-lite/examples/README.md) | Example projects bundled with `acgs-lite` |
 
@@ -76,7 +75,7 @@ directories, or generated third-party bundles.
 | Doc | Focus |
 | --- | --- |
 | [`ai-workspace.md`](ai-workspace.md) | Repo-local AI tooling layout and verification commands |
-| [`brand-architecture.md`](brand-architecture.md) | Branding/system framing |
+| [`EU_AI_ACT_GUIDE.md`](EU_AI_ACT_GUIDE.md) | EU AI Act workflow and compliance guidance |
 | [`GITLAB.md`](GITLAB.md) | GitLab-specific integration/reference material |
 | [`ORIGIN.md`](ORIGIN.md) | Repository background and lineage |
 | [`../claudedocs/INDEX.md`](../claudedocs/INDEX.md) | Consolidated research, API, and architecture reference set |
@@ -86,7 +85,6 @@ directories, or generated third-party bundles.
 These docs are valuable, but not usually the first stop for implementation sessions:
 - [`strategy/`](strategy/)
 - [`launch/`](launch/)
-- [`papers/`](papers/)
 - [`generated/`](generated/)
 
 ## Recommended Read Order for Coding Work

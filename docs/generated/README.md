@@ -3,16 +3,17 @@
 This directory contains generated long-form artifacts and translated collateral derived from the
 repo and strategy materials.
 
-## Representative Files
+## What To Expect Here
 
-| Doc | Purpose |
-| --- | --- |
-| [`ACGS2-investor-brief.md`](ACGS2-investor-brief.md) | Investor-facing overview of the project thesis and current state |
-| [`ACGS2-vc-one-pager.md`](ACGS2-vc-one-pager.md) | Condensed VC one-pager |
-| [`ACGS2-diligence-appendix.md`](ACGS2-diligence-appendix.md) | Technical diligence companion to investor materials |
-| [`ACGS2-systemic-research-paper.md`](ACGS2-systemic-research-paper.md) | Long-form research-style paper |
-| [`ACGS-action-plan-zh.md`](ACGS-action-plan-zh.md) | Chinese-language action plan |
-| [`ACGS-valuation-report-zh.md`](ACGS-valuation-report-zh.md) | Chinese-language valuation report |
+Generated collateral in this directory is tracked selectively. Depending on the branch, you may
+see:
+
+- investor and diligence briefs
+- translated launch or valuation material
+- generated long-form research artifacts
+
+Use this README as the stable entry point rather than assuming every generated artifact is present
+on every branch.
 
 ## Notes
 
