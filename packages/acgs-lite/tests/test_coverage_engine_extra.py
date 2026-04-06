@@ -36,6 +36,8 @@ def _make_constitution(
     name: str = "test-extra",
 ) -> Constitution:
     """Build a test constitution with rules that trigger various code paths."""
+    from acgs_lite.constitution.rule import ViolationAction
+
     if rules is None:
         rules = [
             Rule(
@@ -58,6 +60,7 @@ def _make_constitution(
                 severity=Severity.MEDIUM,
                 keywords=["plaintext", "unencrypted"],
                 category="data",
+                workflow_action=ViolationAction.WARN,
             ),
             Rule(
                 id="X-LOW",
@@ -66,13 +69,19 @@ def _make_constitution(
                 keywords=["deploy"],
                 patterns=[r"\bdeploy\s+to\s+prod\b"],
                 category="ops",
+                workflow_action=ViolationAction.WARN,
             ),
         ]
     return Constitution.from_rules(rules, name=name)
 
 
 def _make_constitution_no_high() -> Constitution:
-    """Constitution with CRITICAL and MEDIUM only (no HIGH rules)."""
+    """Constitution with CRITICAL and MEDIUM only (no HIGH rules).
+
+    The MEDIUM rule uses workflow_action=WARN so it remains advisory (non-blocking).
+    """
+    from acgs_lite.constitution.rule import ViolationAction
+
     rules = [
         Rule(
             id="NH-CRIT",
@@ -87,6 +96,7 @@ def _make_constitution_no_high() -> Constitution:
             severity=Severity.MEDIUM,
             keywords=["plaintext"],
             category="data",
+            workflow_action=ViolationAction.WARN,
         ),
     ]
     return Constitution.from_rules(rules, name="no-high")
@@ -712,14 +722,15 @@ class TestNoHighRulesPath:
     """Tests for the path where no HIGH rules exist (valid = True shortcut)."""
 
     def test_no_high_rules_medium_violation_valid_true(self):
-        """When only CRITICAL+MEDIUM rules, non-critical violations yield valid=True."""
+        """MEDIUM+WARN rules are non-blocking; violation goes into warnings."""
         c = _make_constitution_no_high()
         engine = GovernanceEngine(c, strict=True)
         _disable_rust_on_engine(engine)
         result = engine.validate("send data in plaintext format")
-        # MEDIUM doesn't block; valid should be True since no HIGH rules
+        # MEDIUM+WARN doesn't block; valid should be True
         assert result.valid is True
-        assert len(result.violations) > 0
+        assert result.violations == []
+        assert len(result.warnings) > 0
 
     def test_no_high_rules_critical_still_raises(self):
         """Critical violations still raise even without HIGH rules."""
@@ -820,7 +831,8 @@ class TestSlowPathContext:
             "process data",
             context={"action_description": "send in plaintext format"},
         )
-        assert len(result.violations) > 0
+        # X-MED has workflow_action=WARN so violation goes to warnings, not violations
+        assert len(result.violations) + len(result.warnings) > 0
 
     def test_context_non_string_value_ignored(self):
         """Non-string context values are ignored."""
@@ -933,20 +945,27 @@ class TestValidationResultProperties:
         assert all(v.severity.blocks() for v in blocking)
         assert len(blocking) >= 1
 
-    def test_warnings_property(self):
-        """warnings returns only non-blocking violations."""
-        vs = [
-            Violation("R1", "crit", Severity.CRITICAL, "act", "cat"),
-            Violation("R2", "med", Severity.MEDIUM, "act", "cat"),
-            Violation("R3", "low", Severity.LOW, "act", "cat"),
-        ]
+    def test_warnings_field(self):
+        """warnings is a separate field for WARN-action violations (not severity-derived)."""
+        v_crit = Violation("R1", "crit", Severity.CRITICAL, "act", "cat")
+        v_warn1 = Violation("R2", "med", Severity.MEDIUM, "act", "cat")
+        v_warn2 = Violation("R3", "low", Severity.LOW, "act", "cat")
+        # Engine populates warnings separately from violations
         vr = ValidationResult(
             valid=False,
             constitutional_hash="h",
-            violations=vs,
+            violations=[v_crit],
+            warnings=[v_warn1, v_warn2],
         )
-        warnings = vr.warnings
-        assert all(not v.severity.blocks() for v in warnings)
+        assert len(vr.warnings) == 2
+        assert all(not v.severity.blocks() for v in vr.warnings)
+        # Without explicit warnings field, it defaults to empty
+        vr2 = ValidationResult(
+            valid=False,
+            constitutional_hash="h",
+            violations=[v_crit, v_warn1],
+        )
+        assert vr2.warnings == []
 
 
 # ===================================================================
@@ -1014,12 +1033,12 @@ class TestPooledEscalateResult:
     """Tests for the pooled escalate result path (line 1494-1503)."""
 
     def test_pooled_escalate_with_noop(self):
-        """Non-critical violations with NoopRecorder use pooled escalate result."""
+        """WARN-action violations with NoopRecorder go to result.warnings."""
         engine = _make_engine(strict=True)
         _disable_rust_on_engine(engine)
         result = engine.validate("send data in plaintext format")
-        assert result.valid is True  # MEDIUM doesn't block
-        assert len(result.violations) > 0
+        assert result.valid is True  # WARN doesn't block
+        assert len(result.warnings) > 0
 
     def test_pooled_escalate_valid_field(self):
         """Pooled escalate result has correct valid field based on blocking."""

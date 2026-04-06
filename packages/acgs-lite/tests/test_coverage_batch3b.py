@@ -56,7 +56,7 @@ def _make_rules() -> list[Rule]:
             severity=Severity.LOW,
             keywords=["deploy", "restart"],
             category="operations",
-            workflow_action="monitor",
+            workflow_action="warn",
         ),
     ]
 

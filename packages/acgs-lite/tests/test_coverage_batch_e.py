@@ -40,6 +40,8 @@ def _make_constitution(
     name: str = "test",
 ) -> Constitution:
     """Build a small test constitution."""
+    from acgs_lite.constitution.rule import ViolationAction
+
     if rules is None:
         rules = [
             Rule(
@@ -62,6 +64,7 @@ def _make_constitution(
                 severity=Severity.MEDIUM,
                 keywords=["plaintext"],
                 category="data",
+                workflow_action=ViolationAction.WARN,
             ),
         ]
     return Constitution.from_rules(rules, name=name)
@@ -307,13 +310,19 @@ class TestGovernanceEngineValidate:
         assert len(result.violations) > 0
 
     def test_deny_medium_non_strict(self):
+        """T-MED has workflow_action=WARN; fires as a warning, not a violation."""
         engine = _make_engine(strict=False)
         result = engine.validate("send data in plaintext format")
-        assert len(result.violations) > 0
-        # MEDIUM severity does not block
-        assert result.valid is True or any(v.severity == Severity.MEDIUM for v in result.violations)
+        # WARN-action rules go to warnings, not violations
+        assert result.valid is True
+        assert result.violations == []
+        assert len(result.warnings) > 0
 
-    def test_deny_medium_strict_without_high_rules_stays_non_blocking(self):
+    def test_deny_medium_warn_action_stays_non_blocking(self):
+        """MEDIUM rules with workflow_action=WARN are non-blocking; violation
+        goes into result.warnings, not result.violations."""
+        from acgs_lite.constitution.rule import ViolationAction
+
         constitution = Constitution.from_rules(
             [
                 Rule(
@@ -322,13 +331,14 @@ class TestGovernanceEngineValidate:
                     severity=Severity.MEDIUM,
                     keywords=["plaintext"],
                     category="data",
+                    workflow_action=ViolationAction.WARN,
                 )
             ]
         )
         engine = GovernanceEngine(constitution, strict=True)
         result = engine.validate("send data in plaintext format")
         assert result.valid is True
-        assert [v.rule_id for v in result.violations] == ["T-MED-ONLY"]
+        assert result.violations == []
         assert [v.rule_id for v in result.warnings] == ["T-MED-ONLY"]
 
     def test_validate_with_agent_id(self):
@@ -631,14 +641,13 @@ class TestNonStrictBlocking:
         if blocking:
             assert not result.valid
 
-    def test_non_strict_medium_valid(self):
+    def test_non_strict_medium_warn_valid(self):
         engine = _make_engine(strict=False)
         result = engine.validate("send in plaintext")
-        # MEDIUM does not block
-        if result.violations:
-            medium_only = all(v.severity == Severity.MEDIUM for v in result.violations)
-            if medium_only:
-                assert result.valid
+        # T-MED has workflow_action=WARN → non-blocking, goes to warnings
+        assert result.valid is True
+        assert result.violations == []
+        assert len(result.warnings) > 0
 
     def test_non_strict_critical_returns_violations(self):
         engine = _make_engine(strict=False)

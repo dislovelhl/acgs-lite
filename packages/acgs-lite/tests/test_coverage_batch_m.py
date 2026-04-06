@@ -163,10 +163,13 @@ class TestExplain:
             exp = rule.explain()
             assert expected_substr in exp["when_triggered"].lower()
 
-    def test_explain_unknown_workflow(self) -> None:
-        rule = Rule(id="R4", text="t", workflow_action="custom_action")
+    def test_explain_halt_workflow(self) -> None:
+        """ViolationAction.HALT has a dedicated explanation."""
+        from acgs_lite.constitution.rule import ViolationAction
+
+        rule = Rule(id="R4", text="t", workflow_action=ViolationAction.HALT)
         exp = rule.explain()
-        assert exp["when_triggered"] == "No workflow action specified"
+        assert "halt" in exp["when_triggered"].lower()
 
 
 class TestImpactScore:
