@@ -375,25 +375,23 @@ class TestEuAiActNoGating:
         features = info.features
         assert any("Priority support" in f for f in features)
 
-    def test_check_license_free_returns_no_features(self) -> None:
+    def test_check_license_free_reports_all_available(self) -> None:
         from acgs_lite.eu_ai_act import check_license
 
         result = check_license()
         assert result["tier"] == "FREE"
-        assert result["pro_features"] is False
-        assert result["available_classes"] == []
+        # All EU AI Act classes are ungated (Apache-2.0)
+        assert result["pro_features"] is True
+        assert result["team_features"] is True
+        assert "Article12Logger" in result["available_classes"]
 
-    def test_check_license_pro_has_pro_classes(self, pro_key: str) -> None:
+    def test_check_license_pro_reports_tier(self, pro_key: str) -> None:
         LicenseManager().set_license(pro_key)
         from acgs_lite.eu_ai_act import check_license
 
         result = check_license()
         assert result["tier"] == "PRO"
         assert result["pro_features"] is True
-        assert result["team_features"] is False
-        assert "Article12Logger" in result["available_classes"]
-        assert "ComplianceChecklist" in result["available_classes"]
-        assert "TransparencyDisclosure" not in result["available_classes"]
 
 
 # ---------------------------------------------------------------------------
