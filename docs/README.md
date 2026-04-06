@@ -25,6 +25,7 @@ directories, or generated third-party bundles.
 | [`../CLAUDE.md`](../CLAUDE.md) | You need repo navigation, commands, and coding-agent workflow guidance |
 | [`../AGENTS.md`](../AGENTS.md) | You need the authoritative repo operating contract and execution rules |
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | You are checking contributor setup, pull request expectations, and release naming rules |
+| [`repo-map.md`](repo-map.md) | You want the directory-by-directory map of repo-owned docs |
 
 ## Start Here
 
@@ -49,13 +50,17 @@ directories, or generated third-party bundles.
 | Doc | Focus |
 | --- | --- |
 | [`../packages/acgs-lite/README.md`](../packages/acgs-lite/README.md) | Public Python package overview and install surface |
+| [`../packages/acgs-core/README.md`](../packages/acgs-core/README.md) | `acgs` namespace package and audit/policy layer |
 | [`../packages/acgs-lite/docs/index.md`](../packages/acgs-lite/docs/index.md) | `acgs-lite` deep-dive docs for CLI, compliance, integrations, and architecture |
+| [`../packages/acgs.ai/README.md`](../packages/acgs.ai/README.md) | SvelteKit frontend for the public site and demos |
+| [`../packages/acgs-dashboard/README.md`](../packages/acgs-dashboard/README.md) | React + Vite governance dashboard |
 | [`../packages/enhanced_agent_bus/README.md`](../packages/enhanced_agent_bus/README.md) | Bus service overview, deployment model, and API surface |
 | [`../packages/acgs_auth0/README.md`](../packages/acgs_auth0/README.md) | Auth0 Token Vault constitutional governance bridge |
 | [`../packages/clinicalguard/README.md`](../packages/clinicalguard/README.md) | Healthcare A2A demo/service entry point |
 | [`../packages/constitutional_swarm/README.md`](../packages/constitutional_swarm/README.md) | Governed multi-agent package overview |
 | [`../packages/mhc/README.md`](../packages/mhc/README.md) | Short-import alias package for `constitutional-swarm` |
 | [`../src/core/services/api_gateway/README.md`](../src/core/services/api_gateway/README.md) | API gateway service overview and architecture |
+| [`../workers/governance-proxy/README.md`](../workers/governance-proxy/README.md) | Cloudflare Worker governance proxy |
 | [`../rust/README.md`](../rust/README.md) | Rust/PyO3 governance engine notes |
 
 ## Demos and Examples
@@ -105,3 +110,4 @@ update this index so later sessions can discover it quickly.
 - [`ai-workspace.md`](ai-workspace.md) — repo-local tooling and operator workflow
 - [`repo-guidance-layering.md`](repo-guidance-layering.md) — where new shared guidance should live
 - [`subagent-execution.md`](subagent-execution.md) — delegated implementation/review workflow
+- [`repo-map.md`](repo-map.md) — repo-owned directory-by-directory documentation map

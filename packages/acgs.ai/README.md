@@ -1,42 +1,80 @@
-# sv
+# acgs.ai
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit frontend for the ACGS public site and interactive product surfaces.
 
-## Creating a project
+## What Lives Here
 
-If you're seeing this, you've probably already done this step. Congrats!
+`packages/acgs.ai` is the tracked frontend package for the ACGS web experience. It currently
+ships:
 
-```sh
-# create a new project
-npx sv create my-app
-```
+- the public landing page at `/`
+- the pricing page at `/pricing`
+- the resources page at `/resources`
+- the demo launcher at `/demo`
+- the Playwright-backed demo route at `/demo/playwright`
 
-To recreate this project with the same configuration:
+The package is built with SvelteKit, Svelte 5, Tailwind CSS v4, Playwright, and Vitest.
 
-```sh
-# recreate this project
-npx sv@0.12.8 create --template minimal --types ts --add tailwindcss="plugins:none" vitest="usages:unit,component" playwright sveltekit-adapter="adapter:static" --no-install acgs.ai
-```
+## Running Locally
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
+cd packages/acgs.ai
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Default dev server: `http://localhost:5173`
 
-To create a production version of your app:
+## Core Scripts
 
-```sh
+```bash
+npm run dev
 npm run build
+npm run preview
+npm run check
+npm run lint
+npm run test:unit
+npm run test:e2e
+npm run test
 ```
 
-You can preview the production build with `npm run preview`.
+`npm run test` runs both unit tests and Playwright end-to-end coverage.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Route Map
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Main landing page for ACGS positioning, compliance coverage, and product overview |
+| `/pricing` | Four-tier pricing surface (`Community`, `Starter`, `Pro`, `Enterprise`) |
+| `/resources` | Download hub for videos and presentation assets |
+| `/demo` | Demo landing page with launcher CTA |
+| `/demo/playwright` | Interactive demo/testing route used by Playwright coverage |
+
+## Frontend Stack
+
+- **Framework:** SvelteKit with static adapter
+- **UI:** Svelte 5, Tailwind CSS v4, Bits UI
+- **Visuals:** Threlte / Three.js for hero visuals
+- **Testing:** Vitest + Playwright
+- **Charts / diagrams:** D3, LayerChart, XYFlow
+
+## Key Files
+
+| Path | Role |
+| --- | --- |
+| `src/routes/+page.svelte` | Main landing page |
+| `src/routes/pricing/+page.svelte` | Pricing page |
+| `src/routes/resources/+page.svelte` | Resources page |
+| `src/routes/demo/+page.svelte` | Demo launcher |
+| `src/routes/demo/playwright/+page.svelte` | Playwright demo surface |
+| `src/routes/+layout.svelte` | Shared shell, navigation, and footer |
+| `src/routes/page.test.ts` | Route-level unit coverage |
+| `playwright.config.ts` | E2E configuration |
+
+## Related Docs
+
+- [Repo docs index](../../docs/README.md)
+- [Repo directory map](../../docs/repo-map.md)
+- [Autonoma landing-site flows](../../autonoma/AUTONOMA.md)
+- [SvelteKit migration plan](../../docs/superpowers/plans/2026-03-19-sveltekit-migration.md)
+- [SvelteKit migration design](../../docs/superpowers/specs/2026-03-19-sveltekit-migration-design.md)

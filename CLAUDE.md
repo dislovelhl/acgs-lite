@@ -10,14 +10,19 @@ Compatibility note for tools that still read `CLAUDE.md`.
 Use the shortest path to the docs for the directory you are changing:
 
 - [docs/README.md](docs/README.md) - repo-wide documentation map
+- [docs/repo-map.md](docs/repo-map.md) - directory-by-directory map of repo-owned docs
+- [packages/acgs-core/README.md](packages/acgs-core/README.md) - `acgs` namespace package and audit/policy layer
 - [packages/acgs-lite/README.md](packages/acgs-lite/README.md) - public Python package entry point
 - [packages/acgs-lite/docs/index.md](packages/acgs-lite/docs/index.md) - package guides and CLI/compliance docs
+- [packages/acgs.ai/README.md](packages/acgs.ai/README.md) - SvelteKit frontend package
+- [packages/acgs-dashboard/README.md](packages/acgs-dashboard/README.md) - governance dashboard package
 - [packages/enhanced_agent_bus/README.md](packages/enhanced_agent_bus/README.md) - bus service overview and operations
 - [packages/acgs_auth0/README.md](packages/acgs_auth0/README.md) - Auth0 Token Vault governance bridge
 - [packages/clinicalguard/README.md](packages/clinicalguard/README.md) - healthcare A2A demo/service
 - [packages/constitutional_swarm/README.md](packages/constitutional_swarm/README.md) - governed multi-agent package
 - [packages/mhc/README.md](packages/mhc/README.md) - short-import alias package
 - [src/core/services/api_gateway/README.md](src/core/services/api_gateway/README.md) - API gateway service
+- [workers/governance-proxy/README.md](workers/governance-proxy/README.md) - Cloudflare Worker governance proxy
 - [hackathon-demo/README.md](hackathon-demo/README.md) and [demo/README.md](demo/README.md) - demos and submission assets
 - [rust/README.md](rust/README.md) - Rust/PyO3 engine notes
 
