@@ -209,10 +209,11 @@ class TestGovernanceMetricsWithOTel:
         engine: GovernanceEngine,
         audit_log: AuditLog,
     ) -> None:
-        gm, _counter, _hist, _gauge = _make_metrics(engine, audit_log)
+        with patch("acgs_lite.integrations.otel.OTEL_AVAILABLE", True):
+            gm, _counter, _hist, _gauge = _make_metrics(engine, audit_log)
 
-        gm.validate(_SAFE_ACTION, agent_id="stats-agent")
-        stats = gm.stats
+            gm.validate(_SAFE_ACTION, agent_id="stats-agent")
+            stats = gm.stats
 
         assert stats["otel_available"] is True
         assert stats["validation_count"] == 1
