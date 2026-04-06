@@ -91,7 +91,7 @@ jobs:
         run: |
           uv sync --frozen --all-extras
           # Ensure optional SDKs are present (workspace extras may not pull them all)
-          uv pip install "anthropic>=0.30" "google-genai>=1.0" --quiet
+          uv pip install "anthropic>=0.30" "google-genai>=1.0" "mcp>=1.0" --quiet
 
       - name: Build Rust extension (optional)
         working-directory: packages/acgs-lite/rust
@@ -159,8 +159,8 @@ jobs:
       - name: Install workspace
         run: |
           uv sync --frozen --all-extras
-          # Ensure aiofiles is present for bus tests
-          uv pip install "aiofiles>=24.1.0" --quiet
+          # Ensure aiofiles and anthropic are present for bus tests
+          uv pip install "aiofiles>=24.1.0" "anthropic>=0.30" --quiet
 
       - name: MessageProcessor wrapper audit
         run: make health-bus-wrappers
