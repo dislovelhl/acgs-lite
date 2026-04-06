@@ -5,6 +5,34 @@ All notable changes to acgs-lite will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-04-05
+
+### Added
+- **Leanstral Formal Verification**: `LeanstralVerifier` generates Lean 4 proof certificates
+  via Mistral, producing `ProofCertificate` with `.to_audit_dict()` for audit trail attachment.
+  Requires `mistralai` extra. 32 tests.
+- **Engine correctness**: `_validate_rust_no_context` and `_validate_rust_metadata_context`
+  now raise `ConstitutionalViolationError` for `_RUST_DENY` blocking violations (HIGH severity
+  in strict mode), closing a gap where Rust dispatch could silently pass HIGH violations.
+- **74 new constitutional_swarm tests**: Deep coverage for DAG immutability, MACI enforcement,
+  ArtifactStore integrity, CapabilityRegistry routing, concurrency safety, and compiler edge cases.
+- **Documentation refresh**: New guides — 2026 compliance landscape, MCP integration, OWASP LLM
+  Top 10 mapping, supervisor model patterns, testing governance, use-case catalogue.
+- **Stability classifier**: Promoted from Beta → Production/Stable.
+
+### Changed
+- `pyproject.toml` description: clearer one-line summary of capabilities.
+- Keywords expanded: added `llm-safety`, `agentic-firewall`, `formal-verification`,
+  `z3`, `lean4`, `hipaa`, `gdpr`, `nist-ai-rmf`, `ai-act`, `responsible-ai`.
+- README: full rewrite — comprehensive feature tour, integration examples,
+  compliance table, performance benchmarks, CLI reference, formal verification examples.
+
+### Fixed
+- `deploy-clinicalguard.yml`: `_parse_skill` now correctly routes explicit-but-unknown
+  skill prefixes to the helpful-error path instead of falling through to `validate_clinical_action`.
+- CI: `deploy` steps gated on `env.FLY_API_TOKEN` presence; no more parse errors from
+  invalid `secrets` context in job-level `if` conditions.
+
 ## [2026.1.0] - 2026-04-05
 
 ### Added

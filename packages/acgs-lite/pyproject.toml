@@ -5,17 +5,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-lite"
-version = "2.5.2"
-description = "Public ACGS Lite package for constitutional governance in AI agents. Enforce rules, audit decisions, and prevent self-validation in production."
+version = "2.6.0"
+description = "Constitutional AI governance for agents — enforce rules, audit decisions, MACI role separation, formal verification, and 18-framework compliance coverage."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
     {name = "ACGS Team", email = "hello@acgs.dev"},
 ]
-keywords = ["ai", "governance", "constitutional", "agents", "safety", "guardrails", "maci", "audit", "eu-ai-act", "ai-governance", "compliance", "constitutional-ai"]
+keywords = ["ai", "governance", "constitutional", "agents", "safety", "guardrails", "maci", "audit", "eu-ai-act", "ai-governance", "compliance", "constitutional-ai", "llm-safety", "agentic-firewall", "formal-verification", "z3", "lean4", "hipaa", "gdpr", "nist-ai-rmf", "ai-act", "responsible-ai"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Legal Industry",
     "Intended Audience :: Information Technology",

@@ -3,32 +3,48 @@
 [![PyPI](https://img.shields.io/pypi/v/acgs-lite?color=blue&style=for-the-badge)](https://pypi.org/project/acgs-lite/)
 [![Python](https://img.shields.io/pypi/pyversions/acgs-lite?style=for-the-badge)](https://pypi.org/project/acgs-lite/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-green.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
+[![CI](https://img.shields.io/github/actions/workflow/status/dislovelhl/acgs-lite/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/dislovelhl/acgs-lite/actions)
+[![Coverage](https://img.shields.io/badge/tests-4641%20passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
 [![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
 
 **The missing safety layer between your LLM and production.**
 
-`acgs-lite` is the core library for Constitutional AI Governance. It allows you to define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Stop bolting on security post-deployment; embed ethical principles and behavioral guidelines directly into your autonomous systems.
-
-Unlike traditional AI security that relies on prompt engineering, ACGS interposes a deterministic Governance Engine between your agent and its tools. Every action is validated before execution. Violations are blocked, and every decision is written to a cryptographic audit log.
+`acgs-lite` is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes — violations are blocked, not just logged.
 
 ---
 
 ## 🚀 5-Line Quickstart
 
-Wrap any LLM client, function, or LangChain/AutoGen agent in `GovernedAgent` to automatically apply constitutional constraints.
-
 ```python
 from acgs_lite import Constitution, GovernedAgent
 
-# 1. Load rules from your Constitution (YAML or Code)
-constitution = Constitution.from_yaml("rules.yaml")
-
-# 2. Wrap your existing agent or callable
+constitution = Constitution.from_yaml("constitution.yaml")
 agent = GovernedAgent(my_llm_agent, constitution=constitution)
-
-# 3. Every call is strictly validated against the constitution before execution!
-result = agent.run("Process this high-risk transaction") 
+result = agent.run("Process this high-risk transaction")
 ```
+
+Rules in YAML (`constitution.yaml`):
+
+```yaml
+constitutional_hash: "608508a9bd224290"
+rules:
+  - id: no-pii
+    pattern: "SSN|social security|passport number"
+    severity: CRITICAL
+    description: Block PII exposure
+
+  - id: no-destructive
+    pattern: "delete|drop table|rm -rf"
+    severity: HIGH
+    description: Block destructive operations
+
+  - id: require-approval
+    pattern: "transfer|payment|wire"
+    severity: HIGH
+    description: Financial actions require human approval
+```
+
+---
 
 ## 📦 Installation
 
@@ -36,58 +52,279 @@ result = agent.run("Process this high-risk transaction")
 pip install acgs-lite
 ```
 
-Install with your favorite framework extras to get native adapters:
+With framework integrations:
+
 ```bash
-pip install "acgs-lite[openai]"       # OpenAI integration
-pip install "acgs-lite[anthropic]"    # Anthropic integration
-pip install "acgs-lite[langchain]"    # LangChain integration
-pip install "acgs-lite[mcp]"          # MCP Server integration
-pip install "acgs-lite[all]"          # All optional integrations
+pip install "acgs-lite[openai]"       # OpenAI
+pip install "acgs-lite[anthropic]"    # Anthropic Claude
+pip install "acgs-lite[langchain]"    # LangChain / LangGraph
+pip install "acgs-lite[mcp]"          # Model Context Protocol server
+pip install "acgs-lite[autogen]"      # AutoGen / AG2
+pip install "acgs-lite[a2a]"          # Google A2A protocol
+pip install "acgs-lite[all]"          # All integrations
 ```
 
-## 🛡️ Why ACGS? Key Features
+---
 
-### 1. The "Agentic Firewall"
-A protocol-layer defense that verifies an agent's compliance with its constitution before granting access to sensitive tools or infrastructure. Define rules using keyword, pattern, and context matching.
+## 🛡️ Core Concepts
 
-### 2. MACI: Separation of Powers
-Without MACI, an agent can propose an action and approve it in the same step. MACI (Monitor-Approve-Control-Inspect) makes this structurally impossible by separating roles:
-*   **Proposer**: Generates proposed actions. Cannot execute or validate.
-*   **Validator**: Checks actions against the constitution. Cannot propose or execute.
-*   **Executor**: Carries out approved actions.
-*   **Observer**: Cryptographically records the audit trail.
+### Governance Engine
 
-### 3. Out-of-the-Box Compliance Coverage
-ACGS maps controls across 18 regulatory frameworks globally. Use `acgs assess` to see coverage for your jurisdiction.
+The `GovernanceEngine` sits between your agent and its tools. Every action passes through it before execution. Matching rules block or flag the action; the result is an immutable `ValidationResult`.
 
-| Framework | Business Risk | Auto-Coverage |
-|---|---|---|
-| **EU AI Act** | 7% global revenue penalty | 5/9 |
-| **NIST AI RMF** | US Federal procurement gate | 7/16 |
-| **SOC 2 + AI** | Enterprise gate / lost contracts | 10/16 |
-| **HIPAA + AI** | $1.5M fine per violation | 9/15 |
-| **GDPR Art. 22** | 4% global revenue penalty | 10/12 |
+```python
+from acgs_lite import Constitution, GovernanceEngine, Rule, Severity
 
-### 4. Tamper-Evident Audit Trails
-Every governance decision produces an immutable `AuditEntry` chained via SHA-256 hashes (`JSONLAuditBackend` or `InMemoryAuditBackend`). Prove to auditors exactly why your agent made a decision, knowing the log cannot be retroactively altered.
+constitution = Constitution.from_rules([
+    Rule(id="no-pii", pattern=r"SSN|\bpassport\b", severity=Severity.CRITICAL),
+    Rule(id="no-delete", pattern=r"\bdelete\b|\bdrop\b", severity=Severity.HIGH),
+])
 
-### 5. Advanced Verification
-For the highest-risk scenarios, ACGS supports:
-*   **Z3 Formal Verification**: `Z3ConstraintVerifier` uses SMT solvers to mathematically prove safe states.
-*   **Leanstral Proof Certificates**: `LeanstralVerifier` generates Lean 4 proofs via Mistral.
+engine = GovernanceEngine(constitution)
+result = engine.validate("summarize the quarterly report", agent_id="analyst-01")
 
-## 📖 Documentation & Next Steps
+if not result.valid:
+    for v in result.violations:
+        print(f"[{v.severity}] {v.rule_id}: {v.description}")
+```
 
-*   [Documentation Home](https://acgs.ai/docs)
-*   [Integrations Guide](docs/integrations.md)
-*   [Compliance Assessment](docs/compliance.md)
-*   [MACI Architecture](docs/maci.md)
-*   [Why AI Governance?](docs/why-governance.md)
+### MACI — Separation of Powers
+
+MACI prevents a single agent from proposing, validating, and executing the same action:
+
+```python
+from acgs_lite import MACIEnforcer, MACIRole
+
+enforcer = MACIEnforcer()
+
+# Assign roles
+enforcer.assign(agent_id="planner",   role=MACIRole.PROPOSER)
+enforcer.assign(agent_id="reviewer",  role=MACIRole.VALIDATOR)
+enforcer.assign(agent_id="executor",  role=MACIRole.EXECUTOR)
+
+# Proposer creates; Validator checks; Executor runs — never the same agent
+proposal = enforcer.propose("planner", action="deploy v2.1 to production")
+approval = enforcer.validate("reviewer", proposal)
+enforcer.execute("executor", approval)
+```
+
+### Tamper-Evident Audit Trail
+
+Every governance decision is written to an append-only, SHA-256-chained log:
+
+```python
+from acgs_lite import AuditLog
+
+log = AuditLog()
+engine = GovernanceEngine(constitution, audit_log=log)
+
+engine.validate("send email to user@example.com", agent_id="mailer")
+
+for entry in log.entries():
+    print(entry.id, entry.valid, entry.constitutional_hash)
+
+# Verify chain integrity
+assert log.verify_chain(), "Audit log tampered!"
+```
+
+### GovernedAgent — Drop-in Wrapper
+
+```python
+from acgs_lite import Constitution, GovernedAgent
+
+@GovernedAgent.decorate(constitution=constitution, agent_id="summarizer")
+def summarize(text: str) -> str:
+    return my_llm.complete(f"Summarize: {text}")
+
+# Raises ConstitutionalViolationError if text contains violations
+result = summarize("Q4 revenue was $4.2M")
+```
+
+---
+
+## 🌐 Integrations
+
+### OpenAI
+
+```python
+from acgs_lite.integrations.openai import GovernedOpenAI
+from openai import OpenAI
+
+client = GovernedOpenAI(OpenAI(), constitution=constitution)
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Analyze the contract"}],
+)
+```
+
+### Anthropic Claude
+
+```python
+from acgs_lite.integrations.anthropic import GovernedAnthropic
+import anthropic
+
+client = GovernedAnthropic(anthropic.Anthropic(), constitution=constitution)
+message = client.messages.create(
+    model="claude-opus-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Review this code"}],
+)
+```
+
+### LangChain
+
+```python
+from acgs_lite.integrations.langchain import GovernanceRunnable
+from langchain_openai import ChatOpenAI
+
+governed_llm = GovernanceRunnable(
+    ChatOpenAI(model="gpt-4o"),
+    constitution=constitution,
+)
+result = governed_llm.invoke("Translate this document")
+```
+
+### MCP Server
+
+Start a governance server that any MCP-compatible agent can query:
+
+```bash
+acgs serve --host 0.0.0.0 --port 8080
+```
+
+```python
+from acgs_lite.integrations.mcp_server import create_mcp_server
+app = create_mcp_server(constitution=constitution)
+```
+
+---
+
+## 📋 Compliance Coverage
+
+ACGS maps governance controls to 18 regulatory frameworks. Run `acgs assess` to generate a compliance report:
+
+```bash
+acgs assess --framework eu-ai-act --output report.pdf
+```
+
+| Framework | Coverage | Key Controls |
+|-----------|----------|--------------|
+| **EU AI Act (High-Risk)** | Art. 9, 10, 13, 14, 17 | Risk management, human oversight, transparency |
+| **NIST AI RMF** | 7 / 16 functions | Govern, Map, Measure, Manage |
+| **SOC 2 + AI** | 10 / 16 criteria | CC6, CC7, CC9 trust service criteria |
+| **HIPAA + AI** | 9 / 15 safeguards | PHI detection, access controls, audit controls |
+| **GDPR Art. 22** | 10 / 12 requirements | Automated decision-making, right to explanation |
+| **CCPA / CPRA** | 8 / 10 rights | Opt-out, data minimisation, transparency |
+| **ISO 42001** | Clause 6, 8, 9, 10 | AI management system controls |
+| **OWASP LLM Top 10** | 9 / 10 risks | Prompt injection, insecure output, data poisoning |
+
+---
+
+## 🔬 Advanced: Formal Verification
+
+For the highest-risk scenarios, ACGS supports mathematical proof of safety properties.
+
+### Z3 SMT Solver
+
+```python
+from acgs_lite.integrations.z3_verifier import Z3ConstraintVerifier
+
+verifier = Z3ConstraintVerifier()
+result = verifier.verify(
+    action="transfer $50,000 to external account",
+    constraints=["amount <= 10000", "recipient in approved_list"],
+)
+print(result.satisfiable, result.counterexample)
+```
+
+### Lean 4 Proof Certificates (Leanstral)
+
+```python
+from acgs_lite import LeanstralVerifier
+
+verifier = LeanstralVerifier()  # requires mistralai extra
+certificate = await verifier.verify(
+    property="∀ action : Action, action.amount ≤ 10000",
+    context={"action": "transfer $5,000"},
+)
+print(certificate.kernel_verified)  # True only if Lean kernel accepted proof
+print(certificate.to_audit_dict())  # attach to AuditEntry
+```
+
+---
+
+## ⚡ Performance
+
+| Operation | Latency | Notes |
+|-----------|---------|-------|
+| Rule validation (Python) | < 1 ms | Aho-Corasick multi-pattern |
+| Rule validation (Rust) | ~560 ns | Optional Rust extension |
+| Engine batch (100 rules) | ~2 ms | Parallel severity evaluation |
+| Audit write (JSONL) | ~50 µs | Append-only, SHA-256 chained |
+| Compliance report | < 500 ms | 18 frameworks, cached |
+
+---
+
+## 🖥️ CLI
+
+```bash
+# Validate a single action
+acgs validate "send email to user@corp.com" --constitution rules.yaml
+
+# Run governance status check
+acgs status
+
+# Generate compliance report
+acgs assess --framework hipaa --output hipaa_report.pdf
+
+# Audit log inspection
+acgs audit --tail 20
+acgs audit --verify-chain
+
+# Start MCP governance server
+acgs serve --port 8080
+
+# EU AI Act Art. 14(3) kill switch
+acgs halt --agent-id agent-01 --reason "anomalous behaviour detected"
+acgs resume --agent-id agent-01
+```
+
+---
+
+## 📖 Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [Quickstart](https://acgs.ai/docs/quickstart) | Up and running in 5 minutes |
+| [Architecture](https://acgs.ai/docs/architecture) | Engine internals, MACI deep dive |
+| [Integrations](https://acgs.ai/docs/integrations) | OpenAI, Anthropic, LangChain, MCP, A2A |
+| [Compliance](https://acgs.ai/docs/compliance-2026) | 18-framework regulatory mapping |
+| [CLI Reference](https://acgs.ai/docs/cli) | Full command reference |
+| [Why Governance?](https://acgs.ai/docs/why-governance) | The case for deterministic guardrails |
+| [OWASP LLM Top 10](https://acgs.ai/docs/owasp-2026) | ACGS coverage of each risk |
+| [Testing Guide](https://acgs.ai/docs/testing-governance) | Testing governed agents |
+
+---
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+```bash
+git clone https://github.com/dislovelhl/acgs-lite
+cd acgs-lite/packages/acgs-lite
+pip install -e ".[dev]"
+pytest tests/ --import-mode=importlib
+```
+
+---
 
 ## 📄 License
 
-Apache-2.0. Commercial enterprise licenses available at [https://acgs.ai](https://acgs.ai).
+Apache-2.0. See [LICENSE](LICENSE) for details.
+
+Commercial enterprise licences (SLA, support, air-gapped deployment) available at [acgs.ai](https://acgs.ai).
+
+---
+
+*Constitutional Hash: `608508a9bd224290` — embedded in every validation path.*
