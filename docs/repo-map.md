@@ -49,10 +49,13 @@ that directory yet.
 | `packages/clinicalguard/` | [../packages/clinicalguard/README.md](../packages/clinicalguard/README.md) | Healthcare A2A agent/service |
 | `packages/clinicalguard/docs/` | [../packages/clinicalguard/docs/README.md](../packages/clinicalguard/docs/README.md) | ClinicalGuard one-pager and deployment docs |
 | `packages/constitutional_swarm/` | [../packages/constitutional_swarm/README.md](../packages/constitutional_swarm/README.md) | Governed multi-agent package |
+| `packages/constitutional_swarm/paper/` | [../packages/constitutional_swarm/paper/README.md](../packages/constitutional_swarm/paper/README.md) | Paper draft and theory write-up |
 | `packages/enhanced_agent_bus/` | [../packages/enhanced_agent_bus/README.md](../packages/enhanced_agent_bus/README.md) | Bus service and platform runtime |
 | `packages/enhanced_agent_bus/docs/` | [../packages/enhanced_agent_bus/docs/README.md](../packages/enhanced_agent_bus/docs/README.md) | Bus architecture and cleanup-plan docs |
 | `packages/enhanced_agent_bus/agent_health/` | [../packages/enhanced_agent_bus/agent_health/README.md](../packages/enhanced_agent_bus/agent_health/README.md) | Agent health API surface |
 | `packages/enhanced_agent_bus/collaboration/` | [../packages/enhanced_agent_bus/collaboration/README.md](../packages/enhanced_agent_bus/collaboration/README.md) | Collaboration module docs |
+| `packages/enhanced_agent_bus/governance/stability/` | [../packages/enhanced_agent_bus/governance/stability/README.md](../packages/enhanced_agent_bus/governance/stability/README.md) | Stability theory notes for multi-agent governance |
+| `packages/enhanced_agent_bus/monitoring/` | [../packages/enhanced_agent_bus/monitoring/README.md](../packages/enhanced_agent_bus/monitoring/README.md) | Monitoring phase summaries |
 | `packages/enhanced_agent_bus/rust/` | [../packages/enhanced_agent_bus/rust/README.md](../packages/enhanced_agent_bus/rust/README.md) | Rust lane inside the bus package |
 | `packages/mhc/` | [../packages/mhc/README.md](../packages/mhc/README.md) | Short-import alias package for `constitutional-swarm` |
 
@@ -69,13 +72,19 @@ that directory yet.
 
 | Directory | Start here | Purpose |
 | --- | --- | --- |
-| `docs/architecture/` | [architecture/2026-03-30-governed-flywheel-integration-design.md](architecture/2026-03-30-governed-flywheel-integration-design.md) | Architecture design docs |
+| `docs/adrs/` | [adrs/README.md](adrs/README.md) | Architecture decision records |
+| `docs/architecture/` | [architecture/README.md](architecture/README.md) | Architecture design docs |
+| `docs/benchmarks/` | [benchmarks/README.md](benchmarks/README.md) | Benchmark and competitive-comparison docs |
 | `docs/launch/` | [launch/README.md](launch/README.md) | Launch assets, marketplace materials, and outreach copy |
+| `docs/plans/` | [plans/README.md](plans/README.md) | Focused engineering plans |
 | `docs/strategy/` | [strategy/README.md](strategy/README.md) | Strategy, pricing, and GTM docs |
+| `docs/strategy/grants/` | [strategy/grants/README.md](strategy/grants/README.md) | Grant and funding materials |
+| `docs/strategy/messaging/` | [strategy/messaging/README.md](strategy/messaging/README.md) | Positioning and messaging docs |
+| `docs/strategy/sales/` | [strategy/sales/README.md](strategy/sales/README.md) | Sales and buyer-facing docs |
 | `docs/superpowers/plans/` | [superpowers/plans/2026-03-19-sveltekit-migration.md](superpowers/plans/2026-03-19-sveltekit-migration.md) | Implementation plans |
 | `docs/superpowers/specs/` | [superpowers/specs/2026-03-19-sveltekit-migration-design.md](superpowers/specs/2026-03-19-sveltekit-migration-design.md) | Design/spec docs |
 | `docs/generated/` | [generated/README.md](generated/README.md) | Generated long-form artifacts |
-| `docs/test-plans/` | [test-plans/01-governance-core.md](test-plans/01-governance-core.md) | Test-planning docs |
+| `docs/test-plans/` | [test-plans/README.md](test-plans/README.md) | Test-planning docs |
 | `claudedocs/archive/` | [../claudedocs/INDEX.md](../claudedocs/INDEX.md) | Archived reference snapshots |
 
 ## Automation and Test Knowledge
