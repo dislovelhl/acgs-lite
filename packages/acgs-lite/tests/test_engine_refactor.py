@@ -9,6 +9,7 @@ import pytest
 
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution, Severity
+from acgs_lite.engine.enforcement import NotificationEvent
 from acgs_lite.engine.batch import BatchValidationResult
 from acgs_lite.engine.core import (
     GovernanceEngine,
@@ -187,6 +188,25 @@ class TestValidationResult:
         assert d["valid"] is True
         assert d["rules_checked"] == 5
         assert d["action"] == "test action"
+
+    def test_to_dict_includes_notifications(self) -> None:
+        result = ValidationResult(
+            valid=False,
+            constitutional_hash="hash",
+            violations=[],
+            notifications=[
+                NotificationEvent(
+                    rule_id="R1",
+                    rule_text="notify",
+                    severity="high",
+                    category="security",
+                    action="send secret",
+                    matched_content="send secret",
+                )
+            ],
+        )
+        d = result.to_dict()
+        assert d["notifications"][0]["rule_id"] == "R1"
 
 
 # ---------------------------------------------------------------------------

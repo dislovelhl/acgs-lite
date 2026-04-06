@@ -12,6 +12,12 @@ from typing import Any, NamedTuple
 
 from acgs_lite.constitution import Severity
 from acgs_lite.constitution.rule import ViolationAction
+from acgs_lite.engine.enforcement import (
+    EscalationRequest,
+    IncidentAlert,
+    NotificationEvent,
+    ReviewRequest,
+)
 
 
 class Violation(NamedTuple):
@@ -41,6 +47,10 @@ class ValidationResult:
     warnings: list[Violation] = field(default_factory=list)
     # The enforcement action that was applied to this validation result.
     action_taken: ViolationAction | None = None
+    notifications: list[NotificationEvent] = field(default_factory=list)
+    review_requests: list[ReviewRequest] = field(default_factory=list)
+    escalations: list[EscalationRequest] = field(default_factory=list)
+    incident_alerts: list[IncidentAlert] = field(default_factory=list)
 
     @property
     def blocking_violations(self) -> list[Violation]:
@@ -108,6 +118,10 @@ class ValidationResult:
                 for v in self.warnings
             ],
             "action_taken": self.action_taken.value if self.action_taken is not None else None,
+            "notifications": [event.to_dict() for event in self.notifications],
+            "review_requests": [request.to_dict() for request in self.review_requests],
+            "escalations": [request.to_dict() for request in self.escalations],
+            "incident_alerts": [alert.to_dict() for alert in self.incident_alerts],
             "rules_checked": self.rules_checked,
             "latency_ms": self.latency_ms,
             "request_id": self.request_id,

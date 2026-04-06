@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from acgs_lite import Constitution, GovernanceEngine, Rule, Severity, ViolationAction
+from acgs_lite import AuditLog, Constitution, GovernanceEngine, Rule, Severity, ViolationAction
 from acgs_lite.errors import ConstitutionalViolationError
 
 
@@ -34,6 +34,11 @@ def _rule(
 
 def _engine(rules: list[Rule], *, strict: bool = True) -> GovernanceEngine:
     return GovernanceEngine(Constitution.from_rules(rules), strict=strict)
+
+
+def _engine_with_audit(rules: list[Rule], *, strict: bool = True) -> tuple[GovernanceEngine, AuditLog]:
+    audit_log = AuditLog()
+    return GovernanceEngine(Constitution.from_rules(rules), strict=strict, audit_log=audit_log), audit_log
 
 
 # ---------------------------------------------------------------------------
@@ -281,40 +286,83 @@ class TestMixedActions:
 
 @pytest.mark.unit
 class TestBlockingVariants:
-    @pytest.mark.parametrize(
-        "action",
-        [
-            ViolationAction.BLOCK_AND_NOTIFY,
-            ViolationAction.REQUIRE_HUMAN_REVIEW,
-            ViolationAction.ESCALATE,
-        ],
-    )
-    def test_blocking_variants_raise_when_strict(self, action: ViolationAction) -> None:
-        """BLOCK_AND_NOTIFY, REQUIRE_HUMAN_REVIEW, ESCALATE all block when strict=True."""
+    def test_block_and_notify_creates_notification_artifact(self) -> None:
         engine = _engine(
-            [_rule("BV1", ["plaintext"], severity=Severity.HIGH, workflow_action=action)],
-        )
-        with pytest.raises(ConstitutionalViolationError) as exc:
-            engine.validate("send data in plaintext format")
-        assert exc.value.enforcement_action == ViolationAction.BLOCK
-
-    @pytest.mark.parametrize(
-        "action",
-        [
-            ViolationAction.BLOCK_AND_NOTIFY,
-            ViolationAction.REQUIRE_HUMAN_REVIEW,
-            ViolationAction.ESCALATE,
-        ],
-    )
-    def test_blocking_variants_record_when_not_strict(self, action: ViolationAction) -> None:
-        """BLOCK variants are recorded but don't raise when strict=False."""
-        engine = _engine(
-            [_rule("BV1", ["plaintext"], severity=Severity.HIGH, workflow_action=action)],
+            [
+                _rule(
+                    "BV1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.BLOCK_AND_NOTIFY,
+                )
+            ],
             strict=False,
         )
         result = engine.validate("send data in plaintext format")
         assert result.valid is False
+        assert result.action_taken == ViolationAction.BLOCK_AND_NOTIFY
         assert len(result.violations) == 1
+        assert len(result.notifications) == 1
+        assert result.notifications[0].rule_id == "BV1"
+        assert result.review_requests == []
+        assert result.escalations == []
+        assert result.incident_alerts == []
+
+    def test_require_human_review_creates_review_artifact(self) -> None:
+        engine = _engine(
+            [
+                _rule(
+                    "RV1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.REQUIRE_HUMAN_REVIEW,
+                )
+            ],
+            strict=False,
+        )
+        result = engine.validate("send data in plaintext format")
+        assert result.valid is False
+        assert result.action_taken == ViolationAction.REQUIRE_HUMAN_REVIEW
+        assert len(result.review_requests) == 1
+        assert result.review_requests[0].rule_id == "RV1"
+        assert result.notifications == []
+        assert result.escalations == []
+
+    def test_escalate_creates_escalation_artifact(self) -> None:
+        engine = _engine(
+            [
+                _rule(
+                    "EV1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.ESCALATE,
+                )
+            ],
+            strict=False,
+        )
+        result = engine.validate("send data in plaintext format")
+        assert result.valid is False
+        assert result.action_taken == ViolationAction.ESCALATE
+        assert len(result.escalations) == 1
+        assert result.escalations[0].rule_id == "EV1"
+        assert result.notifications == []
+        assert result.review_requests == []
+
+    def test_blocking_variants_raise_with_actual_enforcement_action(self) -> None:
+        for action in (
+            ViolationAction.BLOCK_AND_NOTIFY,
+            ViolationAction.REQUIRE_HUMAN_REVIEW,
+            ViolationAction.ESCALATE,
+        ):
+            engine, audit_log = _engine_with_audit(
+                [_rule("BV1", ["plaintext"], severity=Severity.HIGH, workflow_action=action)],
+            )
+            with pytest.raises(ConstitutionalViolationError) as exc:
+                engine.validate("send data in plaintext format")
+            assert exc.value.enforcement_action == action
+            assert len(audit_log.entries) == 1
+            metadata = audit_log.entries[0].metadata["enforcement"]
+            assert metadata["action_taken"] == action.value
 
 
 # ---------------------------------------------------------------------------
@@ -386,6 +434,18 @@ class TestConstitutionalViolationErrorAction:
             "test", rule_id="R1", severity="critical", enforcement_action=ViolationAction.HALT
         )
         assert err.enforcement_action == ViolationAction.HALT
+
+    def test_halt_records_incident_artifact_before_raise(self) -> None:
+        engine, audit_log = _engine_with_audit(
+            [_rule("H1", ["plaintext"], severity=Severity.HIGH, workflow_action=ViolationAction.HALT)],
+        )
+        with pytest.raises(ConstitutionalViolationError) as exc:
+            engine.validate("send data in plaintext format")
+        assert exc.value.enforcement_action == ViolationAction.HALT
+        assert len(audit_log.entries) == 1
+        metadata = audit_log.entries[0].metadata["enforcement"]
+        assert metadata["incident_triggered"] is True
+        assert metadata["incident_alerts"][0]["rule_id"] == "H1"
 
     def test_action_string_field_preserved(self) -> None:
         """The existing 'action' str field is unchanged."""

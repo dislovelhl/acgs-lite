@@ -29,6 +29,7 @@ from acgs_lite.errors import ConstitutionalViolationError
 
 from .audit_runtime import _ANON, _FastAuditLog, _NoopRecorder, _request_counter
 from .batch import BatchValidationMixin
+from .enforcement import EnforcementResolution, resolve_enforcement
 from .matcher import _HAS_AHO, _HAS_RUST, GovernanceMatcherMixin, _ac, _rust
 from .models import CustomValidator, ValidationResult, Violation, _dedup_violations
 
@@ -411,7 +412,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             [],
             self._rules_count,
             0.0,
-            0,
+            "",
             "",
             "",
             _ANON,
@@ -425,6 +426,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         action: str,
         warnings: list[Violation] | None = None,
         action_taken: ViolationAction | None = None,
+        enforcement: EnforcementResolution | None = None,
     ) -> ValidationResult:
         """Return an isolated fast-path result.
 
@@ -439,38 +441,128 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             list(violations),
             self._rules_count,
             0.0,
-            0,
+            "",
             "",
             action[:500],
             _ANON,
             warnings if warnings is not None else [],
             action_taken,
+            [] if enforcement is None else enforcement.notifications,
+            [] if enforcement is None else enforcement.review_requests,
+            [] if enforcement is None else enforcement.escalations,
+            [] if enforcement is None else enforcement.incident_alerts,
         )
 
-    def _dispatch_violations(
+    def _workflow_action_for_violation(
+        self,
+        violation: Violation,
+    ) -> ViolationAction:
+        """Resolve the workflow action for a matched violation."""
+        workflow_action = self._rule_id_to_wa.get(violation.rule_id)
+        if workflow_action is not None:
+            return workflow_action
+        return ViolationAction.BLOCK if violation.severity.blocks() else ViolationAction.WARN
+
+    def _resolve_enforcement(
         self,
         violations: list[Violation],
-    ) -> tuple[list[Violation], list[Violation], list[Violation]]:
-        """Split violations into (halt, blocking, warning) by workflow_action."""
-        halt: list[Violation] = []
-        blocking: list[Violation] = []
-        warning: list[Violation] = []
-        _wa_lookup = self._rule_id_to_wa
-        for v in violations:
-            # For rule IDs not in the lookup (e.g. custom validators), fall back
-            # to severity-derived action: CRITICAL/HIGH → BLOCK, MEDIUM/LOW → WARN.
-            _registered_wa = _wa_lookup.get(v.rule_id)
-            if _registered_wa is not None:
-                wa = _registered_wa
-            else:
-                wa = ViolationAction.BLOCK if v.severity.blocks() else ViolationAction.WARN
-            if wa is ViolationAction.HALT:
-                halt.append(v)
-            elif wa is ViolationAction.WARN:
-                warning.append(v)
-            else:
-                blocking.append(v)
-        return halt, blocking, warning
+        *,
+        action_text: str,
+    ) -> EnforcementResolution:
+        """Resolve matched violations into runtime enforcement artifacts."""
+        return resolve_enforcement(
+            violations,
+            action_text=action_text,
+            workflow_action_for_violation=self._workflow_action_for_violation,
+        )
+
+    def _raise_for_enforcement(
+        self,
+        enforcement: EnforcementResolution,
+        *,
+        strict: bool,
+        action_text: str,
+    ) -> None:
+        """Raise the appropriate exception for halting or strict blocking outcomes."""
+        if enforcement.primary_action is None or enforcement.primary_violation is None:
+            return
+        violation = enforcement.primary_violation
+        if enforcement.primary_action is ViolationAction.HALT:
+            raise ConstitutionalViolationError(
+                f"Constitutional HALT by rule {violation.rule_id}: {violation.rule_text}",
+                rule_id=violation.rule_id,
+                severity=violation.severity.value,
+                action=action_text[:200],
+                enforcement_action=enforcement.primary_action,
+            )
+        if strict and enforcement.blocking_violations:
+            raise ConstitutionalViolationError(
+                f"Action blocked by rule {violation.rule_id}: {violation.rule_text}",
+                rule_id=violation.rule_id,
+                severity=violation.severity.value,
+                action=action_text[:200],
+                enforcement_action=enforcement.primary_action,
+            )
+
+    @staticmethod
+    def _build_rule_evaluations(
+        rules: list[Rule],
+        *,
+        matched_rule_ids: set[str],
+        applicable_rule_ids: set[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Build rule-evaluation records for audit output."""
+        evaluations: list[dict[str, Any]] = []
+        for rule in rules:
+            evaluated = True if applicable_rule_ids is None else rule.id in applicable_rule_ids
+            evaluations.append(
+                {
+                    "rule_id": rule.id,
+                    "severity": rule.severity.value,
+                    "evaluated": evaluated,
+                    "matched": rule.id in matched_rule_ids,
+                    "reason": (
+                        "violation"
+                        if rule.id in matched_rule_ids
+                        else "no_match"
+                        if evaluated
+                        else "inactive"
+                    ),
+                }
+            )
+        return evaluations
+
+    def _record_validation_audit(
+        self,
+        *,
+        request_id: str,
+        agent_id: str,
+        action: str,
+        valid: bool,
+        matched_violations: list[Violation],
+        latency_ms: float,
+        timestamp: str,
+        rule_evaluations: list[dict[str, Any]],
+        enforcement: EnforcementResolution | None = None,
+    ) -> None:
+        """Record a validation audit entry including enforcement metadata."""
+        metadata: dict[str, Any] = {"rule_evaluations": rule_evaluations}
+        if enforcement is not None:
+            metadata["enforcement"] = enforcement.audit_metadata()
+        self.audit_log.record(
+            AuditEntry(
+                id=str(request_id),
+                type="validation",
+                agent_id=agent_id,
+                action=action,
+                valid=valid,
+                violations=[violation.rule_id for violation in matched_violations],
+                constitutional_hash=self._const_hash,
+                latency_ms=latency_ms,
+                timestamp=timestamp,
+                metadata=metadata,
+            )
+        )
 
     def _post_dispatch_result(
         self,
@@ -485,21 +577,19 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         """
         if not result.violations:
             return result
-        halt, blocking, warning = self._dispatch_violations(result.violations)
-        if halt:
-            vh = halt[0]
-            raise ConstitutionalViolationError(
-                f"Constitutional HALT by rule {vh.rule_id}: {vh.rule_text}",
-                rule_id=vh.rule_id,
-                severity=vh.severity.value,
-                action=action_text[:200],
-                enforcement_action=ViolationAction.HALT,
-            )
-        result.violations = blocking
-        result.warnings = warning
-        result.action_taken = (
-            ViolationAction.BLOCK if blocking else (ViolationAction.WARN if warning else None)
+        enforcement = self._resolve_enforcement(result.violations, action_text=action_text[:200])
+        self._raise_for_enforcement(
+            enforcement,
+            strict=self.strict,
+            action_text=action_text,
         )
+        result.violations = enforcement.blocking_violations
+        result.warnings = enforcement.warning_violations
+        result.action_taken = enforcement.action_taken
+        result.notifications = enforcement.notifications
+        result.review_requests = enforcement.review_requests
+        result.escalations = enforcement.escalations
+        result.incident_alerts = enforcement.incident_alerts
         return result
 
     def _runtime_active_rules(self, context: dict[str, Any] | None) -> list[Rule]:
@@ -598,91 +688,55 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
         unique_violations = violations if len(violations) <= 1 else _dedup_violations(violations)
 
-        # --- workflow_action dispatch ---
-        halt_viol, block_viol, warn_viol = self._dispatch_violations(unique_violations)
-        if halt_viol:
-            vh = halt_viol[0]
-            if self._fast_records is not None:
-                self._fast_records.append(None)
-            raise ConstitutionalViolationError(
-                f"Constitutional HALT by rule {vh.rule_id}: {vh.rule_text}",
-                rule_id=vh.rule_id,
-                severity=vh.severity.value,
-                action=action_200,
-                enforcement_action=ViolationAction.HALT,
-            )
-        if block_viol and self.strict:
-            vb = block_viol[0]
-            if self._fast_records is not None:
-                self._fast_records.append(None)
-            raise ConstitutionalViolationError(
-                f"Action blocked by rule {vb.rule_id}: {vb.rule_text}",
-                rule_id=vb.rule_id,
-                severity=vb.severity.value,
-                action=action_200,
-                enforcement_action=ViolationAction.BLOCK,
-            )
-        valid = not bool(block_viol)
-        action_taken = (
-            ViolationAction.BLOCK if block_viol else (ViolationAction.WARN if warn_viol else None)
-        )
-        # ---
+        enforcement = self._resolve_enforcement(unique_violations, action_text=action_200)
+        valid = not bool(enforcement.blocking_violations)
 
         latency_ms = (time.perf_counter() - start) * 1000
         request_id = str(next(_request_counter))
         timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        all_matched = enforcement.blocking_violations + enforcement.warning_violations
         result = ValidationResult(
             valid=valid,
             constitutional_hash=self._const_hash,
-            violations=block_viol,
+            violations=enforcement.blocking_violations,
             rules_checked=len(applicable_rules),
             latency_ms=latency_ms,
             request_id=request_id,
             timestamp=timestamp,
             action=action_trimmed,
             agent_id=agent_id,
-            warnings=warn_viol,
-            action_taken=action_taken,
+            warnings=enforcement.warning_violations,
+            action_taken=enforcement.action_taken,
+            notifications=enforcement.notifications,
+            review_requests=enforcement.review_requests,
+            escalations=enforcement.escalations,
+            incident_alerts=enforcement.incident_alerts,
         )
 
         if self._fast_records is not None:
             self._fast_records.append(None)
         else:
-            all_matched = block_viol + warn_viol
-            violation_rule_ids = {v.rule_id for v in all_matched}
-            rule_evaluations = []
-            for rule in self.constitution.rules:
-                active = rule in applicable_rules
-                rule_evaluations.append(
-                    {
-                        "rule_id": rule.id,
-                        "severity": rule.severity.value,
-                        "evaluated": active,
-                        "matched": rule.id in violation_rule_ids,
-                        "reason": (
-                            "violation"
-                            if rule.id in violation_rule_ids
-                            else "no_match"
-                            if active
-                            else "inactive"
-                        ),
-                    }
-                )
-            self.audit_log.record(
-                AuditEntry(
-                    id=request_id,
-                    type="validation",
-                    agent_id=agent_id,
-                    action=action_trimmed,
-                    valid=valid,
-                    violations=[v.rule_id for v in all_matched],
-                    constitutional_hash=self._const_hash,
-                    latency_ms=latency_ms,
-                    timestamp=timestamp,
-                    metadata={"rule_evaluations": rule_evaluations},
-                )
+            self._record_validation_audit(
+                request_id=request_id,
+                agent_id=agent_id,
+                action=action_trimmed,
+                valid=valid,
+                matched_violations=all_matched,
+                latency_ms=latency_ms,
+                timestamp=timestamp,
+                rule_evaluations=self._build_rule_evaluations(
+                    self.constitution.rules,
+                    matched_rule_ids={v.rule_id for v in all_matched},
+                    applicable_rule_ids={rule.id for rule in applicable_rules},
+                ),
+                enforcement=enforcement,
             )
 
+        self._raise_for_enforcement(
+            enforcement,
+            strict=self.strict,
+            action_text=action_200,
+        )
         return result
 
     def _validate_python_regex(
@@ -993,7 +1047,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             if _fast_records is not None:
                 _fast_records.append(None)
                 return self._new_fast_allow_result()
-            request_id = next(_request_counter)
+            request_id = str(next(_request_counter))
             latency_ms = (time.perf_counter() - start) * 1000
             now_ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
             result = ValidationResult(
@@ -1007,119 +1061,84 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 action_trimmed,
                 agent_id,
             )
-            rule_evaluations = []
-            for rule in self.constitution.rules:
-                rule_evaluations.append(
-                    {
-                        "rule_id": rule.id,
-                        "severity": rule.severity.value,
-                        "evaluated": True,
-                        "matched": False,
-                        "reason": "no_violation",
-                    }
-                )
-
-            self.audit_log.record(
-                AuditEntry(
-                    id=request_id,
-                    type="validation",
-                    agent_id=agent_id,
-                    action=action_trimmed,
-                    valid=True,
-                    violations=[],
-                    constitutional_hash=self._const_hash,
-                    latency_ms=latency_ms,
-                    timestamp=now_ts,
-                    metadata={"rule_evaluations": rule_evaluations},
-                )
+            self._record_validation_audit(
+                request_id=str(request_id),
+                agent_id=agent_id,
+                action=action_trimmed,
+                valid=True,
+                matched_violations=[],
+                latency_ms=latency_ms,
+                timestamp=now_ts,
+                rule_evaluations=self._build_rule_evaluations(
+                    self.constitution.rules,
+                    matched_rule_ids=set(),
+                ),
             )
             return result
 
         unique_violations = violations if len(violations) == 1 else _dedup_violations(violations)
 
-        # --- workflow_action dispatch ---
-        _halt_v, _block_v, _warn_v = self._dispatch_violations(unique_violations)
-        if _halt_v:
-            _vh = _halt_v[0]
-            raise ConstitutionalViolationError(
-                f"Constitutional HALT by rule {_vh.rule_id}: {_vh.rule_text}",
-                rule_id=_vh.rule_id,
-                severity=_vh.severity.value,
-                action=action_200,
-                enforcement_action=ViolationAction.HALT,
-            )
-        if _block_v and strict:
-            _vb = _block_v[0]
-            raise ConstitutionalViolationError(
-                f"Action blocked by rule {_vb.rule_id}: {_vb.rule_text}",
-                rule_id=_vb.rule_id,
-                severity=_vb.severity.value,
-                action=action_200,
-                enforcement_action=ViolationAction.BLOCK,
-            )
-        valid = not bool(_block_v)
-        _action_taken = (
-            ViolationAction.BLOCK if _block_v else (ViolationAction.WARN if _warn_v else None)
-        )
-        # ---
+        enforcement = self._resolve_enforcement(unique_violations, action_text=action_200)
+        valid = not bool(enforcement.blocking_violations)
 
         if _fast_records is not None:
+            self._raise_for_enforcement(
+                enforcement,
+                strict=strict,
+                action_text=action_200,
+            )
             _fast_records.append(None)
             return self._new_fast_result(
                 valid=valid,
-                violations=_block_v,
+                violations=enforcement.blocking_violations,
                 action=action,
-                warnings=_warn_v,
-                action_taken=_action_taken,
+                warnings=enforcement.warning_violations,
+                action_taken=enforcement.action_taken,
+                enforcement=enforcement,
             )
 
-        request_id = next(_request_counter)
+        request_id = str(next(_request_counter))
         latency_ms = (time.perf_counter() - start) * 1000
 
         now_ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         result = ValidationResult(
             valid=valid,
             constitutional_hash=self._const_hash,
-            violations=_block_v,
+            violations=enforcement.blocking_violations,
             rules_checked=self._rules_count,
             latency_ms=latency_ms,
             request_id=request_id,
             timestamp=now_ts,
             action=action_trimmed,
             agent_id=agent_id,
-            warnings=_warn_v,
-            action_taken=_action_taken,
+            warnings=enforcement.warning_violations,
+            action_taken=enforcement.action_taken,
+            notifications=enforcement.notifications,
+            review_requests=enforcement.review_requests,
+            escalations=enforcement.escalations,
+            incident_alerts=enforcement.incident_alerts,
         )
 
-        rule_evaluations = []
-        _all_matched = {v.rule_id for v in _block_v + _warn_v}
-
-        for rule in self.constitution.rules:
-            rule_evaluations.append(
-                {
-                    "rule_id": rule.id,
-                    "severity": rule.severity.value,
-                    "evaluated": True,
-                    "matched": rule.id in _all_matched,
-                    "reason": "violation" if rule.id in _all_matched else "no_match",
-                }
-            )
-
-        self.audit_log.record(
-            AuditEntry(
-                id=str(request_id),
-                type="validation",
-                agent_id=agent_id,
-                action=action_trimmed,
-                valid=valid,
-                violations=list(_all_matched),
-                constitutional_hash=self._const_hash,
-                latency_ms=result.latency_ms,
-                timestamp=now_ts,
-                metadata={"rule_evaluations": rule_evaluations},
-            )
+        all_matched = enforcement.blocking_violations + enforcement.warning_violations
+        self._record_validation_audit(
+            request_id=str(request_id),
+            agent_id=agent_id,
+            action=action_trimmed,
+            valid=valid,
+            matched_violations=all_matched,
+            latency_ms=result.latency_ms,
+            timestamp=now_ts,
+            rule_evaluations=self._build_rule_evaluations(
+                self.constitution.rules,
+                matched_rule_ids={v.rule_id for v in all_matched},
+            ),
+            enforcement=enforcement,
         )
-
+        self._raise_for_enforcement(
+            enforcement,
+            strict=strict,
+            action_text=action_200,
+        )
         return result
 
     def add_validator(self, validator: CustomValidator) -> None:
