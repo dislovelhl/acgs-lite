@@ -43,18 +43,19 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     environment: production
-    # Skip silently when FLY_API_TOKEN is not configured
-    if: ${{ secrets.FLY_API_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to Fly.io production
+        # Skip gracefully when FLY_API_TOKEN secret is not configured
+        if: env.FLY_API_TOKEN != ''
         run: |
           flyctl deploy \
             --config deploy/fly.toml \
             --dockerfile packages/clinicalguard/Dockerfile \
             --remote-only
       - name: Health check
+        if: env.FLY_API_TOKEN != ''
         run: |
           sleep 10
           STATUS=$(curl -sf https://clinicalguard.fly.dev/health | python -c "import sys,json; print(json.load(sys.stdin)['status'])")
