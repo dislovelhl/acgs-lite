@@ -45,10 +45,10 @@ that directory yet.
 | `packages/acgs.ai/` | [../packages/acgs.ai/README.md](../packages/acgs.ai/README.md) | SvelteKit frontend for the public site and demos |
 | `packages/acgs_auth0/` | [../packages/acgs_auth0/README.md](../packages/acgs_auth0/README.md) | Auth0 Token Vault governance bridge |
 | `packages/clinicalguard/` | [../packages/clinicalguard/README.md](../packages/clinicalguard/README.md) | Healthcare A2A agent/service |
-| `packages/clinicalguard/docs/` | [../packages/clinicalguard/README.md](../packages/clinicalguard/README.md) | Extra ClinicalGuard deployment and one-pager docs |
+| `packages/clinicalguard/docs/` | [../packages/clinicalguard/docs/README.md](../packages/clinicalguard/docs/README.md) | ClinicalGuard one-pager and deployment docs |
 | `packages/constitutional_swarm/` | [../packages/constitutional_swarm/README.md](../packages/constitutional_swarm/README.md) | Governed multi-agent package |
 | `packages/enhanced_agent_bus/` | [../packages/enhanced_agent_bus/README.md](../packages/enhanced_agent_bus/README.md) | Bus service and platform runtime |
-| `packages/enhanced_agent_bus/docs/` | [../packages/enhanced_agent_bus/README.md](../packages/enhanced_agent_bus/README.md) | Bus architecture and cleanup-plan docs |
+| `packages/enhanced_agent_bus/docs/` | [../packages/enhanced_agent_bus/docs/README.md](../packages/enhanced_agent_bus/docs/README.md) | Bus architecture and cleanup-plan docs |
 | `packages/enhanced_agent_bus/agent_health/` | [../packages/enhanced_agent_bus/agent_health/README.md](../packages/enhanced_agent_bus/agent_health/README.md) | Agent health API surface |
 | `packages/enhanced_agent_bus/collaboration/` | [../packages/enhanced_agent_bus/collaboration/README.md](../packages/enhanced_agent_bus/collaboration/README.md) | Collaboration module docs |
 | `packages/enhanced_agent_bus/rust/` | [../packages/enhanced_agent_bus/rust/README.md](../packages/enhanced_agent_bus/rust/README.md) | Rust lane inside the bus package |
@@ -68,7 +68,7 @@ that directory yet.
 | Directory | Start here | Purpose |
 | --- | --- | --- |
 | `docs/architecture/` | [architecture/2026-03-30-governed-flywheel-integration-design.md](architecture/2026-03-30-governed-flywheel-integration-design.md) | Architecture design docs |
-| `docs/launch/` | [launch/LAUNCH-PACK.md](launch/LAUNCH-PACK.md) | Launch assets and marketplace materials |
+| `docs/launch/` | [launch/README.md](launch/README.md) | Launch assets, marketplace materials, and outreach copy |
 | `docs/strategy/` | [strategy/README.md](strategy/README.md) | Strategy, pricing, and GTM docs |
 | `docs/superpowers/plans/` | [superpowers/plans/2026-03-19-sveltekit-migration.md](superpowers/plans/2026-03-19-sveltekit-migration.md) | Implementation plans |
 | `docs/superpowers/specs/` | [superpowers/specs/2026-03-19-sveltekit-migration-design.md](superpowers/specs/2026-03-19-sveltekit-migration-design.md) | Design/spec docs |
@@ -80,8 +80,8 @@ that directory yet.
 
 | Directory | Start here | Purpose |
 | --- | --- | --- |
-| `autonoma/skills/` | [../autonoma/AUTONOMA.md](../autonoma/AUTONOMA.md) | Human-readable navigation and API skill flows |
-| `autonoma/qa-tests/` | [../autonoma/qa-tests/INDEX.md](../autonoma/qa-tests/INDEX.md) | End-to-end test cases by surface |
+| `autonoma/skills/` | [../autonoma/skills/README.md](../autonoma/skills/README.md) | Human-readable navigation and API skill flows |
+| `autonoma/qa-tests/` | [../autonoma/qa-tests/README.md](../autonoma/qa-tests/README.md) | End-to-end test cases by surface |
 | `.claude/evals/` | [../.claude/evals/README.md](../.claude/evals/README.md) | Eval harness commands and eval definitions |
 
 ## Notes
