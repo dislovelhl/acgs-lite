@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acgs-lite"
-version = "2.6.0"
+version = "2.7.0"
 description = "Constitutional AI governance for agents — enforce rules, audit decisions, MACI role separation, formal verification, and 18-framework compliance coverage."
 readme = "README.md"
 license = "Apache-2.0"

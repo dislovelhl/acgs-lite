@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-04-06
+
 ### Added
 - **`ViolationAction` enum** (`src/acgs_lite/constitution/rule.py`): Replaces the
   undocumented `workflow_action: str` hint-field with a proper `str, Enum` type.
@@ -37,6 +39,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `conflict_resolution.py` / `constitution.py`: conflict detection no longer guards on
   `workflow_action != ""` (now meaningless since the field always has a value).
 - `dependency_analysis._KNOWN_WORKFLOW_ACTIONS`: added `halt_and_alert`.
+
+### Fixed
+- `ruff` config changed from `exclude` to `extend-exclude` so default dotfile
+  exclusions (`.git`, `.venv`, `.codex-home`, etc.) are preserved.
+- CI `ruff format --check` failure on `examples/mcp_agent_client.py` (trailing
+  whitespace + lines > 100 chars); file auto-formatted.
+- Test assertion in `test_coverage_engine_extra.py` for PAT-MED
+  (`MEDIUM` severity / `WARN` action): corrected `result.violations` →
+  `result.warnings`.
+
+### Tests
+- 32 new tests in `tests/test_workflow_action.py` covering `ViolationAction` enum
+  coercion, WARN dispatch, HALT circuit-breaker, `action_taken` field, and
+  backward-compatible string values.
+- **Total: 4,687 passing, 156 skipped** (suite-wide)
 
 ## [2.6.0] - 2026-04-05
 
