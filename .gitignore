@@ -142,3 +142,6 @@ output/
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Session/task brief files
+brief.md
