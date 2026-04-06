@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import Page from './+page.svelte';
 
 vi.mock('@threlte/core', async (importOriginal) => {
-	const actual = await importOriginal();
+	const actual = (await importOriginal()) as Record<string, unknown>;
 	return {
 		...actual,
 		Canvas: Object.assign(() => {}, { render: () => {} }),

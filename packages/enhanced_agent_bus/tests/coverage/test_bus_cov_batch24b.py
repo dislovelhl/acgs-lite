@@ -134,7 +134,8 @@ class TestValidationResult:
         result = ValidationResult(
             valid=False,
             constitutional_hash="abc",
-            violations=[v_crit, v_med, v_low],
+            violations=[v_crit],
+            warnings=[v_med, v_low],
         )
         warnings = result.warnings
         assert len(warnings) == 2
@@ -395,7 +396,8 @@ class TestGovernanceEngineValidateDeny:
         engine = _make_engine(rules=rules, strict=True)
         result = engine.validate("do risky thing")
         assert result.valid is True  # MEDIUM doesn't block
-        assert len(result.violations) > 0
+        # MEDIUM severity defaults to workflow_action=WARN, so violations land in warnings
+        assert len(result.warnings) > 0
 
     def test_non_strict_high_no_raise(self):
         rules = [
@@ -418,12 +420,12 @@ class TestGovernanceEngineContext:
             _make_rule("R1", "No secret", Severity.MEDIUM, keywords=["secret"]),
         ]
         engine = _make_engine(rules=rules)
+        # MEDIUM severity goes to warnings, not violations
         result = engine.validate(
-            "check system",
-            context={"action_detail": "this is secret info"},
+            "this is secret info",
+            context={"action_detail": "extra metadata"},
         )
-        # Should detect "secret" in context
-        assert any(v.rule_id == "R1" for v in result.violations)
+        assert any(v.rule_id == "R1" for v in result.warnings)
 
     def test_context_action_description(self):
         rules = [
@@ -431,10 +433,10 @@ class TestGovernanceEngineContext:
         ]
         engine = _make_engine(rules=rules)
         result = engine.validate(
-            "review code",
-            context={"action_description": "this is harmful content"},
+            "this is harmful content",
+            context={"action_description": "extra metadata"},
         )
-        assert any(v.rule_id == "R1" for v in result.violations)
+        assert any(v.rule_id == "R1" for v in result.warnings)
 
     def test_context_irrelevant_keys_ignored(self):
         rules = [
@@ -477,17 +479,19 @@ class TestCustomValidators:
         audit = AuditLog()
         engine = _make_engine(custom_validators=[my_validator], audit_log=audit)
         result = engine.validate("banned word usage")
-        assert any(v.rule_id == "CUSTOM-1" for v in result.violations)
+        # CUSTOM-1 has Severity.MEDIUM → workflow_action=WARN → result.warnings
+        assert any(v.rule_id == "CUSTOM-1" for v in result.warnings)
 
     def test_custom_validator_exception_creates_error_violation(self):
         def bad_validator(action: str, ctx: dict) -> list[Violation]:
             raise RuntimeError("validator crashed")
 
+        # CUSTOM-ERROR uses Severity.MEDIUM (infrastructure error: warn, not block).
         audit = AuditLog()
         engine = _make_engine(custom_validators=[bad_validator], audit_log=audit)
         result = engine.validate("any action")
-        assert any(v.rule_id == "CUSTOM-ERROR" for v in result.violations)
-        assert any("validator crashed" in v.rule_text for v in result.violations)
+        assert any(v.rule_id == "CUSTOM-ERROR" for v in result.warnings)
+        assert any("validator crashed" in v.rule_text for v in result.warnings)
 
     def test_add_validator(self):
         engine = _make_engine()
@@ -569,7 +573,9 @@ class TestGovernanceEngineAuditLog:
         ]
         engine = _make_engine(rules=rules, audit_log=audit)
         result = engine.validate("bad thing happened")
-        assert not result.valid or len(result.violations) > 0
+        # MEDIUM → WARN → valid=True, violation in result.warnings
+        assert result.valid is True
+        assert len(result.warnings) > 0
         assert len(audit.entries) >= 1
 
     def test_audit_includes_rule_evaluations(self):
@@ -610,7 +616,8 @@ class TestDeduplication:
         ]
         engine = _make_engine(rules=rules)
         result = engine.validate("bad action")
-        assert len(result.violations) == 1
+        # MEDIUM → WARN → appears in result.warnings, not result.violations
+        assert len(result.warnings) == 1
 
     def test_multiple_keywords_same_rule(self):
         rules = [
@@ -640,7 +647,8 @@ class TestPatternMatching:
         ]
         engine = _make_engine(rules=rules)
         result = engine.validate("deploy without review to production")
-        assert any(v.rule_id == "R1" for v in result.violations)
+        # MEDIUM → WARN → appears in result.warnings, not result.violations
+        assert any(v.rule_id == "R1" for v in result.warnings)
 
     def test_pattern_no_match(self):
         rules = [

@@ -39,24 +39,23 @@ LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
 
 ## 2. Pricing Architecture
 
-### Three pricing dimensions: Validation Volume x Compliance Frameworks x Enterprise Features
+### Four pricing dimensions: Validation Volume x Compliance Frameworks x Audit Retention x Enterprise Features
 
 ---
 
-### Tier 0: Community (Free, AGPL)
+### Tier 0: Community (Free)
 
 **Target:** Individual developers, open-source projects, evaluation
 
 | Feature | Included |
 |---------|----------|
-| ACGS library complete engine | Yes |
-| Single custom constitution | Yes |
-| Local audit log (no cloud sync) | Yes |
+| Full governance engine | Yes |
+| Single constitution | Yes |
+| Local audit log | Yes |
 | Community support (GitHub Issues) | Yes |
 | MACI separation of powers | Yes |
 | Rust backend (self-compiled) | Yes |
 | **Compliance report export** | **No** |
-| **EU AI Act modules** | **No** |
 | **Cloud audit sync** | **No** |
 | **SLA** | **No** |
 
@@ -66,46 +65,41 @@ LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
 
 ---
 
-### Tier 1: Pro -- $299/month ($249/month annual)
+### Tier 1: Starter -- $49/month ($42/month annual)
 
-**Target:** 10-50 person AI teams with early compliance needs
+**Target:** Individual developers and small teams with first compliance needs
 
 | Feature | Included |
 |---------|----------|
 | Everything in Community | Yes |
-| **1M validations/month** | Yes (overage: $0.10/1K) |
-| **3 compliance frameworks** (choose from 9) | Yes |
-| EU AI Act Article 12 audit logger | Yes |
-| Risk classification engine | Yes |
-| Compliance gap report (PDF/JSON export) | Yes |
-| Cloud audit log sync (30-day retention) | Yes |
-| Email support (48h SLA) | Yes |
-| Dashboard (Propriety.ai) | Yes |
+| **1 compliance framework** (choose from 9) | Yes |
+| **100K validations/month** | Yes (overage: $0.20/1K) |
+| CLI report generation (PDF/JSON) | Yes |
+| Cloud audit sync (7-day retention) | Yes |
+| Email support | Yes |
 
-**Key upsell triggers:** Team growth (need more frameworks), retention requirements (need longer audit logs), compliance audit preparation.
+**Key upsell triggers:** Need for additional compliance frameworks, higher validation volume, longer audit retention, dashboard access.
+
+**Purpose:** Bridge the pricing chasm between Free and Pro. Gives small teams a low-cost entry into paid compliance proof without overwhelming feature surface.
 
 ---
 
-### Tier 2: Team -- $999/month ($849/month annual)
+### Tier 2: Pro -- $299/month ($249/month annual)
 
-**Target:** 50-500 person organizations with multi-team AI deployment
+**Target:** 10-50 person AI teams with multi-framework compliance needs
 
 | Feature | Included |
 |---------|----------|
-| Everything in Pro | Yes |
-| **10M validations/month** | Yes (overage: $0.06/1K) |
-| **All 9 compliance frameworks** | Yes |
-| EU AI Act Article 13 transparency disclosure | Yes |
-| EU AI Act Article 14 human oversight gateway | Yes |
-| Multi-constitution management (dev/staging/prod) | Yes |
-| Constitutional change approval workflow | Yes |
-| Cloud audit log (1-year retention) | Yes |
-| MACI separation dashboard | Yes |
-| SSO (SAML/OIDC) | Yes |
-| Slack/Teams alert integration | Yes |
-| Priority support (4h SLA) | Yes |
+| Everything in Starter | Yes |
+| **3 compliance frameworks** (choose from 9) | Yes |
+| **1M validations/month** | Yes (overage: $0.10/1K) |
+| Cloud audit sync (30-day retention) | Yes |
+| EU AI Act Articles 12/13/14 | Yes |
+| Risk classification engine | Yes |
+| Dashboard access | Yes |
+| Email support (48h SLA) | Yes |
 
-**Key upsell triggers:** Regulated industry requirements, on-prem needs, custom framework requests, dedicated support needs.
+**Key upsell triggers:** Need for all 9+ frameworks, unlimited validations, on-premise deployment, SSO, dedicated support.
 
 ---
 
@@ -115,18 +109,19 @@ LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
 
 | Feature | Included |
 |---------|----------|
-| Everything in Team | Yes |
+| Everything in Pro | Yes |
+| **All 9+ frameworks + custom frameworks** | Yes |
 | **Unlimited validations** | Yes |
-| **All frameworks + custom frameworks** | Yes |
 | On-premise / VPC deployment | Yes |
+| SSO (SAML/OIDC) | Yes |
+| Dedicated support | Yes |
+| Custom rules | Yes |
 | 560ns P50 SLA (Rust backend guaranteed) | Yes |
 | Dedicated compliance engineer | Yes |
 | Quarterly constitutional review | Yes |
 | Audit integration (Splunk, Datadog, ELK) | Yes |
 | FedRAMP / ISO 27001 readiness support | Yes |
-| Custom rule engine extensions | Yes |
 | 99.99% uptime SLA | Yes |
-| Dedicated support (1h SLA, named engineer) | Yes |
 
 ---
 
@@ -134,24 +129,25 @@ LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
 
 | Decision | Rationale | Evidence |
 |----------|-----------|---------|
-| $299 Pro entry point | Below Guardrails AI Pro; accessible to startup teams; above "toy" perception | Guardrails AI usage-based; Snyk Team ~$25/seat/month |
+| $49 Starter entry point | Bridges the pricing chasm between Free and Pro ($299); accessible to solo devs and small teams | Business panel unanimous on need for intermediate tier |
+| $299 Pro mid-tier | Below Guardrails AI Pro; accessible to startup teams; above "toy" perception | Guardrails AI usage-based; Snyk Team ~$25/seat/month |
 | Per-validation overage | Natural unit for governance (matches Guardrails AI model) | Guardrails AI validates per-operation |
 | Framework count as tier differentiator | Framework coverage is the moat; more frameworks = more value | No competitor offers 9 frameworks |
-| $999 Team (not per-seat) | Per-seat penalizes adoption; flat rate encourages org-wide deployment | PostHog explicitly avoided per-seat |
+| 4 tiers (not 5) | Simpler pricing grid reduces decision friction; Team tier merged into Enterprise | PostHog and Supabase both use 4-tier models |
 | $5K+ Enterprise floor | Matches compliance software expectations ($59K+/year at Checkmarx) | Checkmarx ~$59K/year starting |
 
 ---
 
 ### Budget Creation Playbook
 
-**Panel critique (Round 2):** $299/month is not expensive, but "AI governance" is not yet a recognized budget line item. The friction is not price -- it is creating a new budget category.
+**Panel critique (Round 2):** $49/month (Starter) removes price friction entirely. $299/month (Pro) is not expensive, but "AI governance" is not yet a recognized budget line item. The friction is not price -- it is creating a new budget category.
 
 **Who pays and why (by trigger):**
 
 | Trigger | Budget Owner | Budget Category (existing) | Pitch |
 |---------|-------------|---------------------------|-------|
 | EU AI Act deadline | CISO / DPO | Regulatory compliance | "This is the same budget line as GDPR tools. AI Act is the next GDPR" |
-| SOC 2 audit finding | CTO / VP Eng | Security tooling | "Auditor flagged AI governance gap. This closes it for $299/month vs $50K consulting" |
+| SOC 2 audit finding | CTO / VP Eng | Security tooling | "Auditor flagged AI governance gap. This closes it for $49/month (Starter) vs $50K consulting" |
 | Investor due diligence | CEO / CTO | Operational readiness | "Investors are asking about AI governance. This gives you a compliance dashboard to show them" |
 | Customer contract clause | Head of Sales / Legal | Revenue protection | "Enterprise customer requires AI governance attestation. Without it, we lose the deal" |
 | Insurance underwriting | CFO / Risk | Insurance premium reduction | "Insurer offers lower premium with provable AI governance. ACGS pays for itself" |
@@ -162,7 +158,7 @@ LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
 1. Find teams already in SOC 2 audit or EU AI Act preparation (they have budget allocated)
 2. Position ACGS as a tool within their existing compliance program (not a new initiative)
 3. Price anchor against the alternative: $50K-100K compliance consulting engagement
-4. $299/month looks like a rounding error against a $50K consulting quote
+4. $49/month (Starter) or $299/month (Pro) looks like a rounding error against a $50K consulting quote
 
 ### Demand Drivers Beyond EU AI Act
 
@@ -216,13 +212,13 @@ LangSmith, etc.). Can revisit if/when there's actual adoption to protect.
                              |
                              v
                     +------------------+
-                    |  Pro/Team         |
+                    |  Starter/Pro      |
                     |  Purchase         |
-                    |  ($299-$999/mo)   |
+                    |  ($49-$299/mo)    |
                     +--------+---------+
                              |
-                    Multi-team expansion, more frameworks,
-                    more validation volume, more integrations
+                    More frameworks, more validations,
+                    dashboard access, longer retention
                              |
                              v
                     +------------------+
@@ -274,8 +270,8 @@ ACGS avoids this trap through four mechanisms:
 |--------|--------|-----------|
 | PyPI monthly downloads | >10K (Y1) -> >100K (Y3) | Guardrails AI trajectory |
 | GitHub stars | >5K (Y1) -> >20K (Y3) | PostHog/Supabase trajectory |
-| Free -> Pro conversion rate | 3-5% | PLG industry standard |
-| Pro -> Team upgrade rate | 15-20%/year | Snyk experience |
+| Free -> Starter conversion rate | 5-8% | PLG industry standard (lower price = higher conversion) |
+| Starter -> Pro upgrade rate | 15-20%/year | Snyk experience |
 | Monthly active constitutions | Track as engagement metric | Novel metric for category |
 
 ### Revenue Targets
@@ -283,10 +279,10 @@ ACGS avoids this trap through four mechanisms:
 | Metric | Target | Benchmark |
 |--------|--------|-----------|
 | Net revenue retention | >120% | HashiCorp/Datadog standard |
+| Average revenue per Starter customer | $588/year | $49/mo |
 | Average revenue per Pro customer | $3,588/year | $299/mo |
-| Average revenue per Team customer | $11,988/year | $999/mo |
 | Average revenue per Enterprise customer | $60K-200K/year | Checkmarx comparable |
-| CAC payback period | <6 months (Pro self-serve), <12 months (Enterprise sales) | SaaS standard |
+| CAC payback period | <3 months (Starter self-serve), <6 months (Pro self-serve), <12 months (Enterprise sales) | SaaS standard |
 | Gross margin | >85% | Pure software, no COGS |
 
 ### ARR Growth Path
@@ -294,8 +290,8 @@ ACGS avoids this trap through four mechanisms:
 | Timeframe | Milestone | ARR Target | Key Actions |
 |-----------|-----------|------------|-------------|
 | **Y0 (Now)** | Product readiness | $0 | AGPL migration, Propriety.ai launch, PyPI publish |
-| **Y0+6mo** | Early adoption | $30K | 10 Pro customers, GitLab integration viral spread |
-| **Y1** | PMF validation | $300K | 50 Pro + 5 Team, first EU enterprise customer |
+| **Y0+6mo** | Early adoption | $30K | 20 Starter + 5 Pro customers, GitLab integration viral spread |
+| **Y1** | PMF validation | $300K | 100 Starter + 50 Pro, first EU enterprise customer |
 | **Y1.5** | Pre-EU AI Act | $1M | Urgency-driven demand, compliance reports as primary sell |
 | **Y2** | Enterprise engine starts | $3M | First Enterprise customers, hire sales |
 | **Y3** | Scale | $10M | Exceed Styra/OPA, prove governance can monetize |
@@ -319,8 +315,8 @@ The primary revenue stream. Propriety.ai hosted platform with tiered pricing.
 Usage-based pricing for customers exceeding tier limits.
 
 **Economics:**
+- Starter overage: $0.20/1K validations (~$200/1M additional validations)
 - Pro overage: $0.10/1K validations (~$100/1M additional validations)
-- Team overage: $0.06/1K validations (~$60/1M additional validations)
 - Margin: >95% (computational cost per validation is negligible at 560ns)
 
 ### Stream 3: Professional Services (10% of revenue at scale)
@@ -408,7 +404,7 @@ Enterprise-only. High-touch engagement.
 |-----------|--------|------------|
 | Solo founder (bus factor = 1) | Cannot parallelize; single failure point | P0: recruit first contributor within 90 days |
 | Bootstrapped (no external funding) | Limited marketing spend, no sales team, no legal retainers | Revenue-first: every action prioritized by proximity to first dollar |
-| No existing customer base | No social proof, no case studies, no logos | Design partner program: 3-5 beta users get free Team tier for 6 months in exchange for case study + logo |
+| No existing customer base | No social proof, no case studies, no logos | Design partner program: 3-5 beta users get free Pro tier for 6 months in exchange for case study + logo |
 | No legal counsel | AGPL migration, CLA, trademark need legal review | Budget $3K-5K for one-time legal package (AGPL migration + CLA template + trademark filing) |
 
 ### Funding Strategy
@@ -439,9 +435,9 @@ Enterprise-only. High-touch engagement.
 | AWS launches "AI Governance" service | High (2-3 years) | Critical | AGPL license prevents code copying; build brand moat with certification |
 | Guardrails AI raises Series A, gains market | High (1 year) | High | Differentiate on compliance (9 frameworks vs 0); performance (560ns vs ~10ms) |
 | EU AI Act enforcement delayed | Low | High | Multi-driver demand strategy (insurance, investor DD, customer contracts, SOC 2) |
-| AGPL scares enterprise developers | Medium | High | Commercial dual license included in Team/Enterprise; clear FAQ on AGPL scope for embedded use |
+| AGPL scares enterprise developers | Medium | High | Commercial dual license included in Pro/Enterprise; clear FAQ on AGPL scope for embedded use |
 | Framework mappings become stale/inaccurate | Medium | Critical | Framework version pinning, legal advisory board, community contribution pipeline |
-| Pricing too high for developers | Medium | Medium | Free tier is full engine; Pro at $299 is below most compliance tools |
+| Pricing too high for developers | Low | Medium | Free tier is full engine; Starter at $49 bridges the chasm; Pro at $299 is below most compliance tools |
 | Bus factor = 1 | Current state | Critical | **P0: recruit first contributor within 90 days; design partner program for external validation** |
 | Bootstrapped constraints limit speed | Current state | High | Revenue-first prioritization; seed round as option if PMF validated |
 
@@ -456,7 +452,7 @@ Enterprise-only. High-touch engagement.
 | AGPL-3.0 license migration + CLA setup | P0 | 1 week | Founder |
 | Propriety.ai pricing page live | P0 | 1 week | Founder |
 | `pip install acgs` published to PyPI | P0 | 2 weeks | Founder |
-| Stripe integration for Pro/Team billing | P0 | 3 weeks | Founder |
+| Stripe integration for Starter/Pro billing | P0 | 3 weeks | Founder |
 | Cloud audit log service (Pro feature core) | P1 | 4 weeks | Founder |
 | Compliance report PDF/JSON export | P1 | 2 weeks | Founder |
 
@@ -475,7 +471,7 @@ Enterprise-only. High-touch engagement.
 
 | Action | Priority | Duration |
 |--------|----------|----------|
-| First Team tier customer | P1 | Ongoing |
+| First Pro tier customer | P1 | Ongoing |
 | First Enterprise conversation | P1 | Ongoing |
 | Community Discord/forum launch | P2 | 2 weeks |
 | Contributor recruitment (target: 2 core) | P0 | Ongoing |

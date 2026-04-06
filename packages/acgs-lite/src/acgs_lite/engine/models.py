@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any, NamedTuple
 
 from acgs_lite.constitution import Severity
+from acgs_lite.constitution.rule import ViolationAction
 
 
 class Violation(NamedTuple):
@@ -36,16 +37,15 @@ class ValidationResult:
     timestamp: str = ""
     action: str = ""
     agent_id: str = ""
+    # Violations whose workflow_action is WARN (non-blocking, separated from violations).
+    warnings: list[Violation] = field(default_factory=list)
+    # The enforcement action that was applied to this validation result.
+    action_taken: ViolationAction | None = None
 
     @property
     def blocking_violations(self) -> list[Violation]:
-        """Violations that block execution."""
+        """Violations that block execution (severity-based filter on violations list)."""
         return [v for v in self.violations if v.severity.blocks()]
-
-    @property
-    def warnings(self) -> list[Violation]:
-        """Non-blocking violations (warnings)."""
-        return [v for v in self.violations if not v.severity.blocks()]
 
     def to_decision_record(self) -> GovernanceDecisionRecord:
         """Convert to canonical :class:`GovernanceDecisionRecord`."""
@@ -97,6 +97,17 @@ class ValidationResult:
                 }
                 for v in self.violations
             ],
+            "warnings": [
+                {
+                    "rule_id": v.rule_id,
+                    "rule_text": v.rule_text,
+                    "severity": v.severity.value,
+                    "matched_content": v.matched_content,
+                    "category": v.category,
+                }
+                for v in self.warnings
+            ],
+            "action_taken": self.action_taken.value if self.action_taken is not None else None,
             "rules_checked": self.rules_checked,
             "latency_ms": self.latency_ms,
             "request_id": self.request_id,
@@ -123,6 +134,7 @@ __all__ = [
     "CustomValidator",
     "Severity",
     "ValidationResult",
+    "ViolationAction",
     "Violation",
     "_dedup_violations",
 ]

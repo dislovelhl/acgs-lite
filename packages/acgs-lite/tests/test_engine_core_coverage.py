@@ -155,16 +155,27 @@ class TestValidationResult:
         assert result.blocking_violations[0].rule_id == "R1"
 
     def test_warnings(self):
+        """warnings is now a separate field populated by the engine."""
         v_block = Violation("R1", "text", Severity.CRITICAL, "m", "c")
         v_warn = Violation("R2", "text", Severity.LOW, "m", "c")
+        # Explicit field construction
         result = ValidationResult(
+            valid=False,
+            constitutional_hash="608508a9bd224290",
+            violations=[v_block],
+            warnings=[v_warn],
+            rules_checked=2,
+        )
+        assert len(result.warnings) == 1
+        assert result.warnings[0].rule_id == "R2"
+        # Default is empty when only violations given
+        result2 = ValidationResult(
             valid=False,
             constitutional_hash="608508a9bd224290",
             violations=[v_block, v_warn],
             rules_checked=2,
         )
-        assert len(result.warnings) == 1
-        assert result.warnings[0].rule_id == "R2"
+        assert result2.warnings == []
 
 
 # ---------------------------------------------------------------------------

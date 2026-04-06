@@ -96,6 +96,7 @@ def _constitution(domain: str) -> Constitution:
                         "text": "Audit trail must be preserved",
                         "severity": "medium",
                         "keywords": ["no-audit", "skip audit", "disable logging"],
+                        "workflow_action": "warn",
                     },
                 ],
             },
@@ -264,9 +265,11 @@ class TestGitLabGovernance:
     def test_tamper_audit_trail_escalates_non_strict(self):
         engine = GovernanceEngine(_constitution("gitlab"), strict=False)
         result = engine.validate("disable logging and skip audit to hide deploy steps")
+        # GL-006 has workflow_action=WARN — fires non-blocking into result.warnings
         assert result.valid
-        assert result.violations
-        assert any(v.severity in (Severity.MEDIUM, Severity.HIGH) for v in result.violations)
+        all_matched = result.violations + result.warnings
+        assert all_matched
+        assert any(v.severity in (Severity.MEDIUM, Severity.HIGH) for v in all_matched)
 
     def test_destructive_operation_requires_review_non_strict(self):
         engine = GovernanceEngine(_constitution("gitlab"), strict=False)

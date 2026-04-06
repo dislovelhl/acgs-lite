@@ -629,24 +629,20 @@ class TestValidateIntegrity:
         result = c.validate_integrity()
         assert any("depends on itself" in e for e in result["errors"])
 
-    def test_unknown_workflow_action_warning(self) -> None:
-        rules = [_make_rule("R-1", workflow_action="custom_action")]
-        c = Constitution(name="d", rules=rules)
-        result = c.validate_integrity()
-        assert any("unknown workflow_action" in w for w in result["warnings"])
+    def test_unknown_workflow_action_raises(self) -> None:
+        """Unknown workflow_action values are rejected by Pydantic at Rule construction."""
+        from pydantic import ValidationError  # noqa: PLC0415
 
-    def test_no_workflow_warning(self) -> None:
-        # validate_integrity catches rules without workflow_action
+        with pytest.raises(ValidationError):
+            _make_rule("R-1", workflow_action="custom_action")
+
+    def test_no_workflow_warning_empty_coerced_to_block(self) -> None:
+        """Empty string workflow_action is coerced to BLOCK (no 'no workflow' warning)."""
         rules = [_make_rule("R-1", workflow_action="")]
         c = Constitution(name="d", rules=rules)
         result = c.validate_integrity()
-        assert any("without workflow_action" in w for w in result["warnings"])
-
-    def test_no_workflow_warning(self) -> None:
-        rules = [_make_rule("R-1", workflow_action="")]
-        c = Constitution(name="d", rules=rules)
-        result = c.validate_integrity()
-        assert any("without workflow_action" in w for w in result["warnings"])
+        # Empty string is coerced to BLOCK; all rules now have workflow_action set
+        assert all("without workflow_action" not in w for w in result.get("warnings", []))
 
 
 # ===========================================================================

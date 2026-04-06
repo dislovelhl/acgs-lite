@@ -119,9 +119,10 @@ class TestValidateIntegrity:
         assert any("Circular dependency detected" in error for error in result["errors"])
 
     def test_unknown_workflow_action_warning(self) -> None:
-        constitution = _make_constitution([_simple_rule("W1", workflow_action="exotic_action")])
-        result = constitution.validate_integrity()
-        assert any("unknown workflow_action" in warning for warning in result["warnings"])
+        # ViolationAction is a strict enum: unknown values are rejected at construction
+        # time by Pydantic, not deferred to validate_integrity() as warnings.
+        with pytest.raises(PydanticValidationError):
+            _make_constitution([_simple_rule("W1", workflow_action="exotic_action")])
 
     def test_no_keywords_warn_via_integrity_validation(self) -> None:
         constitution = Constitution(
@@ -130,10 +131,10 @@ class TestValidateIntegrity:
         result = constitution.validate_integrity()
         assert any("no keywords or patterns" in warning for warning in result["warnings"])
 
-    def test_no_workflow_action_warning(self) -> None:
+    def test_empty_workflow_action_gets_default(self) -> None:
+        # Empty string is coerced to the default ViolationAction.BLOCK by Pydantic
         constitution = _make_constitution([_simple_rule("NW1", workflow_action="")])
-        result = constitution.validate_integrity()
-        assert any("without workflow_action" in warning for warning in result["warnings"])
+        assert constitution.rules[0].workflow_action is not None
 
 
 class TestDependencyGraph:
@@ -563,10 +564,11 @@ class TestValidationResult:
     def test_warnings(self) -> None:
         from acgs_lite.engine.core import ValidationResult, Violation
 
+        # warnings is a separate field from violations; populate it directly.
         result = ValidationResult(
             valid=True,
             constitutional_hash="abc",
-            violations=[
+            warnings=[
                 Violation("R1", "txt", Severity.LOW, "m", "cat"),
                 Violation("R2", "txt2", Severity.MEDIUM, "m2", "cat2"),
             ],

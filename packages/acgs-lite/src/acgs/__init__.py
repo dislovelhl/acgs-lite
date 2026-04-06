@@ -78,6 +78,7 @@ from acgs_lite import (
     SQLiteGovernanceStateBackend,
     Tier,
     ValidationResult,
+    ViolationAction,
     __constitutional_hash__,
     __version__,
     create_openshell_governance_app,
@@ -94,6 +95,7 @@ __all__ = [
     "AcknowledgedTension",
     "RuleSnapshot",
     "Severity",
+    "ViolationAction",
     # Engine
     "GovernanceEngine",
     "ValidationResult",

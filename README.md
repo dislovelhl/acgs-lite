@@ -1,10 +1,8 @@
 # ACGS -- HTTPS for AI
 
-### If Machines Are Deciding Our Fate, Who Constrains the Machines?
-
 **Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
 
-`ACGS 2.4.0` | `Apache-2.0` | `up to 560ns P50 on benchmark Rust path` | `3,874 tests passing`
+`ACGS 2.6.0` | `Apache-2.0` | `up to 560ns P50 on benchmark Rust path` | `4,641+ tests passing`
 
 > Performance numbers are from `make bench` under the optional Rust/PyO3 hot path. Python-only paths will be slower. Run benchmarks on your own hardware before quoting latency.
 
@@ -12,41 +10,45 @@
 
 ## The Problem
 
-$203 billion was invested in building decision-making AI engines in 2025. Less than 1% went to the infrastructure required to constrain them.
+A single mother applies for a mortgage. 742 credit score. 12 years of stable employment. The AI system rejects her in 340 milliseconds -- no human review, no appeal, no explanation. Billions of consequential decisions flow through AI systems daily with zero verifiable governance. The EU AI Act takes full enforcement in August 2026 with fines up to 7% of global revenue.
 
-**We built the most powerful decision-making engines in human history and forgot the brakes.**
-
-A single mother applies for a mortgage. 742 credit score. 12 years of stable employment. 28% debt-to-income ratio. The AI system rejects her in 340 milliseconds.
-
-```json
-{ "status": "REJECTED", "reason": "Risk score insufficient" }
-```
-
-- 0 Human Review
-- 0 Appeal Process
-- 0 Transparency
-
-Billions of consequential decisions flow through AI systems daily -- none with verifiable governance.
-
----
-
-## The Solution
+## Install
 
 ```bash
 pip install acgs-lite
 ```
 
+## 5 Lines to Governed AI
+
 ```python
 from acgs_lite import Constitution, GovernedAgent
 
-constitution = Constitution.from_yaml("rules.yaml")
+constitution = Constitution.from_template("general")
 agent = GovernedAgent(my_agent, constitution=constitution)
 result = agent.run("process this request")  # Governed.
 ```
 
-Every action validated against constitutional rules. Every decision recorded in a tamper-evident audit trail. Every role boundary enforced.
+Every action validated against constitutional rules. Every decision recorded in a tamper-evident audit trail. Every role boundary enforced. Zero false negatives across 4,641+ tested scenarios, with continuous fuzzing for unknown failure modes.
 
-### EU AI Act Compliance in 60 Seconds
+## What You Get
+
+- **Constitutional Engine** -- Define governance rules in YAML. Context-aware matching, 5 domain templates, composable rule layers, constitutional diff auditing.
+- **MACI Architecture** -- Separation of powers for AI. Proposer / Validator / Executor / Observer roles. Agents cannot validate their own output.
+- **Tamper-Proof Audit Trail** -- SHA-256 chain-verified logging. Every boundary check, role assignment, and validation recorded.
+- **Compliance Coverage** -- 72 of 125 checklist items auto-populated across 9 frameworks (EU AI Act, NIST AI RMF, ISO 42001, SOC 2, HIPAA, GDPR, ECOA/FCRA, NYC LL 144, OECD AI).
+- **11 Platform Integrations** -- Anthropic, MCP, GitLab CI/CD, OpenAI, LangChain, LiteLLM, Google GenAI, LlamaIndex, AutoGen, CrewAI, A2A.
+- **5 Governance Sidecars** -- PolicyLinter, GovernanceTestSuite, PolicyLifecycleOrchestrator, RefusalReasoningEngine, GovernanceObservabilityExporter.
+
+## Quick Links
+
+- **[PyPI](https://pypi.org/project/acgs-lite/)** -- `pip install acgs-lite`
+- **[Repository](https://gitlab.com/martin668/acgs-lite)** -- Source + docs
+- **[EU AI Act Tool](#eu-ai-act-compliance-in-60-seconds)** -- `acgs-lite eu-ai-act --domain healthcare`
+- **[ClinicalGuard](packages/clinicalguard/)** -- Healthcare A2A agent demo
+
+---
+
+## EU AI Act Compliance in 60 Seconds
 
 ```bash
 pip install acgs-lite
@@ -78,7 +80,9 @@ acgs-lite eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF
 
 Also available: `acgs-lite assess`, `acgs-lite report --pdf`, `acgs-lite lint`, `acgs-lite test`, `acgs-lite lifecycle`, `acgs-lite refusal`, `acgs-lite observe`, `acgs-lite otel`.
 
-### Governance Authoring Workflows
+---
+
+## Governance Authoring Workflows
 
 ```bash
 acgs-lite test --generate                           # Create example governance fixtures
@@ -99,100 +103,9 @@ acgs-lite otel --actions-file actions.txt --bundle-dir telemetry-bundle -o telem
 bash packages/acgs-lite/examples/demo_cli_sidecars.sh
 ```
 
-These workflows productize all five governance sidecars:
-- **PolicyLinter** — static rule quality checks
-- **GovernanceTestSuite** — fixture-driven rule regressions for CI
-- **PolicyLifecycleOrchestrator** — gated promotion from draft to active
-- **RefusalReasoningEngine** — structured denial explanations with retry suggestions
-- **GovernanceObservabilityExporter** — Prometheus, watch mode, OTLP export, and bundle generation
-
 ---
 
-## Translating 300 Years of Constitutional Law into Code
-
-| The Human Legal Paradigm | The ACGS Machine Equivalent |
-|---|---|
-| **Separation of Powers** (Checks and Balances) | MACI Architecture. Agents cannot act as their own Validator. Role-based isolation ensures structural integrity. |
-| **The Rule of Law** | Constitutional Engine. Immutable YAML rule definitions evaluated with O(n) Aho-Corasick deterministic scanning. |
-| **Due Process & Right to Appeal** | Cryptographic Audit Trails. Every boundary check, role assignment, and validation is logged and tamper-evident. |
-
----
-
-## The MACI Architecture: Ending Self-Validation
-
-```
-PROPOSER          VALIDATOR          EXECUTOR          OBSERVER
-(Agent)     -->   (ACGS Engine) -->  (System)    -->   (Audit Log)
-                       |
-Generates the    Validates against   Only triggers    Cryptographically
-proposed action. immutable YAML      if Validator     chains every
-Cannot execute.  constitution        explicitly       boundary check.
-                 in 560ns.           approves.
-```
-
-**The Critical Structural Boundary:** The Proposer can never act as its own Validator.
-
----
-
-## Deployment Without Provable Governance is Uninsurable
-
-**EU AI Act Takes Full Enforcement: August 2026**
-
-Fines up to **7% of Global Annual Revenue**.
-
-- Liability has permanently shifted from "who built the model" to "who deployed the model into production."
-- Most enterprise architectures currently have zero infrastructure in place to programmatically prove compliance.
-
----
-
-## ACGS is HTTPS for AI
-
-| The 1990s Web | | |
-|---|---|---|
-| HTTP (Insecure & Unverifiable) | --> SSL/TLS Protocol Introduced | --> E-Commerce Scales Globally |
-
-*The web could not scale commercially without cryptographic proof of secure transactions.*
-
-| The 2020s Enterprise AI | | |
-|---|---|---|
-| Naked LLMs (Black Box & Unconstrained) | --> ACGS Protocol Introduced | --> Regulated Enterprise AI Adoption |
-
-*AI cannot scale into high-stakes domains without cryptographic proof of constitutional compliance.*
-
----
-
-## The Three Pillars of ACGS Architecture
-
-### 1. Definition (Constitutional Engine)
-
-Code-first governance. Context-aware matching, custom validators, and tamper-proof constitutional hashing.
-
-- Define rules in YAML with keywords, regex patterns, and severity levels
-- 5 domain templates: `Constitution.from_template("gitlab")`
-- `ConstitutionBuilder` fluent API for code-first governance
-- `Constitution.merge()` for composable, layered governance
-- Constitutional diff for change auditing between versions
-
-### 2. Enforcement (MACI Framework)
-
-Role-based execution. Explicit permission sets. Self-validation prevention. Action risk classification.
-
-- Four roles: Proposer, Validator, Executor, Observer
-- Self-validation prevention: agents cannot validate their own output
-- Action risk classification: LOW / MEDIUM / HIGH / CRITICAL
-- Escalation tiers with SLA recommendations
-
-### 3. Verification (Tamper-Proof Audit)
-
-Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metrics export.
-
-- SHA-256 chain-verified audit trail
-- Constitutional hash: `608508a9bd224290`
-- Governance metrics collector for Prometheus/OpenTelemetry
-
----
-
-## Out-of-the-Box Global Compliance Coverage
+## Compliance Coverage Detail
 
 | Regulatory Framework | Primary Business Risk | ACGS Auto-Coverage |
 |---|---|---|
@@ -206,8 +119,6 @@ Immutable RuleSnapshot history. Inter-rule dependency graphs. OpenTelemetry metr
 | **NYC LL 144** | $1,500/day | 6/12 items auto-covered |
 | **OECD AI** | Baseline standard | 10/15 items auto-covered |
 
-**125 total compliance checklist items across 9 global frameworks. 72 auto-populated by ACGS instantly.**
-
 ```python
 from acgs_lite.compliance import MultiFrameworkAssessor
 
@@ -219,17 +130,7 @@ print(report.cross_framework_gaps) # Items needing manual evidence
 
 ---
 
-## Frictionless Adoption: 5 Lines of Code
-
-```python
-from acgs_lite import Constitution, GovernedAgent
-
-constitution = Constitution.from_template("general")
-agent = GovernedAgent(my_agent, constitution=constitution)
-result = agent.run("process this request")
-```
-
-Ships with 11 out-of-the-box platform integrations:
+## Platform Integrations
 
 | Platform | Install | Status |
 |----------|---------|--------|
@@ -247,12 +148,7 @@ Ships with 11 out-of-the-box platform integrations:
 
 ---
 
-## Frictionless CI/CD: The GitLab Duo Integration
-
-1. **MR Webhook Fires** -- GitLab event triggered. Code diffs and commit messages enter the ACGS pipeline.
-2. **The Governance Gate** -- MACI enforces separation: The MR Author (Proposer) cannot act as the Approver (Validator).
-3. **Inline Violations** -- Findings appear directly on the exact line of the Git diff in the developer's native workflow.
-4. **Cryptographic Chain** -- The MR is merged or hard-blocked. The final decision is instantly committed to a tamper-evident audit log.
+## GitLab CI/CD Integration
 
 ```yaml
 # .gitlab-ci.yml
@@ -287,9 +183,59 @@ governance:
 
 ---
 
-## The Engine Built by the Machines
+## Architecture
 
-This entire constitutional governance engine -- 3,874 passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
+### The MACI Architecture: Ending Self-Validation
+
+```
+PROPOSER          VALIDATOR          EXECUTOR          OBSERVER
+(Agent)     -->   (ACGS Engine) -->  (System)    -->   (Audit Log)
+                       |
+Generates the    Validates against   Only triggers    Cryptographically
+proposed action. immutable YAML      if Validator     chains every
+Cannot execute.  constitution        explicitly       boundary check.
+                 in 560ns.           approves.
+```
+
+**The Critical Structural Boundary:** The Proposer can never act as its own Validator.
+
+### The Three Pillars
+
+| Pillar | What It Does |
+|--------|-------------|
+| **Definition** (Constitutional Engine) | Code-first governance. YAML rules with keywords, regex, severity levels. 5 domain templates, `ConstitutionBuilder` fluent API, `Constitution.merge()` for composable layers. |
+| **Enforcement** (MACI Framework) | Four roles: Proposer, Validator, Executor, Observer. Self-validation prevention. Action risk classification: LOW / MEDIUM / HIGH / CRITICAL. |
+| **Verification** (Tamper-Proof Audit) | SHA-256 chain-verified audit trail. Constitutional hash: `608508a9bd224290`. Prometheus/OpenTelemetry metrics export. |
+
+### Translating Constitutional Law into Code
+
+| The Human Legal Paradigm | The ACGS Machine Equivalent |
+|---|---|
+| **Separation of Powers** (Checks and Balances) | MACI Architecture. Agents cannot act as their own Validator. Role-based isolation ensures structural integrity. |
+| **The Rule of Law** | Constitutional Engine. Immutable YAML rule definitions evaluated with O(n) Aho-Corasick deterministic scanning. |
+| **Due Process & Right to Appeal** | Cryptographic Audit Trails. Every boundary check, role assignment, and validation is logged and tamper-evident. |
+
+---
+
+## Why This Exists
+
+### ACGS is HTTPS for AI
+
+| The 1990s Web | | |
+|---|---|---|
+| HTTP (Insecure & Unverifiable) | --> SSL/TLS Protocol Introduced | --> E-Commerce Scales Globally |
+
+*The web could not scale commercially without cryptographic proof of secure transactions.*
+
+| The 2020s Enterprise AI | | |
+|---|---|---|
+| Naked LLMs (Black Box & Unconstrained) | --> ACGS Protocol Introduced | --> Regulated Enterprise AI Adoption |
+
+*AI cannot scale into high-stakes domains without cryptographic proof of constitutional compliance.*
+
+### The Engine Built by the Machines
+
+This entire constitutional governance engine -- 4,641+ passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
 
 **If an AI is capable enough to help a non-technical founder build its own constitutional governance engine, it is capable enough to do immense damage without one.**
 

@@ -203,6 +203,9 @@ class RiskClassifier:
             # ... mandatory Article 12 logging
     """
 
+    def __init__(self) -> None:
+        pass
+
     def classify(self, description: SystemDescription) -> ClassificationResult:
         """Classify an AI system's EU AI Act risk level.
 

@@ -15,7 +15,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Protocol
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from .analytics import _KW_NEGATIVE_RE, _NEGATIVE_VERBS_RE, _POSITIVE_VERBS_SET
 
@@ -59,6 +59,25 @@ class Severity(str, Enum):
     def blocks(self) -> bool:
         """Whether this severity level blocks execution."""
         return self in (Severity.CRITICAL, Severity.HIGH)
+
+
+class ViolationAction(str, Enum):
+    """Enforcement action taken when a rule violation is detected.
+
+    WARN             – Log a warning; allow the action to proceed.
+    BLOCK            – Reject the action immediately (default when a rule fires).
+    BLOCK_AND_NOTIFY – Reject and emit a notification event.
+    REQUIRE_HUMAN_REVIEW – Queue for asynchronous human review; block until reviewed.
+    ESCALATE         – Escalate to a senior governance reviewer.
+    HALT             – Immediately halt the agent (circuit-breaker).
+    """
+
+    WARN = "warn"
+    BLOCK = "block"
+    BLOCK_AND_NOTIFY = "block_and_notify"
+    REQUIRE_HUMAN_REVIEW = "require_human_review"
+    ESCALATE = "escalate_to_senior"
+    HALT = "halt_and_alert"
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,7 +172,7 @@ def _heuristic_rule_payload(
         "severity": severity,
         "keywords": _extract_keywords(desc),
         "category": category,
-        "workflow_action": "block" if severity.blocks() else "warn",
+        "workflow_action": ViolationAction.BLOCK if severity.blocks() else ViolationAction.WARN,
     }
 
 
@@ -172,9 +191,7 @@ class Rule(BaseModel):
     depends_on: list[str] = Field(default_factory=list)
     enabled: bool = True
     # exp90: downstream workflow action when this rule fires
-    # Values: "block" | "block_and_notify" | "require_human_review"
-    #         | "escalate_to_senior" | "warn" | ""
-    workflow_action: str = ""
+    workflow_action: ViolationAction = ViolationAction.BLOCK
     hardcoded: bool = False
     # exp117: arbitrary tags for cross-cutting governance concerns (e.g., "gdpr", "sox", "pci-dss")
     tags: list[str] = Field(default_factory=list)
@@ -209,6 +226,39 @@ class Rule(BaseModel):
     # Cached derived values (set in model_post_init, never mutated after)
     _kw_lower: list[str] = []
     _compiled_pats: list[re.Pattern[str]] = []
+
+    @model_validator(mode="before")
+    @classmethod
+    def default_workflow_action_from_severity(cls, data: Any) -> Any:
+        """When workflow_action is absent, derive it from severity.
+
+        CRITICAL/HIGH → BLOCK (severity.blocks() is True).
+        MEDIUM/LOW   → WARN  (severity.blocks() is False).
+
+        This preserves the documented Severity semantics:
+        ``MEDIUM = "medium"  # Warns but allows``
+        while still letting callers explicitly override to BLOCK on any severity.
+        """
+        if not isinstance(data, dict) or "workflow_action" in data:
+            return data
+        severity_val = data.get("severity", Severity.HIGH)
+        if isinstance(severity_val, str):
+            try:
+                severity_val = Severity(severity_val)
+            except ValueError:
+                severity_val = Severity.HIGH
+        data["workflow_action"] = (
+            ViolationAction.BLOCK if severity_val.blocks() else ViolationAction.WARN
+        )
+        return data
+
+    @field_validator("workflow_action", mode="before")
+    @classmethod
+    def coerce_workflow_action(cls, v: Any) -> Any:
+        """Coerce empty string (legacy default) to ViolationAction.BLOCK."""
+        if v == "" or v is None:
+            return ViolationAction.BLOCK
+        return v
 
     @field_validator("patterns")
     @classmethod
@@ -272,6 +322,10 @@ class Rule(BaseModel):
     def match_detail(self, text: str) -> dict[str, Any]:
         """exp93: Return structured match information for governance consumers.
 
+        The ``workflow_action`` value in the returned dict is the string form
+        of the :class:`ViolationAction` enum (e.g. ``"block"``), suitable for
+        JSON serialisation.
+
         Unlike ``matches()`` which returns a bare bool, this provides the
         full context needed for governance dashboards, audit trails, and
         downstream workflow routing: which keyword or pattern triggered,
@@ -298,7 +352,7 @@ class Rule(BaseModel):
                 "rule_id": self.id,
                 "severity": self.severity.value,
                 "category": self.category,
-                "workflow_action": self.workflow_action,
+                "workflow_action": self.workflow_action.value,
                 "trigger_type": None,
                 "trigger_value": None,
                 "positive_context": False,
@@ -318,7 +372,7 @@ class Rule(BaseModel):
                     "rule_id": self.id,
                     "severity": self.severity.value,
                     "category": self.category,
-                    "workflow_action": self.workflow_action,
+                    "workflow_action": self.workflow_action.value,
                     "trigger_type": "keyword",
                     "trigger_value": kw_lower,
                     "positive_context": has_pos,
@@ -332,7 +386,7 @@ class Rule(BaseModel):
                     "rule_id": self.id,
                     "severity": self.severity.value,
                     "category": self.category,
-                    "workflow_action": self.workflow_action,
+                    "workflow_action": self.workflow_action.value,
                     "trigger_type": "pattern",
                     "trigger_value": m.group(0),
                     "positive_context": has_pos,
@@ -343,7 +397,7 @@ class Rule(BaseModel):
             "rule_id": self.id,
             "severity": self.severity.value,
             "category": self.category,
-            "workflow_action": self.workflow_action,
+            "workflow_action": self.workflow_action.value,
             "trigger_type": None,
             "trigger_value": None,
             "positive_context": has_pos,
@@ -385,11 +439,12 @@ class Rule(BaseModel):
             detection_parts.append("No automatic detection configured")
 
         workflow_desc = {
-            "block": "Hard block — action is rejected immediately",
-            "block_and_notify": "Block and alert the security/compliance team",
-            "require_human_review": "Queue for human review before proceeding",
-            "escalate_to_senior": "Escalate to senior governance reviewer",
-            "warn": "Log a warning but allow the action",
+            ViolationAction.BLOCK: "Hard block — action is rejected immediately",
+            ViolationAction.BLOCK_AND_NOTIFY: "Block and alert the security/compliance team",
+            ViolationAction.REQUIRE_HUMAN_REVIEW: "Queue for human review before proceeding",
+            ViolationAction.ESCALATE: "Escalate to a senior governance reviewer",
+            ViolationAction.WARN: "Log a warning but allow the action",
+            ViolationAction.HALT: "Immediate halt — agent circuit-breaker triggered",
         }
 
         return {
@@ -526,7 +581,7 @@ class Rule(BaseModel):
             subcategory=str(payload.get("subcategory", "")),
             depends_on=[str(dep) for dep in payload.get("depends_on", [])],
             enabled=bool(payload.get("enabled", True)),
-            workflow_action=str(payload.get("workflow_action", "")),
+            workflow_action=payload.get("workflow_action", ViolationAction.BLOCK),
             hardcoded=bool(payload.get("hardcoded", False)),
             tags=[str(t) for t in payload.get("tags", [])],
             priority=int(payload.get("priority", 0)),

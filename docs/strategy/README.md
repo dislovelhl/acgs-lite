@@ -19,6 +19,12 @@ Current naming reference: the public package is `acgs`, the compatibility namesp
 | 04 | [Competitive Landscape](04-competitive-landscape.md) | Head-to-head comparison matrix (ACGS vs Guardrails AI vs NeMo vs OPA vs LlamaGuard), potential new entrants, partner opportunities, moat assessment, win/loss scenarios. |
 | 05 | [GTM Playbook](05-gtm-playbook.md) | Go-to-market: GitLab wedge, distribution channels, conversion funnel, Day Zero pipeline, design partner program, community building, enterprise sales motion, 90-day launch plan. |
 
+## Certification & Trademark
+
+| Document | Description |
+|----------|-------------|
+| [ACGS Certified Program](ACGS-CERTIFIED-PROGRAM.md) | Badge program design (3 tiers), technical implementation (SVG badges, HTTP headers, verification API), trademark filing brief (USPTO + EUIPO), network effects strategy. |
+
 ## Legal
 
 License changed to Apache-2.0 (2026-03-27). Previous AGPL strategy docs archived.

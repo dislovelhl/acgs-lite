@@ -152,16 +152,26 @@ class TestValidationResult:
         assert len(result.blocking_violations) == 1
         assert result.blocking_violations[0].rule_id == "R1"
 
-    def test_warnings_property(self) -> None:
+    def test_warnings_field(self) -> None:
+        """warnings is now a separate field for WARN-action violations."""
         v_block = Violation("R1", "text", Severity.CRITICAL, "m", "cat")
         v_warn = Violation("R2", "text", Severity.LOW, "m", "cat")
+        # Construct with explicit warnings field (engine populates it)
         result = ValidationResult(
+            valid=False,
+            constitutional_hash="hash",
+            violations=[v_block],
+            warnings=[v_warn],
+        )
+        assert len(result.warnings) == 1
+        assert result.warnings[0].rule_id == "R2"
+        # Default is empty (violations and warnings are separate)
+        result2 = ValidationResult(
             valid=False,
             constitutional_hash="hash",
             violations=[v_block, v_warn],
         )
-        assert len(result.warnings) == 1
-        assert result.warnings[0].rule_id == "R2"
+        assert result2.warnings == []
 
     def test_to_dict(self) -> None:
         result = ValidationResult(
