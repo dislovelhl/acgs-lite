@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: clinicalguard
+    runtime: docker
+    dockerfilePath: ./packages/clinicalguard/Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    envVars:
+      - key: CLINICALGUARD_URL
+        value: https://clinicalguard.onrender.com
+      - key: CLINICALGUARD_AUDIT_LOG
+        value: /tmp/clinicalguard_audit.json
+      - key: CLINICALGUARD_MODEL
+        value: claude-haiku-4-5
+      - key: PORT
+        value: "8080"
+      - key: CLINICALGUARD_API_KEY
+        sync: false   # set via Render dashboard
+      - key: ANTHROPIC_API_KEY
+        sync: false   # set via Render dashboard
+    healthCheckPath: /health

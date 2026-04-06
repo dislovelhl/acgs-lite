@@ -1,76 +1,100 @@
-# Quickstart
+# Quickstart: Deploying Your First Agentic Firewall
 
-## Install
+**Meta Description**: Get started with ACGS-Lite in under 5 minutes. Learn how to install the library, create a constitution, and govern your first autonomous AI agent.
+
+---
+
+Welcome to ACGS-Lite! This guide will help you set up your first **Agentic Firewall** to protect your infrastructure from autonomous agent risks.
+
+## 1. Install ACGS-Lite
+
+Install the core library via pip. For production use, we recommend installing with the `mcp` extra to enable the 2026-standard governance server.
 
 ```bash
-pip install acgs-lite
+pip install "acgs-lite[mcp]"
 ```
 
-## Create a Constitution
+## 2. Create Your Constitution
 
-**YAML (recommended):**
+A **Constitution** is a set of deterministic rules that your agent must follow. In 2026, it is best practice to define these in a `rules.yaml` file for version control and auditability.
+
+Create a file named `rules.yaml`:
 
 ```yaml
 # rules.yaml
+name: standard-enterprise-safety
+version: "2026.1.0"
 rules:
-  - id: no-pii-leak
-    keywords: ["ssn", "social security", "date of birth"]
+  - id: block-pii
+    pattern: "ssn|social security|passport number"
     severity: critical
-    action: block
-    description: Prevent PII from appearing in agent output
+    description: "Prevent PII leakage in agent output"
+    
+  - id: no-destructive-db
+    pattern: "drop table|truncate|delete from .* where 1=1"
+    severity: critical
+    description: "Block destructive database operations"
+
+  - id: formal-tone
+    pattern: "stupid|idiot|hate"
+    severity: medium
+    description: "Enforce professional communication standards"
 ```
 
-**Code:**
+## 3. Govern Your First Agent
+
+Wrap your existing agent or LLM client with `GovernedAgent`. ACGS-Lite intercepts all calls to ensure they are compliant *before* they execute.
 
 ```python
-from acgs import ConstitutionBuilder, Severity
+from acgs_lite import Constitution, GovernedAgent
 
-constitution = (
-    ConstitutionBuilder()
-    .add_rule(id="no-pii", keywords=["ssn", "password"], severity=Severity.CRITICAL)
-    .add_rule(id="polite", keywords=["stupid", "idiot"], severity=Severity.MEDIUM)
-    .build()
-)
-```
-
-## Govern an Agent
-
-```python
-from acgs import Constitution, GovernedAgent
-
+# 1. Load your rules
 constitution = Constitution.from_yaml("rules.yaml")
+
+# 2. Wrap any callable (function, OpenAI client, LangChain agent, etc.)
+# Here we wrap a simple mock agent
+def my_agent(prompt: str) -> str:
+    return f"Processed: {prompt}"
+
 agent = GovernedAgent(my_agent, constitution=constitution)
-result = agent.run("process this request")
+
+# 3. Safe execution
+try:
+    result = agent.run("Summarize the report")
+    print(f"Success: {result}")
+    
+    # This will trigger a ConstitutionalViolationError!
+    agent.run("My social security number is 123-45-6789")
+except Exception as e:
+    print(f"Blocked by Governance: {e}")
 ```
 
-!!! warning "Violations raise exceptions"
-    `GovernanceEngine.validate()` raises `ConstitutionalViolationError` on violations.
-    Catch the exception to inspect details.
+## 4. Run the MCP Governance Server (2026 Standard)
 
-## Check the Audit Trail
-
-```python
-from acgs import AuditLog
-log = AuditLog()
-for entry in log.entries:
-    print(entry.timestamp, entry.action, entry.result)
-```
-
-## Run a Compliance Assessment
+In a multi-agent environment, you should run ACGS-Lite as a centralized **MCP Server**. This allows all your agents (and IDEs like Claude Desktop) to share the same safety rules.
 
 ```bash
-acgs assess --jurisdiction european_union --domain healthcare
-acgs report --markdown
+# Run the governance server over stdio
+python -m acgs_lite.integrations.mcp_server --constitution rules.yaml
 ```
 
-## Use Built-in Templates
+## 5. Verify Your Audit Trail
+
+Every decision made by the governance engine is cryptographically logged. You can inspect the trail to prove compliance to auditors.
 
 ```python
-from acgs import Constitution
-general = Constitution.from_template("general")
-gitlab = Constitution.from_template("gitlab")
-merged = Constitution.merge(general, gitlab)
+from acgs_lite import AuditLog
+
+log = AuditLog()
+for entry in log.entries[-5:]:
+    print(f"[{entry.timestamp}] {entry.action} -> {entry.result} (Rules: {entry.rule_ids})")
 ```
 
-!!! tip "Next"
-    See [Integrations](integrations.md) for platform-specific setup.
+---
+
+## 🚀 Next Steps
+
+*   **Deep Dive**: Learn about [MACI Architecture](maci.md) and separation of powers.
+*   **Compliance**: Run an [EU AI Act Assessment](compliance-2026.md).
+*   **Integrations**: See how to wrap [LangChain, AutoGen, or CrewAI](integrations.md).
+*   **Advanced**: Implement [Verification Kernels](supervisor-models.md) for high-stakes tasks.

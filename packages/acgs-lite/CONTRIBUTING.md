@@ -1,118 +1,68 @@
-# Contributing to acgs-lite
+# Contributing: Building the Future of AI Governance
 
-Thank you for your interest in contributing to acgs-lite! This guide will help you get
-started.
+**Meta Description**: Join the ACGS-Lite community. Learn how to contribute new compliance mappings, integration adapters, and core engine improvements using our 2026-ready development workflow.
 
-## Development Setup
+---
+
+Thank you for your interest in contributing to ACGS-Lite! We are building the foundational infrastructure for safe, autonomous AI, and we welcome contributions from developers, security researchers, and policy experts.
+
+## 🏗️ What to Contribute
+
+We are particularly looking for contributions in these areas:
+1.  **Compliance Frameworks**: Mapping new regional or industry regulations (e.g., Canadian AIDA, Japan AI Guidelines) to ACGS rule templates.
+2.  **Integration Adapters**: Adding support for new AI frameworks or tool ecosystems (e.g., PydanticAI, Swarms, Magentic).
+3.  **Formal Verification**: Improving our Z3 and Lean 4 verification modules.
+4.  **Documentation**: Use cases, tutorials, and security best practices.
+
+## 🛠️ Development Setup
+
+ACGS-Lite is a Python 3.10+ project. We use `ruff` for linting and `pytest` for testing.
 
 ```bash
-# Clone the repository
+# 1. Clone the repo
 git clone https://github.com/dislovelhl/acgs-lite.git
 cd acgs-lite
 
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
+# 2. Install in editable mode with dev dependencies
+pip install -e ".[dev,mcp,all]"
 
-# Verify the installation
+# 3. Verify the installation
 make test-quick
 ```
 
-No API keys are required. All tests use `InMemory*` stubs for external dependencies.
-Set placeholder keys to silence import-time validation:
+**Note**: All tests use `InMemory` stubs. You do **not** need live API keys for OpenAI or Anthropic to run the test suite.
 
-```bash
-export OPENAI_API_KEY=test-key-for-unit-tests
-export ANTHROPIC_API_KEY=test-key-for-unit-tests
-```
+## 🧪 Testing Policy (TDD)
 
-## Workflow
+We follow a strict **Test-Driven Development** workflow. Every feature or fix must be accompanied by tests.
+*   **Location**: All tests go in the `tests/` directory.
+*   **Stubs**: Use the `InMemoryAuditBackend` and `InMemoryGovernanceEngine` patterns to keep tests fast and deterministic.
+*   **Coverage**: We target **80%+ coverage** for the core engine and **70%+** for integration adapters.
 
-1. **Fork** the repository and create a feature branch from `main`
-2. **Write tests first** (TDD): tests go in `tests/`
-3. **Implement** the feature or fix
-4. **Run checks**:
-   ```bash
-   make lint          # Ruff linter
-   make typecheck     # MyPy strict mode
-   make test-quick    # Fast test suite
-   make test-cov      # Full suite with coverage
-   ```
-5. **Submit** a pull request with conventional commit messages
+## 📏 Coding Standards
 
-## Commit Format
+- **Explicit Typing**: Use Python 3.10+ type hints (`X | Y` instead of `Union[X, Y]`).
+- **Async First**: All I/O-bound integrations (network calls, file writes) must be `async`.
+- **Fail-Closed**: Always design for the "worst-case" failure. If a check fails to run, it must block the action.
+- **Line Length**: 100 characters (enforced by Ruff).
 
-```
-<type>: <description>
-```
+## 🚢 Pull Request Process
 
-Types: `feat`, `fix`, `refactor`, `chore`, `test`, `ci`, `docs`
+1.  **Fork** the repository.
+2.  Create a **Feature Branch** (`git checkout -b feat/my-new-feature`).
+3.  Implement your changes and add tests.
+4.  Run the verification suite:
+    ```bash
+    make lint
+    make typecheck
+    make test-cov
+    ```
+5.  Submit your PR with a **Conventional Commit** message (e.g., `feat: add NIST AI RMF mapping`).
 
-Examples:
-- `feat: add HIPAA compliance mapping`
-- `fix: handle empty constitution in validate()`
-- `test: add MACI self-validation prevention tests`
+## 🛡️ Security Disclosures
 
-## Code Style
+If you find a security vulnerability, please do **not** open a public issue. Instead, follow our [Security Policy](SECURITY.md) to report it responsibly.
 
-- Python 3.10+ (use `X | Y` union syntax, not `Union[X, Y]`)
-- Explicit type annotations everywhere
-- `async def` for all I/O operations
-- Pydantic models at API boundaries
-- Ruff line length: 100
+## 📜 License
 
-## Testing
-
-- All tests use the `InMemory*` stub pattern (see `examples/mock_stub_testing/`)
-- Never import live services in test code
-- Run from repo root: `python -m pytest tests/ -v --import-mode=importlib`
-- Target 70% minimum coverage (80% for core engine)
-
-## Mock/Stub Pattern
-
-Every external dependency is defined as a `typing.Protocol` with an `InMemory*` stub:
-
-```python
-# Define the interface
-class MyBackend(Protocol):
-    def save(self, key: str, value: str) -> None: ...
-    def load(self, key: str) -> str | None: ...
-
-# Provide the test stub alongside it
-class InMemoryMyBackend:
-    def __init__(self) -> None:
-        self.store: dict[str, str] = {}
-        self.save_calls: list[tuple[str, str]] = []
-
-    def save(self, key: str, value: str) -> None:
-        self.store[key] = value
-        self.save_calls.append((key, value))
-
-    def load(self, key: str) -> str | None:
-        return self.store.get(key)
-```
-
-## Architecture Guidelines
-
-- **MACI separation**: agents never validate their own output (Proposer / Validator /
-  Executor / Observer are separate roles)
-- **Fail-closed**: governance decisions default to deny on error
-- **Constitutional hash**: the canonical hash is `608508a9bd224290` -- flag any other
-  value as stale
-
-## What to Contribute
-
-- Bug fixes with regression tests
-- New compliance framework mappings
-- New integration adapters (follow existing patterns in `src/acgs_lite/integrations/`)
-- Documentation improvements
-- Performance improvements with benchmarks
-
-## Security Issues
-
-If you discover a security vulnerability, please report it responsibly.
-See [SECURITY.md](SECURITY.md) for our disclosure policy.
-
-## License
-
-By contributing, you agree that your contributions will be licensed under the
-Apache-2.0 license. See [LICENSE](LICENSE) for details.
+By contributing to ACGS-Lite, you agree that your contributions will be licensed under the **Apache-2.0 License**.

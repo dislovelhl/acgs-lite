@@ -5,6 +5,22 @@ All notable changes to acgs-lite will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2026.1.0] - 2026-04-05
+
+### Added
+- **2026 Governance Frameworks**: Native support for EU AI Act, Colorado SB 205, and Texas TRAIGA.
+- **Agentic Firewall**: New high-performance deterministic engine for runtime action interception.
+- **MCP Governance Hub**: Full Model Context Protocol server integration for centralized safety.
+- **Verification Kernels**: Support for Z3 SMT formal verification and Lean 4 proof certificates.
+- **Governance Circuit Breaker**: Automated halting of "rogue" agents based on violation thresholds.
+- **Expanded Documentation**: New guides for 2026 regulatory compliance, OWASP Top 10 for agents, and advanced safety patterns.
+
+### Changed
+- **Package Name**: Standardized on `acgs-lite` for the core engine.
+- **Architecture**: Refactored to a Zero-Trust architecture with mandatory MACI role separation.
+- **Audit Backend**: Optimized `JSONLAuditBackend` with cryptographic chaining (SHA-256).
+- **Integrations**: Updated Anthropic, OpenAI, and LangChain adapters for 2026 model release lines.
+
 ## [2.5.2] - 2026-04-05
 
 ### Added

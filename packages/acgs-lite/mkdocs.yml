@@ -35,6 +35,15 @@ theme:
 
 nav:
   - Home: index.md
+  - 2026 Safety Standards:
+      - Why Governance?: why-governance.md
+      - OWASP Top 10 for Agents: owasp-2026.md
+      - Regulatory Compliance: compliance-2026.md
+      - Industry Use Cases: use-cases.md
+  - Advanced Safety:
+      - MCP Governance Guide: mcp-guide.md
+      - Supervisor Models: supervisor-models.md
+      - Testing Governance: testing-governance.md
   - Quickstart: quickstart.md
   - Architecture: architecture.md
   - Integrations: integrations.md

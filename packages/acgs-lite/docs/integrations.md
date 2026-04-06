@@ -1,113 +1,136 @@
-# Integrations
+# Integrations: Wrapping the Agentic Ecosystem
 
-ACGS ships with 11 platform integrations. Install the relevant extra and wrap your client.
+**Meta Description**: Learn how to integrate ACGS-Lite with major AI frameworks like OpenAI, Anthropic, LangChain, AutoGen, and CrewAI using 2026-ready governance patterns.
 
-| Platform | Install | Status |
-|---|---|---|
-| Anthropic | `acgs-lite[anthropic]` | Production |
-| OpenAI | `acgs-lite[openai]` | Maintained |
-| MCP Server | `acgs-lite[mcp]` | Production |
-| LangChain | `acgs-lite[langchain]` | Maintained |
-| LiteLLM | `acgs-lite[litellm]` | Maintained |
-| Google GenAI | `acgs-lite[google]` | Experimental |
-| LlamaIndex | `acgs-lite[llamaindex]` | Experimental |
-| AutoGen | `acgs-lite[autogen]` | Experimental |
-| CrewAI | `acgs-lite[crewai]` | Experimental |
-| A2A | `acgs-lite[a2a]` | Experimental |
-| GitLab CI/CD | `acgs-lite[gitlab]` | Production |
+---
 
-## Anthropic
+ACGS-Lite is designed to be framework-agnostic. It provides native adapters for the most popular AI ecosystems, ensuring you can add a governance layer to any agent in minutes.
+
+| Platform | Install Extra | Governance Pattern | Status |
+|---|---|---|---|
+| **Anthropic** | `acgs-lite[anthropic]` | `GovernedAnthropic` | Production |
+| **OpenAI** | `acgs-lite[openai]` | `GovernedOpenAI` | Production |
+| **MCP Server** | `acgs-lite[mcp]` | `create_mcp_server` | 2026 Standard |
+| **LangChain** | `acgs-lite[langchain]` | `GovernanceRunnable` | Maintained |
+| **LiteLLM** | `acgs-lite[litellm]` | `GovernedLiteLLM` | Maintained |
+| **Google GenAI** | `acgs-lite[google]` | `GovernedGenAI` | Production |
+| **AutoGen** | `acgs-lite[autogen]` | `GovernedModelClient` | Experimental |
+| **CrewAI** | `acgs-lite[crewai]` | `GovernedCrew` | Experimental |
+| **PydanticAI** | `acgs-lite[all]` | `GovernedAgent` | **New (2026)** |
+
+---
+
+## 🛡️ The Governance Pattern
+
+All integrations follow the **Intercept-Validate-Execute-Audit** pattern:
+1.  **Intercept**: The wrapper catches the call before it reaches the model.
+2.  **Validate Input**: The `GovernanceEngine` checks the prompt for violations (e.g., prompt injection).
+3.  **Execute**: If valid, the call is passed to the underlying model.
+4.  **Validate Output**: The engine checks the response (e.g., for PII leakage).
+5.  **Audit**: Both input and output are logged to the tamper-evident audit trail.
+
+---
+
+## 🐙 Anthropic (Claude 3.5+)
 
 ```python
-from acgs.integrations.anthropic import GovernedAnthropic
+from acgs_lite.integrations.anthropic import GovernedAnthropic
+from acgs_lite import Constitution
+
+constitution = Constitution.from_yaml("rules.yaml")
 client = GovernedAnthropic(constitution=constitution)
-response = client.messages.create(model="claude-sonnet-4-20250514", messages=[...])
+
+# This message is automatically governed!
+response = client.messages.create(
+    model="claude-3-5-sonnet-20241022",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Analyze these logs."}]
+)
 ```
 
-## OpenAI
+## 🌌 OpenAI (GPT-4o / o1)
 
 ```python
-from acgs.integrations.openai import GovernedOpenAI
+from acgs_lite.integrations.openai import GovernedOpenAI
 client = GovernedOpenAI(constitution=constitution)
-response = client.chat.completions.create(model="gpt-4o", messages=[...])
+
+# Safe completion
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Draft a deployment plan."}]
+)
 ```
 
-## MCP Server
+## 🦜 LangChain (LCEL)
+
+The `GovernanceRunnable` fits perfectly into LangChain Expression Language (LCEL) chains.
 
 ```python
-from acgs.integrations.mcp_server import create_mcp_server
-server = create_mcp_server(constitution=constitution)
-```
+from acgs_lite.integrations.langchain import GovernanceRunnable
 
-## LangChain
-
-```python
-from acgs.integrations.langchain import GovernanceRunnable
 governed = GovernanceRunnable(constitution=constitution)
 chain = governed | my_llm | output_parser
+
+# The entire chain is now constitutionally bounded
+result = chain.invoke("Task instructions...")
 ```
 
-## LiteLLM
+## 🤖 AutoGen
+
+For multi-agent systems, wrap the model client to ensure agents don't collude or violate policies in their inter-agent chatter.
 
 ```python
-from acgs.integrations.litellm import GovernedLiteLLM
-client = GovernedLiteLLM(constitution=constitution)
-response = client.completion(model="gpt-4o", messages=[...])
+from acgs_lite.integrations.autogen import GovernedModelClient
+from autogen import ConversableAgent
+
+governed_client = GovernedModelClient(base_client, constitution=constitution)
+agent = ConversableAgent("SafeAgent", llm_config={"model_client_cls": governed_client})
 ```
 
-## Google GenAI
+## 🏰 CrewAI
+
+Govern the entire "Crew" to ensure that the collective output of multiple agents meets regulatory standards.
 
 ```python
-from acgs.integrations.google_genai import GovernedGenAI
-client = GovernedGenAI(constitution=constitution)
-response = client.models.generate_content(model="gemini-2.0-flash", contents="...")
+from acgs_lite.integrations.crewai import GovernedCrew
+
+crew = Crew(agents=[a1, a2], tasks=[t1])
+governed_crew = GovernedCrew(crew, constitution=constitution)
+
+# Kickoff triggers governance on every task result
+result = governed_crew.kickoff()
 ```
 
-## LlamaIndex
+## 🏗️ MCP (Model Context Protocol)
+
+The MCP integration allows you to expose ACGS-Lite as a tool-providing server for clients like Claude Desktop or Cursor.
 
 ```python
-from acgs.integrations.llamaindex import GovernedQueryEngine
-engine = GovernedQueryEngine(base_query_engine, constitution=constitution)
-response = engine.query("summarize this document")
+from acgs_lite.integrations.mcp_server import create_mcp_server, run_mcp_server
+
+# Expose governance tools to any MCP-compliant client
+run_mcp_server(constitution=constitution)
 ```
 
-## AutoGen
+---
+
+## 🛠️ Custom Integrations
+
+If you are using a custom framework, you can use the `@fail_closed` decorator and the `GovernedCallable` wrapper to add governance to any function.
 
 ```python
-from acgs.integrations.autogen import GovernedModelClient
-client = GovernedModelClient(base_client, constitution=constitution)
+from acgs_lite import GovernedCallable, Constitution
+
+constitution = Constitution.from_yaml("rules.yaml")
+
+@GovernedCallable(constitution=constitution)
+def call_my_custom_model(prompt: str) -> str:
+    return "Response"
 ```
 
-## CrewAI
+---
 
-```python
-from acgs.integrations.crewai import GovernedCrew
-governed = GovernedCrew(crew, constitution=constitution)
-result = governed.kickoff()
-```
-
-## A2A
-
-```python
-from acgs.integrations.a2a import A2AGovernedClient
-client = A2AGovernedClient(constitution=constitution)
-```
-
-## GitLab CI/CD
-
-```yaml
-governance:
-  stage: test
-  script:
-    - pip install acgs-lite[gitlab]
-    - python3 -c "
-      from acgs import Constitution
-      from acgs.integrations.gitlab import GitLabGovernanceBot
-      import asyncio, os
-      asyncio.run(GitLabGovernanceBot(
-          token=os.environ['GITLAB_TOKEN'],
-          project_id=int(os.environ['CI_PROJECT_ID']),
-          constitution=Constitution.from_yaml('rules.yaml'),
-      ).run_governance_pipeline(mr_iid=int(os.environ['CI_MERGE_REQUEST_IID'])))
-      "
-```
+## Next Steps
+- Learn how to use [MACI Roles](maci.md) in multi-agent systems.
+- Deep dive into the [Governance Engine](architecture.md).
+- See the [CLI Reference](cli.md) for CI/CD integration.

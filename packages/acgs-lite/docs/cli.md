@@ -1,56 +1,109 @@
-# CLI Reference
+# CLI Reference: Mastering the ACGS Command Line
 
-The CLI is available as both `acgs` (preferred) and `acgs-lite` (compatibility alias).
+**Meta Description**: Explore the ACGS-Lite CLI. Learn how to scaffold projects, run compliance assessments, generate reports, and manage policy lifecycles from your terminal.
 
-## Commands
+---
 
-| Command | Description |
-|---|---|
-| `acgs init` | Scaffold `rules.yaml` + CI governance job |
-| `acgs assess` | Run multi-framework compliance assessment |
-| `acgs report` | Generate auditor-ready compliance report |
-| `acgs eu-ai-act` | One-shot EU AI Act compliance + PDF |
-| `acgs lint` | Lint governance rules for quality issues |
-| `acgs test` | Run governance test fixtures |
-| `acgs lifecycle` | Manage policy promotion lifecycle |
-| `acgs refusal` | Explain governance denials + suggest alternatives |
-| `acgs observe` | Export governance telemetry / Prometheus |
-| `acgs otel` | Export OpenTelemetry-compatible telemetry |
-| `acgs activate` | Store a license key |
-| `acgs status` | Show current license tier and features |
-| `acgs verify` | Validate license key integrity |
+The ACGS-Lite CLI is the primary interface for managing your governance infrastructure in CI/CD pipelines and local development. The CLI is available as both `acgs` (preferred) and `acgs-lite` (compatibility alias).
 
-## Usage Examples
+## 🛠️ Core Commands
 
+### `acgs init`
+Scaffold a new governance project. Creates a default `rules.yaml` and a `.github/workflows/governance.yml` template.
 ```bash
-# Scaffold a new project
-acgs init
+acgs init --name "my-secure-agent"
+```
 
-# Compliance
-acgs assess --jurisdiction european_union --domain healthcare
-acgs report --markdown
-acgs report --pdf
-acgs eu-ai-act --domain healthcare
+### `acgs assess`
+Run a multi-framework compliance assessment against your active constitution.
+```bash
+# Assess against EU AI Act and NIST AI RMF
+acgs assess --jurisdiction european_union --framework nist_rmf
+```
 
-# Rule quality
+### `acgs report`
+Generate an auditor-ready compliance report based on your latest assessment.
+```bash
+# Generate a detailed PDF report
+acgs report --pdf --output report.pdf
+```
+
+### `acgs lint`
+Check your `rules.yaml` for common errors, redundant patterns, or stale constitutional hashes.
+```bash
 acgs lint rules.yaml
-acgs test --fixtures tests.yaml
+```
 
-# Policy lifecycle
-acgs lifecycle summary
+### `acgs test`
+Run your governance test fixtures to verify that your rules correctly block prohibited patterns and allow safe ones.
+```bash
+acgs test --fixtures tests/governance_fixtures.yaml
+```
 
-# Observability
-acgs observe "approve deployment" --prometheus
+---
+
+## 📈 Observability & Telemetry
+
+### `acgs observe`
+Export real-time governance telemetry. Useful for local debugging of "Agentic Firewall" decisions.
+```bash
+acgs observe "Analyze the financial report" --prometheus
+```
+
+### `acgs otel`
+Export OpenTelemetry-compatible telemetry to your centralized collector (e.g., Jaeger, Honeycomb, or Datadog).
+```bash
 acgs otel --endpoint http://localhost:4317
+```
 
-# Licensing
-acgs activate ACGS-PRO-XXXX-XXXX
-acgs status
-acgs verify
+---
 
-# Governance denial explanation
+## ⚖️ Policy Lifecycle Management
+
+### `acgs lifecycle`
+Manage the promotion of rules from `experimental` to `production` based on their performance in shadow mode.
+```bash
+acgs lifecycle promote --rule-id "no-pii"
+```
+
+### `acgs refusal`
+Explain the most recent governance denial. Use this to help your agent understand *why* it was blocked and suggest safer alternatives.
+```bash
 acgs refusal --last
 ```
 
+---
+
+## 🔑 Licensing & Status
+
+### `acgs status`
+Show your current license tier (Community, Pro, or Enterprise) and enabled features.
+```bash
+acgs status
+```
+
+### `acgs activate`
+Activate your Pro or Enterprise license key.
+```bash
+acgs activate ACGS-PRO-XXXX-XXXX
+```
+
+### `acgs verify`
+Validate the integrity of your license key and constitutional hash.
+```bash
+acgs verify
+```
+
+---
+
+## 🚀 Pro Tip: CI/CD Integration
+
+Integrate ACGS-Lite into your GitLab or GitHub pipelines to ensure no unverified code or policy changes ever reach production.
+
+```bash
+# In your CI script:
+acgs lint rules.yaml && acgs test --fixtures tests.yaml
+```
+
 !!! info "Constitutional Hash"
-    `608508a9bd224290` is the documented constitutional hash for this release line. `acgs verify` currently validates license key integrity only.
+    `608508a9bd224290` is the canonical hash for this release. If `acgs lint` reports a mismatch, your rules may have been modified or are out of date.

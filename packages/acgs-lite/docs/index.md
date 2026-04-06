@@ -44,6 +44,13 @@ ACGS automatically maps governance constraints to 18 global regulatory framework
 Explore the architecture and setup guides to integrate ACGS into your agentic workflows:
 
 - [Why Constitutional Governance?](why-governance.md) -- Understand the Agentic Firewall and emerging AI risks
+- [Industry Use Cases](use-cases.md) -- Healthcare, Finance, and Legal in practice
+- [OWASP 2026 Mitigation](owasp-2026.md) -- Mitigating the Top 10 risks for agents
+- [2026 Regulatory Compliance](compliance-2026.md) -- EU AI Act, SB 205, and TRAIGA
+- [MCP Governance Server](mcp.md) -- Centralized safety for the agentic mesh
+- [Advanced Safety Patterns](supervisor-models.md) -- Verification Kernels & Supervisor Models
+- [MCP Governance Guide](mcp-guide.md) -- Master the Model Context Protocol
+- [Testing Governance](testing-governance.md) -- Verifying your Agentic Firewall
 - [Quickstart](quickstart.md) -- Install and govern your first agent
 - [Integrations](integrations.md) -- Guides for Anthropic, OpenAI, LangChain, AutoGen, CrewAI, and more
 - [Compliance](compliance.md) -- Deep dive into multi-framework assessment
