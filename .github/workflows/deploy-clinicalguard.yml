@@ -29,6 +29,7 @@ jobs:
         run: |
           pip install -e packages/acgs-lite
           pip install starlette uvicorn httpx pyyaml pydantic pytest pytest-asyncio pytest-timeout
+          pip install "anthropic>=0.30" "openai>=1.0"
       - name: Run ClinicalGuard tests
         env:
           PYTHONPATH: packages

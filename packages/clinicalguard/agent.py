@@ -448,6 +448,14 @@ def _parse_skill(text: str) -> tuple[str, str]:
         if text.lower().startswith(alt + ":"):
             return skill, text[len(alt) + 1 :].strip()
 
+    # Detect "prefix: input" where prefix looks like a skill name but isn't known.
+    # This prevents falling through to validate_clinical_action on explicit but
+    # unrecognised skill names (e.g. "do_something_unknown: ...").
+    if ":" in text:
+        prefix = text.split(":")[0].strip().lower().replace(" ", "_")
+        if prefix and all(c.isalnum() or c == "_" for c in prefix):
+            return "unknown", text
+
     # Keyword-based fallback
     text_lower = text.lower()
     if any(
