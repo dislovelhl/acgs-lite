@@ -182,7 +182,7 @@ export default {
 
     // Route matching
     const endpoint = matchEndpoint(url.pathname);
-    
+
     // If not an API endpoint, proxy static content to Pages (GET/HEAD only)
     if (!endpoint && !url.pathname.startsWith("/admin/")) {
       if (request.method !== "GET" && request.method !== "HEAD") {
@@ -191,7 +191,7 @@ export default {
           { status: 405, headers: { "Content-Type": "application/json" } },
         );
       }
-      
+
       const response = await fetch(`https://acgs-ai.pages.dev${url.pathname}${url.search}`, {
         method: request.method,
         headers: request.headers,
@@ -210,6 +210,15 @@ export default {
       }
 
       return response;
+    }
+
+    // Unrecognised admin sub-paths that passed auth but have no handler reach here
+    // with endpoint === null.  Return 404 so they never enter the governance flow.
+    if (!endpoint) {
+      return new Response(
+        JSON.stringify({ error: { message: "Not found", type: "invalid_request_error" } }),
+        { status: 404, headers: { "Content-Type": "application/json" } },
+      );
     }
 
     // OpenAI-compatible POST only

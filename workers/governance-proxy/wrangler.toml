@@ -46,3 +46,4 @@ AUDIT_FAIL_CLOSED = "true"
 [[rules]]
 globs = ["**/*.wasm"]
 type = "CompiledWasm"
+fallthrough = false
