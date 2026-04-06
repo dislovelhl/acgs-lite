@@ -29,8 +29,7 @@ jobs:
         run: uv build
 
       - name: Validate distributions
-        working-directory: packages/acgs-lite
-        run: uvx twine check dist/*
+        run: uvx twine check packages/acgs-lite/dist/*
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
