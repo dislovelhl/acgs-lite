@@ -91,7 +91,11 @@ class GovernanceMatcherMixin:
                 # Exclude WARN and HALT from the immediate-raise path;
                 # HALT is handled by _post_dispatch_result with correct enforcement_action.
                 _vwa = _wa_lkup.get(_rd[0], ViolationAction.BLOCK)
-                if _bv is None and _v.severity.blocks() and _vwa not in (ViolationAction.WARN, ViolationAction.HALT):
+                if (
+                    _bv is None
+                    and _v.severity.blocks()
+                    and _vwa not in (ViolationAction.WARN, ViolationAction.HALT)
+                ):
                     _bv = _v
             fast_records.append(None)
             # strict=True is guaranteed at this call site (outer validate() guard).
@@ -162,7 +166,11 @@ class GovernanceMatcherMixin:
                 _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
                 _vlist.append(_v)
                 _vwa_ctx = self._rule_id_to_wa.get(_rd[0], ViolationAction.BLOCK)
-                if _bv_ctx is None and _v.severity.blocks() and _vwa_ctx not in (ViolationAction.WARN, ViolationAction.HALT):
+                if (
+                    _bv_ctx is None
+                    and _v.severity.blocks()
+                    and _vwa_ctx not in (ViolationAction.WARN, ViolationAction.HALT)
+                ):
                     _bv_ctx = _v
             if _bv_ctx is not None and self.strict:
                 raise ConstitutionalViolationError(
@@ -173,7 +181,9 @@ class GovernanceMatcherMixin:
                 )
             fast_records.append(None)
             _has_blocking = any(
-                v.severity.blocks() and self._rule_id_to_wa.get(v.rule_id) not in (ViolationAction.WARN, ViolationAction.HALT)
+                v.severity.blocks()
+                and self._rule_id_to_wa.get(v.rule_id)
+                not in (ViolationAction.WARN, ViolationAction.HALT)
                 for v in _vlist
             )
             return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
@@ -224,7 +234,11 @@ class GovernanceMatcherMixin:
                 _v = Violation(_rd[0], _rd[1], _rd[2], _a200, _rd[4])
                 _vlist.append(_v)
                 _vwa_meta = self._rule_id_to_wa.get(_rd[0], ViolationAction.BLOCK)
-                if _bv_meta is None and _v.severity.blocks() and _vwa_meta not in (ViolationAction.WARN, ViolationAction.HALT):
+                if (
+                    _bv_meta is None
+                    and _v.severity.blocks()
+                    and _vwa_meta not in (ViolationAction.WARN, ViolationAction.HALT)
+                ):
                     _bv_meta = _v
             if is_noop:
                 fast_records.append(None)

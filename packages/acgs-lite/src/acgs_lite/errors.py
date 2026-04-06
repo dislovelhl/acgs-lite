@@ -44,7 +44,9 @@ class ConstitutionalViolationError(GovernanceError):
         self.rule_id = rule_id
         self.severity = severity
         self.action = action
-        self.enforcement_action = enforcement_action if enforcement_action is not None else _VA.BLOCK
+        self.enforcement_action = (
+            enforcement_action if enforcement_action is not None else _VA.BLOCK
+        )
         Exception.__init__(self, message)
 
 

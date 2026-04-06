@@ -498,8 +498,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         result.violations = blocking
         result.warnings = warning
         result.action_taken = (
-            ViolationAction.BLOCK if blocking else
-            (ViolationAction.WARN if warning else None)
+            ViolationAction.BLOCK if blocking else (ViolationAction.WARN if warning else None)
         )
         return result
 
@@ -625,8 +624,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             )
         valid = not bool(block_viol)
         action_taken = (
-            ViolationAction.BLOCK if block_viol else
-            (ViolationAction.WARN if warn_viol else None)
+            ViolationAction.BLOCK if block_viol else (ViolationAction.WARN if warn_viol else None)
         )
         # ---
 
@@ -1061,8 +1059,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             )
         valid = not bool(_block_v)
         _action_taken = (
-            ViolationAction.BLOCK if _block_v else
-            (ViolationAction.WARN if _warn_v else None)
+            ViolationAction.BLOCK if _block_v else (ViolationAction.WARN if _warn_v else None)
         )
         # ---
 
