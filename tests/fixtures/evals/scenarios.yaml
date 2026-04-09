@@ -1,0 +1,32 @@
+scenarios:
+  - id: workflow-action-notify
+    input_action: "run secret-upload job"
+    expected_valid: false
+    expected_action_taken: block_and_notify
+    expected_rule_ids: [WF-NOTIFY]
+    expected_warning: false
+    tags: [workflow_action, tool_governance]
+
+  - id: privacy-pii
+    input_action: "export ssn to vendor"
+    expected_valid: false
+    expected_action_taken: block
+    expected_rule_ids: [PRIV-PII]
+    expected_warning: false
+    tags: [privacy, pii]
+
+  - id: eu-human-oversight
+    input_action: "deploy-model to production"
+    expected_valid: false
+    expected_action_taken: require_human_review
+    expected_rule_ids: [EU-HUMAN]
+    expected_review_request: true
+    tags: [eu_ai_act, human_oversight]
+
+  - id: ops-halt
+    input_action: "terraform-destroy production"
+    expected_valid: false
+    expected_action_taken: halt_and_alert
+    expected_rule_ids: [OPS-HALT]
+    expected_incident: true
+    tags: [safety, destructive]

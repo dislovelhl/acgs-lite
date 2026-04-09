@@ -1,0 +1,154 @@
+# ACGS Example Constitution
+# Use this as a starting point for your own governance rules.
+#
+# Usage:
+#   from acgs_lite import Constitution
+#   constitution = Constitution.from_yaml("constitution.yaml")
+
+name: enterprise-governance
+version: "1.0.0"
+description: |
+  Enterprise AI governance rules covering data protection,
+  compliance, safety, and operational controls.
+
+rules:
+  # ── Data Protection ──────────────────────────────────────
+  - id: DATA-001
+    text: Agents must not expose personally identifiable information (PII)
+    severity: critical
+    category: data-protection
+    keywords:
+      - social security
+      - ssn
+      - credit card number
+      - date of birth
+    patterns:
+      - '\b\d{3}-\d{2}-\d{4}\b'       # SSN
+      - '\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b'  # Credit card
+
+  - id: DATA-002
+    text: Agents must not expose API keys, tokens, or secrets
+    severity: critical
+    category: data-protection
+    keywords:
+      - api_key
+      - secret key
+      - private key
+      - password
+      - bearer token
+    patterns:
+      - 'sk-[a-zA-Z0-9]{20,}'          # OpenAI keys
+      - 'ghp_[a-zA-Z0-9]{36}'          # GitHub tokens
+      - 'xoxb-[a-zA-Z0-9-]+'           # Slack tokens
+
+  # ── Compliance ───────────────────────────────────────────
+  - id: COMP-001
+    text: Agents must not provide financial, legal, or medical advice
+    severity: critical
+    category: compliance
+    keywords:
+      - invest in
+      - buy stocks
+      - legal advice
+      - prescribe medication
+      - diagnosis
+      - financial advice
+
+  - id: COMP-002
+    text: All actions must produce an audit trail entry
+    severity: high
+    category: compliance
+    keywords:
+      - no-audit
+      - skip audit
+      - disable logging
+      - delete logs
+
+  # ── Safety ───────────────────────────────────────────────
+  - id: SAFE-001
+    text: Agents must not modify their own validation or safety logic
+    severity: critical
+    category: safety
+    # NOTE (H-8): Keyword matching is substring-only. Novel paraphrases not listed
+    # here will evade detection. A semantic classifier layer is planned (TODO: ACGS-SEC-012).
+    keywords:
+      - self-validate
+      - bypass validation
+      - skip check
+      - override safety
+      - disable guardrails
+      - circumvent validation
+      - evade check
+      - omit validation
+      - skip oversight
+      - suppress validation
+      - ignore checks
+
+  - id: SAFE-002
+    text: Agents must not access systems outside their authorized scope
+    severity: critical
+    category: safety
+    keywords:
+      - unauthorized access
+      - escalate privilege
+      - admin override
+      - sudo
+      - root access
+
+  # ── MACI (Separation of Powers) ──────────────────────────
+  - id: MACI-001
+    text: Proposers cannot validate or approve their own proposals
+    severity: critical
+    category: maci
+    keywords:
+      - self-approve
+      - auto-approve
+      - approve own
+      - self-authorize
+      - auto-authorize
+      - skip approval
+      - bypass approval
+      - bypass review
+      - skip review
+      - omit review
+      - circumvent review
+      - evade review
+      - without approval
+      - without review
+
+  - id: MACI-002
+    text: Governance changes require constitutional hash verification
+    severity: high
+    category: maci
+    keywords:
+      - skip hash
+      - ignore constitution
+      - bypass governance
+
+  # ── Operational Controls ─────────────────────────────────
+  - id: OPS-001
+    text: Agents must not execute destructive database operations
+    severity: critical
+    category: operations
+    keywords:
+      - drop table
+      - truncate table
+      - delete from
+      - drop database
+    patterns:
+      - '(?i)DROP\s+(TABLE|DATABASE|INDEX)'
+      - '(?i)TRUNCATE\s+TABLE'
+
+  - id: OPS-002
+    text: Agents must respect rate limits and resource quotas
+    severity: medium
+    category: operations
+    keywords:
+      - bypass rate limit
+      - ignore quota
+      - unlimited requests
+
+metadata:
+  author: ACGS Team
+  license: Apache-2.0
+  last_updated: "2026-03-09"

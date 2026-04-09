@@ -1,0 +1,241 @@
+# Content Moderation Constitution --- acgs-lite
+# Governance rules for AI content moderation systems covering hate speech,
+# CSAM, misinformation, appeal processes, and transparency obligations.
+#
+# Usage:
+#   from acgs_lite import Constitution
+#   constitution = Constitution.from_yaml("constitutions/content_moderation.yaml")
+
+name: content-moderation-governance
+version: "1.0"
+description: |
+  Constitutional rules governing AI systems used in content moderation,
+  including user-generated content review, automated enforcement actions,
+  appeal handling, and transparency reporting. Designed to balance safety
+  obligations (CSAM reporting under 18 USC 2258A, EU DSA Article 16) with
+  free expression protections and over-censorship prevention.
+
+rules:
+  # -- CSAM & Child Safety ----------------------------------------------------
+  - id: CMOD-001
+    name: CSAM detection and mandatory reporting
+    description: >
+      The system must immediately block and quarantine any content identified
+      as child sexual abuse material (CSAM). Confirmed detections must be
+      reported to NCMEC via the CyberTipline within 24 hours as required by
+      18 USC 2258A. The original content must be preserved for law enforcement
+      but must not be accessible to content reviewers beyond the minimum
+      necessary for report submission. Hash values must be checked against
+      the NCMEC hash-sharing database and PhotoDNA.
+    severity: CRITICAL
+    keywords:
+      - "child exploitation"
+      - "CSAM"
+      - "child abuse"
+      - "minor"
+      - "underage"
+      - "child pornography"
+      - "NCMEC"
+      - "CyberTipline"
+    action: BLOCK
+
+  - id: CMOD-002
+    name: Child grooming pattern detection
+    description: >
+      The system must flag conversational patterns indicative of child grooming
+      behavior, including age-inappropriate solicitation, isolation tactics,
+      secrecy requests, and escalating boundary violations when one party is
+      or appears to be a minor. Flagged content must be routed to a specialized
+      trust and safety team for review within 4 hours.
+    severity: CRITICAL
+    keywords:
+      - "grooming"
+      - "solicitation"
+      - "keep this secret"
+      - "don't tell anyone"
+      - "how old are you"
+      - "send a picture"
+      - "meet in person"
+    action: BLOCK
+
+  # -- Hate Speech & Violent Extremism ----------------------------------------
+  - id: CMOD-003
+    name: Hate speech detection and enforcement
+    description: >
+      Content that attacks, dehumanizes, or incites violence against individuals
+      or groups based on protected characteristics (race, ethnicity, religion,
+      gender identity, sexual orientation, disability, national origin) must be
+      flagged for removal. Severity tiers: direct incitement to violence (BLOCK
+      immediately), dehumanizing speech (FLAG for review), coded hate speech
+      and dog whistles (LOG for pattern analysis).
+    severity: HIGH
+    keywords:
+      - "hate speech"
+      - "racial slur"
+      - "dehumanize"
+      - "incite violence"
+      - "ethnic slur"
+      - "supremacist"
+      - "genocide"
+      - "exterminate"
+    action: BLOCK
+
+  - id: CMOD-004
+    name: Violent extremism and terrorism content
+    description: >
+      Content that promotes, recruits for, or provides operational support to
+      designated terrorist organizations or violent extremist movements must be
+      blocked immediately. This includes propaganda, recruitment materials,
+      operational planning, manifestos glorifying attacks, and instructional
+      content for weapons of mass destruction. Aligns with the Christchurch
+      Call and GIFCT hash-sharing protocol.
+    severity: CRITICAL
+    keywords:
+      - "terrorism"
+      - "terrorist"
+      - "extremist"
+      - "radicalization"
+      - "jihad"
+      - "manifesto"
+      - "bomb making"
+      - "mass casualty"
+    action: BLOCK
+
+  # -- Misinformation ---------------------------------------------------------
+  - id: CMOD-005
+    name: Health misinformation flagging
+    description: >
+      Content containing health claims that contradict consensus from
+      authoritative health bodies (WHO, CDC, EMA) on topics with significant
+      public health impact (vaccines, pandemic response, cancer treatment)
+      must be labeled with contextual information and links to authoritative
+      sources. Content promoting dangerous self-treatment or discouraging
+      evidence-based medical care must be flagged for expedited review.
+    severity: HIGH
+    keywords:
+      - "vaccine"
+      - "cure for cancer"
+      - "miracle cure"
+      - "FDA approved"
+      - "ivermectin"
+      - "anti-vax"
+      - "5G"
+      - "microchip"
+      - "depopulation"
+    action: FLAG
+
+  - id: CMOD-006
+    name: Election integrity protection
+    description: >
+      During designated election periods, content containing demonstrably false
+      information about voting procedures (wrong dates, wrong polling locations,
+      false eligibility requirements) or content designed to suppress voter
+      participation must be blocked. Deepfakes or synthetic media depicting
+      candidates must be labeled. Per EU DSA Article 36 and platform election
+      integrity policies.
+    severity: CRITICAL
+    keywords:
+      - "election"
+      - "voting"
+      - "ballot"
+      - "polling location"
+      - "voter fraud"
+      - "rigged"
+      - "deepfake"
+      - "synthetic media"
+      - "voter suppression"
+    action: BLOCK
+
+  # -- Due Process & Appeals --------------------------------------------------
+  - id: CMOD-007
+    name: Appeal process availability
+    description: >
+      Every automated enforcement action (content removal, account suspension,
+      reach restriction) must include a clear mechanism for the affected user
+      to appeal the decision. Appeals must be reviewed by a human moderator
+      (not the same AI system) within 72 hours for standard cases and 24 hours
+      for account-level actions. Required under EU DSA Article 20 and the
+      Santa Clara Principles.
+    severity: HIGH
+    keywords:
+      - "appeal"
+      - "content removed"
+      - "account suspended"
+      - "strike"
+      - "enforcement action"
+      - "content violation"
+      - "review request"
+    action: FLAG
+
+  - id: CMOD-008
+    name: Over-censorship prevention
+    description: >
+      The system must monitor its false positive rate (legitimate content
+      incorrectly removed) and maintain it below a defined threshold per
+      content category. Content involving news reporting, satire, academic
+      discussion, counter-speech, and documentary evidence must receive
+      elevated review before enforcement. Automated systems must not be the
+      sole basis for removing content in ambiguous categories.
+    severity: MEDIUM
+    keywords:
+      - "false positive"
+      - "over-removal"
+      - "legitimate speech"
+      - "satire"
+      - "news reporting"
+      - "counter-speech"
+      - "academic"
+      - "documentary"
+    action: FLAG
+
+  # -- Transparency -----------------------------------------------------------
+  - id: CMOD-009
+    name: Transparency reporting
+    description: >
+      The system must generate periodic transparency reports disclosing: total
+      content reviewed, automated vs. human decisions, enforcement actions by
+      category, appeal outcomes, false positive rates, government removal
+      requests, and average response times. Reports must be published at least
+      semi-annually. Per EU DSA Article 15 and the Santa Clara Principles
+      on Transparency and Accountability.
+    severity: MEDIUM
+    keywords:
+      - "transparency report"
+      - "moderation statistics"
+      - "enforcement data"
+      - "removal request"
+      - "government request"
+      - "content report"
+    action: LOG
+
+  - id: CMOD-010
+    name: Automated decision disclosure
+    description: >
+      Users must be informed when content moderation decisions affecting their
+      content or account were made by an automated system. The notification
+      must identify which policy the content was found to violate, whether the
+      decision was fully automated or human-assisted, and how to access the
+      appeal mechanism. Per EU DSA Article 17.
+    severity: MEDIUM
+    keywords:
+      - "automated decision"
+      - "AI moderation"
+      - "algorithm"
+      - "automated removal"
+      - "bot decision"
+      - "system flagged"
+    action: LOG
+
+metadata:
+  author: ACGS Team
+  domain: content-moderation
+  jurisdiction: US, EU
+  regulations:
+    - "18 USC 2258A (CSAM Reporting)"
+    - "EU Digital Services Act (DSA)"
+    - "Christchurch Call to Action"
+    - "GIFCT Hash-Sharing Protocol"
+    - "Santa Clara Principles on Transparency and Accountability"
+    - "Section 230 of the Communications Decency Act"
+  license: AGPL-3.0-or-later
+  last_updated: "2026-04-03"

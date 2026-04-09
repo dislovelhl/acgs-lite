@@ -1,0 +1,291 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic [ref=e446]: 更改已保存
+    - generic [ref=e2]: 已保存所有更改。
+    - generic [ref=e4]:
+      - banner [ref=e6]:
+        - button "收起菜单" [ref=e7] [cursor=pointer]:
+          - generic [ref=e10]:
+            - img
+        - link "YouTube Studio 信息中心" [ref=e12] [cursor=pointer]:
+          - /url: /channel/UCfIPDgWUJtOVIVS-88-G-cA
+          - img "YouTube Studio 信息中心" [ref=e13]
+        - button "跳过导航" [ref=e16] [cursor=pointer]:
+          - generic [ref=e17]: 跳过导航
+        - generic [ref=e22]:
+          - generic [ref=e25]:
+            - img
+          - textbox "在你的频道中搜索" [ref=e27]
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - button "帮助" [ref=e32] [cursor=pointer]:
+              - generic [ref=e35]:
+                - img
+            - button "通知" [ref=e37] [cursor=pointer]:
+              - generic [ref=e40]:
+                - img
+          - button "创建" [ref=e43] [cursor=pointer]:
+            - generic [ref=e47]:
+              - img
+            - generic [ref=e48]: 创建
+          - generic "账号" [ref=e52]:
+            - button "Account" [ref=e53]
+      - generic [ref=e55]:
+        - navigation [ref=e57]:
+          - link "频道内容" [ref=e59] [cursor=pointer]:
+            - /url: /channel/UCfIPDgWUJtOVIVS-88-G-cA/videos
+            - generic [ref=e60]:
+              - generic [ref=e64]:
+                - img
+              - generic [ref=e65]: 频道内容
+          - generic [ref=e67]:
+            - generic [ref=e71]:
+              - img "视频缩略图：Constitutional Sentinel | GitLab AI Hackathon Demo" [ref=e447]
+              - generic [ref=e76]: 7:02
+            - generic [ref=e77]:
+              - generic [ref=e78]: 我的视频
+              - generic [ref=e79]: Constitutional Sentinel | GitLab AI Hackathon Demo
+          - menu [ref=e81]:
+            - menuitem "详细信息" [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]:
+                - generic [ref=e87]:
+                  - img
+                - generic [ref=e88]: 详细信息
+            - menuitem "数据分析" [ref=e89] [cursor=pointer]:
+              - generic [ref=e90]:
+                - generic [ref=e94]:
+                  - img
+                - generic [ref=e95]: 数据分析
+            - menuitem "编辑器" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]:
+                - generic [ref=e101]:
+                  - img
+                - generic [ref=e102]: 编辑器
+            - menuitem "评论" [ref=e103] [cursor=pointer]:
+              - generic [ref=e104]:
+                - generic [ref=e108]:
+                  - img
+                - generic [ref=e109]: 评论
+            - menuitem "字幕" [ref=e110] [cursor=pointer]:
+              - generic [ref=e111]:
+                - generic [ref=e115]:
+                  - img
+                - generic [ref=e116]: 字幕
+            - menuitem "版权" [ref=e117] [cursor=pointer]:
+              - generic [ref=e118]:
+                - generic [ref=e122]:
+                  - img
+                - generic [ref=e123]: 版权
+            - menuitem "剪辑" [ref=e124] [cursor=pointer]:
+              - generic [ref=e125]:
+                - generic [ref=e129]:
+                  - img
+                - generic [ref=e130]: 剪辑
+          - list [ref=e132]:
+            - listitem [ref=e133]:
+              - button "设置" [ref=e134] [cursor=pointer]:
+                - generic [ref=e138]:
+                  - img
+                - generic [ref=e139]: 设置
+            - listitem [ref=e140]:
+              - button "发送反馈" [ref=e142] [cursor=pointer]:
+                - generic [ref=e146]:
+                  - img
+                - generic [ref=e147]: 发送反馈
+        - main [ref=e148]:
+          - generic [ref=e151]:
+            - generic [ref=e154]:
+              - heading "视频详细信息" [level=1] [ref=e156]
+              - generic [ref=e157]:
+                - button "撤消更改" [disabled] [ref=e160]:
+                  - generic [ref=e161]: 撤消更改
+                - button "保存" [disabled] [ref=e164]:
+                  - generic [ref=e165]: 保存
+                - generic [ref=e166]:
+                  - button "选项" [ref=e167] [cursor=pointer]:
+                    - generic [ref=e170]:
+                      - img
+                  - generic:
+                    - generic "Video sync state dialog"
+            - generic [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]:
+                  - generic [ref=e179]:
+                    - generic [ref=e180]:
+                      - text: 标题（必填）
+                      - generic "一个引人注目的标题可以帮助你吸引观看者。在确定视频标题时，最好加入观众在查找类似视频时可能会使用的关键字。 了解详情" [ref=e182]:
+                        - generic [ref=e184]:
+                          - img
+                    - textbox "添加一个可描述你视频的标题（输入 @ 可提及某个频道）" [ref=e188]
+                  - generic [ref=e193]:
+                    - generic [ref=e195]:
+                      - generic [ref=e196]:
+                        - text: 说明
+                        - generic "在说明中加入适当的关键字，可以帮助观看者通过搜索更轻松地找到你的视频。你可以在说明中大致介绍视频的内容，并将关键字放在说明的开头部分。 了解详情" [ref=e198]:
+                          - generic [ref=e200]:
+                            - img
+                      - generic [ref=e202]:
+                        - textbox "向观看者介绍你的视频（输入 @ 可提及某个频道）" [ref=e204]
+                        - status [ref=e441]: 985/5000
+                    - generic [ref=e443]:
+                      - text: 如需提供可点击的外部链接，请先完成一次性
+                      - link "验证" [ref=e448] [cursor=pointer]
+                      - text: 。
+                  - generic [ref=e207]:
+                    - generic [ref=e208]: 缩略图
+                    - generic [ref=e209]:
+                      - text: 设置与众不同的缩略图，吸引观看者注意。
+                      - link "详细了解缩略图" [ref=e210] [cursor=pointer]:
+                        - /url: https://support.google.com/youtube/answer/72431?hl=zh-CN
+                        - text: 了解详情
+                    - generic [ref=e214]:
+                      - button "自动生成的缩略图" [ref=e215]:
+                        - img "自动生成的缩略图 1" [ref=e219]
+                      - button "选项" [ref=e220] [cursor=pointer]:
+                        - generic [ref=e223]:
+                          - img
+                  - generic [ref=e224]:
+                    - generic [ref=e225]: 播放列表
+                    - generic [ref=e226]:
+                      - text: 将视频整理到一个或多个播放列表中，方便观看者浏览。
+                      - link "详细了解播放列表" [ref=e227] [cursor=pointer]:
+                        - /url: https://support.google.com/youtube/answer/57792
+                        - text: 了解详情
+                    - generic "添加到播放列表" [ref=e230]:
+                      - button "选择播放列表" [ref=e232]:
+                        - button "选择" [ref=e233] [cursor=pointer]:
+                          - generic [ref=e237]: 选择
+                          - generic [ref=e241]:
+                            - img
+                  - generic [ref=e243]:
+                    - generic [ref=e244]: 观众
+                    - generic [ref=e245]:
+                      - generic [ref=e246]:
+                        - text: 此视频已设置为非面向儿童的内容
+                        - generic [ref=e249]: 由你设置
+                      - generic [ref=e250]:
+                        - text: 根据法律要求，无论你身在何处，都必须遵守《儿童在线隐私保护法》(COPPA) 和/或其他法律。你必须指明自己的视频是否为面向儿童的内容。
+                        - link "什么是面向儿童的内容？" [ref=e251] [cursor=pointer]:
+                          - /url: https://support.google.com/youtube/answer/9528076?hl=zh-CN
+                      - generic [ref=e253]:
+                        - generic [ref=e256]:
+                          - img
+                        - generic [ref=e257]:
+                          - text: 面向儿童的视频不支持个性化广告和通知等功能。如果你将视频设置为面向儿童的内容，系统就更有可能在观众观看其他儿童视频时推荐你的视频。
+                          - link "详细了解视频的观众群设置" [ref=e258] [cursor=pointer]:
+                            - /url: https://support.google.com/youtube/answer/9527654?hl=zh-CN
+                            - text: 了解详情
+                      - radiogroup [ref=e260]:
+                        - radio "是，内容是面向儿童的 . 面向儿童的视频不支持个性化广告和通知等功能。如果你将视频设置为面向儿童的内容，系统就更有可能在观众观看其他儿童视频时推荐你的视频。 了解详情" [ref=e261] [cursor=pointer]:
+                          - generic [ref=e264]:
+                            - text: 是，内容是面向儿童的
+                            - generic [ref=e265]: .
+                            - generic [ref=e266]:
+                              - text: 面向儿童的视频不支持个性化广告和通知等功能。如果你将视频设置为面向儿童的内容，系统就更有可能在观众观看其他儿童视频时推荐你的视频。
+                              - link "了解详情" [ref=e267]:
+                                - /url: https://support.google.com/youtube/answer/9527654?hl=zh-CN
+                        - radio "不，内容不是面向儿童的" [checked] [ref=e268] [cursor=pointer]:
+                          - generic [ref=e272]: 不，内容不是面向儿童的
+                    - button "年龄限制（高级）" [ref=e273]:
+                      - generic [ref=e451]:
+                        - img
+                      - heading "年龄限制（高级）" [level=3] [ref=e277]
+                    - generic [ref=e453]:
+                      - generic [ref=e454]: 要将你的视频设为仅限成年观众观看吗？
+                      - generic [ref=e455]:
+                        - text: 有年龄限制的视频不会显示在 YouTube 的特定部分中，而且只能投放部分广告，或者无法使用广告创收功能。
+                        - link "详细了解年龄限制政策" [ref=e456] [cursor=pointer]:
+                          - /url: https://support.google.com/youtube/answer/2950063?hl=zh-CN
+                          - text: 了解详情
+                      - radiogroup [ref=e458]:
+                        - radio "是，设为仅限年满 18 周岁的观看者观看" [ref=e459] [cursor=pointer]:
+                          - generic [ref=e462]: 是，设为仅限年满 18 周岁的观看者观看
+                        - radio "否，不要设为仅限年满 18 周岁的人观看" [checked] [ref=e463] [cursor=pointer]:
+                          - generic [ref=e467]: 否，不要设为仅限年满 18 周岁的人观看
+                - generic [ref=e278]:
+                  - generic "显示高级设置" [ref=e279]:
+                    - button "显示高级设置" [ref=e281] [cursor=pointer]:
+                      - generic [ref=e282]: 展开
+                  - generic [ref=e286]: 付费宣传内容、联合创作、字幕等
+              - generic [ref=e287]:
+                - generic [ref=e289]:
+                  - generic [ref=e292]:
+                    - status [ref=e294]
+                    - region "视频播放器" [ref=e302]:
+                      - img [ref=e311]
+                      - generic [ref=e314]:
+                        - button "播放" [ref=e315] [cursor=pointer]:
+                          - generic [ref=e318]:
+                            - img
+                        - generic [ref=e319]:
+                          - button "静音" [ref=e320] [cursor=pointer]:
+                            - generic [ref=e323]:
+                              - img
+                          - slider "音量" [ref=e324]
+                        - generic [ref=e327]: 0:00 / 7:02
+                        - button "设置" [ref=e330] [cursor=pointer]:
+                          - generic [ref=e333]:
+                            - img
+                        - button "全屏" [ref=e334] [cursor=pointer]:
+                          - generic [ref=e337]:
+                            - img
+                      - generic [ref=e341]:
+                        - img
+                      - generic [ref=e345]:
+                        - img
+                      - generic [ref=e349]:
+                        - img
+                      - generic [ref=e353]:
+                        - img
+                  - generic [ref=e354]:
+                    - generic [ref=e355]:
+                      - generic [ref=e356]: 视频链接
+                      - link "https://youtu.be/do9BCPn29_Q" [ref=e359] [cursor=pointer]:
+                        - /url: https://youtu.be/do9BCPn29_Q
+                    - button "复制视频链接" [ref=e361] [cursor=pointer]:
+                      - generic [ref=e364]:
+                        - img
+                  - generic [ref=e365]: 文件名
+                  - generic [ref=e366]: ACGS_-_560_Nanoseconds_to_Compliance.mp4
+                  - generic [ref=e367]: 视频画质
+                  - generic "标清版本处理已完成" [ref=e369]:
+                    - generic [ref=e371]:
+                      - img
+                - generic [ref=e374] [cursor=pointer]:
+                  - generic [ref=e375]:
+                    - generic [ref=e376]: 公开范围
+                    - generic [ref=e378]:
+                      - generic [ref=e381]:
+                        - img
+                      - generic [ref=e382]: 公开
+                  - button "修改视频公开状态" [ref=e384]:
+                    - generic [ref=e387]:
+                      - img
+                - generic [ref=e389]:
+                  - generic [ref=e390]: 限制
+                  - generic [ref=e391]: 无
+                - button "字幕" [ref=e392]:
+                  - button "字幕" [ref=e393]:
+                    - button "字幕" [ref=e394] [cursor=pointer]:
+                      - generic [ref=e399]:
+                        - img
+                      - generic [ref=e401]: 字幕
+                      - generic [ref=e405]:
+                        - img
+                - button "片尾画面" [ref=e406]:
+                  - button "片尾画面" [ref=e407]:
+                    - button "片尾画面" [ref=e408] [cursor=pointer]:
+                      - generic [ref=e413]:
+                        - img
+                      - generic [ref=e415]: 片尾画面
+                      - generic [ref=e419]:
+                        - img
+                - button "卡片" [ref=e420]:
+                  - button "卡片" [ref=e421]:
+                    - button "卡片" [ref=e422] [cursor=pointer]:
+                      - generic [ref=e427]:
+                        - img
+                      - generic [ref=e429]: 卡片
+                      - generic [ref=e433]:
+                        - img
+  - generic [ref=e469]: 更改已保存

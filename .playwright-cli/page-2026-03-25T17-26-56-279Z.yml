@@ -1,0 +1,212 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic [ref=e2]: 频道信息中心
+    - generic [ref=e4]:
+      - banner [ref=e6]:
+        - button "收起菜单" [ref=e7] [cursor=pointer]:
+          - generic [ref=e10]:
+            - img
+        - link "YouTube Studio 信息中心" [ref=e12] [cursor=pointer]:
+          - /url: /channel/UCfIPDgWUJtOVIVS-88-G-cA
+          - img "YouTube Studio 信息中心" [ref=e13]
+        - button "跳过导航" [ref=e16] [cursor=pointer]:
+          - generic [ref=e17]: 跳过导航
+        - generic [ref=e22]:
+          - generic [ref=e25]:
+            - img
+          - textbox "在你的频道中搜索" [ref=e27]
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - button "帮助" [ref=e32] [cursor=pointer]:
+              - generic [ref=e35]:
+                - img
+            - button "通知" [ref=e37] [cursor=pointer]:
+              - generic [ref=e40]:
+                - img
+          - button "创建" [ref=e43] [cursor=pointer]:
+            - generic [ref=e47]:
+              - img
+            - generic [ref=e48]: 创建
+          - generic "账号" [ref=e52]:
+            - button "Account" [ref=e53]
+      - generic [ref=e55]:
+        - navigation [ref=e57]:
+          - generic [ref=e58]:
+            - generic:
+              - img "Martin Lyu" [ref=e61]
+              - generic [ref=e62]:
+                - generic [ref=e63]: 我的频道
+                - generic [ref=e64]: Martin Lyu
+          - menu [ref=e66]:
+            - menuitem "信息中心" [ref=e67] [cursor=pointer]:
+              - generic [ref=e68]:
+                - generic [ref=e72]:
+                  - img
+                - generic [ref=e73]: 信息中心
+            - menuitem "内容" [ref=e74] [cursor=pointer]:
+              - generic [ref=e75]:
+                - generic [ref=e79]:
+                  - img
+                - generic [ref=e80]: 内容
+            - menuitem "数据分析" [ref=e81] [cursor=pointer]:
+              - generic [ref=e82]:
+                - generic [ref=e86]:
+                  - img
+                - generic [ref=e87]: 数据分析
+            - menuitem "社区" [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]:
+                - generic [ref=e93]:
+                  - img
+                - generic [ref=e94]: 社区
+            - menuitem "字幕" [ref=e95] [cursor=pointer]:
+              - generic [ref=e96]:
+                - generic [ref=e100]:
+                  - img
+                - generic [ref=e101]: 字幕
+            - menuitem "内容检测" [ref=e102] [cursor=pointer]:
+              - generic [ref=e103]:
+                - generic [ref=e107]:
+                  - img
+                - generic [ref=e108]: 内容检测
+            - menuitem "创收" [ref=e109] [cursor=pointer]:
+              - generic [ref=e110]:
+                - generic [ref=e114]:
+                  - img
+                - generic [ref=e115]: 创收
+            - menuitem "自定义" [ref=e116] [cursor=pointer]:
+              - generic [ref=e117]:
+                - generic [ref=e121]:
+                  - img
+                - generic [ref=e122]: 自定义
+            - menuitem "音频库" [ref=e123] [cursor=pointer]:
+              - generic [ref=e124]:
+                - generic [ref=e128]:
+                  - img
+                - generic [ref=e129]: 音频库
+          - list [ref=e131]:
+            - listitem [ref=e132]:
+              - button "设置" [ref=e133] [cursor=pointer]:
+                - generic [ref=e137]:
+                  - img
+                - generic [ref=e138]: 设置
+            - listitem [ref=e139]:
+              - button "发送反馈" [ref=e141] [cursor=pointer]:
+                - generic [ref=e145]:
+                  - img
+                - generic [ref=e146]: 发送反馈
+        - main [ref=e147]:
+          - generic [ref=e148]:
+            - generic [ref=e150]:
+              - heading "频道信息中心" [level=1] [ref=e151]
+              - generic [ref=e152]:
+                - button "上传视频" [ref=e154] [cursor=pointer]:
+                  - generic [ref=e157]:
+                    - img
+                - link "开始直播" [ref=e158] [cursor=pointer]:
+                  - /url: /channel/UCfIPDgWUJtOVIVS-88-G-cA/livestreaming
+                  - button "开始直播" [ref=e159]:
+                    - generic [ref=e162]:
+                      - img
+                - link "发帖" [ref=e163] [cursor=pointer]:
+                  - /url: https://www.youtube.com/channel/UCfIPDgWUJtOVIVS-88-G-cA/posts?show_create_dialog=1
+                  - button "发帖" [ref=e164]:
+                    - generic [ref=e167]:
+                      - img
+            - generic [ref=e169]:
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - generic [ref=e178]:
+                    - heading "最新视频表现" [level=2] [ref=e179]
+                    - generic [ref=e181]:
+                      - img "视频缩略图：ACGS 560 Nanoseconds to Compliance" [ref=e182]
+                      - heading [level=2] [ref=e185]: ACGS 560 Nanoseconds to Compliance
+                    - generic [ref=e186]:
+                      - generic [ref=e187]:
+                        - generic [ref=e188]:
+                          - generic [ref=e191]:
+                            - img
+                          - text: "2"
+                        - generic [ref=e192]:
+                          - generic [ref=e195]:
+                            - img
+                          - text: "0"
+                        - generic [ref=e196]:
+                          - generic [ref=e199]:
+                            - img
+                          - text: "0"
+                      - button "收起" [ref=e200] [cursor=pointer]:
+                        - generic [ref=e203]:
+                          - img
+                    - separator [ref=e204]
+                    - group [ref=e205]:
+                      - generic [ref=e208]:
+                        - generic [ref=e210]: 前 4 天 3 小时
+                        - generic [ref=e211]:
+                          - button "观看次数 2" [ref=e212]:
+                            - generic [ref=e213]: 观看次数
+                            - generic [ref=e217]: "2"
+                          - button "展示点击率 0%" [ref=e218]:
+                            - generic [ref=e219]: 展示点击率
+                            - generic [ref=e223]: 0%
+                          - button "平均观看时长 3:41" [ref=e224]:
+                            - generic [ref=e225]: 平均观看时长
+                            - generic [ref=e229]: 3:41
+                    - generic [ref=e230]:
+                      - link "前往视频分析" [ref=e231] [cursor=pointer]:
+                        - /url: /video/do9BCPn29_Q/analytics/tab-overview/period-default
+                        - button "前往视频分析" [ref=e234]:
+                          - generic [ref=e235]: 前往视频分析
+                      - link "查看评论（0）" [ref=e239] [cursor=pointer]:
+                        - /url: /video/do9BCPn29_Q/comments/inbox
+                        - button "查看评论（0）" [ref=e242]:
+                          - generic [ref=e243]: 查看评论（0）
+                  - list [ref=e250]:
+                    - listitem [ref=e251]:
+                      - generic [ref=e254]:
+                        - paragraph [ref=e257]: 创建你的第一条帖子，发起对话并获得社区的反馈。
+                        - link "创建帖子" [ref=e259] [cursor=pointer]:
+                          - /url: https://www.youtube.com/my_community?pdc=OAk%253D
+                          - button "创建帖子" [ref=e262]:
+                            - generic [ref=e263]: 创建帖子
+                - generic [ref=e273]:
+                  - heading "频道分析" [level=2] [ref=e274]
+                  - generic [ref=e275]:
+                    - generic [ref=e276]: 当前订阅人数
+                    - generic [ref=e277]: "0"
+                  - separator [ref=e279]
+                  - generic [ref=e280]:
+                    - generic [ref=e281]: 摘要
+                    - generic [ref=e282]: 过去 28 天
+                  - generic [ref=e284]:
+                    - generic [ref=e285]:
+                      - generic [ref=e286]: 观看次数
+                      - generic [ref=e287]: "5"
+                      - generic [ref=e289]: —
+                    - generic [ref=e290]:
+                      - generic [ref=e291]: 观看时长（小时）
+                      - generic [ref=e292]: "0.4"
+                      - generic [ref=e294]: —
+                  - separator [ref=e296]
+                  - generic [ref=e297]:
+                    - text: 热门内容
+                    - generic [ref=e298]: 过去 48 小时 · 观看次数
+                  - table [ref=e300]:
+                    - rowgroup [ref=e301]:
+                      - row "ACGS 560 Nanoseconds to Compliance 2" [ref=e302]:
+                        - cell "ACGS 560 Nanoseconds to Compliance" [ref=e303]:
+                          - link "ACGS 560 Nanoseconds to Compliance" [ref=e304] [cursor=pointer]:
+                            - /url: /video/do9BCPn29_Q/analytics/tab-overview/period-default
+                        - cell "2" [ref=e305]:
+                          - link "2" [ref=e306] [cursor=pointer]:
+                            - /url: /video/do9BCPn29_Q/analytics/tab-overview/period-default
+                  - link "前往频道数据分析" [ref=e308] [cursor=pointer]:
+                    - /url: /channel/UCfIPDgWUJtOVIVS-88-G-cA/analytics/tab-overview/period-default
+                    - button "前往频道数据分析" [ref=e311]:
+                      - generic [ref=e312]: 前往频道数据分析
+              - generic [ref=e318]:
+                - link "使用条款" [ref=e320] [cursor=pointer]:
+                  - /url: https://www.youtube.com/t/terms
+                - link "隐私权政策" [ref=e322] [cursor=pointer]:
+                  - /url: https://policies.google.com/privacy?hl=zh-CN
+                - link "政策和安全" [ref=e324] [cursor=pointer]:
+                  - /url: https://www.youtube.com/yt/policyandsafety/

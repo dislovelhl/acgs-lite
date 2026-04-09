@@ -1,0 +1,13 @@
+[package]
+name = "acgs_lite_rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "acgs_lite_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+acgs-validator-core = { path = "../core" }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py38"] }
+regex = "1.11"

@@ -1,0 +1,401 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - text:                   
+    - navigation [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Devpost" [ref=e8] [cursor=pointer]:
+            - /url: https://devpost.com
+            - img "Devpost" [ref=e9]
+      - generic:
+        - list [ref=e10]:
+          - listitem [ref=e11]
+          - listitem [ref=e12]:
+            - link "Join a hackathon" [ref=e13] [cursor=pointer]:
+              - /url: "#"
+              - text: Join a hackathon
+              - generic [ref=e14]: 
+              - text: 
+            - text:   
+          - listitem [ref=e15]
+          - listitem [ref=e16]:
+            - link "Host a hackathon" [ref=e17] [cursor=pointer]:
+              - /url: "#"
+              - text: Host a hackathon
+              - generic [ref=e18]: 
+              - text: 
+            - text:      
+          - listitem [ref=e19]
+          - listitem [ref=e20]:
+            - link "Resources" [ref=e21] [cursor=pointer]:
+              - /url: "#"
+              - text: Resources
+              - generic [ref=e22]: 
+              - text: 
+        - generic [ref=e23]:
+          - list:
+            - listitem [ref=e24]:
+              - generic [ref=e26]: 
+            - text:  
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link "🔔" [ref=e29] [cursor=pointer]:
+                - /url: https://devpost.com/notifications
+                - generic [ref=e30]: 🔔
+            - listitem [ref=e31]:
+              - link "Access your account menu" [ref=e32] [cursor=pointer]:
+                - /url: https://devpost.com/martin306?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav
+                - img "martin306" [ref=e33]
+  - generic [ref=e34]:
+    - banner [ref=e35]:
+      - heading "Notifications" [level=6] [ref=e36]
+    - paragraph [ref=e38]: Loading...
+    - contentinfo
+  - generic [ref=e39]:
+    - generic [ref=e40]:
+      - generic [ref=e42]:
+        - heading "Constitutional Sentinel" [level=1] [ref=e43]
+        - paragraph [ref=e44]: An independent GitLab governance agent that reviews AI-generated merge requests, flags risky code inline, blocks unsafe merges, and leaves a tamper-evident audit trail.
+      - generic [ref=e46]:
+        - link "♥ Like" [ref=e49] [cursor=pointer]:
+          - /url: /software/constitutional-sentinel/likes
+          - generic [ref=e50]: ♥
+          - text: Like
+        - link "“ Comment" [ref=e51] [cursor=pointer]:
+          - /url: /software/constitutional-sentinel#updates
+          - generic [ref=e52]: “
+          - text: Comment
+    - navigation [ref=e53]:
+      - list [ref=e56]:
+        - listitem [ref=e57]:
+          - heading "Story" [level=4] [ref=e58]:
+            - link "Story" [ref=e59] [cursor=pointer]:
+              - /url: /software/constitutional-sentinel
+        - listitem [ref=e60]:
+          - heading "Updates" [level=4] [ref=e61]:
+            - link "Updates" [ref=e62] [cursor=pointer]:
+              - /url: /software/constitutional-sentinel#updates
+    - article [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - list [ref=e67]:
+            - listitem [ref=e72]:
+              - iframe [ref=e74]:
+                - generic [active] [ref=f75e1]:
+                  - generic "YouTube Video Player" [ref=f75e3]
+                  - generic [ref=f75e5]:
+                    - generic:
+                      - generic:
+                        - button "Play video" [ref=f75e10] [cursor=pointer]:
+                          - generic [ref=f75e13]:
+                            - img
+                        - button "Hide player controls" [ref=f75e14] [cursor=pointer]
+                        - generic [ref=f75e16]:
+                          - generic [ref=f75e21]:
+                            - generic [ref=f75e22]:
+                              - link "ACGS 560 Nanoseconds to Compliance" [ref=f75e23] [cursor=pointer]:
+                                - /url: https://www.youtube.com/watch?v=do9BCPn29_Q
+                              - link "Martin Lyu" [ref=f75e24] [cursor=pointer]:
+                                - /url: /channel/UCfIPDgWUJtOVIVS-88-G-cA
+                                - generic [ref=f75e25]: Martin Lyu
+                            - generic [ref=f75e26]:
+                              - button "thumbnail-image" [ref=f75e27] [cursor=pointer]:
+                                - img "thumbnail-image" [ref=f75e28]
+                              - generic [ref=f75e29]:
+                                - generic [ref=f75e30]:
+                                  - generic: Martin Lyu
+                                  - generic: No subscribers
+                                - generic [ref=f75e38]:
+                                  - generic [ref=f75e39]:
+                                    - generic:
+                                      - generic:
+                                        - img
+                                    - button "Subscribe" [disabled] [ref=f75e42]:
+                                      - generic [ref=f75e43]: Subscribe
+                                  - generic:
+                                    - generic:
+                                      - img
+                          - generic [ref=f75e44]:
+                            - generic [ref=f75e45]:
+                              - button "Share" [ref=f75e47] [cursor=pointer]:
+                                - generic [ref=f75e51]:
+                                  - img
+                              - button "Watch later" [ref=f75e56] [cursor=pointer]:
+                                - generic [ref=f75e60]:
+                                  - img
+                            - link "Watch on YouTube" [ref=f75e67] [cursor=pointer]:
+                              - /url: https://www.youtube.com/watch?v=do9BCPn29_Q
+                              - generic [ref=f75e70]:
+                                - text: Watch on
+                                - img [ref=f75e72]:
+                                  - generic [ref=f75e74]:
+                                    - img
+          - generic [ref=e75]:
+            - heading "Inspiration" [level=2] [ref=e76]
+            - paragraph [ref=e77]: AI coding assistants can generate merge requests quickly, but they do not understand an organization's security rules, compliance boundaries, or separation-of-duties policies. That creates a governance gap inside GitLab workflows.
+            - heading "What it does" [level=2] [ref=e78]
+            - paragraph [ref=e79]: Constitutional Sentinel is a GitLab merge request governance agent powered by ACGS-Lite. It validates AI-assisted code and workflow actions against constitutional rules before they take effect. It inspects diffs, flags violating lines inline, generates a governance summary with risk score and constitutional hash, blocks unsafe merges, and preserves tamper-evident audit records.
+            - heading "Key features" [level=2] [ref=e80]
+            - list [ref=e81]:
+              - listitem [ref=e82]: "MACI separation of powers: Proposer, Validator, Executor"
+              - listitem [ref=e83]: Optional Rust/PyO3 fast path for performance-sensitive validation
+              - listitem [ref=e84]: 9 regulatory frameworks covered with 125 checklist items, 72 auto-populated
+              - listitem [ref=e85]: 5-tier escalation and context-aware risk scoring
+              - listitem [ref=e86]: 11 integration surfaces across GitLab, CI/CD, MCP, and deployment paths
+              - listitem [ref=e87]:
+                - text: "Tamper-evident constitutional hash:"
+                - code [ref=e88]: 608508a9bd224290
+            - heading "How we built it" [level=2] [ref=e89]
+            - paragraph [ref=e90]: We built the project on ACGS-Lite, a Python governance engine with an optional Rust/PyO3 validation path. Rules are defined in portable YAML constitutions with IDs, severities, categories, keywords, and optional regex patterns. The GitLab-facing layer handles merge request events, diff extraction, per-line validation, inline comments, governance summaries, and merge or pipeline gating. The demo is packaged as a stateless container for Google Cloud Run with optional Cloud Logging export.
+            - heading "Challenges" [level=2] [ref=e91]
+            - paragraph [ref=e92]: The hardest parts were balancing precision with speed, mapping findings back to exact diff lines for inline comments, and keeping constitutional hashing reproducible so governance decisions can be audited later.
+            - heading "What we learned" [level=2] [ref=e93]
+            - paragraph [ref=e94]: Governance for AI-generated code works best when it is structural, not advisory. Inline MR feedback is more useful than detached reports, and separation of powers matters for agent workflows just as much as it does for human institutions.
+            - heading "Validation" [level=2] [ref=e95]
+            - list [ref=e96]:
+              - listitem [ref=e97]:
+                - code [ref=e98]: python -m pytest packages/acgs-lite/tests/test_hackathon_evals.py -v --import-mode=importlib
+              - listitem [ref=e99]:
+                - code [ref=e100]: 30/30
+                - text: hackathon evals passed
+            - heading "Why it matters" [level=2] [ref=e101]
+            - paragraph [ref=e102]: AI systems are increasingly writing code, making decisions, and triggering workflows without understanding compliance boundaries. Constitutional Sentinel adds the missing governance layer so risky behavior can be constrained, audited, and reviewed before it reaches production.
+          - generic [ref=e103]:
+            - heading "Built With" [level=2] [ref=e104]
+            - list [ref=e105]:
+              - listitem [ref=e106]:
+                - generic [ref=e107]: acgs-lite
+              - listitem [ref=e108]:
+                - generic [ref=e109]: gitlab-api
+              - listitem [ref=e110]:
+                - generic [ref=e111]: gitlab-ci-cd
+              - listitem [ref=e112]:
+                - generic [ref=e113]: google-cloud-logging
+              - listitem [ref=e114]:
+                - generic [ref=e115]: google-cloud-run
+              - listitem [ref=e116]:
+                - generic [ref=e117]: mcp
+              - listitem [ref=e118]:
+                - generic [ref=e119]: pyo3
+              - listitem [ref=e120]:
+                - generic [ref=e121]: python-3.11+
+              - listitem [ref=e122]:
+                - link "rust" [ref=e124] [cursor=pointer]:
+                  - /url: https://devpost.com/software/built-with/rust
+              - listitem [ref=e125]:
+                - generic [ref=e126]: starlette
+              - listitem [ref=e127]:
+                - generic [ref=e128]: uvicorn
+              - listitem [ref=e129]:
+                - generic [ref=e130]: yaml
+          - navigation [ref=e131]:
+            - heading "Try it out" [level=2] [ref=e132]
+            - list [ref=e133]:
+              - listitem [ref=e134]:
+                - link "🔗 gitlab.com" [ref=e135] [cursor=pointer]:
+                  - /url: https://gitlab.com/martin664/constitutional-sentinel-demo
+                  - generic [ref=e136]: 🔗
+                  - text: gitlab.com
+              - listitem [ref=e137]:
+                - link "🔗 gitlab.com" [ref=e138] [cursor=pointer]:
+                  - /url: https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1
+                  - generic [ref=e139]: 🔗
+                  - text: gitlab.com
+        - complementary [ref=e140]:
+          - generic [ref=e141]:
+            - heading "Submitted to" [level=4] [ref=e142]
+            - list [ref=e143]:
+              - listitem [ref=e144]:
+                - figure [ref=e145]:
+                  - link "image" [ref=e146] [cursor=pointer]:
+                    - /url: https://gitlab.devpost.com/
+                    - img "image" [ref=e147]
+                - paragraph [ref=e149]:
+                  - link "GitLab AI Hackathon" [ref=e150] [cursor=pointer]:
+                    - /url: https://gitlab.devpost.com/
+                - generic [ref=e151]:
+                  - generic [ref=e152]: ⏲
+                  - strong [ref=e153]:
+                    - time [ref=e154]: 42 more minutes
+                  - text: to submit
+                - link "Edit hackathon submission" [ref=e155] [cursor=pointer]:
+                  - /url: https://devpost.com/submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/edit
+          - generic [ref=e156]:
+            - heading "Created by" [level=4] [ref=e157]
+            - list [ref=e158]:
+              - listitem [ref=e159]:
+                - generic [ref=e162]:
+                  - generic [ref=e163]:
+                    - generic [ref=e164] [cursor=pointer]: Describe your contribution
+                    - textbox "Describe your contribution" [ref=e165]:
+                      - /placeholder: "Ex: I worked on the back-end. It was my first time using Node, which was a little intimidating, but I learned a lot."
+                  - button "Save" [ref=e166] [cursor=pointer]
+                  - link "Cancel" [ref=e168] [cursor=pointer]:
+                    - /url: /software/constitutional-sentinel
+                - generic [ref=e169]:
+                  - figure [ref=e171]:
+                    - link "Honglin Lyu" [ref=e172] [cursor=pointer]:
+                      - /url: https://devpost.com/martin306
+                      - img "Honglin Lyu" [ref=e173]
+                  - link "Honglin Lyu" [ref=e175] [cursor=pointer]:
+                    - /url: https://devpost.com/martin306
+            - paragraph [ref=e178]:
+              - link "+ add team members" [ref=e179] [cursor=pointer]:
+                - /url: /software/constitutional-sentinel/edit#members
+          - link "⚑ Report inappropriate content" [ref=e181] [cursor=pointer]:
+            - /url: /software/constitutional-sentinel/flags/new
+            - generic [ref=e182]: ⚑
+            - text: Report inappropriate content
+          - link "👀 Hide project from my portfolio" [ref=e184] [cursor=pointer]:
+            - /url: https://devpost.com/software/constitutional-sentinel/members/5752110/toggle_visibility
+            - generic [ref=e185]: 👀
+            - text: Hide project from my portfolio
+    - generic [ref=e191]:
+      - link "♥ Like" [ref=e193] [cursor=pointer]:
+        - /url: /software/constitutional-sentinel/likes
+        - generic [ref=e194]: ♥
+        - text: Like
+      - list
+    - article [ref=e195]:
+      - generic [ref=e197]:
+        - heading "Updates" [level=2] [ref=e198]
+        - generic [ref=e202]:
+          - link "Honglin Lyu" [ref=e204] [cursor=pointer]:
+            - /url: https://devpost.com/martin306
+            - img "Honglin Lyu" [ref=e205]
+          - generic [ref=e207]:
+            - generic [ref=e208]:
+              - generic [ref=e209] [cursor=pointer]: Post an update about Constitutional Sentinel
+              - paragraph [ref=e210]: Keep a log of how Constitutional Sentinel has evolved. Post about new features, app store releases, screenshots, or even code snippets. Your followers will see your updates in their feeds and can comment on them.
+              - textbox "Post an update about Constitutional Sentinel" [ref=e211]:
+                - /placeholder: Use markdown for formatting.
+            - button "Post update" [ref=e212] [cursor=pointer]
+        - article [ref=e213]:
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - link "▾" [ref=e217] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e218]: ▾
+              - list [ref=e219]:
+                - listitem [ref=e220] [cursor=pointer]:
+                  - link [ref=e221]:
+                    - /url: "#"
+                    - generic [ref=e222]: ✉
+                    - text: Turn off notifications
+            - generic [ref=e223]:
+              - link "Honglin Lyu" [ref=e225] [cursor=pointer]:
+                - /url: https://devpost.com/martin306
+                - img "Honglin Lyu" [ref=e226]
+              - generic [ref=e227]:
+                - paragraph [ref=e228]:
+                  - link "Honglin Lyu" [ref=e229] [cursor=pointer]:
+                    - /url: https://devpost.com/martin306
+                  - text: started this project
+                  - generic [ref=e230]:
+                    - text: —
+                    - link "about 2 hours ago" [ref=e231] [cursor=pointer]:
+                      - /url: /software/constitutional-sentinel/updates/756273
+                      - time [ref=e232]: about 2 hours ago
+                - paragraph [ref=e233]: Leave feedback in the comments!
+                - generic [ref=e234]:
+                  - generic:
+                    - list
+                  - generic [ref=e237]:
+                    - link "Honglin Lyu" [ref=e239] [cursor=pointer]:
+                      - /url: https://devpost.com/martin306
+                      - img "Honglin Lyu" [ref=e240]
+                    - generic [ref=e241]:
+                      - textbox "Comments" [ref=e243]:
+                        - /placeholder: Write a comment
+                      - button "Post comment" [ref=e244] [cursor=pointer]
+  - contentinfo [ref=e245]:
+    - generic [ref=e246]:
+      - navigation [ref=e248]:
+        - heading "Devpost" [level=4] [ref=e249]
+        - list [ref=e250]:
+          - listitem [ref=e251]:
+            - link "About" [ref=e252] [cursor=pointer]:
+              - /url: https://info.devpost.com/about
+          - listitem [ref=e253]:
+            - link "Careers" [ref=e254] [cursor=pointer]:
+              - /url: https://info.devpost.com/careers
+          - listitem [ref=e255]:
+            - link "Contact" [ref=e256] [cursor=pointer]:
+              - /url: https://info.devpost.com/contact
+          - listitem [ref=e257]:
+            - link "Help" [ref=e258] [cursor=pointer]:
+              - /url: https://help.devpost.com/
+      - navigation [ref=e260]:
+        - heading "Hackathons" [level=4] [ref=e261]
+        - list [ref=e262]:
+          - listitem [ref=e263]:
+            - link "Browse hackathons" [ref=e264] [cursor=pointer]:
+              - /url: https://devpost.com/hackathons
+          - listitem [ref=e265]:
+            - link "Explore projects" [ref=e266] [cursor=pointer]:
+              - /url: https://devpost.com/software
+          - listitem [ref=e267]:
+            - link "Host a hackathon" [ref=e268] [cursor=pointer]:
+              - /url: https://info.devpost.com
+          - listitem [ref=e269]:
+            - link "Hackathon guides" [ref=e270] [cursor=pointer]:
+              - /url: https://info.devpost.com/guides
+      - navigation [ref=e272]:
+        - heading "Portfolio" [level=4] [ref=e273]
+        - list [ref=e274]:
+          - listitem [ref=e275]:
+            - link "Your projects" [ref=e276] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=projects
+          - listitem [ref=e277]:
+            - link "Your hackathons" [ref=e278] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=hackathons
+          - listitem [ref=e279]:
+            - link "Settings" [ref=e280] [cursor=pointer]:
+              - /url: https://devpost.com/settings
+      - navigation [ref=e282]:
+        - heading "Connect" [level=4] [ref=e283]
+        - list [ref=e284]:
+          - listitem [ref=e285]:
+            - link "Twitter" [ref=e286] [cursor=pointer]:
+              - /url: https://twitter.com/devpost
+              - generic [ref=e288]: 
+              - text: Twitter
+          - listitem [ref=e289]:
+            - link "Discord" [ref=e290] [cursor=pointer]:
+              - /url: https://discord.com/invite/HP4BhW3hnp
+              - generic [ref=e292]: 
+              - text: Discord
+          - listitem [ref=e293]:
+            - link "Facebook" [ref=e294] [cursor=pointer]:
+              - /url: https://www.facebook.com/devposthacks
+              - generic [ref=e296]: 
+              - text: Facebook
+          - listitem [ref=e297]:
+            - link "LinkedIn" [ref=e298] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/devpost/
+              - generic [ref=e300]: 
+              - text: LinkedIn
+    - navigation [ref=e302]:
+      - generic [ref=e304]:
+        - generic [ref=e305]: © 2026 Devpost, Inc. All rights reserved.
+        - list [ref=e306]:
+          - listitem [ref=e307]:
+            - link "Community guidelines" [ref=e308] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/community-guidelines
+          - listitem [ref=e309]:
+            - link "Security" [ref=e310] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/security
+          - listitem [ref=e311]:
+            - link "CA notice" [ref=e312] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/california-consumer-privacy-act
+          - listitem [ref=e313]:
+            - link "Privacy policy" [ref=e314] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/privacy-policy
+          - listitem [ref=e315]:
+            - link "Terms of service" [ref=e316] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/terms-of-service
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - iframe

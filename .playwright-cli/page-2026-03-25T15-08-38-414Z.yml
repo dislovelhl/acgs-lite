@@ -1,0 +1,555 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - text:                   
+    - navigation [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Devpost" [ref=e8] [cursor=pointer]:
+            - /url: https://devpost.com
+            - img "Devpost" [ref=e9]
+      - generic:
+        - list [ref=e10]:
+          - listitem [ref=e11]
+          - listitem [ref=e12]:
+            - link "Join a hackathon" [ref=e13] [cursor=pointer]:
+              - /url: "#"
+              - text: Join a hackathon
+              - generic [ref=e14]: 
+              - text: 
+            - text:   
+          - listitem [ref=e15]
+          - listitem [ref=e16]:
+            - link "Host a hackathon" [ref=e17] [cursor=pointer]:
+              - /url: "#"
+              - text: Host a hackathon
+              - generic [ref=e18]: 
+              - text: 
+            - text:      
+          - listitem [ref=e19]
+          - listitem [ref=e20]:
+            - link "Resources" [ref=e21] [cursor=pointer]:
+              - /url: "#"
+              - text: Resources
+              - generic [ref=e22]: 
+              - text: 
+        - generic [ref=e23]:
+          - list:
+            - listitem [ref=e24]:
+              - generic [ref=e26]: 
+            - text:  
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link "🔔" [ref=e29] [cursor=pointer]:
+                - /url: https://devpost.com/notifications
+                - generic [ref=e30]: 🔔
+            - listitem [ref=e31]:
+              - link "Access your account menu" [ref=e32] [cursor=pointer]:
+                - /url: https://devpost.com/martin306?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav
+                - img "martin306" [ref=e33]
+  - generic [ref=e34]:
+    - banner [ref=e35]:
+      - heading "Notifications" [level=6] [ref=e36]
+    - paragraph [ref=e38]: Loading...
+    - contentinfo
+  - generic [ref=e39]:
+    - generic [ref=e40]:
+      - heading "GitLab AI Hackathon" [level=1] [ref=e43]:
+        - link "GitLab AI Hackathon" [ref=e44] [cursor=pointer]:
+          - /url: https://gitlab.devpost.com/
+          - img "GitLab AI Hackathon" [ref=e45]
+      - navigation [ref=e49]:
+        - list [ref=e50]:
+          - listitem [ref=e51]:
+            - link "Overview" [ref=e52] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/
+          - listitem [ref=e53]:
+            - link "My projects" [ref=e54] [cursor=pointer]:
+              - /url: https://devpost.com/submit-to/28106-gitlab-ai-hackathon/manage/submissions
+          - listitem [ref=e55]:
+            - link "Participants (6970)" [ref=e56] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/participants
+          - listitem [ref=e57]:
+            - link "Resources" [ref=e58] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/resources
+          - listitem [ref=e59]:
+            - link "Rules" [ref=e60] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/rules
+          - listitem [ref=e61]:
+            - link "Project gallery" [ref=e62] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/project-gallery
+          - listitem [ref=e63]:
+            - link "Updates" [ref=e64] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/updates
+          - listitem [ref=e65]:
+            - link "Discussions" [ref=e66] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/forum_topics
+    - generic [ref=e70]:
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Constitutional Sentinel" [level=3] [ref=e74]
+          - generic [ref=e76]: Draft
+          - generic [ref=e78]: 3/5 steps done
+          - generic [ref=e80]:
+            - generic [ref=e82]:
+              - time [ref=e83]: 3 more hours
+              - text: to deadline
+            - generic [ref=e85]:
+              - text: 
+              - link "Preview" [ref=e87] [cursor=pointer]:
+                - /url: /software/constitutional-sentinel
+                - text: Preview
+                - generic [ref=e88]: 
+        - generic [ref=e89]:
+          - link "Manage team" [ref=e90] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/manage-team
+            - generic [ref=e92]: 
+            - text: Manage team
+            - img [ref=e93]
+          - link "Project overview" [ref=e95] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project-overview
+            - generic [ref=e97]: 
+            - text: Project overview
+            - img [ref=e98]
+          - link "Project details" [ref=e100] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project_details/edit
+            - generic [ref=e102]: 
+            - text: Project details
+            - img [ref=e103]
+          - link "Additional info" [ref=e105] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/additional-info/edit
+            - generic [ref=e106]: 
+            - text: Additional info
+            - img [ref=e107]
+          - link "Submit" [ref=e109] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/finalization
+            - generic [ref=e110]: 
+            - text: Submit
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - heading "Additional info" [level=1] [ref=e114]
+          - paragraph [ref=e115]: For judges and organizers
+        - paragraph [ref=e116]: Unless noted, additional info is for judges and hackathon organizers and will not appear on your public project page.
+      - separator [ref=e117]
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - generic [ref=e123] [cursor=pointer]: "* Submitter Type"
+          - paragraph [ref=e124]: Appears in project gallery
+          - combobox "* Submitter Type" [ref=e125]:
+            - option "Make a selection"
+            - option "Individual" [selected]
+            - option "Team"
+            - option "Organization"
+        - generic [ref=e126]:
+          - generic [ref=e127] [cursor=pointer]: Organization name
+          - paragraph [ref=e128]: if applicable
+          - textbox "Organization name" [ref=e129]
+        - generic [ref=e130]:
+          - generic [ref=e131] [cursor=pointer]: "* Submitter country of residence"
+          - paragraph [ref=e132]: Appears in project gallery
+          - combobox "* Submitter country of residence" [ref=e133]:
+            - option "Make a selection"
+            - option "Afghanistan"
+            - option "Aland Islands"
+            - option "Albania"
+            - option "Algeria"
+            - option "American Samoa"
+            - option "Andorra"
+            - option "Angola"
+            - option "Anguilla"
+            - option "Antarctica"
+            - option "Antigua And Barbuda"
+            - option "Argentina"
+            - option "Armenia"
+            - option "Aruba"
+            - option "Australia"
+            - option "Austria"
+            - option "Azerbaijan"
+            - option "Bahamas"
+            - option "Bahrain"
+            - option "Bangladesh"
+            - option "Barbados"
+            - option "Belarus"
+            - option "Belgium"
+            - option "Belize"
+            - option "Benin"
+            - option "Bermuda"
+            - option "Bhutan"
+            - option "Bolivia"
+            - option "Bosnia and Herzegovina"
+            - option "Botswana"
+            - option "Bouvet Island"
+            - option "Brazil"
+            - option "British Indian Ocean Territory"
+            - option "Brunei Darussalam"
+            - option "Bulgaria"
+            - option "Burkina Faso"
+            - option "Burundi"
+            - option "Cambodia"
+            - option "Cameroon"
+            - option "Canada" [selected]
+            - option "Cape Verde"
+            - option "Cayman Islands"
+            - option "Central African Republic"
+            - option "Chad"
+            - option "Chile"
+            - option "China"
+            - option "Christmas Island"
+            - option "Cocos (Keeling) Islands"
+            - option "Colombia"
+            - option "Comoros"
+            - option "Congo"
+            - option "Congo the Democratic Republic of the"
+            - option "Cook Islands"
+            - option "Costa Rica"
+            - option "Cote d'Ivoire"
+            - option "Crimea"
+            - option "Croatia"
+            - option "Cuba"
+            - option "Cyprus"
+            - option "Czech Republic"
+            - option "Denmark"
+            - option "Djibouti"
+            - option "Dominica"
+            - option "Dominican Republic"
+            - option "Donetsk People’s Republic"
+            - option "Ecuador"
+            - option "Egypt"
+            - option "El Salvador"
+            - option "Equatorial Guinea"
+            - option "Eritrea"
+            - option "Estonia"
+            - option "Ethiopia"
+            - option "Falkland Islands (Malvinas)"
+            - option "Faroe Islands"
+            - option "Fiji"
+            - option "Finland"
+            - option "France"
+            - option "French Guiana"
+            - option "French Polynesia"
+            - option "French Southern Territories"
+            - option "Gabon"
+            - option "Gambia"
+            - option "Georgia"
+            - option "Germany"
+            - option "Ghana"
+            - option "Gibraltar"
+            - option "Greece"
+            - option "Greenland"
+            - option "Grenada"
+            - option "Guadeloupe"
+            - option "Guam"
+            - option "Guatemala"
+            - option "Guernsey"
+            - option "Guinea"
+            - option "Guinea-Bissau"
+            - option "Guyana"
+            - option "Haiti"
+            - option "Heard and McDonald Islands"
+            - option "Holy See (Vatican City State)"
+            - option "Honduras"
+            - option "Hong Kong"
+            - option "Hungary"
+            - option "Iceland"
+            - option "India"
+            - option "Indonesia"
+            - option "Iran Islamic Republic of"
+            - option "Iraq"
+            - option "Ireland"
+            - option "Isle of Man"
+            - option "Israel"
+            - option "Italy"
+            - option "Jamaica"
+            - option "Japan"
+            - option "Jersey"
+            - option "Jordan"
+            - option "Kazakhstan"
+            - option "Kenya"
+            - option "Kiribati"
+            - option "Korea Democratic People's Republic of"
+            - option "Korea Republic of"
+            - option "Kuwait"
+            - option "Kyrgyzstan"
+            - option "Lao People's Democratic Republic"
+            - option "Latvia"
+            - option "Lebanon"
+            - option "Lesotho"
+            - option "Liberia"
+            - option "Libyan Arab Jamahiriya"
+            - option "Liechtenstein"
+            - option "Lithuania"
+            - option "Luhansk People’s Republic"
+            - option "Luxembourg"
+            - option "Macao"
+            - option "Macedonia The Former Yugoslav Republic Of"
+            - option "Madagascar"
+            - option "Malawi"
+            - option "Malaysia"
+            - option "Maldives"
+            - option "Mali"
+            - option "Malta"
+            - option "Marshall Islands"
+            - option "Martinique"
+            - option "Mauritania"
+            - option "Mauritius"
+            - option "Mayotte"
+            - option "Mexico"
+            - option "Micronesia Federated States of"
+            - option "Moldova Republic of"
+            - option "Monaco"
+            - option "Mongolia"
+            - option "Montenegro"
+            - option "Montserrat"
+            - option "Morocco"
+            - option "Mozambique"
+            - option "Myanmar"
+            - option "Namibia"
+            - option "Nauru"
+            - option "Nepal"
+            - option "Netherlands"
+            - option "Netherlands Antilles"
+            - option "New Caledonia"
+            - option "New Zealand"
+            - option "Nicaragua"
+            - option "Niger"
+            - option "Nigeria"
+            - option "Niue"
+            - option "Norfolk Island"
+            - option "Northern Mariana Islands"
+            - option "Norway"
+            - option "Oman"
+            - option "Pakistan"
+            - option "Palau"
+            - option "Palestine State of"
+            - option "Panama"
+            - option "Papua New Guinea"
+            - option "Paraguay"
+            - option "Peru"
+            - option "Philippines"
+            - option "Pitcairn"
+            - option "Poland"
+            - option "Portugal"
+            - option "Puerto Rico"
+            - option "Qatar"
+            - option "Quebec"
+            - option "Reunion"
+            - option "Romania"
+            - option "Russia"
+            - option "Rwanda"
+            - option "Saint Barthelemy"
+            - option "Saint Helena"
+            - option "Saint Kitts and Nevis"
+            - option "Saint Lucia"
+            - option "Saint Pierre and Miquelon"
+            - option "Saint Vincent and the Grenadines"
+            - option "Samoa"
+            - option "San Marino"
+            - option "Sao Tome and Principe"
+            - option "Saudi Arabia"
+            - option "Senegal"
+            - option "Serbia"
+            - option "Seychelles"
+            - option "Sierra Leone"
+            - option "Singapore"
+            - option "Slovakia"
+            - option "Slovak Republic"
+            - option "Slovenia"
+            - option "Solomon Islands"
+            - option "Somalia"
+            - option "South Africa"
+            - option "South Georgia and the South Sandwich Islands"
+            - option "Spain"
+            - option "Sri Lanka"
+            - option "Sudan"
+            - option "Suriname"
+            - option "Svalbard and Jan Mayen"
+            - option "Swaziland"
+            - option "Sweden"
+            - option "Switzerland"
+            - option "Syrian Arab Republic"
+            - option "Taiwan"
+            - option "Tajikistan"
+            - option "Tanzania United Republic of"
+            - option "Thailand"
+            - option "Timor-Leste"
+            - option "Togo"
+            - option "Tokelau"
+            - option "Tonga"
+            - option "Trinidad and Tobago"
+            - option "Tunisia"
+            - option "Turkey"
+            - option "Turkmenistan"
+            - option "Turks and Caicos Islands"
+            - option "Tuvalu"
+            - option "Uganda"
+            - option "Ukraine"
+            - option "United Arab Emirates"
+            - option "United Kingdom"
+            - option "United States"
+            - option "Uruguay"
+            - option "Uzbekistan"
+            - option "Vanuatu"
+            - option "Venezuela"
+            - option "Vietnam"
+            - option "Virgin Islands British"
+            - option "Virgin Islands U.S."
+            - option "Wallis and Futuna"
+            - option "Western Sahara"
+            - option "Yemen"
+            - option "Zambia"
+            - option "Zimbabwe"
+        - generic [ref=e134]:
+          - generic [ref=e135] [cursor=pointer]: "* What date (MM-DD-YY) did you start your project?"
+          - paragraph [ref=e136]: Please note that the project must have been significantly updated after February 9th.
+          - textbox "* What date (MM-DD-YY) did you start your project?" [ref=e137]: 03-14-26
+        - generic [ref=e138]:
+          - generic [ref=e139] [cursor=pointer]: If Existing, explain what you updated after February 9th for the hackathon.
+          - paragraph [ref=e140]: We recommend explaining this in your text description, too!
+          - textbox "If Existing, explain what you updated after February 9th for the hackathon." [ref=e141]: "After February 9th, we built the hackathon-specific GitLab governance workflow on top of the existing ACGS foundation. For the hackathon, we added the Constitutional Sentinel demo: GitLab merge request integration, diff extraction, inline MR violation comments, governance summary reporting, merge-blocking behaviour for unsafe changes, a hackathon-specific constitutional ruleset, Cloud Run deployment flow, and demo/eval assets tailored to the GitLab AI Hackathon. We also productized supporting CLI workflows for governance testing, lifecycle management, refusal explanation, and telemetry export so that the demo could show not just policy enforcement, but an operational governance workflow around AI-generated code."
+        - generic [ref=e142]:
+          - generic [ref=e143] [cursor=pointer]: "* Testing Instructions for application"
+          - paragraph
+          - textbox "* Testing Instructions for application" [ref=e144]
+        - generic [ref=e145]:
+          - generic [ref=e146] [cursor=pointer]: "* Which Category Prizes are you opting into?"
+          - paragraph [ref=e147]: Appears in project gallery
+          - combobox "* Which Category Prizes are you opting into?" [ref=e148]:
+            - option "Make a selection" [selected]
+            - option "GitLab & Google"
+            - option "GitLab & Anthropic"
+            - option "Green Agent Prize"
+            - option "Sustainable Design"
+        - generic [ref=e149]:
+          - generic [ref=e150] [cursor=pointer]: If you selected a Category Prize above, please explain how your project is eligible for it.
+          - paragraph
+          - textbox "If you selected a Category Prize above, please explain how your project is eligible for it." [ref=e151]
+        - generic [ref=e152]:
+          - generic [ref=e153] [cursor=pointer]: "* URL to your open source Agent that is published in the GitLab AI Hackathon group here: https://gitlab.com/gitlab-ai-hackathon"
+          - paragraph [ref=e154]: If a repository is included, it must be public and have a complete open source license that is detectable and visible at the top of the repository page (in the Project information section). See the full rules for details
+          - 'textbox "* URL to your open source Agent that is published in the GitLab AI Hackathon group here: https://gitlab.com/gitlab-ai-hackathon" [ref=e155]':
+            - /placeholder: https://
+        - generic [ref=e156]:
+          - generic [ref=e157] [cursor=pointer]: "* What is the biggest takeaway from your participation in the GitLab AI Hackathon?"
+          - paragraph
+          - textbox "* What is the biggest takeaway from your participation in the GitLab AI Hackathon?" [ref=e158]
+        - generic [ref=e159]:
+          - generic [ref=e160] [cursor=pointer]: "* Explain at least one thing we could have done differently to improve your experience in the GitLab AI Hackathon?"
+          - paragraph
+          - textbox "* Explain at least one thing we could have done differently to improve your experience in the GitLab AI Hackathon?" [ref=e161]
+        - generic [ref=e162]:
+          - generic [ref=e163] [cursor=pointer]: "* Which AI tools have you leveraged while working on this project?"
+          - paragraph
+          - textbox "* Which AI tools have you leveraged while working on this project?" [ref=e164]
+        - generic [ref=e165]:
+          - generic [ref=e166] [cursor=pointer]: "* Describe the level of learning you/your team derived from the project"
+          - paragraph [ref=e167]: Appears in project gallery
+          - combobox "* Describe the level of learning you/your team derived from the project" [ref=e168]:
+            - option "Make a selection" [selected]
+            - option "None"
+            - option "Moderate"
+            - option "Significant"
+        - generic [ref=e169]:
+          - generic [ref=e170] [cursor=pointer]: "* Did you gain AI experience you expect to apply in the future?"
+          - paragraph [ref=e171]: Appears in project gallery
+          - combobox "* Did you gain AI experience you expect to apply in the future?" [ref=e172]:
+            - option "Make a selection" [selected]
+            - option "Yes"
+            - option "No"
+      - generic [ref=e173]:
+        - button "Save & continue" [ref=e174] [cursor=pointer]
+        - link "Cancel" [ref=e175] [cursor=pointer]:
+          - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions
+  - contentinfo [ref=e176]:
+    - generic [ref=e177]:
+      - navigation [ref=e179]:
+        - heading "Devpost" [level=4] [ref=e180]
+        - list [ref=e181]:
+          - listitem [ref=e182]:
+            - link "About" [ref=e183] [cursor=pointer]:
+              - /url: https://info.devpost.com/about
+          - listitem [ref=e184]:
+            - link "Careers" [ref=e185] [cursor=pointer]:
+              - /url: https://info.devpost.com/careers
+          - listitem [ref=e186]:
+            - link "Contact" [ref=e187] [cursor=pointer]:
+              - /url: https://info.devpost.com/contact
+          - listitem [ref=e188]:
+            - link "Help" [ref=e189] [cursor=pointer]:
+              - /url: https://help.devpost.com/
+      - navigation [ref=e191]:
+        - heading "Hackathons" [level=4] [ref=e192]
+        - list [ref=e193]:
+          - listitem [ref=e194]:
+            - link "Browse hackathons" [ref=e195] [cursor=pointer]:
+              - /url: https://devpost.com/hackathons
+          - listitem [ref=e196]:
+            - link "Explore projects" [ref=e197] [cursor=pointer]:
+              - /url: https://devpost.com/software
+          - listitem [ref=e198]:
+            - link "Host a hackathon" [ref=e199] [cursor=pointer]:
+              - /url: https://info.devpost.com
+          - listitem [ref=e200]:
+            - link "Hackathon guides" [ref=e201] [cursor=pointer]:
+              - /url: https://info.devpost.com/guides
+      - navigation [ref=e203]:
+        - heading "Portfolio" [level=4] [ref=e204]
+        - list [ref=e205]:
+          - listitem [ref=e206]:
+            - link "Your projects" [ref=e207] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=projects
+          - listitem [ref=e208]:
+            - link "Your hackathons" [ref=e209] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=hackathons
+          - listitem [ref=e210]:
+            - link "Settings" [ref=e211] [cursor=pointer]:
+              - /url: https://devpost.com/settings
+      - navigation [ref=e213]:
+        - heading "Connect" [level=4] [ref=e214]
+        - list [ref=e215]:
+          - listitem [ref=e216]:
+            - link "Twitter" [ref=e217] [cursor=pointer]:
+              - /url: https://twitter.com/devpost
+              - generic [ref=e219]: 
+              - text: Twitter
+          - listitem [ref=e220]:
+            - link "Discord" [ref=e221] [cursor=pointer]:
+              - /url: https://discord.com/invite/HP4BhW3hnp
+              - generic [ref=e223]: 
+              - text: Discord
+          - listitem [ref=e224]:
+            - link "Facebook" [ref=e225] [cursor=pointer]:
+              - /url: https://www.facebook.com/devposthacks
+              - generic [ref=e227]: 
+              - text: Facebook
+          - listitem [ref=e228]:
+            - link "LinkedIn" [ref=e229] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/devpost/
+              - generic [ref=e231]: 
+              - text: LinkedIn
+    - navigation [ref=e233]:
+      - generic [ref=e235]:
+        - generic [ref=e236]: © 2026 Devpost, Inc. All rights reserved.
+        - list [ref=e237]:
+          - listitem [ref=e238]:
+            - link "Community guidelines" [ref=e239] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/community-guidelines
+          - listitem [ref=e240]:
+            - link "Security" [ref=e241] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/security
+          - listitem [ref=e242]:
+            - link "CA notice" [ref=e243] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/california-consumer-privacy-act
+          - listitem [ref=e244]:
+            - link "Privacy policy" [ref=e245] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/privacy-policy
+          - listitem [ref=e246]:
+            - link "Terms of service" [ref=e247] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/terms-of-service
+  - iframe [ref=e249]:
+    - button [ref=f20e4] [cursor=pointer]:
+      - generic:
+        - img
+      - generic:
+        - img
+      - generic:
+        - img

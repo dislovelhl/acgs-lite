@@ -1,0 +1,640 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - text:                   
+    - navigation [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Devpost" [ref=e8] [cursor=pointer]:
+            - /url: https://devpost.com
+            - img "Devpost" [ref=e9]
+      - generic:
+        - list [ref=e10]:
+          - listitem [ref=e11]
+          - listitem [ref=e12]:
+            - link "Join a hackathon" [ref=e13] [cursor=pointer]:
+              - /url: "#"
+              - text: Join a hackathon
+              - generic [ref=e14]: 
+              - text: 
+            - text:   
+          - listitem [ref=e15]
+          - listitem [ref=e16]:
+            - link "Host a hackathon" [ref=e17] [cursor=pointer]:
+              - /url: "#"
+              - text: Host a hackathon
+              - generic [ref=e18]: 
+              - text: 
+            - text:      
+          - listitem [ref=e19]
+          - listitem [ref=e20]:
+            - link "Resources" [ref=e21] [cursor=pointer]:
+              - /url: "#"
+              - text: Resources
+              - generic [ref=e22]: 
+              - text: 
+        - generic [ref=e23]:
+          - list:
+            - listitem [ref=e24]:
+              - generic [ref=e26]: 
+            - text:  
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link "🔔 1" [ref=e29] [cursor=pointer]:
+                - /url: https://devpost.com/notifications
+                - generic [ref=e30]: 🔔
+                - generic [ref=e31]: "1"
+            - listitem [ref=e32]:
+              - link "Access your account menu" [ref=e33] [cursor=pointer]:
+                - /url: https://devpost.com/martin306?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav
+                - img "martin306" [ref=e34]
+  - generic [ref=e35]:
+    - banner [ref=e36]:
+      - heading "Notifications" [level=6] [ref=e37]
+    - paragraph [ref=e39]: Loading...
+    - contentinfo
+  - generic [ref=e40]:
+    - generic [ref=e42]:
+      - heading "Explore projects from Portfolios and hackathons" [level=1] [ref=e44]
+      - link "Add your project" [ref=e46] [cursor=pointer]:
+        - /url: /software/new?flow%5Bname%5D=add_software&ref_feature=built-with&ref_medium=button
+    - generic [ref=e47]:
+      - generic [ref=e49]:
+        - generic:
+          - generic [ref=e50]:
+            - generic [ref=e51]: 🔎
+            - 'textbox "Search projects by keyword, #tag, @use|" [ref=e52]'
+          - generic [ref=e53]:
+            - link "Filters " [ref=e54] [cursor=pointer]:
+              - /url: "#"
+              - text: Filters
+              - generic [ref=e55]: 
+            - list [ref=e56]:
+              - listitem [ref=e57] [cursor=pointer]:
+                - link "@me My projects" [ref=e58]:
+                  - /url: "#"
+                  - generic [ref=e59]: "@me"
+                  - text: My projects
+              - listitem [ref=e60] [cursor=pointer]:
+                - link "@following My friends' projects" [ref=e61]:
+                  - /url: "#"
+                  - generic [ref=e62]: "@following"
+                  - text: My friends' projects
+              - listitem [ref=e63] [cursor=pointer]:
+                - link "# Tag" [ref=e64]:
+                  - /url: "#"
+                  - generic [ref=e65]: "#"
+                  - text: Tag
+              - listitem [ref=e66] [cursor=pointer]:
+                - link "is:featured Staff Picks" [ref=e67]:
+                  - /url: "#"
+                  - generic [ref=e68]: is:featured
+                  - text: Staff Picks
+              - listitem [ref=e69] [cursor=pointer]:
+                - link "is:winner Winners only" [ref=e70]:
+                  - /url: "#"
+                  - generic [ref=e71]: is:winner
+                  - text: Winners only
+              - listitem [ref=e72] [cursor=pointer]:
+                - link "has:video With demo videos" [ref=e73]:
+                  - /url: "#"
+                  - generic [ref=e74]: has:video
+                  - text: With demo videos
+              - listitem [ref=e75] [cursor=pointer]:
+                - link "has:image With a gallery" [ref=e76]:
+                  - /url: "#"
+                  - generic [ref=e77]: has:image
+                  - text: With a gallery
+              - listitem [ref=e78] [cursor=pointer]:
+                - listitem [ref=e79]:
+                  - link " View advanced search syntax" [ref=e80]:
+                    - /url: "#"
+                    - generic [ref=e81]: 
+                    - text: View advanced search syntax
+      - text: ▴▾
+    - generic [ref=e83]:
+      - heading "From your friends" [level=4] [ref=e87]
+      - generic [ref=e89]:
+        - generic [ref=e92]:
+          - figure [ref=e93]
+          - generic [ref=e94]:
+            - heading [level=5] [ref=e95]
+            - paragraph [ref=e96]
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]: ♥
+              - text: "5"
+            - generic [ref=e106]:
+              - generic [ref=e107]: 💬
+              - text: "1"
+        - generic [ref=e110]:
+          - figure [ref=e111]
+          - generic [ref=e112]:
+            - heading [level=5] [ref=e113]
+            - paragraph [ref=e114]
+          - generic [ref=e120]:
+            - generic [ref=e121]:
+              - generic [ref=e122]: ♥
+              - text: "18"
+            - generic [ref=e123]:
+              - generic [ref=e124]: 💬
+              - text: "7"
+        - generic [ref=e127]:
+          - figure [ref=e128]
+          - generic [ref=e129]:
+            - heading [level=5] [ref=e130]
+            - paragraph [ref=e131]
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]: ♥
+              - text: "12"
+            - generic [ref=e140]:
+              - generic [ref=e141]: 💬
+              - text: "8"
+        - generic [ref=e144]:
+          - figure [ref=e145]
+          - generic [ref=e146]:
+            - heading [level=5] [ref=e147]
+            - paragraph [ref=e148]
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - generic [ref=e157]: ♥
+              - text: "15"
+            - generic [ref=e158]:
+              - generic [ref=e159]: 💬
+              - text: "7"
+        - generic [ref=e160]:
+          - heading "Your friends haven't published any projects yet. Sign up for a challenge or hackathon and create something awesome together!" [level=3] [ref=e161]
+          - link "Find new challenges and hackathons" [ref=e162] [cursor=pointer]:
+            - /url: /hackathons
+    - generic [ref=e164]:
+      - generic [ref=e167]:
+        - heading "Staff picks" [level=4] [ref=e168]
+        - link "View all" [ref=e171] [cursor=pointer]:
+          - /url: /software/search?query=is%3Afeatured
+      - generic [ref=e172]:
+        - link "AudioNova Local A.I voice generation and transformation, powered by Qualcomm Whisper optimized for Snapdragon X. V V ♥ 482 💬 24" [ref=e174] [cursor=pointer]:
+          - /url: https://devpost.com/software/audionova
+          - generic [ref=e175]:
+            - figure "AudioNova Local A.I voice generation and transformation, powered by Qualcomm Whisper optimized for Snapdragon X." [ref=e176]:
+              - img "AudioNova" [ref=e177]
+              - generic [ref=e179]:
+                - heading "AudioNova" [level=5] [ref=e180]
+                - paragraph [ref=e181]: Local A.I voice generation and transformation, powered by Qualcomm Whisper optimized for Snapdragon X.
+            - complementary [ref=e182]:
+              - img "Winner" [ref=e183]
+              - text: Winner
+            - generic [ref=e184]:
+              - img "V V" [ref=e187]
+              - generic [ref=e188]:
+                - generic [ref=e189]:
+                  - generic [ref=e190]: ♥
+                  - text: "482"
+                - generic [ref=e191]:
+                  - generic [ref=e192]: 💬
+                  - text: "24"
+        - 'link "Snapdragon AI: Multilingual Translator Breaking language barriers with real-time, on-device translation between English, Japanese, Korean, and Chinese—fast, reliable, and accessible anywhere, without internet dependency. Michael Neang Dylan Louiso annakang0112 ♥ 418 💬 8" [ref=e194] [cursor=pointer]':
+          - /url: https://devpost.com/software/snapdragon-ai-multilingual-translator
+          - generic [ref=e195]:
+            - 'figure "Snapdragon AI: Multilingual Translator Breaking language barriers with real-time, on-device translation between English, Japanese, Korean, and Chinese—fast, reliable, and accessible anywhere, without internet dependency." [ref=e196]':
+              - 'img "Snapdragon AI: Multilingual Translator" [ref=e197]'
+              - generic [ref=e199]:
+                - 'heading "Snapdragon AI: Multilingual Translator" [level=5] [ref=e200]'
+                - paragraph [ref=e201]: Breaking language barriers with real-time, on-device translation between English, Japanese, Korean, and Chinese—fast, reliable, and accessible anywhere, without internet dependency.
+            - complementary [ref=e202]:
+              - img "Winner" [ref=e203]
+              - text: Winner
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - img "Michael Neang" [ref=e207]
+                - img "Dylan Louiso" [ref=e209]
+                - img "annakang0112" [ref=e211]
+              - generic [ref=e212]:
+                - generic [ref=e213]:
+                  - generic [ref=e214]: ♥
+                  - text: "418"
+                - generic [ref=e215]:
+                  - generic [ref=e216]: 💬
+                  - text: "8"
+        - link "Civil Dialog Providing a safe place to discuss anything, free of trolls and personal insults, so true productive discourse can happen even in the face of controversy. Rod da Silva Christopher da Silva ♥ 399 💬 14" [ref=e218] [cursor=pointer]:
+          - /url: https://devpost.com/software/civil-dialog
+          - generic [ref=e219]:
+            - figure "Civil Dialog Providing a safe place to discuss anything, free of trolls and personal insults, so true productive discourse can happen even in the face of controversy." [ref=e220]:
+              - img "Civil Dialog" [ref=e221]
+              - generic [ref=e223]:
+                - heading "Civil Dialog" [level=5] [ref=e224]
+                - paragraph [ref=e225]: Providing a safe place to discuss anything, free of trolls and personal insults, so true productive discourse can happen even in the face of controversy.
+            - complementary [ref=e226]:
+              - img "Winner" [ref=e227]
+              - text: Winner
+            - generic [ref=e228]:
+              - generic [ref=e229]:
+                - img "Rod da Silva" [ref=e231]
+                - img "Christopher da Silva" [ref=e233]
+              - generic [ref=e234]:
+                - generic [ref=e235]:
+                  - generic [ref=e236]: ♥
+                  - text: "399"
+                - generic [ref=e237]:
+                  - generic [ref=e238]: 💬
+                  - text: "14"
+        - link "Neuthera - Drug discovery toolkit NeuThera is an AI-driven drug discovery toolkit integrating multiple SOTA generative models for de novo molecular design. Combines graph-based retrieval with advanced compound fingerprint embeddings. Jones David praneeth yeddu ♥ 430 💬 9" [ref=e240] [cursor=pointer]:
+          - /url: https://devpost.com/software/neuthera-drug-discovery-platform
+          - generic [ref=e241]:
+            - figure "Neuthera - Drug discovery toolkit NeuThera is an AI-driven drug discovery toolkit integrating multiple SOTA generative models for de novo molecular design. Combines graph-based retrieval with advanced compound fingerprint embeddings." [ref=e242]:
+              - img "Neuthera - Drug discovery toolkit" [ref=e243]
+              - generic [ref=e245]:
+                - heading "Neuthera - Drug discovery toolkit" [level=5] [ref=e246]
+                - paragraph [ref=e247]: NeuThera is an AI-driven drug discovery toolkit integrating multiple SOTA generative models for de novo molecular design. Combines graph-based retrieval with advanced compound fingerprint embeddings.
+            - complementary [ref=e248]:
+              - img "Winner" [ref=e249]
+              - text: Winner
+            - generic [ref=e250]:
+              - generic [ref=e251]:
+                - img "Jones David" [ref=e253]
+                - img "praneeth yeddu" [ref=e255]
+              - generic [ref=e256]:
+                - generic [ref=e257]:
+                  - generic [ref=e258]: ♥
+                  - text: "430"
+                - generic [ref=e259]:
+                  - generic [ref=e260]: 💬
+                  - text: "9"
+    - generic [ref=e262]:
+      - generic [ref=e265]:
+        - heading "Popular" [level=4] [ref=e266]
+        - link "View all" [ref=e269] [cursor=pointer]:
+          - /url: /software/popular
+      - generic [ref=e270]:
+        - link "Vessel Caregivers give everything — but who's tracking their tank? VESSEL is a wearable ring that reads your body's hidden signals and shows your Empathic Reserve in real time. Refill before you break. Ritesh Choubey PRINCE JAT ♥ 299 💬 106" [ref=e272] [cursor=pointer]:
+          - /url: https://devpost.com/software/vessel-0yafz5
+          - generic [ref=e273]:
+            - figure "Vessel Caregivers give everything — but who's tracking their tank? VESSEL is a wearable ring that reads your body's hidden signals and shows your Empathic Reserve in real time. Refill before you break." [ref=e274]:
+              - img "Vessel" [ref=e275]
+              - generic [ref=e277]:
+                - heading "Vessel" [level=5] [ref=e278]
+                - paragraph [ref=e279]: Caregivers give everything — but who's tracking their tank? VESSEL is a wearable ring that reads your body's hidden signals and shows your Empathic Reserve in real time. Refill before you break.
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - img "Ritesh Choubey" [ref=e283]
+                - img "PRINCE JAT" [ref=e285]
+              - generic [ref=e286]:
+                - generic [ref=e287]:
+                  - generic [ref=e288]: ♥
+                  - text: "299"
+                - generic [ref=e289]:
+                  - generic [ref=e290]: 💬
+                  - text: "106"
+        - link "Aera Aera reveals your invisible scent identity by analyzing your skin’s scent chemistry and recommends fragrances that naturally harmonize with your body. maya khosla Aniket Malik Sweety Agarwal Prabhjot Singh ♥ 309 💬 84" [ref=e292] [cursor=pointer]:
+          - /url: https://devpost.com/software/aera-12hrna
+          - generic [ref=e293]:
+            - figure "Aera Aera reveals your invisible scent identity by analyzing your skin’s scent chemistry and recommends fragrances that naturally harmonize with your body." [ref=e294]:
+              - img "Aera" [ref=e295]
+              - generic [ref=e297]:
+                - heading "Aera" [level=5] [ref=e298]
+                - paragraph [ref=e299]: Aera reveals your invisible scent identity by analyzing your skin’s scent chemistry and recommends fragrances that naturally harmonize with your body.
+            - generic [ref=e300]:
+              - generic [ref=e301]:
+                - img "maya khosla" [ref=e303]
+                - img "Aniket Malik" [ref=e305]
+                - img "Sweety Agarwal" [ref=e307]
+                - img "Prabhjot Singh" [ref=e309]
+              - generic [ref=e310]:
+                - generic [ref=e311]:
+                  - generic [ref=e312]: ♥
+                  - text: "309"
+                - generic [ref=e313]:
+                  - generic [ref=e314]: 💬
+                  - text: "84"
+        - link "Presense Are you truly in the moment? Charumathi V Arya Chetlangia Aarav Dixit Reva Rajgariah ♥ 311 💬 81" [ref=e316] [cursor=pointer]:
+          - /url: https://devpost.com/software/presense-mq6t5l
+          - generic [ref=e317]:
+            - figure "Presense Are you truly in the moment?" [ref=e318]:
+              - img "Presense" [ref=e319]
+              - generic [ref=e321]:
+                - heading "Presense" [level=5] [ref=e322]
+                - paragraph [ref=e323]: Are you truly in the moment?
+            - complementary [ref=e324]:
+              - img "Winner" [ref=e325]
+              - text: Winner
+            - generic [ref=e326]:
+              - generic [ref=e327]:
+                - img "Charumathi V" [ref=e329]
+                - img "Arya Chetlangia" [ref=e331]
+                - img "Aarav Dixit" [ref=e333]
+                - img "Reva Rajgariah" [ref=e335]
+              - generic [ref=e336]:
+                - generic [ref=e337]:
+                  - generic [ref=e338]: ♥
+                  - text: "311"
+                - generic [ref=e339]:
+                  - generic [ref=e340]: 💬
+                  - text: "81"
+        - link "Ora Ora gives you access to the physiological signals your body has always been sending, but that you've never been able to read Samip Paudel Krishtina Khanal ♥ 218 💬 101" [ref=e342] [cursor=pointer]:
+          - /url: https://devpost.com/software/ora-gc9p1q
+          - generic [ref=e343]:
+            - figure "Ora Ora gives you access to the physiological signals your body has always been sending, but that you've never been able to read" [ref=e344]:
+              - img "Ora" [ref=e345]
+              - generic [ref=e347]:
+                - heading "Ora" [level=5] [ref=e348]
+                - paragraph [ref=e349]: Ora gives you access to the physiological signals your body has always been sending, but that you've never been able to read
+            - generic [ref=e350]:
+              - generic [ref=e351]:
+                - img "Samip Paudel" [ref=e353]
+                - img "Krishtina Khanal" [ref=e355]
+              - generic [ref=e356]:
+                - generic [ref=e357]:
+                  - generic [ref=e358]: ♥
+                  - text: "218"
+                - generic [ref=e359]:
+                  - generic [ref=e360]: 💬
+                  - text: "101"
+    - generic [ref=e362]:
+      - generic [ref=e365]:
+        - heading "Built at Google Chrome Built-in AI Challenge" [level=4] [ref=e366]
+        - link "View all" [ref=e369] [cursor=pointer]:
+          - /url: /software/search?order_by=trending&query=at%3A%22Google+Chrome+Built-in+AI+Challenge%22
+      - generic [ref=e370]:
+        - link "Youtube Study Kit Turn YouTube videos into your ultimate study guide! Umesh Singh Verma Akhilesh Jyotishi ♥ 51 💬 14" [ref=e372] [cursor=pointer]:
+          - /url: https://devpost.com/software/youtube-study-kit-6vutf4
+          - generic [ref=e373]:
+            - figure "Youtube Study Kit Turn YouTube videos into your ultimate study guide!" [ref=e374]:
+              - img "Youtube Study Kit" [ref=e375]
+              - generic [ref=e377]:
+                - heading "Youtube Study Kit" [level=5] [ref=e378]
+                - paragraph [ref=e379]: Turn YouTube videos into your ultimate study guide!
+            - complementary [ref=e380]:
+              - img "Winner" [ref=e381]
+              - text: Winner
+            - generic [ref=e382]:
+              - generic [ref=e383]:
+                - img "Umesh Singh Verma" [ref=e385]
+                - img "Akhilesh Jyotishi" [ref=e387]
+              - generic [ref=e388]:
+                - generic [ref=e389]:
+                  - generic [ref=e390]: ♥
+                  - text: "51"
+                - generic [ref=e391]:
+                  - generic [ref=e392]: 💬
+                  - text: "14"
+        - link "SmartContent \"SmartContent is an AI-powered Chrome extension that summarizes content, generates keywords, and provides intelligent suggestions, all while keeping data private.\" Prabhsharan Singh Sethi ♥ 6 💬 3" [ref=e394] [cursor=pointer]:
+          - /url: https://devpost.com/software/smartcontent-4udkj1
+          - generic [ref=e395]:
+            - figure "SmartContent \"SmartContent is an AI-powered Chrome extension that summarizes content, generates keywords, and provides intelligent suggestions, all while keeping data private.\"" [ref=e396]:
+              - img "SmartContent" [ref=e397]
+              - generic [ref=e399]:
+                - heading "SmartContent" [level=5] [ref=e400]
+                - paragraph [ref=e401]: "\"SmartContent is an AI-powered Chrome extension that summarizes content, generates keywords, and provides intelligent suggestions, all while keeping data private.\""
+            - complementary [ref=e402]:
+              - img "Winner" [ref=e403]
+              - text: Winner
+            - generic [ref=e404]:
+              - img "Prabhsharan Singh Sethi" [ref=e407]
+              - generic [ref=e408]:
+                - generic [ref=e409]:
+                  - generic [ref=e410]: ♥
+                  - text: "6"
+                - generic [ref=e411]:
+                  - generic [ref=e412]: 💬
+                  - text: "3"
+        - link "*️⃣ BrowseGraph Introducing the first in-browser GraphRAG. Everything you browse, fully connected and always accessible. Tal Peretz ♥ 34 💬 5" [ref=e414] [cursor=pointer]:
+          - /url: https://devpost.com/software/browsegraph
+          - generic [ref=e415]:
+            - figure "*️⃣ BrowseGraph Introducing the first in-browser GraphRAG. Everything you browse, fully connected and always accessible." [ref=e416]:
+              - img "*️⃣ BrowseGraph" [ref=e417]
+              - generic [ref=e419]:
+                - heading "*️⃣ BrowseGraph" [level=5] [ref=e420]
+                - paragraph [ref=e421]: Introducing the first in-browser GraphRAG. Everything you browse, fully connected and always accessible.
+            - complementary [ref=e422]:
+              - img "Winner" [ref=e423]
+              - text: Winner
+            - generic [ref=e424]:
+              - img "Tal Peretz" [ref=e427]
+              - generic [ref=e428]:
+                - generic [ref=e429]:
+                  - generic [ref=e430]: ♥
+                  - text: "34"
+                - generic [ref=e431]:
+                  - generic [ref=e432]: 💬
+                  - text: "5"
+        - link "BenzGPT \"BenzGPT\" is an little car that can be controlled via natural language from a webapplication. Nico Martin ♥ 17 💬 4" [ref=e434] [cursor=pointer]:
+          - /url: https://devpost.com/software/wheely-wonka
+          - generic [ref=e435]:
+            - figure "BenzGPT \"BenzGPT\" is an little car that can be controlled via natural language from a webapplication." [ref=e436]:
+              - img "BenzGPT" [ref=e437]
+              - generic [ref=e439]:
+                - heading "BenzGPT" [level=5] [ref=e440]
+                - paragraph [ref=e441]: "\"BenzGPT\" is an little car that can be controlled via natural language from a webapplication."
+            - complementary [ref=e442]:
+              - img "Winner" [ref=e443]
+              - text: Winner
+            - generic [ref=e444]:
+              - img "Nico Martin" [ref=e447]
+              - generic [ref=e448]:
+                - generic [ref=e449]:
+                  - generic [ref=e450]: ♥
+                  - text: "17"
+                - generic [ref=e451]:
+                  - generic [ref=e452]: 💬
+                  - text: "4"
+    - generic [ref=e454]:
+      - generic [ref=e457]:
+        - heading "Built with Flutter" [level=4] [ref=e458]
+        - link "View all" [ref=e461] [cursor=pointer]:
+          - /url: /software/built-with/flutter?order_by=trending
+      - generic [ref=e462]:
+        - link "SeismoArch IoT Model SeismoArch is a building-level IoT system that detects early seismic signals and triggers real-time alerts before destructive shaking occurs. ♥ 0 💬 0" [ref=e464] [cursor=pointer]:
+          - /url: https://devpost.com/software/seismoarch-iot-model-4goudx
+          - generic [ref=e465]:
+            - figure "SeismoArch IoT Model SeismoArch is a building-level IoT system that detects early seismic signals and triggers real-time alerts before destructive shaking occurs." [ref=e466]:
+              - img "SeismoArch IoT Model" [ref=e467]
+              - generic [ref=e469]:
+                - heading "SeismoArch IoT Model" [level=5] [ref=e470]
+                - paragraph [ref=e471]: SeismoArch is a building-level IoT system that detects early seismic signals and triggers real-time alerts before destructive shaking occurs.
+            - generic [ref=e474]:
+              - generic [ref=e475]:
+                - generic [ref=e476]: ♥
+                - text: "0"
+              - generic [ref=e477]:
+                - generic [ref=e478]: 💬
+                - text: "0"
+        - link "Go-cal EVERY QUESTION YOU ASK WILL BECOME A LESSON YOU GOT XYNTH Pokhariyal ♥ 0 💬 0" [ref=e480] [cursor=pointer]:
+          - /url: https://devpost.com/software/go-cal-crs736
+          - generic [ref=e481]:
+            - figure "Go-cal EVERY QUESTION YOU ASK WILL BECOME A LESSON YOU GOT" [ref=e482]:
+              - img "Go-cal" [ref=e483]
+              - generic [ref=e485]:
+                - heading "Go-cal" [level=5] [ref=e486]
+                - paragraph [ref=e487]: EVERY QUESTION YOU ASK WILL BECOME A LESSON YOU GOT
+            - generic [ref=e488]:
+              - img "XYNTH Pokhariyal" [ref=e491]
+              - generic [ref=e492]:
+                - generic [ref=e493]:
+                  - generic [ref=e494]: ♥
+                  - text: "0"
+                - generic [ref=e495]:
+                  - generic [ref=e496]: 💬
+                  - text: "0"
+        - link "Go-cal EVERY QUESTION YOU ASK WILL BECOME A LESSON YOU GOT XYNTH Pokhariyal ♥ 0 💬 0" [ref=e498] [cursor=pointer]:
+          - /url: https://devpost.com/software/go-cal-7mex4i
+          - generic [ref=e499]:
+            - figure "Go-cal EVERY QUESTION YOU ASK WILL BECOME A LESSON YOU GOT" [ref=e500]:
+              - img "Go-cal" [ref=e501]
+              - generic [ref=e503]:
+                - heading "Go-cal" [level=5] [ref=e504]
+                - paragraph [ref=e505]: EVERY QUESTION YOU ASK WILL BECOME A LESSON YOU GOT
+            - generic [ref=e506]:
+              - img "XYNTH Pokhariyal" [ref=e509]
+              - generic [ref=e510]:
+                - generic [ref=e511]:
+                  - generic [ref=e512]: ♥
+                  - text: "0"
+                - generic [ref=e513]:
+                  - generic [ref=e514]: 💬
+                  - text: "0"
+        - link "Grabme Built for food rescue, hunger response, and neighborhood-scale coordination. Grabme makes live donations, urgent requests, and community distribution visible in one place. Viktor Nedev ♥ 1 💬 0" [ref=e516] [cursor=pointer]:
+          - /url: https://devpost.com/software/grabme
+          - generic [ref=e517]:
+            - figure "Grabme Built for food rescue, hunger response, and neighborhood-scale coordination. Grabme makes live donations, urgent requests, and community distribution visible in one place." [ref=e518]:
+              - img "Grabme" [ref=e519]
+              - generic [ref=e521]:
+                - heading "Grabme" [level=5] [ref=e522]
+                - paragraph [ref=e523]: Built for food rescue, hunger response, and neighborhood-scale coordination. Grabme makes live donations, urgent requests, and community distribution visible in one place.
+            - generic [ref=e524]:
+              - img "Viktor Nedev" [ref=e527]
+              - generic [ref=e528]:
+                - generic [ref=e529]:
+                  - generic [ref=e530]: ♥
+                  - text: "1"
+                - generic [ref=e531]:
+                  - generic [ref=e532]: 💬
+                  - text: "0"
+    - generic [ref=e536]:
+      - heading "Trending tags" [level=4] [ref=e538]
+      - list [ref=e540]:
+        - listitem [ref=e541]:
+          - link "python" [ref=e543] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/python
+        - listitem [ref=e544]:
+          - link "javascript" [ref=e546] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/javascript
+        - listitem [ref=e547]:
+          - link "react" [ref=e549] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/react
+        - listitem [ref=e550]:
+          - link "typescript" [ref=e552] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/typescript
+        - listitem [ref=e553]:
+          - link "css" [ref=e555] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/css
+        - listitem [ref=e556]:
+          - link "html" [ref=e558] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/html
+        - listitem [ref=e559]:
+          - link "node.js" [ref=e561] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/node-js
+        - listitem [ref=e562]:
+          - link "gemini" [ref=e564] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/gemini
+        - listitem [ref=e565]:
+          - link "github" [ref=e567] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/github
+        - listitem [ref=e568]:
+          - link "postgresql" [ref=e570] [cursor=pointer]:
+            - /url: https://devpost.com/software/built-with/postgresql
+  - contentinfo [ref=e571]:
+    - generic [ref=e572]:
+      - navigation [ref=e574]:
+        - heading "Devpost" [level=4] [ref=e575]
+        - list [ref=e576]:
+          - listitem [ref=e577]:
+            - link "About" [ref=e578] [cursor=pointer]:
+              - /url: https://info.devpost.com/about
+          - listitem [ref=e579]:
+            - link "Careers" [ref=e580] [cursor=pointer]:
+              - /url: https://info.devpost.com/careers
+          - listitem [ref=e581]:
+            - link "Contact" [ref=e582] [cursor=pointer]:
+              - /url: https://info.devpost.com/contact
+          - listitem [ref=e583]:
+            - link "Help" [ref=e584] [cursor=pointer]:
+              - /url: https://help.devpost.com/
+      - navigation [ref=e586]:
+        - heading "Hackathons" [level=4] [ref=e587]
+        - list [ref=e588]:
+          - listitem [ref=e589]:
+            - link "Browse hackathons" [ref=e590] [cursor=pointer]:
+              - /url: https://devpost.com/hackathons
+          - listitem [ref=e591]:
+            - link "Explore projects" [ref=e592] [cursor=pointer]:
+              - /url: https://devpost.com/software
+          - listitem [ref=e593]:
+            - link "Host a hackathon" [ref=e594] [cursor=pointer]:
+              - /url: https://info.devpost.com
+          - listitem [ref=e595]:
+            - link "Hackathon guides" [ref=e596] [cursor=pointer]:
+              - /url: https://info.devpost.com/guides
+      - navigation [ref=e598]:
+        - heading "Portfolio" [level=4] [ref=e599]
+        - list [ref=e600]:
+          - listitem [ref=e601]:
+            - link "Your projects" [ref=e602] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=projects
+          - listitem [ref=e603]:
+            - link "Your hackathons" [ref=e604] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=hackathons
+          - listitem [ref=e605]:
+            - link "Settings" [ref=e606] [cursor=pointer]:
+              - /url: https://devpost.com/settings
+      - navigation [ref=e608]:
+        - heading "Connect" [level=4] [ref=e609]
+        - list [ref=e610]:
+          - listitem [ref=e611]:
+            - link "Twitter" [ref=e612] [cursor=pointer]:
+              - /url: https://twitter.com/devpost
+              - generic [ref=e614]: 
+              - text: Twitter
+          - listitem [ref=e615]:
+            - link "Discord" [ref=e616] [cursor=pointer]:
+              - /url: https://discord.com/invite/HP4BhW3hnp
+              - generic [ref=e618]: 
+              - text: Discord
+          - listitem [ref=e619]:
+            - link "Facebook" [ref=e620] [cursor=pointer]:
+              - /url: https://www.facebook.com/devposthacks
+              - generic [ref=e622]: 
+              - text: Facebook
+          - listitem [ref=e623]:
+            - link "LinkedIn" [ref=e624] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/devpost/
+              - generic [ref=e626]: 
+              - text: LinkedIn
+    - navigation [ref=e628]:
+      - generic [ref=e630]:
+        - generic [ref=e631]: © 2026 Devpost, Inc. All rights reserved.
+        - list [ref=e632]:
+          - listitem [ref=e633]:
+            - link "Community guidelines" [ref=e634] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/community-guidelines
+          - listitem [ref=e635]:
+            - link "Security" [ref=e636] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/security
+          - listitem [ref=e637]:
+            - link "CA notice" [ref=e638] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/california-consumer-privacy-act
+          - listitem [ref=e639]:
+            - link "Privacy policy" [ref=e640] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/privacy-policy
+          - listitem [ref=e641]:
+            - link "Terms of service" [ref=e642] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/terms-of-service
+  - generic [ref=e643]:
+    - generic:
+      - img
+    - iframe [ref=e644]:
+      - button [ref=f28e4] [cursor=pointer]:
+        - generic:
+          - img
+        - generic:
+          - img
+        - generic:
+          - img

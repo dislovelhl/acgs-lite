@@ -1,0 +1,349 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - text:                   
+    - navigation [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Devpost" [ref=e8] [cursor=pointer]:
+            - /url: https://devpost.com
+            - img "Devpost" [ref=e9]
+      - generic:
+        - list [ref=e10]:
+          - listitem [ref=e11]
+          - listitem [ref=e12]:
+            - link "Join a hackathon" [ref=e13] [cursor=pointer]:
+              - /url: "#"
+              - text: Join a hackathon
+              - generic [ref=e14]: 
+              - text: 
+            - text:   
+          - listitem [ref=e15]
+          - listitem [ref=e16]:
+            - link "Host a hackathon" [ref=e17] [cursor=pointer]:
+              - /url: "#"
+              - text: Host a hackathon
+              - generic [ref=e18]: 
+              - text: 
+            - text:      
+          - listitem [ref=e19]
+          - listitem [ref=e20]:
+            - link "Resources" [ref=e21] [cursor=pointer]:
+              - /url: "#"
+              - text: Resources
+              - generic [ref=e22]: 
+              - text: 
+        - generic [ref=e23]:
+          - list:
+            - listitem [ref=e24]:
+              - generic [ref=e26]: 
+            - text:  
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link "🔔 1" [ref=e29] [cursor=pointer]:
+                - /url: https://devpost.com/notifications
+                - generic [ref=e30]: 🔔
+                - generic [ref=e31]: "1"
+            - listitem [ref=e32]:
+              - link "Access your account menu" [ref=e33] [cursor=pointer]:
+                - /url: https://devpost.com/martin306?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav
+                - img "martin306" [ref=e34]
+  - generic [ref=e35]:
+    - banner [ref=e36]:
+      - heading "Notifications" [level=6] [ref=e37]
+    - paragraph [ref=e39]: Loading...
+    - contentinfo
+  - generic [ref=e40]:
+    - generic [ref=e41]:
+      - heading "GitLab AI Hackathon" [level=1] [ref=e44]:
+        - link "GitLab AI Hackathon" [ref=e45] [cursor=pointer]:
+          - /url: https://gitlab.devpost.com/
+          - img "GitLab AI Hackathon" [ref=e46]
+      - navigation [ref=e50]:
+        - list [ref=e51]:
+          - listitem [ref=e52]:
+            - link "Overview" [ref=e53] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/
+          - listitem [ref=e54]:
+            - link "My projects" [ref=e55] [cursor=pointer]:
+              - /url: https://devpost.com/submit-to/28106-gitlab-ai-hackathon/manage/submissions
+          - listitem [ref=e56]:
+            - link "Participants (6988)" [ref=e57] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/participants
+          - listitem [ref=e58]:
+            - link "Resources" [ref=e59] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/resources
+          - listitem [ref=e60]:
+            - link "Rules" [ref=e61] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/rules
+          - listitem [ref=e62]:
+            - link "Project gallery" [ref=e63] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/project-gallery
+          - listitem [ref=e64]:
+            - link "Updates" [ref=e65] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/updates
+          - listitem [ref=e66]:
+            - link "Discussions" [ref=e67] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/forum_topics
+    - generic [ref=e71]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - heading "Constitutional Sentinel" [level=3] [ref=e75]
+          - generic [ref=e77]: Submitted
+          - generic [ref=e79]: 5/5 steps done
+          - generic [ref=e81]:
+            - generic [ref=e83]:
+              - time [ref=e84]: About an hour
+              - text: to deadline
+            - generic [ref=e86]:
+              - text: 
+              - link "View" [ref=e88] [cursor=pointer]:
+                - /url: /software/constitutional-sentinel
+                - text: View
+                - generic [ref=e89]: 
+        - generic [ref=e90]:
+          - link "Manage team" [ref=e91] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/manage-team
+            - generic [ref=e93]: 
+            - text: Manage team
+            - img [ref=e94]
+          - link "Project overview" [ref=e96] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project-overview
+            - generic [ref=e98]: 
+            - text: Project overview
+            - img [ref=e99]
+          - link "Project details" [ref=e101] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project_details/edit
+            - generic [ref=e103]: 
+            - text: Project details
+            - img [ref=e104]
+          - link "Additional info" [ref=e106] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/additional-info/edit
+            - generic [ref=e108]: 
+            - text: Additional info
+            - img [ref=e109]
+          - link "Submit" [ref=e111] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/finalization
+            - generic [ref=e113]: 
+            - text: Submit
+      - generic [ref=e115]:
+        - generic [ref=e116]:
+          - heading "Project details" [level=1] [ref=e117]
+          - paragraph [ref=e118]: For public project page
+        - paragraph [ref=e119]: Information entered below will appear on your public project page.
+      - separator [ref=e120]
+    - generic [ref=e121]:
+      - heading "Project Story" [level=2] [ref=e124]
+      - generic [ref=e125]:
+        - generic [ref=e126]:
+          - generic [ref=e127] [cursor=pointer]: "* About the project"
+          - paragraph [ref=e128]:
+            - text: Be sure to write what inspired you, what you learned, how you built your project, and the challenges you faced. Format your story in
+            - link "Markdown, with LaTeX support for math" [ref=e129] [cursor=pointer]:
+              - /url: https://help.devpost.com/article/193-markdown-tips
+            - text: .
+        - textbox "* About the project" [ref=e132]:
+          - /placeholder: "## Inspiration...\n"
+          - text: "## Inspiration AI coding assistants can generate useful code quickly, but they do not understand an organization's security rules, compliance requirements, or separation-of-duties policies. That creates a dangerous gap: an AI-generated merge request can hardcode credentials, expose PII, weaken CI controls, or introduce destructive production operations before anyone notices. In many teams, the same person who prompted the AI is also the first person reviewing the code. We built Constitutional Sentinel to add an independent governance layer to that workflow. ## What it does Constitutional Sentinel is a GitLab merge request governance agent powered by ACGS-Lite. When a merge request is opened or updated, it: - inspects the merge request diff automatically - validates added lines against constitutional governance rules for secrets, PII, destructive SQL, CI bypasses, and separation-of-powers violations - posts inline comments directly on violating lines so developers can see exactly what needs to change - generates a governance summary with risk score, violations found, and the constitutional hash of the active ruleset - blocks unsafe merges when HIGH or CRITICAL violations are present - preserves a tamper-evident audit trail so reviewers can prove which rules were applied to a specific decision This is not a chat assistant and not just a linter summary. It is an agent that reacts to GitLab events and takes governance action inside the merge request workflow. ## How we built it ### Governance engine Constitutional Sentinel runs on ACGS-Lite, a Python governance engine with an optional Rust/PyO3 fast path for performance-sensitive validation. ### Constitution format Rules live in a portable YAML constitution. Each rule includes a rule ID, severity, category, keywords, and optional regex patterns. That makes the system adaptable to internal engineering policies as well as regulated environments. ### GitLab workflow integration We built the GitLab-facing layer to work with real merge request workflows: - webhook handler for merge request events - diff extraction and per-line validation - inline MR comments for precise findings - governance summary report posted back to GitLab - CI/CD stage that can fail the pipeline when violations are severe enough ### Deployment The demo is packaged as a stateless container and deployed on Google Cloud Run, so it can scale to zero and still respond quickly to merge request events. ### MACI separation of powers We use a strict three-role model for governance: - Proposer -- the AI assistant that writes or suggests code - Validator -- Constitutional Sentinel, which reviews independently - Executor -- the human who decides whether to merge That means the system that proposes code is never the system that validates it. ## Challenges we ran into - balancing precision and speed so the system could scan diffs quickly without missing critical issues like credentials or PII - mapping findings back to the exact diff locations for inline GitLab comments - creating a stable constitutional hash so governance decisions could be audited later - making governance feel native to the MR workflow instead of like an external report nobody reads ## Accomplishments we're proud of - a working end-to-end GitLab MR governance flow that reacts to events and comments directly on code - 12 violations caught in a single demo merge request - merge-blocking behavior for unsafe changes - tamper-evident constitutional hashing and audit trail support - 30/30 hackathon evals passing for the hackathon-focused integration surface - a clear, inspectable demo judges can review directly in GitLab ## What we learned - governance for AI-generated code needs to be structural, not advisory - inline feedback beats detached reports for developer adoption - separation of powers matters in agent workflows, not just human institutions - performance matters, but clarity in workflow impact matters even more ## What's next - register the Sentinel as a more native GitLab Duo / flow-style governance step - expand constitutional templates for more compliance and engineering-policy use cases - add multi-project governance for GitLab groups - expose governance capabilities through MCP and other agent integrations"
+        - generic [ref=e134]:
+          - heading "Markdown tips (learn more)" [level=5] [ref=e135]:
+            - text: Markdown tips (
+            - link "learn more" [ref=e136] [cursor=pointer]:
+              - /url: https://help.devpost.com/article/193-markdown-tips#Adding-Markdown-to-your-project-description-jpj7m
+            - text: )
+          - heading "Text formatting" [level=6] [ref=e137]
+          - list [ref=e138]:
+            - listitem [ref=e139]: "## Headline"
+            - listitem [ref=e140]: "**bold**"
+            - listitem [ref=e141]: _ italics _
+            - listitem [ref=e142]: "[link](http://foo.bar)"
+            - listitem [ref=e143]: "![Alt text](/path/to/img.jpg)"
+          - heading "Code block example" [level=6] [ref=e144]
+          - generic [ref=e145]: "```ruby puts \"Hello World!\" ```"
+          - heading "LaTeX math tips (learn more)" [level=5] [ref=e146]:
+            - text: LaTeX math tips (
+            - link "learn more" [ref=e147] [cursor=pointer]:
+              - /url: https://help.devpost.com/article/193-markdown-tips#Adding-LaTeX-math-to-your-project-description-W0VQC
+            - text: )
+          - list [ref=e148]:
+            - listitem [ref=e149]:
+              - code [ref=e150]: \\( ... \\)
+              - text: for in-line math
+            - listitem [ref=e151]:
+              - code [ref=e152]: $$ ... $$
+              - text: for displayed equations
+      - generic [ref=e155]:
+        - generic [ref=e156] [cursor=pointer]: "* Built with"
+        - paragraph [ref=e157]: What languages, frameworks, platforms, cloud services, databases, APIs, or other technologies did you use?
+        - list [ref=e159]:
+          - listitem [ref=e160]:
+            - generic [ref=e162]: python-3.11+
+            - link [ref=e163] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e164]:
+            - generic [ref=e166]: rust
+            - link [ref=e167] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e168]:
+            - generic [ref=e170]: gitlab-api
+            - link [ref=e171] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e172]:
+            - generic [ref=e174]: google-cloud-run
+            - link [ref=e175] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e176]:
+            - generic [ref=e178]: pyo3
+            - link [ref=e179] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e180]:
+            - generic [ref=e182]: starlette
+            - link [ref=e183] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e184]:
+            - generic [ref=e186]: uvicorn
+            - link [ref=e187] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e188]:
+            - generic [ref=e190]: yaml
+            - link [ref=e191] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e192]:
+            - generic [ref=e194]: acgs-lite
+            - link [ref=e195] [cursor=pointer]:
+              - /url: "#"
+          - listitem [ref=e196]:
+            - generic [ref=e197] [cursor=pointer]: "* Built with"
+            - textbox "* Built with" [ref=e198]:
+              - /placeholder: ""
+        - textbox "* Built with" [ref=e199]:
+          - /placeholder: Languages, frameworks, platforms, cloud services, databases, APIs, etc.
+          - text: python-3.11+,rust,gitlab-api,google-cloud-run,pyo3,starlette,uvicorn,yaml,acgs-lite
+      - generic [ref=e200]:
+        - generic [ref=e202]:
+          - generic [ref=e203] [cursor=pointer]: "\"Try it out\" links"
+          - paragraph [ref=e204]: Add links where people can try your project or see your code.
+        - generic [ref=e207]:
+          - generic [ref=e209]:
+            - textbox "URL for demo site, app store listing, GitHub repo, etc." [ref=e210]: https://gitlab.com/martin664/constitutional-sentinel-demo
+            - link "␡" [ref=e211] [cursor=pointer]:
+              - /url: "#"
+          - generic [ref=e213]:
+            - textbox "URL for demo site, app store listing, GitHub repo, etc." [ref=e214]: https://gitlab.com/martin664/constitutional-sentinel-demo/-/merge_requests/1
+            - link "␡" [ref=e215] [cursor=pointer]:
+              - /url: "#"
+        - link "add another link" [ref=e219] [cursor=pointer]:
+          - /url: "#"
+      - heading "Project Media" [level=2] [ref=e222]
+      - generic [ref=e225]:
+        - generic [ref=e226] [cursor=pointer]: Image gallery
+        - paragraph [ref=e227]: JPG, PNG or GIF format, 5 MB max file size. For best results, use a 3:2 ratio.
+        - generic [ref=e228]:
+          - generic [ref=e230] [cursor=pointer]: Choose files
+          - paragraph [ref=e232]: or drag and drop
+        - list
+      - generic [ref=e236]:
+        - generic [ref=e237] [cursor=pointer]: "* Video demo link"
+        - paragraph [ref=e238]:
+          - text: This video will be embedded at the top of your project page. Read more about
+          - link "uploading videos" [ref=e239] [cursor=pointer]:
+            - /url: https://help.devpost.com/article/85-uploading-a-demo-video
+          - text: .
+        - textbox "* Video demo link" [ref=e240]:
+          - /placeholder: YouTube, Facebook Video, Vimeo or Youku URL
+          - text: https://youtu.be/do9BCPn29_Q
+      - generic [ref=e243]:
+        - button "Save & continue" [ref=e244] [cursor=pointer]
+        - link "Cancel" [ref=e245] [cursor=pointer]:
+          - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions
+  - contentinfo [ref=e246]:
+    - generic [ref=e247]:
+      - navigation [ref=e249]:
+        - heading "Devpost" [level=4] [ref=e250]
+        - list [ref=e251]:
+          - listitem [ref=e252]:
+            - link "About" [ref=e253] [cursor=pointer]:
+              - /url: https://info.devpost.com/about
+          - listitem [ref=e254]:
+            - link "Careers" [ref=e255] [cursor=pointer]:
+              - /url: https://info.devpost.com/careers
+          - listitem [ref=e256]:
+            - link "Contact" [ref=e257] [cursor=pointer]:
+              - /url: https://info.devpost.com/contact
+          - listitem [ref=e258]:
+            - link "Help" [ref=e259] [cursor=pointer]:
+              - /url: https://help.devpost.com/
+      - navigation [ref=e261]:
+        - heading "Hackathons" [level=4] [ref=e262]
+        - list [ref=e263]:
+          - listitem [ref=e264]:
+            - link "Browse hackathons" [ref=e265] [cursor=pointer]:
+              - /url: https://devpost.com/hackathons
+          - listitem [ref=e266]:
+            - link "Explore projects" [ref=e267] [cursor=pointer]:
+              - /url: https://devpost.com/software
+          - listitem [ref=e268]:
+            - link "Host a hackathon" [ref=e269] [cursor=pointer]:
+              - /url: https://info.devpost.com
+          - listitem [ref=e270]:
+            - link "Hackathon guides" [ref=e271] [cursor=pointer]:
+              - /url: https://info.devpost.com/guides
+      - navigation [ref=e273]:
+        - heading "Portfolio" [level=4] [ref=e274]
+        - list [ref=e275]:
+          - listitem [ref=e276]:
+            - link "Your projects" [ref=e277] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=projects
+          - listitem [ref=e278]:
+            - link "Your hackathons" [ref=e279] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=hackathons
+          - listitem [ref=e280]:
+            - link "Settings" [ref=e281] [cursor=pointer]:
+              - /url: https://devpost.com/settings
+      - navigation [ref=e283]:
+        - heading "Connect" [level=4] [ref=e284]
+        - list [ref=e285]:
+          - listitem [ref=e286]:
+            - link "Twitter" [ref=e287] [cursor=pointer]:
+              - /url: https://twitter.com/devpost
+              - generic [ref=e289]: 
+              - text: Twitter
+          - listitem [ref=e290]:
+            - link "Discord" [ref=e291] [cursor=pointer]:
+              - /url: https://discord.com/invite/HP4BhW3hnp
+              - generic [ref=e293]: 
+              - text: Discord
+          - listitem [ref=e294]:
+            - link "Facebook" [ref=e295] [cursor=pointer]:
+              - /url: https://www.facebook.com/devposthacks
+              - generic [ref=e297]: 
+              - text: Facebook
+          - listitem [ref=e298]:
+            - link "LinkedIn" [ref=e299] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/devpost/
+              - generic [ref=e301]: 
+              - text: LinkedIn
+    - navigation [ref=e303]:
+      - generic [ref=e305]:
+        - generic [ref=e306]: © 2026 Devpost, Inc. All rights reserved.
+        - list [ref=e307]:
+          - listitem [ref=e308]:
+            - link "Community guidelines" [ref=e309] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/community-guidelines
+          - listitem [ref=e310]:
+            - link "Security" [ref=e311] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/security
+          - listitem [ref=e312]:
+            - link "CA notice" [ref=e313] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/california-consumer-privacy-act
+          - listitem [ref=e314]:
+            - link "Privacy policy" [ref=e315] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/privacy-policy
+          - listitem [ref=e316]:
+            - link "Terms of service" [ref=e317] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/terms-of-service
+  - status [ref=e318]
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - iframe

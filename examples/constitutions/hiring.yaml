@@ -1,0 +1,225 @@
+# Hiring & Recruitment Constitution --- acgs-lite
+# Governance rules for AI-assisted hiring, screening, and recruitment decisions.
+# Covers bias prevention, transparency, adverse action compliance, and alignment
+# with NYC Local Law 144 (2023) and EEOC guidance on automated employment tools.
+#
+# Usage:
+#   from acgs_lite import Constitution
+#   constitution = Constitution.from_yaml("constitutions/hiring.yaml")
+
+name: hiring-governance
+version: "1.0"
+description: |
+  Constitutional rules governing AI systems used in hiring, candidate screening,
+  resume parsing, interview scoring, and employment decision-making. Designed to
+  prevent unlawful discrimination, ensure transparency, and comply with federal
+  and municipal regulations including Title VII, the ADA, ADEA, and NYC LL 144.
+
+rules:
+  # -- Bias Prevention --------------------------------------------------------
+  - id: HIRE-001
+    name: Protected class filtering prohibition
+    description: >
+      The system must not use race, color, religion, sex, national origin, age,
+      disability, genetic information, or veteran status as selection criteria.
+      Any model feature directly or proximally correlated with a protected class
+      must be excluded or debiased before scoring. Violation constitutes
+      disparate treatment under Title VII of the Civil Rights Act of 1964.
+    severity: CRITICAL
+    keywords:
+      - "race"
+      - "ethnicity"
+      - "gender"
+      - "religion"
+      - "national origin"
+      - "disability"
+      - "age"
+      - "genetic information"
+      - "veteran status"
+      - "sexual orientation"
+      - "pregnancy"
+    action: BLOCK
+
+  - id: HIRE-002
+    name: Disparate impact monitoring
+    description: >
+      Selection rates must be monitored across demographic groups. If the
+      selection rate for any protected group falls below 80% of the rate for
+      the highest-selected group (the four-fifths rule per 29 CFR 1607.4D),
+      the system must flag the output for human review before proceeding.
+      Applies to resume screening, interview scoring, and final recommendations.
+    severity: HIGH
+    keywords:
+      - "selection rate"
+      - "four-fifths rule"
+      - "adverse impact"
+      - "disparate impact"
+      - "impact ratio"
+      - "pass rate"
+    action: FLAG
+
+  - id: HIRE-003
+    name: Proxy variable detection
+    description: >
+      The system must not rely on features that serve as proxies for protected
+      characteristics, including but not limited to zip code as a proxy for
+      race, name-based ethnicity inference, graduation year as a proxy for age,
+      or school prestige as a proxy for socioeconomic status. Any feature with
+      a correlation coefficient above 0.3 with a protected attribute must be
+      flagged for bias review.
+    severity: HIGH
+    keywords:
+      - "zip code"
+      - "postal code"
+      - "graduation year"
+      - "school name"
+      - "university ranking"
+      - "name-based"
+      - "address"
+    action: FLAG
+
+  # -- Transparency & Explainability ------------------------------------------
+  - id: HIRE-004
+    name: Decision explanation requirement
+    description: >
+      Every candidate scoring or ranking decision must be accompanied by a
+      human-readable explanation listing the top factors that influenced the
+      outcome. Black-box scores without explanations are prohibited. This
+      supports EEOC guidance on employer accountability for algorithmic
+      decision-making tools (EEOC, May 2023).
+    severity: HIGH
+    keywords:
+      - "score"
+      - "ranking"
+      - "recommendation"
+      - "screening decision"
+      - "candidate evaluation"
+      - "fit score"
+    action: FLAG
+
+  - id: HIRE-005
+    name: Candidate notification of AI use
+    description: >
+      Candidates must be notified that an AI system is being used to evaluate
+      their application before the evaluation occurs. The notice must describe
+      the general characteristics and components being assessed. Required by
+      NYC Local Law 144 Section 20-871(b) and Illinois AI Video Interview Act.
+    severity: HIGH
+    keywords:
+      - "automated employment decision tool"
+      - "AEDT"
+      - "AI screening"
+      - "algorithmic assessment"
+      - "automated evaluation"
+      - "machine learning hiring"
+    action: FLAG
+
+  # -- Adverse Action Compliance ----------------------------------------------
+  - id: HIRE-006
+    name: Pre-adverse action notice
+    description: >
+      Before taking adverse action (rejection, disqualification, demotion) based
+      in whole or in part on AI-generated output, the employer must provide the
+      candidate with a pre-adverse action notice, a copy of the consumer report
+      or score summary, and a reasonable period to dispute the findings. Required
+      under the Fair Credit Reporting Act 15 USC 1681b(b)(3) when consumer
+      reports are used.
+    severity: CRITICAL
+    keywords:
+      - "reject"
+      - "disqualify"
+      - "adverse action"
+      - "not selected"
+      - "elimination"
+      - "decline candidate"
+      - "auto-reject"
+    action: BLOCK
+
+  - id: HIRE-007
+    name: Adverse action reason documentation
+    description: >
+      All adverse employment decisions must be documented with specific,
+      job-related reasons. The system must never produce a rejection without
+      a corresponding reason code tied to bona fide occupational qualifications.
+      Generic reasons such as "low score" or "not a fit" are insufficient.
+    severity: HIGH
+    keywords:
+      - "rejection reason"
+      - "reason code"
+      - "not a fit"
+      - "low score"
+      - "insufficient qualifications"
+      - "does not meet requirements"
+    action: FLAG
+
+  # -- NYC Local Law 144 Compliance -------------------------------------------
+  - id: HIRE-008
+    name: Annual bias audit requirement
+    description: >
+      Any automated employment decision tool must undergo an independent bias
+      audit no more than one year prior to use. The audit must calculate
+      selection rates and impact ratios for sex, race/ethnicity, and
+      intersectional categories. Results must be publicly available on the
+      employer's website. Per NYC LL 144 Section 20-871(a).
+    severity: CRITICAL
+    keywords:
+      - "bias audit"
+      - "annual audit"
+      - "independent audit"
+      - "LL 144"
+      - "Local Law 144"
+      - "audit summary"
+    action: BLOCK
+
+  - id: HIRE-009
+    name: Data retention and deletion
+    description: >
+      Candidate data collected or generated by the AI system must be retained
+      only as long as required by applicable law and internal retention policies.
+      The system must not retain biometric data, interview recordings, or
+      personality assessment results beyond the retention period without
+      explicit candidate consent.
+    severity: MEDIUM
+    keywords:
+      - "data retention"
+      - "delete candidate data"
+      - "biometric"
+      - "interview recording"
+      - "personality assessment"
+      - "retain data"
+    action: LOG
+
+  # -- EEOC Guidance ----------------------------------------------------------
+  - id: HIRE-010
+    name: Reasonable accommodation in AI screening
+    description: >
+      The AI system must provide alternative assessment methods for candidates
+      who require reasonable accommodation under the ADA. If the system uses
+      timed assessments, video analysis, or other modalities that may
+      disadvantage individuals with disabilities, an equivalent non-AI pathway
+      must be available and clearly communicated to candidates.
+    severity: HIGH
+    keywords:
+      - "reasonable accommodation"
+      - "disability"
+      - "ADA"
+      - "alternative assessment"
+      - "timed assessment"
+      - "video interview"
+      - "accessibility"
+    action: FLAG
+
+metadata:
+  author: ACGS Team
+  domain: hiring
+  jurisdiction: US (federal), NYC
+  regulations:
+    - "Title VII of the Civil Rights Act of 1964"
+    - "NYC Local Law 144 (2023)"
+    - "EEOC Guidance on AI in Employment (2023)"
+    - "Fair Credit Reporting Act (FCRA)"
+    - "Americans with Disabilities Act (ADA)"
+    - "Age Discrimination in Employment Act (ADEA)"
+    - "Illinois AI Video Interview Act"
+  license: AGPL-3.0-or-later
+  last_updated: "2026-04-03"

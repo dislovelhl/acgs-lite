@@ -1,0 +1,247 @@
+# Lending & Credit Constitution --- acgs-lite
+# Governance rules for AI-assisted lending, credit underwriting, and debt
+# collection. Covers fair lending, ECOA/FCRA compliance, redlining prevention,
+# adverse action notices, and consumer protection requirements.
+#
+# Usage:
+#   from acgs_lite import Constitution
+#   constitution = Constitution.from_yaml("constitutions/lending.yaml")
+
+name: lending-governance
+version: "1.0"
+description: |
+  Constitutional rules governing AI systems used in credit decisioning, loan
+  origination, underwriting, pricing, servicing, and collections. Designed to
+  ensure compliance with the Equal Credit Opportunity Act (ECOA), Fair Credit
+  Reporting Act (FCRA), Truth in Lending Act (TILA), Fair Debt Collection
+  Practices Act (FDCPA), and CFPB guidance on automated valuation models.
+
+rules:
+  # -- Fair Lending & ECOA ----------------------------------------------------
+  - id: LEND-001
+    name: Prohibited basis exclusion
+    description: >
+      The system must not use race, color, religion, national origin, sex,
+      marital status, age, receipt of public assistance, or good-faith exercise
+      of rights under the Consumer Credit Protection Act as factors in credit
+      decisions. Per Regulation B (12 CFR 1002.4), any variable that acts as a
+      prohibited basis proxy must be excluded or neutralized.
+    severity: CRITICAL
+    keywords:
+      - "race"
+      - "religion"
+      - "national origin"
+      - "marital status"
+      - "public assistance"
+      - "sex"
+      - "color"
+      - "age"
+    action: BLOCK
+
+  - id: LEND-002
+    name: Redlining prevention
+    description: >
+      The system must not use geographic location in a manner that results in
+      the denial or discouragement of credit applications from predominantly
+      minority neighborhoods. Geographic features must be tested for disparate
+      impact against protected classes. Redlining violates the Fair Housing Act
+      (42 USC 3605) and ECOA.
+    severity: CRITICAL
+    keywords:
+      - "zip code"
+      - "census tract"
+      - "neighborhood"
+      - "geographic area"
+      - "redlining"
+      - "minority area"
+      - "underserved area"
+    action: BLOCK
+
+  - id: LEND-003
+    name: Disparate impact testing
+    description: >
+      All credit scoring models must undergo regular disparate impact testing
+      across protected classes. If denial rates for any protected group exceed
+      1.5x the denial rate for the control group, the model must be flagged for
+      fair lending review. The system must log impact ratios per decision cycle
+      for regulatory examination.
+    severity: HIGH
+    keywords:
+      - "denial rate"
+      - "approval rate"
+      - "disparate impact"
+      - "impact ratio"
+      - "fair lending"
+      - "statistical parity"
+    action: FLAG
+
+  # -- Adverse Action & FCRA --------------------------------------------------
+  - id: LEND-004
+    name: Adverse action notice with specific reasons
+    description: >
+      When the system contributes to a denial, counteroffer, or other adverse
+      action, the lender must provide the applicant with a notice containing
+      the specific principal reasons for the action. Reasons must be drawn from
+      the OCC/FFIEC reason code list and must not be generic. Required under
+      ECOA Section 701(d) and FCRA Section 615(a).
+    severity: CRITICAL
+    keywords:
+      - "adverse action"
+      - "denial notice"
+      - "reason code"
+      - "counteroffer"
+      - "credit denied"
+      - "application rejected"
+      - "decline reason"
+    action: BLOCK
+
+  - id: LEND-005
+    name: Credit bureau data accuracy obligation
+    description: >
+      The system must use credit bureau data only from permissible purposes
+      under FCRA Section 604 and must have procedures to handle consumer
+      disputes regarding data accuracy. When a consumer disputes information
+      the AI relied upon, the system must be capable of re-evaluating the
+      decision with corrected data within 30 days.
+    severity: HIGH
+    keywords:
+      - "credit report"
+      - "credit bureau"
+      - "consumer dispute"
+      - "data accuracy"
+      - "reinvestigation"
+      - "permissible purpose"
+    action: FLAG
+
+  # -- Truth in Lending (TILA) ------------------------------------------------
+  - id: LEND-006
+    name: APR and fee disclosure
+    description: >
+      When the system generates or recommends loan terms, the annual percentage
+      rate (APR), finance charges, total of payments, and total interest cost
+      must be calculated and disclosed in compliance with Regulation Z
+      (12 CFR 1026). No loan offer may be presented to a consumer without
+      complete cost disclosures.
+    severity: HIGH
+    keywords:
+      - "APR"
+      - "annual percentage rate"
+      - "finance charge"
+      - "total of payments"
+      - "loan terms"
+      - "interest rate"
+      - "closing costs"
+    action: FLAG
+
+  - id: LEND-007
+    name: Ability to repay verification
+    description: >
+      The system must verify the borrower's ability to repay before recommending
+      loan approval. For residential mortgages, this includes verification of
+      income, assets, employment, credit history, and monthly obligations per
+      the ATR/QM rule (12 CFR 1026.43). AI-generated income estimates do not
+      substitute for verified documentation.
+    severity: CRITICAL
+    keywords:
+      - "ability to repay"
+      - "income verification"
+      - "debt-to-income"
+      - "DTI"
+      - "qualified mortgage"
+      - "ATR"
+      - "stated income"
+    action: BLOCK
+
+  # -- Debt Collection (FDCPA) ------------------------------------------------
+  - id: LEND-008
+    name: Debt collection communication restrictions
+    description: >
+      AI-generated collection communications must comply with FDCPA timing and
+      content requirements. No contact before 8:00 AM or after 9:00 PM in the
+      consumer's time zone. Communications must include the mini-Miranda warning
+      and must cease upon written dispute or cease-and-desist request.
+      Regulation F (12 CFR 1006) limits to 7 calls per account per 7-day period.
+    severity: HIGH
+    keywords:
+      - "collection call"
+      - "debt collection"
+      - "contact consumer"
+      - "collection notice"
+      - "cease and desist"
+      - "mini-Miranda"
+      - "past due"
+    action: FLAG
+
+  - id: LEND-009
+    name: Harassment and deception prohibition
+    description: >
+      The AI system must not generate communications that harass, oppress, or
+      abuse any person in connection with debt collection. This includes threats
+      of violence, obscene language, repeated calls intended to annoy, false
+      representations of identity or legal status, and deceptive implications
+      of legal action. Per FDCPA Sections 806-808.
+    severity: CRITICAL
+    keywords:
+      - "threaten"
+      - "legal action"
+      - "lawsuit"
+      - "wage garnishment"
+      - "arrest"
+      - "harass"
+      - "intimidate"
+      - "misrepresent"
+    action: BLOCK
+
+  # -- Model Governance -------------------------------------------------------
+  - id: LEND-010
+    name: Model risk management documentation
+    description: >
+      All AI credit models must be documented per OCC Bulletin 2011-12 (SR 11-7)
+      model risk management guidance. Documentation must include model purpose,
+      data sources, feature engineering methodology, validation results,
+      limitations, and ongoing monitoring plans. Undocumented models must not be
+      deployed to production.
+    severity: HIGH
+    keywords:
+      - "model documentation"
+      - "model validation"
+      - "SR 11-7"
+      - "model risk"
+      - "model governance"
+      - "model inventory"
+      - "challenger model"
+    action: FLAG
+
+  - id: LEND-011
+    name: Alternative data transparency
+    description: >
+      When alternative data sources (utility payments, rent history, bank
+      transaction data, social media) are used in credit decisioning, the system
+      must disclose the data types used and provide consumers the ability to
+      opt out or correct errors. Alternative data must be tested for disparate
+      impact before inclusion in scoring models.
+    severity: MEDIUM
+    keywords:
+      - "alternative data"
+      - "utility payments"
+      - "rent history"
+      - "bank transactions"
+      - "social media"
+      - "non-traditional data"
+      - "cash flow underwriting"
+    action: LOG
+
+metadata:
+  author: ACGS Team
+  domain: lending
+  jurisdiction: US (federal)
+  regulations:
+    - "Equal Credit Opportunity Act (ECOA, Regulation B)"
+    - "Fair Credit Reporting Act (FCRA)"
+    - "Truth in Lending Act (TILA, Regulation Z)"
+    - "Fair Debt Collection Practices Act (FDCPA, Regulation F)"
+    - "Fair Housing Act (42 USC 3601-3619)"
+    - "OCC Bulletin 2011-12 (SR 11-7) Model Risk Management"
+    - "CFPB Circular 2022-03 (Adverse Action & AI)"
+  license: AGPL-3.0-or-later
+  last_updated: "2026-04-03"

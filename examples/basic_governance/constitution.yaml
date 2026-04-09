@@ -1,0 +1,28 @@
+# Basic content-policy constitution
+# Load with: Constitution.from_yaml("constitution.yaml")
+#
+# constitutional_hash is optional for standalone files.
+# In production, set it to the value from `acgs status` and pin it
+# in your CI so the constitution cannot silently change.
+
+name: "content-policy"
+version: "1.0"
+
+rules:
+  - id: "no-harmful-content"
+    text: "Block requests containing harmful keywords"
+    severity: CRITICAL
+    patterns:
+      - "(?i)\\b(hack|exploit|malware)\\b"
+
+  - id: "no-pii"
+    text: "Prevent SSN patterns in requests"
+    severity: HIGH
+    patterns:
+      - "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+
+  - id: "length-limit"
+    text: "Warn on unusually long inputs (potential prompt injection)"
+    severity: MEDIUM
+    patterns:
+      - "(?s).{2000,}"

@@ -1,0 +1,99 @@
+# ACGS Governance Pipeline for GitLab CI/CD
+#
+# This pipeline adds constitutional governance validation to your merge requests.
+# ACGS checks MR diffs against your constitutional rules and blocks the
+# pipeline if any violations are found.
+#
+# Setup:
+#   1. Copy this file to your repository root as .gitlab-ci.yml (or include it)
+#   2. Add a constitution.yaml to your repo (see examples/constitution.yaml)
+#   3. Set GITLAB_TOKEN as a CI/CD variable (Settings > CI/CD > Variables)
+#      - The token needs "api" scope to read MR diffs and post comments
+#   4. Adjust the constitution path below if needed
+#
+# The governance stage runs only on merge request events and will:
+#   - Load your constitutional rules from YAML
+#   - Validate the MR diff against each rule
+#   - Post a governance report as an MR comment
+#   - Exit with code 1 if any violations are found (blocking the pipeline)
+
+stages:
+  - build
+  - test
+  - governance   # Add governance as a pipeline stage
+  - deploy
+
+# ---------------------------------------------------------------------------
+# Governance stage: validate MR diffs against constitutional rules
+# ---------------------------------------------------------------------------
+governance:
+  stage: governance
+  image: python:3.11-slim
+
+  variables:
+    # Path to your constitution file (relative to repo root)
+    CONSTITUTION_PATH: "constitution.yaml"
+
+  before_script:
+    # Install acgs with GitLab integration extras
+    - pip install --quiet acgs[gitlab]
+
+  script:
+    - |
+      python3 -c "
+      import asyncio
+      import os
+      import sys
+
+      from acgs_lite import Constitution
+      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
+
+
+      async def main() -> int:
+          # Load constitution from your YAML file
+          constitution_path = os.environ.get('CONSTITUTION_PATH', 'constitution.yaml')
+          constitution = Constitution.from_yaml(constitution_path)
+
+          # Create the governance bot with your GitLab token
+          token = os.environ.get('GITLAB_TOKEN')
+          if not token:
+              print('ERROR: GITLAB_TOKEN is not set. Add it as a CI/CD variable.')
+              return 1
+
+          project_id = int(os.environ['CI_PROJECT_ID'])
+          mr_iid = int(os.environ['CI_MERGE_REQUEST_IID'])
+
+          bot = GitLabGovernanceBot(
+              token=token,
+              project_id=project_id,
+              constitution=constitution,
+          )
+
+          # Run governance validation against the MR diff
+          report = await bot.run_governance_pipeline(mr_iid=mr_iid)
+
+          # Print summary to CI log
+          print(f'Governance report: {report.rules_checked} rules checked')
+          print(f'  Violations: {len(report.violations)}')
+
+          if report.violations:
+              print()
+              print('VIOLATIONS:')
+              for v in report.violations:
+                  print(f'  - [{v["severity"]}] {v["rule_id"]}: {v.get("rule_text", "")}')
+              return 1
+
+          print('All constitutional checks passed.')
+          return 0
+
+
+      sys.exit(asyncio.run(main()))
+      "
+
+  # Only run on merge request pipelines
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+  # Allow the job to fail gracefully during initial setup.
+  # Remove this line once your constitution and token are configured.
+  allow_failure: true

@@ -1,0 +1,265 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - text:                   
+    - navigation [ref=e4]:
+      - list [ref=e5]:
+        - listitem [ref=e6]:
+          - link "Devpost" [ref=e8] [cursor=pointer]:
+            - /url: https://devpost.com
+            - img "Devpost" [ref=e9]
+      - generic:
+        - list [ref=e10]:
+          - listitem [ref=e11]
+          - listitem [ref=e12]:
+            - link "Join a hackathon" [ref=e13] [cursor=pointer]:
+              - /url: "#"
+              - text: Join a hackathon
+              - generic [ref=e14]: 
+              - text: 
+            - text:   
+          - listitem [ref=e15]
+          - listitem [ref=e16]:
+            - link "Host a hackathon" [ref=e17] [cursor=pointer]:
+              - /url: "#"
+              - text: Host a hackathon
+              - generic [ref=e18]: 
+              - text: 
+            - text:      
+          - listitem [ref=e19]
+          - listitem [ref=e20]:
+            - link "Resources" [ref=e21] [cursor=pointer]:
+              - /url: "#"
+              - text: Resources
+              - generic [ref=e22]: 
+              - text: 
+        - generic [ref=e23]:
+          - list:
+            - listitem [ref=e24]:
+              - generic [ref=e26]: 
+            - text:  
+          - list [ref=e27]:
+            - listitem [ref=e28]:
+              - link "🔔 1" [ref=e29] [cursor=pointer]:
+                - /url: https://devpost.com/notifications
+                - generic [ref=e30]: 🔔
+                - generic [ref=e31]: "1"
+            - listitem [ref=e32]:
+              - link "Access your account menu" [ref=e33] [cursor=pointer]:
+                - /url: https://devpost.com/martin306?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav
+                - img "martin306" [ref=e34]
+  - generic [ref=e35]:
+    - banner [ref=e36]:
+      - heading "Notifications" [level=6] [ref=e37]
+    - paragraph [ref=e39]: Loading...
+    - contentinfo
+  - generic [ref=e40]:
+    - generic [ref=e41]:
+      - heading "GitLab AI Hackathon" [level=1] [ref=e44]:
+        - link "GitLab AI Hackathon" [ref=e45] [cursor=pointer]:
+          - /url: https://gitlab.devpost.com/
+          - img "GitLab AI Hackathon" [ref=e46]
+      - navigation [ref=e50]:
+        - list [ref=e51]:
+          - listitem [ref=e52]:
+            - link "Overview" [ref=e53] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/
+          - listitem [ref=e54]:
+            - link "My projects" [ref=e55] [cursor=pointer]:
+              - /url: https://devpost.com/submit-to/28106-gitlab-ai-hackathon/manage/submissions
+          - listitem [ref=e56]:
+            - link "Participants (6970)" [ref=e57] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/participants
+          - listitem [ref=e58]:
+            - link "Resources" [ref=e59] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/resources
+          - listitem [ref=e60]:
+            - link "Rules" [ref=e61] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/rules
+          - listitem [ref=e62]:
+            - link "Project gallery" [ref=e63] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/project-gallery
+          - listitem [ref=e64]:
+            - link "Updates" [ref=e65] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/updates
+          - listitem [ref=e66]:
+            - link "Discussions" [ref=e67] [cursor=pointer]:
+              - /url: https://gitlab.devpost.com/forum_topics
+    - generic [ref=e71]:
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - heading "Constitutional Sentinel" [level=3] [ref=e75]
+          - generic [ref=e77]: Draft
+          - generic [ref=e79]: 4/5 steps done
+          - generic [ref=e81]:
+            - generic [ref=e83]:
+              - time [ref=e84]: 3 more hours
+              - text: to deadline
+            - generic [ref=e86]:
+              - text: 
+              - link "Preview" [ref=e88] [cursor=pointer]:
+                - /url: /software/constitutional-sentinel
+                - text: Preview
+                - generic [ref=e89]: 
+        - generic [ref=e90]:
+          - link "Manage team" [ref=e91] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/manage-team
+            - generic [ref=e93]: 
+            - text: Manage team
+            - img [ref=e94]
+          - link "Project overview" [ref=e96] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project-overview
+            - generic [ref=e98]: 
+            - text: Project overview
+            - img [ref=e99]
+          - link "Project details" [ref=e101] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project_details/edit
+            - generic [ref=e103]: 
+            - text: Project details
+            - img [ref=e104]
+          - link "Additional info" [ref=e106] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/additional-info/edit
+            - generic [ref=e108]: 
+            - text: Additional info
+            - img [ref=e109]
+          - link "Submit" [ref=e111] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/finalization
+            - generic [ref=e112]: 
+            - text: Submit
+      - generic [ref=e114]:
+        - heading "Submit project" [level=1] [ref=e115]
+        - paragraph [ref=e116]: After submitting, you can still edit your project until the submission deadline.
+      - separator [ref=e117]
+    - generic [ref=e118]:
+      - generic [ref=e121]:
+        - heading "Terms & conditions" [level=3] [ref=e122]
+        - generic [ref=e123]:
+          - generic [ref=e126] [cursor=pointer]:
+            - checkbox "* I, and all of my team members, have read and agree to be bound by the Official Rules and the Devpost Terms of Service." [ref=e127]
+            - text: "* I, and all of my team members, have read and agree to be bound by the"
+            - link "Official Rules" [ref=e128]:
+              - /url: https://gitlab.devpost.com/rules
+            - text: and the Devpost
+            - link "Terms of Service" [ref=e129]:
+              - /url: https://info.devpost.com/terms
+            - text: .
+          - generic [ref=e130]:
+            - button "Submit project" [ref=e131] [cursor=pointer]
+            - link "Cancel" [ref=e132] [cursor=pointer]:
+              - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions
+      - generic [ref=e133]:
+        - generic [ref=e136]:
+          - figure [ref=e137]:
+            - img "Medium" [ref=e138]
+            - link "Edit" [ref=e140] [cursor=pointer]:
+              - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/project-overview
+          - generic [ref=e141]:
+            - heading "Constitutional Sentinel" [level=5] [ref=e142]: Constitutional Sentinel
+            - paragraph [ref=e143]: An independent GitLab governance agent that reviews AI-generated merge requests, flags risky code inline, blocks unsafe merges, and leaves a tamper-evident audit trail.
+        - generic [ref=e144]:
+          - heading "Teammates" [level=5] [ref=e145]
+          - link "Manage team" [ref=e147] [cursor=pointer]:
+            - /url: /submit-to/28106-gitlab-ai-hackathon/manage/submissions/966644-constitutional-sentinel/manage-team
+        - list [ref=e148]:
+          - listitem [ref=e149]:
+            - generic [ref=e151]:
+              - link "Honglin Lyu":
+                - /url: https://devpost.com/martin306
+                - img "Honglin Lyu" [ref=e152] [cursor=pointer]
+              - strong [ref=e153]:
+                - link "Honglin Lyu" [ref=e154] [cursor=pointer]:
+                  - /url: https://devpost.com/martin306
+                - paragraph [ref=e155]: "@martin306"
+  - contentinfo [ref=e156]:
+    - generic [ref=e157]:
+      - navigation [ref=e159]:
+        - heading "Devpost" [level=4] [ref=e160]
+        - list [ref=e161]:
+          - listitem [ref=e162]:
+            - link "About" [ref=e163] [cursor=pointer]:
+              - /url: https://info.devpost.com/about
+          - listitem [ref=e164]:
+            - link "Careers" [ref=e165] [cursor=pointer]:
+              - /url: https://info.devpost.com/careers
+          - listitem [ref=e166]:
+            - link "Contact" [ref=e167] [cursor=pointer]:
+              - /url: https://info.devpost.com/contact
+          - listitem [ref=e168]:
+            - link "Help" [ref=e169] [cursor=pointer]:
+              - /url: https://help.devpost.com/
+      - navigation [ref=e171]:
+        - heading "Hackathons" [level=4] [ref=e172]
+        - list [ref=e173]:
+          - listitem [ref=e174]:
+            - link "Browse hackathons" [ref=e175] [cursor=pointer]:
+              - /url: https://devpost.com/hackathons
+          - listitem [ref=e176]:
+            - link "Explore projects" [ref=e177] [cursor=pointer]:
+              - /url: https://devpost.com/software
+          - listitem [ref=e178]:
+            - link "Host a hackathon" [ref=e179] [cursor=pointer]:
+              - /url: https://info.devpost.com
+          - listitem [ref=e180]:
+            - link "Hackathon guides" [ref=e181] [cursor=pointer]:
+              - /url: https://info.devpost.com/guides
+      - navigation [ref=e183]:
+        - heading "Portfolio" [level=4] [ref=e184]
+        - list [ref=e185]:
+          - listitem [ref=e186]:
+            - link "Your projects" [ref=e187] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=projects
+          - listitem [ref=e188]:
+            - link "Your hackathons" [ref=e189] [cursor=pointer]:
+              - /url: https://devpost.com/portfolio/redirect?page=hackathons
+          - listitem [ref=e190]:
+            - link "Settings" [ref=e191] [cursor=pointer]:
+              - /url: https://devpost.com/settings
+      - navigation [ref=e193]:
+        - heading "Connect" [level=4] [ref=e194]
+        - list [ref=e195]:
+          - listitem [ref=e196]:
+            - link "Twitter" [ref=e197] [cursor=pointer]:
+              - /url: https://twitter.com/devpost
+              - generic [ref=e199]: 
+              - text: Twitter
+          - listitem [ref=e200]:
+            - link "Discord" [ref=e201] [cursor=pointer]:
+              - /url: https://discord.com/invite/HP4BhW3hnp
+              - generic [ref=e203]: 
+              - text: Discord
+          - listitem [ref=e204]:
+            - link "Facebook" [ref=e205] [cursor=pointer]:
+              - /url: https://www.facebook.com/devposthacks
+              - generic [ref=e207]: 
+              - text: Facebook
+          - listitem [ref=e208]:
+            - link "LinkedIn" [ref=e209] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/devpost/
+              - generic [ref=e211]: 
+              - text: LinkedIn
+    - navigation [ref=e213]:
+      - generic [ref=e215]:
+        - generic [ref=e216]: © 2026 Devpost, Inc. All rights reserved.
+        - list [ref=e217]:
+          - listitem [ref=e218]:
+            - link "Community guidelines" [ref=e219] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/community-guidelines
+          - listitem [ref=e220]:
+            - link "Security" [ref=e221] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/security
+          - listitem [ref=e222]:
+            - link "CA notice" [ref=e223] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/california-consumer-privacy-act
+          - listitem [ref=e224]:
+            - link "Privacy policy" [ref=e225] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/privacy-policy
+          - listitem [ref=e226]:
+            - link "Terms of service" [ref=e227] [cursor=pointer]:
+              - /url: https://info.devpost.com/legal/terms-of-service
+  - iframe [ref=e229]:
+    - button [ref=f32e4] [cursor=pointer]:
+      - generic:
+        - img
+      - generic:
+        - img
+      - generic:
+        - img

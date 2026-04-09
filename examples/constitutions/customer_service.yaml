@@ -1,0 +1,268 @@
+# Customer Service Constitution --- acgs-lite
+# Governance rules for AI customer service agents covering PII protection,
+# human escalation, commitment controls, complaint handling, and accessibility.
+#
+# Usage:
+#   from acgs_lite import Constitution
+#   constitution = Constitution.from_yaml("constitutions/customer_service.yaml")
+
+name: customer-service-governance
+version: "1.0"
+description: |
+  Constitutional rules governing AI systems used in customer service including
+  chatbots, virtual assistants, email triage, ticket routing, and voice agents.
+  Designed to protect consumer data, ensure accurate representations, prevent
+  unauthorized commitments, and comply with FTC Act Section 5, state consumer
+  protection laws, TCPA, and ADA accessibility requirements.
+
+rules:
+  # -- PII Protection ---------------------------------------------------------
+  - id: CSVC-001
+    name: PII exposure prevention
+    description: >
+      The system must not include personally identifiable information (PII) in
+      logs, analytics, training data exports, or any channel visible to
+      unauthorized personnel. PII includes full names combined with account
+      numbers, Social Security numbers, payment card numbers, dates of birth,
+      and biometric identifiers. All PII must be masked or tokenized before
+      storage outside the secure customer record system.
+    severity: CRITICAL
+    keywords:
+      - "social security"
+      - "SSN"
+      - "credit card"
+      - "account number"
+      - "date of birth"
+      - "passport number"
+      - "driver's license"
+      - "bank account"
+    action: BLOCK
+
+  - id: CSVC-002
+    name: Payment card data handling
+    description: >
+      The system must never request, store, or display full payment card numbers
+      in conversation. If a customer provides card data unprompted, the system
+      must immediately redact it from the conversation record and instruct the
+      customer to use the secure payment portal instead. Card data handling
+      must comply with PCI DSS requirements; only the last four digits may
+      be referenced for verification purposes.
+    severity: CRITICAL
+    keywords:
+      - "credit card number"
+      - "card number"
+      - "CVV"
+      - "CVC"
+      - "expiration date"
+      - "card details"
+      - "PCI"
+      - "payment card"
+    action: BLOCK
+
+  # -- Human Escalation -------------------------------------------------------
+  - id: CSVC-003
+    name: Mandatory human escalation triggers
+    description: >
+      The system must escalate to a human agent when: (1) the customer
+      explicitly requests a human, (2) the conversation exceeds 3 unresolved
+      cycles on the same issue, (3) the customer expresses distress, threats
+      of self-harm, or legal threats, (4) the issue involves a billing dispute
+      exceeding the configured threshold, or (5) the system's confidence in
+      its response falls below the minimum threshold. Escalation must occur
+      within 60 seconds of the trigger.
+    severity: HIGH
+    keywords:
+      - "speak to a human"
+      - "talk to a person"
+      - "real person"
+      - "manager"
+      - "supervisor"
+      - "escalate"
+      - "human agent"
+      - "transfer me"
+    action: FLAG
+
+  - id: CSVC-004
+    name: Crisis and safety escalation
+    description: >
+      If the customer expresses intent to harm themselves or others, the system
+      must immediately escalate to a trained human agent and, where configured,
+      provide crisis resource information (e.g., 988 Suicide & Crisis Lifeline).
+      The AI must not attempt to provide counseling, de-escalation, or mental
+      health advice. The conversation must be flagged for priority human review.
+    severity: CRITICAL
+    keywords:
+      - "kill myself"
+      - "suicide"
+      - "self-harm"
+      - "end my life"
+      - "hurt someone"
+      - "threat"
+      - "emergency"
+      - "crisis"
+    action: BLOCK
+
+  # -- Commitment Controls ----------------------------------------------------
+  - id: CSVC-005
+    name: Unauthorized commitment prohibition
+    description: >
+      The system must not make binding financial commitments, issue refunds,
+      authorize credits, waive fees, modify contract terms, or make promises
+      regarding future product features or pricing unless explicitly authorized
+      by the configured policy rules and within defined monetary thresholds.
+      Any commitment above the threshold must route to a human approver.
+      Unauthorized promises may create binding obligations under contract law.
+    severity: HIGH
+    keywords:
+      - "refund"
+      - "credit"
+      - "waive fee"
+      - "free month"
+      - "discount"
+      - "compensation"
+      - "guarantee"
+      - "promise"
+      - "I'll make sure"
+    action: FLAG
+
+  - id: CSVC-006
+    name: Accurate representation requirement
+    description: >
+      The system must not make false or misleading statements about the
+      company's products, services, policies, or capabilities. When uncertain,
+      the system must state that it cannot confirm and offer to connect the
+      customer with a specialist. Fabricated information (hallucinated policy
+      details, invented product features) constitutes an unfair or deceptive
+      practice under FTC Act Section 5.
+    severity: HIGH
+    keywords:
+      - "policy"
+      - "terms of service"
+      - "warranty"
+      - "guarantee"
+      - "coverage"
+      - "feature"
+      - "capability"
+      - "eligible"
+    action: FLAG
+
+  # -- Complaint Handling -----------------------------------------------------
+  - id: CSVC-007
+    name: Formal complaint acknowledgment
+    description: >
+      When a customer files a formal complaint, the system must: (1) acknowledge
+      receipt with a unique reference number, (2) set and communicate a response
+      timeline, (3) route the complaint to the appropriate resolution team,
+      and (4) log the complaint in the regulatory complaint management system.
+      For regulated industries, complaint records must be retained per
+      applicable requirements (e.g., CFPB complaint database, state insurance
+      commissioner timelines).
+    severity: HIGH
+    keywords:
+      - "formal complaint"
+      - "file a complaint"
+      - "regulatory complaint"
+      - "BBB"
+      - "consumer protection"
+      - "ombudsman"
+      - "attorney general"
+    action: FLAG
+
+  - id: CSVC-008
+    name: Do-not-contact and opt-out compliance
+    description: >
+      The system must immediately honor opt-out requests for marketing
+      communications, cease contact upon do-not-contact requests per the
+      TCPA, and process CAN-SPAM unsubscribe requests within 10 business days.
+      The system must not attempt to persuade, delay, or create friction around
+      opt-out requests. Opt-out status must be synchronized across all
+      communication channels within 24 hours.
+    severity: HIGH
+    keywords:
+      - "unsubscribe"
+      - "opt out"
+      - "stop calling"
+      - "do not contact"
+      - "remove me"
+      - "stop emailing"
+      - "TCPA"
+      - "do not call"
+    action: FLAG
+
+  # -- Accessibility ----------------------------------------------------------
+  - id: CSVC-009
+    name: Accessibility compliance
+    description: >
+      The system must provide equivalent service quality to customers using
+      assistive technologies. Text responses must be compatible with screen
+      readers (no image-only responses without alt text), response formatting
+      must follow WCAG 2.1 AA guidelines, and alternative channels (phone,
+      TTY/TDD) must be offered when the digital channel cannot accommodate
+      the customer's needs. Per ADA Title III and Section 508.
+    severity: MEDIUM
+    keywords:
+      - "accessibility"
+      - "screen reader"
+      - "assistive technology"
+      - "WCAG"
+      - "ADA"
+      - "TTY"
+      - "hearing impaired"
+      - "vision impaired"
+    action: FLAG
+
+  # -- Response Quality -------------------------------------------------------
+  - id: CSVC-010
+    name: Response accuracy verification
+    description: >
+      The system must verify factual claims against the authoritative knowledge
+      base before presenting them to customers. Responses about pricing, product
+      specifications, availability, delivery timelines, and return policies must
+      be sourced from the current, versioned knowledge base, not from model
+      training data. Stale information (older than the knowledge base refresh
+      cycle) must be flagged with a freshness warning.
+    severity: MEDIUM
+    keywords:
+      - "price"
+      - "availability"
+      - "delivery time"
+      - "return policy"
+      - "shipping"
+      - "in stock"
+      - "product specification"
+    action: LOG
+
+  - id: CSVC-011
+    name: Conversation context retention
+    description: >
+      The system must maintain conversation context within a session and must
+      not force customers to repeat information already provided. When handing
+      off to a human agent, the full conversation context must be transferred.
+      Customers must not experience degraded service quality due to context
+      loss between automated and human interactions.
+    severity: MEDIUM
+    keywords:
+      - "already told you"
+      - "I already said"
+      - "repeat myself"
+      - "start over"
+      - "context"
+      - "previous message"
+      - "handoff"
+    action: LOG
+
+metadata:
+  author: ACGS Team
+  domain: customer-service
+  jurisdiction: US (federal and state)
+  regulations:
+    - "FTC Act Section 5 (Unfair or Deceptive Practices)"
+    - "Telephone Consumer Protection Act (TCPA)"
+    - "CAN-SPAM Act"
+    - "Americans with Disabilities Act (ADA) Title III"
+    - "Section 508 of the Rehabilitation Act"
+    - "PCI DSS (Payment Card Industry Data Security Standard)"
+    - "WCAG 2.1 AA"
+    - "State Consumer Protection Statutes (UDAP)"
+  license: AGPL-3.0-or-later
+  last_updated: "2026-04-03"

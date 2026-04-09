@@ -1,0 +1,33 @@
+- generic [active] [ref=e1]:
+  - generic "YouTube 视频播放器" [ref=e5]:
+    - button "播放" [ref=e9] [cursor=pointer]:
+      - img
+    - generic [ref=e10]:
+      - generic [ref=e11] [cursor=pointer]:
+        - slider "播放滑块" [ref=e12]
+        - generic:
+          - generic:
+            - generic:
+              - slider "点击或滚动面板可进行精确跳转。"
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - button "暂停 (k)" [ref=e23] [cursor=pointer]:
+            - img
+          - generic [ref=e24]:
+            - button "静音 (m)" [ref=e26] [cursor=pointer]:
+              - img
+            - slider "音量"
+          - button "0 分钟 0 秒/7 分钟 1 秒" [ref=e30] [cursor=pointer]: 0:00 / 7:01
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - button "无法显示字幕" [ref=e33] [cursor=pointer]:
+              - generic [ref=e34]:
+                - img
+            - button "设置" [ref=e35] [cursor=pointer]:
+              - img
+          - generic [ref=e36]:
+            - button "影院模式 (t)" [ref=e37] [cursor=pointer]:
+              - img
+            - button "全屏 (f)" [ref=e38] [cursor=pointer]:
+              - img
+  - img [ref=e62]

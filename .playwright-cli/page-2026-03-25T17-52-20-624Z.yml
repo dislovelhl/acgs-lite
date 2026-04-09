@@ -1,0 +1,378 @@
+- generic [ref=e1]:
+  - banner [active] [ref=e2]:
+    - link "Skip to main content" [ref=e3] [cursor=pointer]:
+      - /url: "#content-body"
+      - generic [ref=e4]: Skip to main content
+    - link "Homepage" [ref=e6] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e7]: Homepage
+      - img [ref=e9]
+    - button "Search or go to… /" [ref=e14] [cursor=pointer]:
+      - generic [ref=e15]:
+        - img [ref=e16]
+        - generic [ref=e18]: Search or go to…
+        - generic [ref=e19]: /
+    - generic [ref=e20]:
+      - button "Create new…" [ref=e22] [cursor=pointer]:
+        - img [ref=e23]
+        - generic [ref=e25]: Create new…
+      - generic [ref=e27]:
+        - link "0 Assigned work items" [ref=e28] [cursor=pointer]:
+          - /url: /dashboard/work_items?assignee_username=martin668
+          - img [ref=e29]
+          - generic [ref=e31]: "0"
+        - link "1 Merge requests" [ref=e33] [cursor=pointer]:
+          - /url: /dashboard/merge_requests
+          - img [ref=e34]
+          - generic [ref=e36]: "1"
+        - link "1 To-do items" [ref=e37] [cursor=pointer]:
+          - /url: /dashboard/todos
+          - img [ref=e38]
+          - generic [ref=e40]: "1"
+      - link "Honglin Lyu user’s menu" [ref=e44] [cursor=pointer]:
+        - /url: /martin668
+        - generic [ref=e45]:
+          - generic [ref=e46]: Honglin Lyu user’s menu
+          - img [ref=e47]
+  - generic [ref=e48]:
+    - navigation "Primary navigation" [ref=e50]:
+      - heading "Primary navigation" [level=2] [ref=e51]
+      - generic [ref=e52]:
+        - generic [ref=e53]: Project
+        - generic [ref=e55]:
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - link "constitutional-sentinel-demo" [ref=e58] [cursor=pointer]:
+                - /url: /martin664/constitutional-sentinel-demo
+                - generic [ref=e60]: C
+                - generic [ref=e61]: constitutional-sentinel-demo
+          - generic [ref=e62]:
+            - button "Pinned" [expanded] [ref=e63] [cursor=pointer]:
+              - img [ref=e65]
+              - generic [ref=e67]: Pinned
+              - img [ref=e69]
+            - list [ref=e72]:
+              - listitem [ref=e73]:
+                - link "Work items" [ref=e74] [cursor=pointer]:
+                  - /url: /martin664/constitutional-sentinel-demo/-/work_items
+                  - img [ref=e76]
+                  - generic [ref=e78]: Work items
+                - button "Unpin Work items":
+                  - img
+              - listitem [ref=e79]:
+                - link "Merge requests" [ref=e80] [cursor=pointer]:
+                  - /url: /martin664/constitutional-sentinel-demo/-/merge_requests
+                  - img [ref=e82]
+                  - generic [ref=e84]: Merge requests
+                  - generic [ref=e87]: "1"
+                - button "Unpin Merge requests":
+                  - img
+          - separator [ref=e88]
+          - list "Project" [ref=e89]:
+            - listitem [ref=e90]:
+              - button "Manage" [ref=e91] [cursor=pointer]:
+                - img [ref=e93]
+                - generic [ref=e95]: Manage
+                - img [ref=e97]
+            - listitem [ref=e99]:
+              - button "Plan" [ref=e100] [cursor=pointer]:
+                - img [ref=e102]
+                - generic [ref=e104]: Plan
+                - img [ref=e106]
+            - listitem [ref=e108]:
+              - button "Code" [expanded] [ref=e109] [cursor=pointer]:
+                - img [ref=e111]
+                - generic [ref=e113]: Code
+                - img [ref=e115]
+              - list "Code" [ref=e118]:
+                - listitem [ref=e119]:
+                  - link "Merge requests" [ref=e120] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/merge_requests
+                    - generic [ref=e122]: Merge requests
+                    - generic [ref=e125]: "1"
+                  - button "Unpin Merge requests":
+                    - img
+                - listitem [ref=e126]:
+                  - link "Repository" [ref=e127] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/tree/main
+                    - generic [ref=e129]: Repository
+                  - button "Pin Repository":
+                    - img
+                - listitem [ref=e130]:
+                  - link "Branches" [ref=e131] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/branches
+                    - generic [ref=e133]: Branches
+                  - button "Pin Branches":
+                    - img
+                - listitem [ref=e134]:
+                  - link "Commits" [ref=e135] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/commits/main?ref_type=heads
+                    - generic [ref=e137]: Commits
+                  - button "Pin Commits":
+                    - img
+                - listitem [ref=e138]:
+                  - link "Tags" [ref=e139] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/tags
+                    - generic [ref=e141]: Tags
+                  - button "Pin Tags":
+                    - img
+                - listitem [ref=e142]:
+                  - link "Repository graph" [ref=e143] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/network/main?ref_type=heads
+                    - generic [ref=e145]: Repository graph
+                  - button "Pin Repository graph":
+                    - img
+                - listitem [ref=e146]:
+                  - link "Compare revisions" [ref=e147] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/compare?from=main&to=main
+                    - generic [ref=e149]: Compare revisions
+                  - button "Pin Compare revisions":
+                    - img
+                - listitem [ref=e150]:
+                  - link "Snippets" [ref=e151] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/snippets
+                    - generic [ref=e153]: Snippets
+                  - button "Pin Snippets":
+                    - img
+            - listitem [ref=e154]:
+              - button "Build" [ref=e155] [cursor=pointer]:
+                - img [ref=e157]
+                - generic [ref=e159]: Build
+                - img [ref=e161]
+            - listitem [ref=e163]:
+              - button "Deploy" [ref=e164] [cursor=pointer]:
+                - img [ref=e166]
+                - generic [ref=e168]: Deploy
+                - img [ref=e170]
+            - listitem [ref=e172]:
+              - button "Operate" [ref=e173] [cursor=pointer]:
+                - img [ref=e175]
+                - generic [ref=e177]: Operate
+                - img [ref=e179]
+            - listitem [ref=e181]:
+              - button "Monitor" [ref=e182] [cursor=pointer]:
+                - img [ref=e184]
+                - generic [ref=e186]: Monitor
+                - img [ref=e188]
+            - listitem [ref=e190]:
+              - button "Analyze" [ref=e191] [cursor=pointer]:
+                - img [ref=e193]
+                - generic [ref=e195]: Analyze
+                - img [ref=e197]
+        - generic [ref=e199]:
+          - button "What's new" [ref=e200] [cursor=pointer]:
+            - img [ref=e201]
+            - generic [ref=e203]:
+              - text: What's new
+              - generic [ref=e206]: "5"
+          - button "Help" [ref=e209] [cursor=pointer]:
+            - img [ref=e210]
+            - generic [ref=e212]: Help
+        - button "Collapse sidebar" [ref=e213] [cursor=pointer]:
+          - img [ref=e214]
+          - generic [ref=e216]: Collapse sidebar
+    - generic [ref=e219]:
+      - navigation "Breadcrumb" [ref=e225]:
+        - list [ref=e226]:
+          - listitem [ref=e227]:
+            - link "Martin Lyu" [ref=e228] [cursor=pointer]:
+              - /url: /martin664
+            - text: /
+          - listitem [ref=e229]:
+            - link "constitutional-sentinel-demo" [ref=e230] [cursor=pointer]:
+              - /url: /martin664/constitutional-sentinel-demo
+            - text: /
+          - listitem [ref=e231]:
+            - link "Repository" [ref=e232] [cursor=pointer]:
+              - /url: /martin664/constitutional-sentinel-demo/-/blob/main/README.md
+      - main [ref=e236]:
+        - generic [ref=e237]:
+          - generic [ref=e239]:
+            - region "Files" [ref=e241]:
+              - generic [ref=e242]:
+                - button "Hide file tree browser" [ref=e243] [cursor=pointer]:
+                  - img [ref=e244]
+                - heading "Files" [level=3] [ref=e246]
+              - button "Search files (*.vue, *.rb...)" [ref=e248] [cursor=pointer]:
+                - img [ref=e249]
+                - generic [ref=e252]: Search files (*.vue, *.rb...)
+              - navigation "File tree" [ref=e328]:
+                - tree [ref=e329]:
+                  - treeitem "app" [level=1] [ref=e330]
+                  - treeitem ".gitlab-ci.yml" [level=1] [ref=e332]
+                  - treeitem "AGENTS.md" [level=1] [ref=e334]
+                  - treeitem "README.md" [level=1] [selected] [ref=e336]
+                  - treeitem "constitution.yaml" [level=1] [ref=e338]
+            - link "Provide feedback" [ref=e255] [cursor=pointer]:
+              - /url: https://gitlab.com/gitlab-org/gitlab/-/issues/581271
+              - img [ref=e256]
+              - generic [ref=e258]: Provide feedback
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - generic [ref=e261]:
+                - button "main" [ref=e264] [cursor=pointer]:
+                  - img [ref=e265]
+                  - generic [ref=e267]:
+                    - generic [ref=e268]: main
+                    - img [ref=e269]
+                - navigation "Files breadcrumb" [ref=e272]:
+                  - list [ref=e273]:
+                    - listitem [ref=e274]:
+                      - link "constitutional-sentinel-demo" [ref=e275] [cursor=pointer]:
+                        - /url: /martin664/constitutional-sentinel-demo/-/tree/main
+                      - text: /
+                    - listitem [ref=e276]:
+                      - link "README.md" [ref=e277] [cursor=pointer]:
+                        - /url: /martin664/constitutional-sentinel-demo/-/blob/main/README.md
+                    - listitem [ref=e278]:
+                      - button "Copy file path" [ref=e279] [cursor=pointer]:
+                        - img [ref=e280]
+              - generic [ref=e282]:
+                - heading "README.md" [level=1] [ref=e283]:
+                  - img [ref=e285]
+                  - text: README.md
+                - generic [ref=e287]:
+                  - button "Find file" [ref=e288] [cursor=pointer]:
+                    - generic [ref=e289]: Find file
+                  - link "Blame" [ref=e340] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/blame/main/README.md
+                    - generic [ref=e341]: Blame
+                  - button "Edit" [ref=e294] [cursor=pointer]:
+                    - generic [ref=e295]:
+                      - generic [ref=e296]: Edit
+                      - img [ref=e297]
+                  - button "File actions" [ref=e343] [cursor=pointer]:
+                    - img [ref=e344]
+                    - generic [ref=e346]: File actions
+            - generic [ref=e348]:
+              - link "Martin Lyu's avatar" [ref=e349] [cursor=pointer]:
+                - /url: /martin664
+                - img "Martin Lyu's avatar" [ref=e351]
+              - generic [ref=e352]:
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - 'link "feat: initial demo project for Constitutional Sentinel hackathon" [ref=e355] [cursor=pointer]':
+                      - /url: /martin664/constitutional-sentinel-demo/-/commit/f0c867998bdf1ea36e64e47715d65ac919c4978b
+                    - paragraph [ref=e356]: Most recent commit.
+                  - generic [ref=e357]:
+                    - link "Martin Lyu" [ref=e358] [cursor=pointer]:
+                      - /url: /martin664
+                    - text: authored
+                    - time [ref=e359]: 5 days ago
+                - generic [ref=e360]:
+                  - 'link "Status: Failed" [ref=e362] [cursor=pointer]':
+                    - /url: /martin664/constitutional-sentinel-demo/-/pipelines/2397969528
+                    - img [ref=e364]
+                  - group [ref=e366]:
+                    - generic [ref=e368]: f0c86799
+                    - button "Copy commit SHA" [ref=e369] [cursor=pointer]:
+                      - img [ref=e370]
+                  - link "History" [ref=e372] [cursor=pointer]:
+                    - /url: https://gitlab.com/martin664/constitutional-sentinel-demo/-/commits/main/README.md
+                    - generic [ref=e373]: History
+            - generic [ref=e374]:
+              - generic [ref=e375]:
+                - generic [ref=e377]:
+                  - img [ref=e379]
+                  - strong [ref=e381]: README.md
+                  - generic [ref=e382]: 1.45 KiB
+                - generic [ref=e383]:
+                  - group [ref=e384]:
+                    - button "Display source" [ref=e385] [cursor=pointer]:
+                      - generic [ref=e386]: Code
+                    - button "Display rendered file" [ref=e387] [cursor=pointer]:
+                      - generic [ref=e388]: Preview
+                  - button "Table of contents" [ref=e390] [cursor=pointer]:
+                    - img [ref=e391]
+                    - generic [ref=e393]:
+                      - generic [ref=e394]: Table of contents
+                      - img [ref=e395]
+                  - group [ref=e397]:
+                    - button "Copy file contents" [disabled] [ref=e398]:
+                      - img [ref=e399]
+                    - link "Open raw" [ref=e401] [cursor=pointer]:
+                      - /url: /martin664/constitutional-sentinel-demo/-/raw/main/README.md
+                      - img [ref=e402]
+                    - link "Download" [ref=e404] [cursor=pointer]:
+                      - /url: https://gitlab.com/martin664/constitutional-sentinel-demo/-/raw/main/README.md?inline=false
+                      - img [ref=e405]
+              - generic [ref=e411]:
+                - heading "Constitutional Sentinel DemoLink to heading 'Constitutional Sentinel Demo'" [level=1] [ref=e412]:
+                  - text: Constitutional Sentinel Demo
+                  - link "Link to heading 'Constitutional Sentinel Demo'" [ref=e413] [cursor=pointer]:
+                    - /url: "#constitutional-sentinel-demo"
+                - blockquote [ref=e414]:
+                  - paragraph [ref=e415]: GitLab AI Hackathon 2026 — Constitutional AI Governance
+                - paragraph [ref=e416]:
+                  - text: This project demonstrates the
+                  - strong [ref=e417]: Constitutional Sentinel
+                  - text: ": an AI governance agent that validates every AI-generated merge request against constitutional rules."
+                - heading "How It WorksLink to heading 'How It Works'" [level=2] [ref=e418]:
+                  - text: How It Works
+                  - link "Link to heading 'How It Works'" [ref=e419] [cursor=pointer]:
+                    - /url: "#how-it-works"
+                - code [ref=e422]: "GitLab Duo (Proposer) --> Opens MR with AI-generated code | v Constitutional Sentinel --> Validates diff against 10 governance rules (Validator) | v PASS: Approve | FAIL: Block + inline comments | v Human (Executor) --> Merges (only after Sentinel approval)"
+                - heading "ArchitectureLink to heading 'Architecture'" [level=2] [ref=e423]:
+                  - text: Architecture
+                  - link "Link to heading 'Architecture'" [ref=e424] [cursor=pointer]:
+                    - /url: "#architecture"
+                - list [ref=e425]:
+                  - listitem [ref=e426]:
+                    - strong [ref=e427]: ACGS-Lite
+                    - text: — Constitutional governance engine (560ns/line P50 validation)
+                  - listitem [ref=e428]:
+                    - strong [ref=e429]: Cloud Run
+                    - text: — Webhook receiver + REST API
+                  - listitem [ref=e430]:
+                    - strong [ref=e431]: MCP Server
+                    - text: — 5 governance tools for Duo agents
+                  - listitem [ref=e432]:
+                    - strong [ref=e433]: MACI
+                    - text: — Separation of powers (Proposer/Validator/Executor)
+                  - listitem [ref=e434]:
+                    - strong [ref=e435]: Tamper-evident audit
+                    - text: — Hash-chained audit trail for all decisions
+                - heading "Quick StartLink to heading 'Quick Start'" [level=2] [ref=e436]:
+                  - text: Quick Start
+                  - link "Link to heading 'Quick Start'" [ref=e437] [cursor=pointer]:
+                    - /url: "#quick-start"
+                - code [ref=e440]:
+                  - generic [ref=e441]: pip install acgs-lite[gitlab]
+                  - generic [ref=e442]: python -c "from acgs_lite import Constitution; print(Constitution.default().hash)"
+                  - generic [ref=e443]: "# 608508a9bd224290"
+                - heading "Constitutional RulesLink to heading 'Constitutional Rules'" [level=2] [ref=e444]:
+                  - text: Constitutional Rules
+                  - link "Link to heading 'Constitutional Rules'" [ref=e445] [cursor=pointer]:
+                    - /url: "#constitutional-rules"
+                - paragraph [ref=e446]:
+                  - text: See
+                  - link "constitution.yaml" [ref=e447] [cursor=pointer]:
+                    - /url: /martin664/constitutional-sentinel-demo/-/blob/main/constitution.yaml
+                  - text: for the full rule set.
+                - heading "LinksLink to heading 'Links'" [level=2] [ref=e448]:
+                  - text: Links
+                  - link "Link to heading 'Links'" [ref=e449] [cursor=pointer]:
+                    - /url: "#links"
+                - list [ref=e450]:
+                  - listitem [ref=e451]:
+                    - link "ACGS-Lite on PyPI" [ref=e452] [cursor=pointer]:
+                      - /url: https://pypi.org/project/acgs-lite/
+                  - listitem [ref=e453]:
+                    - link "Constitutional Sentinel Agent" [ref=e454] [cursor=pointer]:
+                      - /url: /martin664/constitutional-sentinel-demo/-/blob/main/AGENTS.md
+                  - listitem [ref=e455]:
+                    - link "CI Pipeline" [ref=e456] [cursor=pointer]:
+                      - /url: /martin664/constitutional-sentinel-demo/-/blob/main/.gitlab-ci.yml
+    - navigation "Duo controls" [ref=e310]:
+      - tablist [ref=e311]:
+        - tab "New GitLab Duo Chat" [ref=e312] [cursor=pointer]:
+          - img [ref=e313]
+        - tab "Active GitLab Duo Chat" [ref=e316] [cursor=pointer]:
+          - img [ref=e317]
+        - tab "GitLab Duo Chat history" [ref=e319] [cursor=pointer]:
+          - img [ref=e320]
+        - tab "GitLab Duo sessions" [ref=e322] [cursor=pointer]:
+          - img [ref=e323]
+        - link "GitLab Duo AI Catalog" [ref=e325] [cursor=pointer]:
+          - /url: /explore/ai-catalog
+          - img [ref=e326]

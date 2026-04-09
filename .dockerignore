@@ -1,0 +1,17 @@
+.git
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.benchmarks
+.coverage
+.codex-*
+.claude
+__pycache__
+*.pyc
+tests/
+rust/
+hackathon/
+examples/
+dist/
+build/
+*.egg-info

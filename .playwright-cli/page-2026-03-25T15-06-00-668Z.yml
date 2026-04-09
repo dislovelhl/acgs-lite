@@ -1,0 +1,43 @@
+- generic [ref=e4]:
+  - paragraph [ref=e8]: Please sign up or log in to continue.
+  - generic [ref=e9]:
+    - banner [ref=e10]:
+      - heading "Log in to Devpost" [level=1] [ref=e11]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - link "Log in with GitHub" [ref=e14] [cursor=pointer]:
+          - /url: https://devpost.com/authentications/login/github?return_to=https%3A%2F%2Fdevpost.com%2F
+          - generic [ref=e15]: 
+          - text: Log in with GitHub
+        - link "Log in with Facebook" [ref=e16] [cursor=pointer]:
+          - /url: https://devpost.com/authentications/login/facebook?return_to=https%3A%2F%2Fdevpost.com%2F
+          - generic [ref=e17]: 
+          - text: Log in with Facebook
+        - link "Log in with Google" [ref=e18] [cursor=pointer]:
+          - /url: https://devpost.com/authentications/login/google_oauth2?return_to=https%3A%2F%2Fdevpost.com%2F
+          - generic [ref=e19]: 
+          - text: Log in with Google
+        - link "Log in with LinkedIn" [ref=e20] [cursor=pointer]:
+          - /url: https://devpost.com/authentications/login/linkedin?return_to=https%3A%2F%2Fdevpost.com%2F
+          - generic [ref=e21]: 
+          - text: Log in with LinkedIn
+        - generic [ref=e22]: We'll never post without your permission.
+      - generic [ref=e23]:
+        - generic [ref=e24]: OR
+        - generic [ref=e26]:
+          - generic [ref=e27]: Email
+          - textbox "Email" [ref=e28]
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]: Password
+            - textbox "Password" [ref=e32]
+          - paragraph [ref=e33]:
+            - link "Forgot your password?" [ref=e34] [cursor=pointer]:
+              - /url: https://secure.devpost.com/users/password/new
+        - button "Log in with email" [ref=e36] [cursor=pointer]:
+          - generic [ref=e37]: 
+          - text: Log in with email
+    - paragraph [ref=e39]:
+      - text: New to Devpost?
+      - link "Sign up for an account" [ref=e40] [cursor=pointer]:
+        - /url: /users/register?ref=login-page-footer&return_to=https%3A%2F%2Fdevpost.com%2F
