@@ -8,7 +8,7 @@ name = "acgs-lite"
 version = "2.7.2"
 description = "Constitutional AI governance for agents — enforce rules, audit decisions, MACI role separation, formal verification, and 18-framework compliance coverage."
 readme = "README.md"
-license = "Apache-2.0"
+license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
 authors = [
     {name = "ACGS Team", email = "hello@acgs.dev"},
