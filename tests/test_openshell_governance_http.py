@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 from starlette.testclient import TestClient
@@ -15,6 +16,21 @@ from acgs_lite.openshell import (
     SQLiteGovernanceStateBackend,
     create_openshell_governance_app,
 )
+
+
+def _trusted_actor_roles() -> dict[str, str]:
+    return {
+        "agent/openclaw-primary": "proposer",
+        "human/alice": "validator",
+        "agent/executor-worker": "executor",
+    }
+
+
+def _create_app(**kwargs: Any):
+    return create_openshell_governance_app(
+        actor_role_resolver=_trusted_actor_roles(),
+        **kwargs,
+    )
 
 
 def _evaluate_payload() -> dict[str, object]:
@@ -65,7 +81,7 @@ class TestOpenShellGovernanceHttp:
             self._store[key] = value
 
     def test_openapi_docs_expose_examples(self) -> None:
-        with TestClient(create_openshell_governance_app()) as client:
+        with TestClient(_create_app()) as client:
             schema = client.get("/openapi.json")
             assert schema.status_code == 200
             examples = schema.json()["paths"]["/governance/evaluate-action"]["post"]["requestBody"][
@@ -79,7 +95,7 @@ class TestOpenShellGovernanceHttp:
     ) -> None:
         state_path = tmp_path / "openshell-state.json"
 
-        with TestClient(create_openshell_governance_app(state_path=state_path)) as client:
+        with TestClient(_create_app(state_path=state_path)) as client:
             evaluate_response = client.post("/governance/evaluate-action", json=_evaluate_payload())
             assert evaluate_response.status_code == 200
             evaluated = evaluate_response.json()
@@ -102,7 +118,7 @@ class TestOpenShellGovernanceHttp:
 
         assert state_path.exists()
 
-        with TestClient(create_openshell_governance_app(state_path=state_path)) as client:
+        with TestClient(_create_app(state_path=state_path)) as client:
             review_response = client.post(
                 "/governance/review-approval",
                 json={
@@ -128,7 +144,7 @@ class TestOpenShellGovernanceHttp:
         db_path = tmp_path / "openshell-state.db"
         backend = SQLiteGovernanceStateBackend(db_path)
 
-        with TestClient(create_openshell_governance_app(state_backend=backend)) as client:
+        with TestClient(_create_app(state_backend=backend)) as client:
             evaluated = client.post("/governance/evaluate-action", json=_evaluate_payload()).json()
             client.post(
                 "/governance/submit-for-approval",
@@ -141,9 +157,7 @@ class TestOpenShellGovernanceHttp:
                 },
             )
 
-        with TestClient(
-            create_openshell_governance_app(state_backend=SQLiteGovernanceStateBackend(db_path))
-        ) as client:
+        with TestClient(_create_app(state_backend=SQLiteGovernanceStateBackend(db_path))) as client:
             reviewed = client.post(
                 "/governance/review-approval",
                 json={
@@ -203,9 +217,7 @@ class TestOpenShellGovernanceHttp:
         state_path.write_text(json.dumps(legacy_payload), encoding="utf-8")
 
         with TestClient(
-            create_openshell_governance_app(
-                state_backend=JsonFileGovernanceStateBackend(state_path)
-            )
+            _create_app(state_backend=JsonFileGovernanceStateBackend(state_path))
         ) as client:
             reviewed = client.post(
                 "/governance/review-approval",
@@ -229,7 +241,7 @@ class TestOpenShellGovernanceHttp:
         redis_client = self._FakeRedisClient()
 
         with TestClient(
-            create_openshell_governance_app(state_backend=RedisGovernanceStateBackend(redis_client))
+            _create_app(state_backend=RedisGovernanceStateBackend(redis_client))
         ) as client:
             evaluated = client.post("/governance/evaluate-action", json=_evaluate_payload()).json()
             client.post(
@@ -244,7 +256,7 @@ class TestOpenShellGovernanceHttp:
             )
 
         with TestClient(
-            create_openshell_governance_app(state_backend=RedisGovernanceStateBackend(redis_client))
+            _create_app(state_backend=RedisGovernanceStateBackend(redis_client))
         ) as client:
             reviewed = client.post(
                 "/governance/review-approval",
@@ -275,9 +287,7 @@ class TestOpenShellGovernanceHttp:
             encoding="utf-8",
         )
         with pytest.raises(GovernanceStateChecksumError, match="checksum mismatch"):
-            create_openshell_governance_app(
-                state_backend=JsonFileGovernanceStateBackend(state_path)
-            )
+            _create_app(state_backend=JsonFileGovernanceStateBackend(state_path))
 
     def test_observability_hook_receives_load_and_migration_events(self, tmp_path: Path) -> None:
         events: list[tuple[str, dict[str, object]]] = []
@@ -285,7 +295,7 @@ class TestOpenShellGovernanceHttp:
         state_path.write_text(json.dumps({"decisions": {}, "gates": {}}), encoding="utf-8")
 
         with TestClient(
-            create_openshell_governance_app(
+            _create_app(
                 state_backend=JsonFileGovernanceStateBackend(state_path),
                 observability_hook=lambda event, **fields: events.append((event, fields)),
             )

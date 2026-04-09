@@ -26,6 +26,18 @@ from acgs_lite.integrations.openshell_governance import (
 )
 
 
+def _trusted_actor_roles() -> dict[str, str]:
+    return {
+        "agent/openclaw-primary": "proposer",
+        "human/alice": "validator",
+        "agent/executor-worker": "executor",
+    }
+
+
+def _create_app() -> Any:
+    return create_openshell_governance_app(actor_role_resolver=_trusted_actor_roles())
+
+
 def _route_endpoint(app: Any, path: str) -> Callable[..., Any]:
     for route in app.routes:
         if isinstance(route, APIRoute) and route.path == path:
@@ -72,7 +84,7 @@ def _make_action(*, risk: RiskLevel, operation: OperationType) -> ActionEnvelope
 @pytest.mark.unit
 class TestOpenShellGovernanceIntegration:
     def test_app_registers_expected_routes(self) -> None:
-        app = create_openshell_governance_app()
+        app = _create_app()
         paths = {route.path for route in app.routes if isinstance(route, APIRoute)}
         assert "/governance/evaluate-action" in paths
         assert "/governance/submit-for-approval" in paths
@@ -81,14 +93,14 @@ class TestOpenShellGovernanceIntegration:
         assert "/governance/examples" in paths
 
     def test_openapi_includes_request_examples(self) -> None:
-        app = create_openshell_governance_app()
+        app = _create_app()
         schema = app.openapi()
         request_body = schema["paths"]["/governance/evaluate-action"]["post"]["requestBody"]
         examples = request_body["content"]["application/json"]["examples"]
         assert "high_risk_github_write" in examples
 
     async def test_evaluate_action_escalates_high_risk_write(self) -> None:
-        app = create_openshell_governance_app()
+        app = _create_app()
         evaluate = _route_endpoint(app, "/governance/evaluate-action")
         response = await evaluate(_make_action(risk=RiskLevel.HIGH, operation=OperationType.WRITE))
         assert response.decision == DecisionType.ESCALATE.value
@@ -98,7 +110,7 @@ class TestOpenShellGovernanceIntegration:
         assert response.constitutional_hash == "608508a9bd224290"
 
     async def test_evaluate_action_denies_proposer_self_approval_via_maci(self) -> None:
-        app = create_openshell_governance_app()
+        app = _create_app()
         evaluate = _route_endpoint(app, "/governance/evaluate-action")
         action = _make_action(risk=RiskLevel.LOW, operation=OperationType.APPROVE)
         response = await evaluate(action)
@@ -113,7 +125,7 @@ class TestOpenShellGovernanceIntegration:
             ApprovalSubmission,
         )
 
-        app = create_openshell_governance_app()
+        app = _create_app()
         evaluate = _route_endpoint(app, "/governance/evaluate-action")
         submit_for_approval = _route_endpoint(app, "/governance/submit-for-approval")
         review_approval = _route_endpoint(app, "/governance/review-approval")
@@ -153,7 +165,7 @@ class TestOpenShellGovernanceIntegration:
             ApprovalSubmission,
         )
 
-        app = create_openshell_governance_app()
+        app = _create_app()
         evaluate = _route_endpoint(app, "/governance/evaluate-action")
         submit_for_approval = _route_endpoint(app, "/governance/submit-for-approval")
         review_approval = _route_endpoint(app, "/governance/review-approval")
@@ -179,7 +191,7 @@ class TestOpenShellGovernanceIntegration:
             )
         )
         assert reviewed.updated_decision.decision == DecisionType.DENY.value
-        assert "MACI_SELF_VALIDATION_FORBIDDEN" in reviewed.updated_decision.reason_codes
+        assert "ACTOR_ROLE_MISMATCH" in reviewed.updated_decision.reason_codes
 
     def test_stable_openshell_exports_available_from_root_packages(self) -> None:
         import acgs
@@ -191,7 +203,7 @@ class TestOpenShellGovernanceIntegration:
         assert openshell.ActionEnvelope is not None
 
     async def test_evaluate_action_allows_low_risk_read(self) -> None:
-        app = create_openshell_governance_app()
+        app = _create_app()
         evaluate = _route_endpoint(app, "/governance/evaluate-action")
         action = _make_action(risk=RiskLevel.LOW, operation=OperationType.READ)
         action.requirements = ActionRequirements(requires_network=True, mutates_state=False)
@@ -202,12 +214,41 @@ class TestOpenShellGovernanceIntegration:
         assert response.compliance.is_compliant is True
 
     async def test_record_outcome_writes_real_audit_chain(self) -> None:
-        app = create_openshell_governance_app()
+        from acgs_lite.integrations.openshell_governance import (
+            ApprovalReviewRequest,
+            ApprovalSubmission,
+        )
+
+        app = _create_app()
+        evaluate = _route_endpoint(app, "/governance/evaluate-action")
+        submit_for_approval = _route_endpoint(app, "/governance/submit-for-approval")
+        review_approval = _route_endpoint(app, "/governance/review-approval")
         record_outcome = _route_endpoint(app, "/governance/record-outcome")
         get_audit_log = _route_endpoint(app, "/governance/audit-log")
 
+        evaluated = await evaluate(_make_action(risk=RiskLevel.HIGH, operation=OperationType.WRITE))
+        await submit_for_approval(
+            ApprovalSubmission(
+                decision_id=evaluated.decision_id,
+                submitted_by=ActorRef(
+                    actor_id="agent/openclaw-primary",
+                    role=ActorRole.PROPOSER,
+                ),
+            )
+        )
+        reviewed = await review_approval(
+            ApprovalReviewRequest(
+                decision_id=evaluated.decision_id,
+                reviewer=ActorRef(
+                    actor_id="human/alice",
+                    role=ActorRole.VALIDATOR,
+                ),
+                approve=True,
+            )
+        )
+
         outcome = ExecutionOutcome(
-            decision_id="dec_001",
+            decision_id=reviewed.updated_decision.decision_id,
             request_id="req_123",
             executor=ActorRef(
                 actor_id="agent/executor-worker",
@@ -227,6 +268,30 @@ class TestOpenShellGovernanceIntegration:
         assert event.event_type == "execution"
         assert event.details["audit_chain_valid"] is True
         assert event.details["audit_chain_hash"]
-        assert audit_log["entry_count"] == 1
+        assert audit_log["entry_count"] >= 1
         assert audit_log["chain_valid"] is True
-        assert audit_log["entries"][0]["id"] == event.id
+        assert any(entry["id"] == event.id for entry in audit_log["entries"])
+
+    async def test_record_outcome_rejects_unknown_decision_id(self) -> None:
+        from fastapi import HTTPException
+
+        app = _create_app()
+        record_outcome = _route_endpoint(app, "/governance/record-outcome")
+
+        with pytest.raises(HTTPException) as exc_info:
+            await record_outcome(
+                ExecutionOutcome(
+                    decision_id="dec_missing",
+                    request_id="req_missing",
+                    executor=ActorRef(
+                        actor_id="agent/executor-worker",
+                        role=ActorRole.EXECUTOR,
+                    ),
+                    outcome_status=OutcomeStatus.SUCCEEDED,
+                    summary="No-op",
+                )
+            )
+
+        assert exc_info.value.status_code == 404
+        detail = cast(dict[str, str], cast(object, exc_info.value.detail))
+        assert detail["reason_code"] == "UNKNOWN_DECISION_ID"

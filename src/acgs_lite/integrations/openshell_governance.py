@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 from uuid import uuid4
@@ -32,10 +34,16 @@ from acgs_lite.openshell_state import (
     SQLiteGovernanceStateBackend,
 )
 
-try:
-    from src.core.shared.constants import CONSTITUTIONAL_HASH
-except ImportError:
-    CONSTITUTIONAL_HASH = "608508a9bd224290"
+
+def _load_constitutional_hash() -> str:
+    try:
+        constants_module = import_module("src.core.shared.constants")
+    except ImportError:
+        return "608508a9bd224290"
+    return str(getattr(constants_module, "CONSTITUTIONAL_HASH", "608508a9bd224290"))
+
+
+CONSTITUTIONAL_HASH = _load_constitutional_hash()
 
 if TYPE_CHECKING:
     from fastapi import APIRouter, FastAPI
@@ -113,6 +121,40 @@ class GovernanceModel(BaseModel):
         populate_by_name=True,
         use_enum_values=True,
     )
+
+
+_MAX_METADATA_ITEMS = 32
+_MAX_METADATA_DEPTH = 2
+_MAX_METADATA_STRING_LENGTH = 2000
+_MAX_METADATA_SEQUENCE_ITEMS = 20
+_RESERVED_VALIDATION_CONTEXT_KEYS = frozenset(
+    {
+        "request_id",
+        "session_id",
+        "tenant_id",
+        "environment",
+        "actor_role",
+        "resource_uri",
+        "action_type",
+        "operation",
+        "requires_network",
+        "requires_secret",
+        "mutates_state",
+    }
+)
+_RESERVED_AUDIT_METADATA_KEYS = frozenset(
+    {
+        "decision_id",
+        "request_id",
+        "sandbox_id",
+        "provider_id",
+        "summary",
+        "external_refs",
+        "audit_entry_hash",
+        "audit_chain_hash",
+        "audit_chain_valid",
+    }
+)
 
 
 class ResourceRef(GovernanceModel):
@@ -194,6 +236,7 @@ class GovernanceDecision(GovernanceModel):
     decision: DecisionType
     action_allowed: bool
     is_final: bool = True
+    initiator: ActorRef | None = None
     compliance: ComplianceResult
     reason_codes: list[str] = Field(default_factory=list)
     rationale: str = Field(..., max_length=4000)
@@ -376,15 +419,92 @@ def _utcnow() -> datetime:
 
 
 def _map_actor_role(role: ActorRole | str) -> MACIRole:
+    normalized_role = _normalize_actor_role(role)
+    if normalized_role is None:
+        return MACIRole.OBSERVER
     return {
         ActorRole.PROPOSER.value: MACIRole.PROPOSER,
         ActorRole.VALIDATOR.value: MACIRole.VALIDATOR,
         ActorRole.EXECUTOR.value: MACIRole.EXECUTOR,
-    }.get(str(role), MACIRole.OBSERVER)
+    }.get(normalized_role.value, MACIRole.OBSERVER)
+
+
+TrustedActorRoleResolver = Mapping[str, ActorRole | str] | Callable[[str], ActorRole | str | None]
+
+
+def _normalize_actor_role(role: ActorRole | str) -> ActorRole | None:
+    if isinstance(role, ActorRole):
+        return role
+    try:
+        return ActorRole(str(role))
+    except ValueError:
+        return None
+
+
+def _resolve_trusted_actor_role(
+    actor_id: str,
+    actor_role_resolver: TrustedActorRoleResolver | None,
+) -> ActorRole | None:
+    if actor_role_resolver is None:
+        return None
+    raw_role: ActorRole | str | None
+    if callable(actor_role_resolver):
+        raw_role = actor_role_resolver(actor_id)
+    else:
+        raw_role = actor_role_resolver.get(actor_id)
+    if raw_role is None:
+        return None
+    if isinstance(raw_role, ActorRole):
+        return raw_role
+    try:
+        return ActorRole(str(raw_role))
+    except ValueError:
+        return None
+
+
+def _trusted_role_error(
+    actor: ActorRef,
+    *,
+    trusted_role: ActorRole | None,
+) -> tuple[str, str]:
+    claimed_role = _normalize_actor_role(actor.role)
+    claimed_role_value = claimed_role.value if claimed_role is not None else str(actor.role)
+    if trusted_role is None:
+        return (
+            "TRUSTED_ACTOR_ROLE_REQUIRED",
+            f"Actor {actor.actor_id!r} is not bound to a trusted server-side role.",
+        )
+    return (
+        "ACTOR_ROLE_MISMATCH",
+        (
+            f"Actor {actor.actor_id!r} claimed role {claimed_role_value!r}, "
+            f"but the trusted role binding is {trusted_role.value!r}."
+        ),
+    )
+
+
+def _validate_actor_binding(
+    actor: ActorRef,
+    actor_role_resolver: TrustedActorRoleResolver | None,
+) -> tuple[ActorRole | None, tuple[str, str] | None]:
+    claimed_role = _normalize_actor_role(actor.role)
+    if claimed_role is None:
+        return (
+            None,
+            (
+                "INVALID_ACTOR_ROLE",
+                f"Actor {actor.actor_id!r} supplied an invalid role value {actor.role!r}.",
+            ),
+        )
+    trusted_role = _resolve_trusted_actor_role(actor.actor_id, actor_role_resolver)
+    if trusted_role is None or trusted_role != claimed_role:
+        return None, _trusted_role_error(actor, trusted_role=trusted_role)
+    return trusted_role, None
 
 
 def _map_maci_action(payload: ActionEnvelope) -> str:
-    role = str(payload.actor.role)
+    normalized_role = _normalize_actor_role(payload.actor.role)
+    role = normalized_role.value if normalized_role is not None else str(payload.actor.role)
     operation = str(payload.operation)
     if role == ActorRole.VALIDATOR.value or operation in {
         OperationType.APPROVE.value,
@@ -410,14 +530,89 @@ def _build_action_text(payload: ActionEnvelope) -> str:
     )
 
 
+def _truncate_string(value: str) -> str:
+    if len(value) <= _MAX_METADATA_STRING_LENGTH:
+        return value
+    return value[: _MAX_METADATA_STRING_LENGTH - 12] + "...[truncated]"
+
+
+def _sanitize_metadata_value(value: Any, *, depth: int = 0) -> Any:
+    if value is None or isinstance(value, bool | int | float):
+        return value
+    if isinstance(value, str):
+        return _truncate_string(value)
+    if depth >= _MAX_METADATA_DEPTH:
+        return _truncate_string(repr(value))
+    if isinstance(value, Mapping):
+        sanitized: dict[str, Any] = {}
+        for index, (key, nested_value) in enumerate(value.items()):
+            if index >= _MAX_METADATA_ITEMS:
+                break
+            sanitized[str(key)] = _sanitize_metadata_value(nested_value, depth=depth + 1)
+        return sanitized
+    if isinstance(value, list | tuple | set | frozenset):
+        return [
+            _sanitize_metadata_value(item, depth=depth + 1)
+            for item in list(value)[:_MAX_METADATA_SEQUENCE_ITEMS]
+        ]
+    return _truncate_string(repr(value))
+
+
+def _sanitize_metadata(
+    metadata: Mapping[str, Any],
+    *,
+    reserved_keys: frozenset[str] = frozenset(),
+) -> dict[str, Any]:
+    sanitized: dict[str, Any] = {}
+    for index, (key, value) in enumerate(metadata.items()):
+        if index >= _MAX_METADATA_ITEMS:
+            break
+        normalized_key = str(key)
+        if normalized_key in reserved_keys:
+            continue
+        sanitized[normalized_key] = _sanitize_metadata_value(value)
+    return sanitized
+
+
+def _decision_is_expired(decision: GovernanceDecision) -> bool:
+    return decision.expires_at is not None and decision.expires_at < _utcnow()
+
+
 def _build_decision(
     payload: ActionEnvelope,
     *,
     engine: GovernanceEngine,
     maci: MACIEnforcer,
+    actor_role_resolver: TrustedActorRoleResolver | None = None,
 ) -> GovernanceDecision:
     decision_id = f"dec_{uuid4().hex}"
-    actor_role = _map_actor_role(payload.actor.role)
+    sanitized_metadata = _sanitize_metadata(
+        payload.metadata,
+        reserved_keys=_RESERVED_VALIDATION_CONTEXT_KEYS,
+    )
+    trusted_role, binding_error = _validate_actor_binding(payload.actor, actor_role_resolver)
+    if binding_error is not None:
+        reason_code, reason_text = binding_error
+        return GovernanceDecision(
+            decision_id=decision_id,
+            decision=DecisionType.DENY,
+            action_allowed=False,
+            initiator=payload.actor,
+            compliance=ComplianceResult(
+                is_compliant=False,
+                status=ComplianceStatus.NON_COMPLIANT,
+                reason_codes=[reason_code],
+                findings=[reason_text],
+                reasoning=reason_text,
+                constitutional_hash=CONSTITUTIONAL_HASH,
+            ),
+            reason_codes=[reason_code],
+            rationale=reason_text,
+            constitutional_hash=CONSTITUTIONAL_HASH,
+        )
+
+    assert trusted_role is not None
+    actor_role = _map_actor_role(trusted_role)
     maci_action = _map_maci_action(payload)
     maci.assign_role(payload.actor.actor_id, actor_role)
     try:
@@ -427,6 +622,7 @@ def _build_decision(
             decision_id=decision_id,
             decision=DecisionType.DENY,
             action_allowed=False,
+            initiator=payload.actor,
             compliance=ComplianceResult(
                 is_compliant=False,
                 status=ComplianceStatus.NON_COMPLIANT,
@@ -457,7 +653,7 @@ def _build_decision(
             "requires_network": payload.requirements.requires_network,
             "requires_secret": payload.requirements.requires_secret,
             "mutates_state": payload.requirements.mutates_state,
-            **payload.metadata,
+            **sanitized_metadata,
         },
     )
     risk = maci.classify_action_risk(action_text)
@@ -473,6 +669,7 @@ def _build_decision(
             decision_id=decision_id,
             decision=DecisionType.DENY,
             action_allowed=False,
+            initiator=payload.actor,
             compliance=ComplianceResult(
                 is_compliant=False,
                 status=ComplianceStatus.NON_COMPLIANT,
@@ -497,6 +694,7 @@ def _build_decision(
             decision=DecisionType.ESCALATE,
             action_allowed=False,
             is_final=False,
+            initiator=payload.actor,
             compliance=ComplianceResult(
                 is_compliant=None,
                 status=ComplianceStatus.UNKNOWN,
@@ -521,6 +719,7 @@ def _build_decision(
             decision_id=decision_id,
             decision=DecisionType.REQUIRE_SEPARATE_EXECUTOR,
             action_allowed=False,
+            initiator=payload.actor,
             compliance=ComplianceResult(
                 is_compliant=True,
                 status=ComplianceStatus.COMPLIANT,
@@ -545,6 +744,7 @@ def _build_decision(
         decision_id=decision_id,
         decision=DecisionType.ALLOW,
         action_allowed=True,
+        initiator=payload.actor,
         compliance=ComplianceResult(
             is_compliant=True,
             status=ComplianceStatus.COMPLIANT,
@@ -652,6 +852,7 @@ def create_openshell_governance_router(
     observability_hook: GovernanceStateObservabilityHook | None = None,
     state_backend: GovernanceStateBackend | None = None,
     state_path: str | Path | None = None,
+    actor_role_resolver: TrustedActorRoleResolver | None = None,
 ) -> APIRouter:
     """Create a FastAPI router exposing the OpenShell governance contract."""
     try:
@@ -687,7 +888,12 @@ def create_openshell_governance_router(
             ..., openapi_examples=_EVALUATE_ACTION_OPENAPI_EXAMPLES
         ),
     ) -> GovernanceDecision:
-        decision = _build_decision(payload, engine=engine, maci=maci)
+        decision = _build_decision(
+            payload,
+            engine=engine,
+            maci=maci,
+            actor_role_resolver=actor_role_resolver,
+        )
         decision_store[decision.decision_id] = decision
         state_store.save(decision_store=decision_store, quorum=quorum)
         return decision
@@ -717,7 +923,56 @@ def create_openshell_governance_router(
                 constitutional_hash=CONSTITUTIONAL_HASH,
             )
 
-        maci.assign_role(payload.submitted_by.actor_id, _map_actor_role(payload.submitted_by.role))
+        trusted_role, binding_error = _validate_actor_binding(
+            payload.submitted_by, actor_role_resolver
+        )
+        if binding_error is not None:
+            reason_code, reason_text = binding_error
+            return GovernanceDecision(
+                decision_id=payload.decision_id,
+                decision=DecisionType.DENY,
+                action_allowed=False,
+                initiator=base_decision.initiator,
+                compliance=ComplianceResult(
+                    is_compliant=False,
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    reason_codes=[reason_code],
+                    findings=[reason_text],
+                    reasoning=reason_text,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                ),
+                reason_codes=[reason_code],
+                rationale=reason_text,
+                constitutional_hash=CONSTITUTIONAL_HASH,
+            )
+
+        if (
+            base_decision.initiator is not None
+            and payload.submitted_by.actor_id != base_decision.initiator.actor_id
+        ):
+            reason_text = (
+                "Only the actor that initiated the governance decision may submit it for approval."
+            )
+            return GovernanceDecision(
+                decision_id=payload.decision_id,
+                decision=DecisionType.DENY,
+                action_allowed=False,
+                initiator=base_decision.initiator,
+                compliance=ComplianceResult(
+                    is_compliant=False,
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    reason_codes=["SUBMITTER_MISMATCH"],
+                    findings=[reason_text],
+                    reasoning=reason_text,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                ),
+                reason_codes=["SUBMITTER_MISMATCH"],
+                rationale=reason_text,
+                constitutional_hash=CONSTITUTIONAL_HASH,
+            )
+
+        assert trusted_role is not None
+        maci.assign_role(payload.submitted_by.actor_id, _map_actor_role(trusted_role))
         try:
             maci.check(payload.submitted_by.actor_id, "propose")
         except MACIViolationError as exc:
@@ -793,7 +1048,39 @@ def create_openshell_governance_router(
                 updated_decision=updated_decision,
             )
 
-        maci.assign_role(payload.reviewer.actor_id, _map_actor_role(payload.reviewer.role))
+        trusted_role, binding_error = _validate_actor_binding(payload.reviewer, actor_role_resolver)
+        if binding_error is not None:
+            reason_code, reason_text = binding_error
+            updated_decision = GovernanceDecision(
+                decision_id=payload.decision_id,
+                decision=DecisionType.DENY,
+                action_allowed=False,
+                initiator=base_decision.initiator,
+                compliance=ComplianceResult(
+                    is_compliant=False,
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    reason_codes=[reason_code],
+                    findings=[reason_text],
+                    reasoning=reason_text,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                ),
+                reason_codes=[reason_code],
+                rationale=reason_text,
+                constitutional_hash=CONSTITUTIONAL_HASH,
+            )
+            decision_store[payload.decision_id] = updated_decision
+            state_store.save(decision_store=decision_store, quorum=quorum)
+            return ApprovalReviewResponse(
+                decision_id=payload.decision_id,
+                review_id=f"rev_{uuid4().hex}",
+                reviewer=payload.reviewer,
+                approved=False,
+                recorded_at=_utcnow(),
+                updated_decision=updated_decision,
+            )
+
+        assert trusted_role is not None
+        maci.assign_role(payload.reviewer.actor_id, _map_actor_role(trusted_role))
         try:
             maci.check(payload.reviewer.actor_id, "validate")
         except MACIViolationError as exc:
@@ -921,6 +1208,77 @@ def create_openshell_governance_router(
             ..., openapi_examples=_OPENAPI_RECORD_OUTCOME_EXAMPLES
         ),
     ) -> AuditEvent:
+        try:
+            from fastapi import HTTPException
+        except ImportError as e:
+            raise ImportError(
+                "fastapi is required for OpenShell governance endpoints. "
+                "Install with: pip install fastapi uvicorn"
+            ) from e
+
+        trusted_role, binding_error = _validate_actor_binding(payload.executor, actor_role_resolver)
+        if binding_error is not None:
+            reason_code, reason_text = binding_error
+            raise HTTPException(
+                status_code=403,
+                detail={"reason_code": reason_code, "message": reason_text},
+            )
+
+        if trusted_role is not ActorRole.EXECUTOR:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "reason_code": "EXECUTOR_ROLE_REQUIRED",
+                    "message": "Only trusted executor identities may record execution outcomes.",
+                },
+            )
+
+        decision = decision_store.get(payload.decision_id)
+        if decision is None:
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "reason_code": "UNKNOWN_DECISION_ID",
+                    "message": "Execution outcomes require a known governance decision.",
+                },
+            )
+        if _decision_is_expired(decision):
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "reason_code": "DECISION_EXPIRED",
+                    "message": "The governance decision has expired and can no longer be executed.",
+                },
+            )
+        if decision.decision not in {
+            DecisionType.ALLOW.value,
+            DecisionType.REQUIRE_SEPARATE_EXECUTOR.value,
+        }:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "reason_code": "DECISION_NOT_EXECUTABLE",
+                    "message": "Only executable governance decisions may record outcomes.",
+                },
+            )
+        if (
+            decision.decision == DecisionType.REQUIRE_SEPARATE_EXECUTOR.value
+            and decision.initiator is not None
+            and decision.initiator.actor_id == payload.executor.actor_id
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "reason_code": "SEPARATE_EXECUTOR_REQUIRED",
+                    "message": "The initiating actor cannot record outcomes for separately executed actions.",
+                },
+            )
+
+        sanitized_metadata = _sanitize_metadata(
+            payload.metadata,
+            reserved_keys=_RESERVED_AUDIT_METADATA_KEYS,
+        )
+
         event_type = (
             AuditEventType.EXECUTION
             if payload.outcome_status == OutcomeStatus.SUCCEEDED
@@ -944,7 +1302,7 @@ def create_openshell_governance_router(
                 "provider_id": payload.executor.provider_id,
                 "summary": payload.summary,
                 "external_refs": [ref.model_dump(mode="json") for ref in payload.external_refs],
-                **payload.metadata,
+                **sanitized_metadata,
             },
         )
         chain_hash = router_audit_log.record(audit_entry)
@@ -969,7 +1327,7 @@ def create_openshell_governance_router(
 
     @router.get("/audit-log", status_code=status.HTTP_200_OK)
     async def get_audit_log(limit: int = 50) -> dict[str, Any]:
-        entries = router_audit_log.export_dicts()[-max(limit, 0) :]
+        entries = router_audit_log.export_dicts()[-min(max(limit, 0), 200) :]
         return {
             "entries": entries,
             "entry_count": len(router_audit_log),
@@ -1017,6 +1375,7 @@ def create_openshell_governance_app(
     observability_hook: GovernanceStateObservabilityHook | None = None,
     state_backend: GovernanceStateBackend | None = None,
     state_path: str | Path | None = None,
+    actor_role_resolver: TrustedActorRoleResolver | None = None,
 ) -> FastAPI:
     """Create a standalone FastAPI app for the OpenShell governance API."""
     try:
@@ -1034,6 +1393,7 @@ def create_openshell_governance_app(
             observability_hook=observability_hook,
             state_backend=state_backend,
             state_path=state_path,
+            actor_role_resolver=actor_role_resolver,
         )
     )
     return app
