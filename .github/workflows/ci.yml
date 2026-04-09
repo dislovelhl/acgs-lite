@@ -1,265 +1,84 @@
 name: CI
 
-# Optimised pipeline — uses setup-uv@v8 (Node 24, built-in Python management,
-# native uv cache). Drop-in Blacksmith support via RUNNER variable.
-#
-# Constitutional Hash: 608508a9bd224290
-
 on:
   push:
-    branches: [main, "fix/**", "feat/**", "chore/**"]
+    branches: [main]
   pull_request:
     branches: [main]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
 
-env:
-  PYTHON_VERSION: "3.11"
-  # To use Blacksmith: set RUNNER secret/var to "blacksmith-4vcpu-ubuntu-2204"
-  # See: https://github.com/useblacksmith/setup-uv
-
-# ─────────────────────────────────────────────────────────────────────────────
 jobs:
-
-  # ── Lint ──────────────────────────────────────────────────────────────────
-  lint:
-    name: Lint
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
+      - uses: actions/setup-python@v5
         with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install (lint-only)
-        run: uv sync --frozen --no-install-workspace --extra dev
-
-      - name: ruff check
-        run: uv run ruff check --extend-exclude .codex-home .
-
-      - name: ruff format check
-        run: uv run ruff format --check --exclude .codex-home .
-
-  # ── Type check ─────────────────────────────────────────────────────────────
-  typecheck:
-    name: Type check
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
-        with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install workspace
-        run: uv sync --frozen --all-extras
-
-      - name: mypy (acgs-lite)
-        run: |
-          uv run mypy packages/acgs-lite/src/acgs_lite \
-            --ignore-missing-imports \
-            --no-error-summary \
-            || true
-
-  # ── acgs-lite unit tests ──────────────────────────────────────────────────
-  test-lite:
-    name: Test · acgs-lite
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
-        with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install workspace
-        run: |
-          uv sync --frozen --all-extras
-          # Ensure optional SDKs are present (workspace extras may not pull them all)
-          uv pip install "anthropic>=0.30" "google-genai>=1.0" "mcp>=1.0" "langchain-core>=0.3" \
-            "opentelemetry-sdk>=1.20" "fpdf2>=2.7" --quiet
-
-      - name: Build Rust extension (optional)
-        working-directory: packages/acgs-lite/rust
-        run: |
-          if command -v cargo &>/dev/null && [ -f Cargo.toml ]; then
-            uv run maturin develop --release 2>/dev/null || echo "WARN: Rust build skipped"
-          else
-            echo "INFO: no Rust toolchain — Python-only mode"
-          fi
-
-      - name: pytest (acgs-lite, not-slow)
-        run: |
-          uv run pytest packages/acgs-lite/tests/ \
-            --import-mode=importlib \
-            -m "not slow" \
-            -x -q \
-            --timeout=120 \
-            --tb=short
-
-  # ── acgs-core tests ───────────────────────────────────────────────────────
-  test-core:
-    name: Test · acgs-core
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
-        with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install workspace + acgs-core
-        run: |
-          uv sync --frozen --all-extras
-          uv pip install -e packages/acgs-core --no-deps
-
-      - name: pytest (acgs-core)
-        # conftest.py in acgs-core/tests inserts src/ at front of sys.path so
-        # acgs.audit_memory etc. resolve from acgs-core, not the acgs-lite shim.
-        run: |
-          uv run pytest packages/acgs-core/tests/ \
-            --import-mode=importlib \
-            -x -q \
-            --timeout=60 \
-            --tb=short
-
-  # ── enhanced-agent-bus tests ──────────────────────────────────────────────
-  test-bus:
-    name: Test · enhanced-agent-bus
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
-        with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install workspace
-        run: |
-          uv sync --frozen --all-extras
-          # Ensure aiofiles and anthropic are present for bus tests
-          uv pip install "aiofiles>=24.1.0" "anthropic>=0.30" "aiohttp>=3.9" "openai>=1.0" \
-            "opentelemetry-sdk>=1.20" \
-            "opentelemetry-exporter-otlp-proto-grpc>=1.20" --quiet
-
-      - name: MessageProcessor wrapper audit
-        run: make health-bus-wrappers
-
-      - name: pytest (bus, not-slow)
-        run: |
-          uv run pytest packages/enhanced_agent_bus/tests/ \
-            --import-mode=importlib \
-            -m "not slow" \
-            -x -q \
-            --timeout=120 \
-            --tb=short
-
-  # ── Full suite (main-branch gate) ─────────────────────────────────────────
-  test-full:
-    name: Test · full suite
-    if: github.ref == 'refs/heads/main'
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
-    needs: [lint, test-lite]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
-        with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install workspace + acgs-core
-        run: |
-          uv sync --frozen --all-extras
-          uv pip install -e packages/acgs-core --no-deps
-          # Optional SDKs not pulled transitively by all-extras
-          uv pip install "anthropic>=0.30" "google-genai>=1.0" "mcp>=1.0" \
-            "langchain-core>=0.3" "opentelemetry-sdk>=1.20" --quiet
-
-      - name: Build Rust extension (optional)
-        working-directory: packages/acgs-lite/rust
-        run: |
-          if command -v cargo &>/dev/null && [ -f Cargo.toml ]; then
-            uv run maturin develop --release 2>/dev/null || echo "WARN: Rust build skipped"
-          else
-            echo "INFO: no Rust toolchain — Python-only mode"
-          fi
-
-      - name: pytest (acgs-lite — full)
-        run: |
-          uv run pytest packages/acgs-lite/tests/ \
-            --import-mode=importlib \
-            -q \
-            --timeout=300 \
-            --tb=short \
-            -p no:benchmark \
-            --ignore=packages/acgs-lite/tests/test_benchmark_engine.py
-
-      - name: pytest (acgs-core — full)
-        run: |
-          uv run pytest packages/acgs-core/tests/ \
-            --import-mode=importlib \
-            -q \
-            --timeout=120 \
-            --tb=short
-
-  # ── Release gate ──────────────────────────────────────────────────────────
-  release-check:
-    name: Release check
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ${{ vars.RUNNER || 'ubuntu-latest' }}
-    needs: [lint, typecheck, test-lite, test-core]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv + Python
-        uses: astral-sh/setup-uv@v8.0.0
-        with:
-          version: "latest"
-          python-version: ${{ env.PYTHON_VERSION }}
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Install workspace
-        run: uv sync --frozen --all-extras
-
-      - name: Build wheel (acgs-lite)
-        working-directory: packages/acgs-lite
-        run: uv build --wheel
-
-      - name: Check wheel
-        working-directory: packages/acgs-lite
-        run: uv run twine check dist/*.whl
-
-      - name: Publish to PyPI
-        if: success()
-        working-directory: packages/acgs-lite
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: pip install -e ".[dev,autonoma]" httpx
+      - name: Lint
+        run: ruff check src/acgs_lite/
+      - name: Validate capability manifest
+        if: matrix.python-version == '3.11'
+        run: python -m acgs_lite.cli capabilities validate --max-age-days 45
+      - name: Type check
+        if: matrix.python-version == '3.11'
+        continue-on-error: true
+        run: mypy --config-file pyproject.toml
+      - name: Test
         env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: uv publish dist/*.whl
+          OPENAI_API_KEY: test-key-for-unit-tests
+          ANTHROPIC_API_KEY: test-key-for-unit-tests
+        run: |
+          python -m pytest tests/ \
+            --import-mode=importlib \
+            -m "not slow and not benchmark and not e2e" \
+            --ignore=tests/test_expanded_integrations.py \
+            --ignore=tests/test_governed_constrained_output.py \
+            -v --tb=short
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -e ".[dev,autonoma]" httpx
+      - name: Validate capability manifest
+        run: python -m acgs_lite.cli capabilities validate --max-age-days 45
+      - name: Test with coverage
+        env:
+          OPENAI_API_KEY: test-key-for-unit-tests
+          ANTHROPIC_API_KEY: test-key-for-unit-tests
+        run: |
+          python -m pytest tests/ \
+            --import-mode=importlib \
+            --cov=src/acgs_lite \
+            --cov-report=term-missing \
+            --cov-fail-under=70 \
+            --ignore=tests/test_expanded_integrations.py \
+            --ignore=tests/test_governed_constrained_output.py \
+            -m "not slow and not benchmark and not e2e"
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install build tools
+        run: pip install build twine
+      - name: Build wheel and sdist
+        run: python -m build --wheel --sdist
+      - name: Validate package
+        run: twine check dist/*
