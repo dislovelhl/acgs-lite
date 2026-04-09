@@ -16,9 +16,14 @@ from acgs_lite.constitution import Constitution, Severity
 from acgs_lite.engine import GovernanceEngine
 from acgs_lite.errors import ConstitutionalViolationError
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_PATH = Path(__file__).resolve().parent / "fixtures" / "real_use_case_datasets.json"
 BENCHMARK_CONSTITUTION = REPO_ROOT / "autoresearch" / "constitution.yaml"
+
+_skip_missing_benchmark = pytest.mark.skipif(
+    not BENCHMARK_CONSTITUTION.exists(),
+    reason="autoresearch/constitution.yaml not present in standalone package",
+)
 
 
 def _load_cases() -> list[dict[str, object]]:
@@ -87,6 +92,7 @@ def test_real_use_case_fixture_covers_multiple_datasets_domains_and_decisions() 
     assert decisions["escalate"] >= 2
 
 
+@_skip_missing_benchmark
 @pytest.mark.unit
 @pytest.mark.parametrize("case", _load_cases(), ids=lambda case: str(case["id"]))
 def test_benchmark_constitution_matches_real_use_case_fixture(

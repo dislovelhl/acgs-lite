@@ -43,15 +43,10 @@ def test_runtime_source_defaults_exist_in_manifest() -> None:
 
 
 def test_source_examples_reference_current_provider_defaults() -> None:
-    assert 'model="gpt-5.4"' in _source_text(
-        "packages/acgs-lite/src/acgs_lite/integrations/openai.py"
-    )
-    assert 'model="claude-sonnet-4-6"' in _source_text(
-        "packages/acgs-lite/src/acgs_lite/integrations/anthropic.py"
-    )
-    assert 'model="gemini-3-flash-preview"' in _source_text(
-        "packages/acgs-lite/src/acgs_lite/integrations/google_genai.py"
-    )
+    _src_root = Path(__file__).resolve().parents[1] / "src" / "acgs_lite" / "integrations"
+    assert 'model="gpt-5.4"' in _source_text(str(_src_root / "openai.py"))
+    assert 'model="claude-sonnet-4-6"' in _source_text(str(_src_root / "anthropic.py"))
+    assert 'model="gemini-3-flash-preview"' in _source_text(str(_src_root / "google_genai.py"))
 
 
 def test_validate_manifest_reports_stale_entries() -> None:

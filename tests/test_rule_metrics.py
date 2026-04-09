@@ -14,6 +14,14 @@ import pytest
 ACGS_LITE_SRC = Path(__file__).resolve().parents[1] / "src"
 sys.path.insert(0, str(ACGS_LITE_SRC))
 
+_AUTORESEARCH_DIR = Path(__file__).resolve().parents[1] / "autoresearch"
+_EVAL_RULES_AVAILABLE = (_AUTORESEARCH_DIR / "eval_rules.py").exists()
+
+_skip_eval_rules = pytest.mark.skipif(
+    not _EVAL_RULES_AVAILABLE,
+    reason="autoresearch/eval_rules.py not present in standalone package",
+)
+
 from acgs_lite.constitution.rule_metrics import (  # noqa: E402
     EvalReport,
     RuleMetrics,
@@ -135,11 +143,11 @@ class TestScenarioOutcomeMetrics:
 # --- Test 3: label validation (rule ID not in constitution) ---
 
 
+@_skip_eval_rules
 class TestLabelValidation:
     def test_catches_unknown_rule_id(self):
         """validate_annotations should catch rule IDs not in the constitution."""
-        # Import from eval_rules
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import validate_annotations
 
         annotations = {
@@ -151,7 +159,7 @@ class TestLabelValidation:
         assert "SAFETY-099" in errors[0]
 
     def test_passes_valid_rule_ids(self):
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import validate_annotations
 
         annotations = {
@@ -165,9 +173,10 @@ class TestLabelValidation:
 # --- Test 4: case mismatch (safety-001 vs SAFETY-001) ---
 
 
+@_skip_eval_rules
 class TestCaseCanonicalization:
     def test_lowercase_caught_by_validation(self):
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import validate_annotations
 
         annotations = {
@@ -183,9 +192,10 @@ class TestCaseCanonicalization:
 # --- Test 5: content hash deterministic ---
 
 
+@_skip_eval_rules
 class TestContentHash:
     def test_deterministic(self):
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import content_hash
 
         h1 = content_hash("deploy model", {"env": "prod"})
@@ -193,7 +203,7 @@ class TestContentHash:
         assert h1 == h2
 
     def test_different_context(self):
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import content_hash
 
         h1 = content_hash("deploy model", {"env": "prod"})
@@ -201,7 +211,7 @@ class TestContentHash:
         assert h1 != h2
 
     def test_empty_context(self):
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import content_hash
 
         h1 = content_hash("deploy model", {})
@@ -210,7 +220,7 @@ class TestContentHash:
 
     def test_context_order_independent(self):
         """Sorted keys should produce same hash regardless of dict insertion order."""
-        sys.path.insert(0, str(Path(__file__).resolve().parents[2].parent / "autoresearch"))
+        sys.path.insert(0, str(_AUTORESEARCH_DIR))
         from eval_rules import content_hash
 
         h1 = content_hash("action", {"b": "2", "a": "1"})

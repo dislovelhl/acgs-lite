@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS_DIR = REPO_ROOT / "autoresearch" / "scenarios"
 REAL_USE_CASE_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "real_use_case_datasets.json"
 CANDIDATE_SCENARIOS = (
@@ -21,11 +21,17 @@ PROMOTION_PATCH = (
     / "promote_sourced_real_use_case_candidates.patch"
 )
 _CANDIDATE_FILES_AVAILABLE = CANDIDATE_SCENARIOS.exists() and PROMOTION_PATCH.exists()
+_SCENARIOS_AVAILABLE = SCENARIOS_DIR.exists() and any(SCENARIOS_DIR.glob("*.json"))
 
 
 _skip_missing_candidates = pytest.mark.skipif(
     not CANDIDATE_SCENARIOS.exists(),
     reason="autoresearch candidate_scenarios not generated",
+)
+
+_skip_missing_scenarios = pytest.mark.skipif(
+    not _SCENARIOS_AVAILABLE,
+    reason="autoresearch scenarios not present in standalone package",
 )
 
 
@@ -34,6 +40,7 @@ def _load_rows(path: Path) -> list[dict[str, object]]:
     return data if isinstance(data, list) else [data]
 
 
+@_skip_missing_scenarios
 @pytest.mark.unit
 def test_autoresearch_scenario_files_have_valid_schema() -> None:
     expected_values = {"allow", "deny", "escalate"}
@@ -52,6 +59,7 @@ def test_autoresearch_scenario_files_have_valid_schema() -> None:
             assert isinstance(row.get("context", {}), dict)
 
 
+@_skip_missing_scenarios
 @pytest.mark.unit
 def test_autoresearch_scenario_corpus_preserves_decision_coverage() -> None:
     counts: Counter[str] = Counter()
@@ -65,6 +73,7 @@ def test_autoresearch_scenario_corpus_preserves_decision_coverage() -> None:
     assert counts["escalate"] >= 50
 
 
+@_skip_missing_scenarios
 @pytest.mark.unit
 def test_real_use_case_fixture_is_mostly_novel_relative_to_frozen_benchmark_corpus() -> None:
     benchmark_actions = {

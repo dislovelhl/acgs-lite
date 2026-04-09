@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.2] - 2026-04-09
+
+### Fixed
+- **Standalone package test compatibility**: Fixed four test files that used monorepo-relative
+  `parents[3]` path calculations, updated to `parents[1]` (repo root). Added `skipif` guards
+  for tests that require `autoresearch/` data not present in the standalone package
+  (`test_autoresearch_scenario_corpus.py`, `test_real_use_case_datasets.py`,
+  `test_rule_metrics.py`, `test_provider_capability_manifest.py`).
+- **Editable install path**: Updated `.pth` file to point to `src/` in the standalone repo
+  rather than the old monorepo location.
+
 ## [2.7.1] - 2026-04-09
 
 ### Added
