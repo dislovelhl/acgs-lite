@@ -1,100 +1,109 @@
-# Quickstart: Deploying Your First Agentic Firewall
+# Quickstart
 
-**Meta Description**: Get started with ACGS-Lite in under 5 minutes. Learn how to install the library, create a constitution, and govern your first autonomous AI agent.
+Get ACGS running in a few minutes with the same API surface exercised by
+[`examples/quickstart.py`](../examples/quickstart.py).
 
----
+## 1. Install
 
-Welcome to ACGS-Lite! This guide will help you set up your first **Agentic Firewall** to protect your infrastructure from autonomous agent risks.
-
-## 1. Install ACGS-Lite
-
-Install the core library via pip. For production use, we recommend installing with the `mcp` extra to enable the 2026-standard governance server.
+Install the core package:
 
 ```bash
-pip install "acgs-lite[mcp]"
+pip install acgs-lite
 ```
 
-## 2. Create Your Constitution
+Install an extra only when you need a specific integration:
 
-A **Constitution** is a set of deterministic rules that your agent must follow. In 2026, it is best practice to define these in a `rules.yaml` file for version control and auditability.
+```bash
+pip install "acgs-lite[anthropic]"  # Claude integration
+pip install "acgs-lite[mcp]"        # MCP governance server
+pip install "acgs-lite[otel]"       # OpenTelemetry export
+```
 
-Create a file named `rules.yaml`:
+## 2. Add a Constitution
+
+Create `constitution.yaml`:
 
 ```yaml
-# rules.yaml
-name: standard-enterprise-safety
-version: "2026.1.0"
+constitutional_hash: "608508a9bd224290"
 rules:
-  - id: block-pii
-    pattern: "ssn|social security|passport number"
-    severity: critical
-    description: "Prevent PII leakage in agent output"
-    
-  - id: no-destructive-db
-    pattern: "drop table|truncate|delete from .* where 1=1"
-    severity: critical
-    description: "Block destructive database operations"
+  - id: no-pii
+    pattern: "SSN|social security|passport number"
+    severity: CRITICAL
+    description: Block PII exposure
 
-  - id: formal-tone
-    pattern: "stupid|idiot|hate"
-    severity: medium
-    description: "Enforce professional communication standards"
+  - id: no-destructive
+    pattern: "delete|drop table|rm -rf"
+    severity: HIGH
+    description: Block destructive operations
+
+  - id: require-approval
+    pattern: "transfer|payment|wire"
+    severity: HIGH
+    description: Financial actions require human approval
 ```
 
-## 3. Govern Your First Agent
-
-Wrap your existing agent or LLM client with `GovernedAgent`. ACGS-Lite intercepts all calls to ensure they are compliant *before* they execute.
+## 3. Govern a Callable
 
 ```python
 from acgs_lite import Constitution, GovernedAgent
 
-# 1. Load your rules
-constitution = Constitution.from_yaml("rules.yaml")
 
-# 2. Wrap any callable (function, OpenAI client, LangChain agent, etc.)
-# Here we wrap a simple mock agent
 def my_agent(prompt: str) -> str:
     return f"Processed: {prompt}"
 
-agent = GovernedAgent(my_agent, constitution=constitution)
 
-# 3. Safe execution
-try:
-    result = agent.run("Summarize the report")
-    print(f"Success: {result}")
-    
-    # This will trigger a ConstitutionalViolationError!
-    agent.run("My social security number is 123-45-6789")
-except Exception as e:
-    print(f"Blocked by Governance: {e}")
+constitution = Constitution.from_yaml("constitution.yaml")
+agent = GovernedAgent(my_agent, constitution=constitution, agent_id="demo-agent")
+
+result = agent.run("Summarize the quarterly report")
+print(result)
 ```
 
-## 4. Run the MCP Governance Server (2026 Standard)
-
-In a multi-agent environment, you should run ACGS-Lite as a centralized **MCP Server**. This allows all your agents (and IDEs like Claude Desktop) to share the same safety rules.
-
-```bash
-# Run the governance server over stdio
-python -m acgs_lite.integrations.mcp_server --constitution rules.yaml
-```
-
-## 5. Verify Your Audit Trail
-
-Every decision made by the governance engine is cryptographically logged. You can inspect the trail to prove compliance to auditors.
+## 4. See Blocking Behavior
 
 ```python
-from acgs_lite import AuditLog
+from acgs_lite import ConstitutionalViolationError
 
-log = AuditLog()
-for entry in log.entries[-5:]:
-    print(f"[{entry.timestamp}] {entry.action} -> {entry.result} (Rules: {entry.rule_ids})")
+try:
+    agent.run("My social security number is 123-45-6789")
+except ConstitutionalViolationError as exc:
+    print(f"Blocked: {exc}")
 ```
 
----
+## 5. Run the Example
 
-## 🚀 Next Steps
+The repo includes a fuller walkthrough covering default constitutions, custom
+rules, MACI enforcement, audit stats, and the decorator API:
 
-*   **Deep Dive**: Learn about [MACI Architecture](maci.md) and separation of powers.
-*   **Compliance**: Run an [EU AI Act Assessment](compliance-2026.md).
-*   **Integrations**: See how to wrap [LangChain, AutoGen, or CrewAI](integrations.md).
-*   **Advanced**: Implement [Verification Kernels](supervisor-models.md) for high-stakes tasks.
+```bash
+python examples/quickstart.py
+```
+
+## 6. CLI Bootstrap
+
+Scaffold a starter `rules.yaml` and CI governance job:
+
+```bash
+acgs init
+```
+
+Check your environment and license state:
+
+```bash
+acgs status
+```
+
+## 7. MCP Server
+
+If you installed the `mcp` extra, run the governance server over stdio:
+
+```bash
+python -m acgs_lite.integrations.mcp_server --constitution constitution.yaml
+```
+
+## Next Steps
+
+- Read the [MCP Governance Guide](mcp-guide.md).
+- Review [MACI Architecture](maci.md).
+- Run an [EU AI Act assessment](compliance-2026.md).
+- Explore more runnable examples in [`examples/README.md`](../examples/README.md).
