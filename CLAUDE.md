@@ -1,129 +1,98 @@
-# CLAUDE.md
+# ACGS-Lite
 
-Compatibility note for tools that still read `CLAUDE.md`.
+For repo-wide rules, see `/AGENTS.md`. Use `/CLAUDE.md` only if a tool specifically loads it.
 
-`AGENTS.md` is the canonical repo guide. Start there first, then read the nearest scoped
-`AGENTS.md` for the package you are changing.
+## Structure
 
-## Documentation Entry Points
+```
+src/acgs_lite/
+├── constitution/     # Constitution models, loading, templates, export
+├── engine/           # Validation engine and execution helpers
+├── compliance/       # Compliance mapping and assessment helpers
+├── integrations/     # External ecosystem adapters
+├── audit.py          # Audit trail
+├── governed.py       # Governed wrappers
+├── maci.py           # MACI enforcement
+├── eu_ai_act/        # EU AI Act assessment subpackage
+└── server.py         # FastAPI wrapper
 
-Use the shortest path to the docs for the directory you are changing:
-
-- [docs/README.md](docs/README.md) - repo-wide documentation map
-- [docs/repo-map.md](docs/repo-map.md) - directory-by-directory map of repo-owned docs
-- [packages/acgs-core/README.md](packages/acgs-core/README.md) - `acgs` namespace package and audit/policy layer
-- [packages/acgs-lite/README.md](packages/acgs-lite/README.md) - public Python package entry point
-- [packages/acgs-lite/docs/index.md](packages/acgs-lite/docs/index.md) - package guides and CLI/compliance docs
-- [packages/acgs.ai/README.md](packages/acgs.ai/README.md) - SvelteKit frontend package
-- [packages/acgs-dashboard/README.md](packages/acgs-dashboard/README.md) - governance dashboard package
-- [packages/enhanced_agent_bus/README.md](packages/enhanced_agent_bus/README.md) - bus service overview and operations
-- [packages/acgs_auth0/README.md](packages/acgs_auth0/README.md) - Auth0 Token Vault governance bridge
-- [packages/clinicalguard/README.md](packages/clinicalguard/README.md) - healthcare A2A demo/service
-- [packages/constitutional_swarm/README.md](packages/constitutional_swarm/README.md) - governed multi-agent package
-- [packages/mhc/README.md](packages/mhc/README.md) - short-import alias package
-- [src/core/services/api_gateway/README.md](src/core/services/api_gateway/README.md) - API gateway service
-- [workers/governance-proxy/README.md](workers/governance-proxy/README.md) - Cloudflare Worker governance proxy
-- [hackathon-demo/README.md](hackathon-demo/README.md) and [demo/README.md](demo/README.md) - demos and submission assets
-- [rust/README.md](rust/README.md) - Rust/PyO3 engine notes
-
-## Commands
-
-```bash
-make test-quick
-make lint
-make format
-make codex-doctor
+rust/
+├── core/             # Core Rust crate
+├── pyo3/             # Python bindings crate
+├── wasm/             # WASM target
+└── src.legacy/       # Legacy Rust sources kept for reference/migration
 ```
 
-Use package-specific commands when possible:
-- `make test-lite`
-- `make test-bus`
-- `make test-gw`
-- `make health-overview`
+## Testing
 
-## Verification
+```bash
+# From repo root
+python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
 
-- repository pytest runs must include `--import-mode=importlib`
-- run the narrowest meaningful verification first
-- expand to broader checks when shared, security-sensitive, or governance-critical paths change
-- all three gates must pass before work is complete: `make lint`, `make test-quick`, package tests
-- do not hand off code without reporting what you ran and what still remains unverified
+# From package root (preferred for acgs-lite-only work)
+cd packages/acgs-lite
+make test            # full suite
+make test-quick      # skip slow/benchmark tests
+make test-cov        # coverage report → htmlcov/
+make test-examples   # smoke-test all examples/
 
-## Post-Codex Fixes
+# Rust-backed tests (only needed when Rust paths change)
+cd packages/acgs-lite/rust && maturin develop --release
+```
 
-When fixing code issues introduced by Codex/omx:
-- run the affected package test suite **before** starting fixes (baseline)
-- fix one regression at a time, re-run package tests after each fix
-- run `make test-quick` after all fixes to confirm no new regressions
-- never batch Codex regression fixes without test gates between them
+**No API keys required.** All tests use `InMemory*` stubs for external deps.
+Set placeholder keys to silence import-time validation:
+```bash
+export OPENAI_API_KEY=test-key-for-unit-tests
+export ANTHROPIC_API_KEY=test-key-for-unit-tests
+```
 
-## Refactoring
+## Mock/Stub Pattern (Pluggable Protocol)
 
-- Never batch-refactor (exception narrowing, type changes, import rewrites) across 20+ files without incremental verification
-- Work in batches of 5–10 files, run the affected package tests after each batch, commit passing states
-- If a batch causes >5 test failures, revert it and try a more conservative approach
-- Sub-agents may explore/analyze in parallel, but mutations flow through one sequential path with test gates
+Every external dependency is defined as a `typing.Protocol` with an `InMemory*`
+stub for tests. **Never import live services in test code.**
 
-## Code Quality (from insights analysis)
+```
+typing.Protocol              ← interface (structural typing, no inheritance)
+     ↑                              ↑
+InMemory*Stub                RealImplementation
+(tests, CI — zero I/O)       (production — swap at runtime)
+```
 
-- After making multi-file edits, always run the full test suite before committing
-  - ACGS: `make lint && make test-quick`
-  - Svelte: `cd packages/acgs.ai && npm run check && npm run lint`
-  - Never commit without a green test run
-- When editing JSX/TSX/Svelte files, run the build after changes and fix syntax errors before considering the task complete
+### Built-in stubs
 
-## ACGS-Specific Conventions (from insights analysis)
+| Protocol | InMemory stub | Where |
+|----------|--------------|-------|
+| `GovernanceStateBackend` | `InMemoryGovernanceStateBackend` | `acgs_lite.openshell_state` |
+| `ChainSubmitter` | `InMemorySubmitter` | `constitutional_swarm.bittensor.chain_anchor` |
+| `ArweaveClient` | `InMemoryArweaveClient` | `constitutional_swarm.bittensor.arweave_audit_log` |
 
-- Severity enum: use `.value` for comparisons (not `.name`)
-- Violation objects: use `.rule_text` (not `.message`)
-- Audit logging: use `record()` (not `append()`)
-- Constitutional hash: `608508a9bd224290` — flag any other value as stale
-- GovernedAgent retry: configured via `max_retries` parameter
-- TemplateRegistry: built-in templates are protected from overwrite
+### Pattern rules
 
-## Constraints
+1. **Protocol first** — define the interface before any implementation
+2. **`InMemory*` ships with the Protocol** — always in the same module
+3. **No `isinstance()` checks on Protocol types** — duck typing only
+4. **Add `save_calls` / `load_calls` lists** to stubs for assertion in tests
+5. **Chaos stubs for error paths** — `class FailingFoo` raises always
 
-- use canonical enhanced-agent-bus namespaces
-- keep governance, auth, and policy behavior fail-closed
-- never self-validate agent output in violation of MACI role separation
-- do not rely on unchecked PM2 entries as operational truth
+See [`examples/mock_stub_testing/`](examples/mock_stub_testing/) for a full walkthrough.
 
-## CI/CD Debugging
+## Rust Build
 
-- Always reproduce the failure locally before pushing a fix
-- Never iterate via CI. Run `make lint && make test-quick` locally first
-- If local passes but CI fails, the delta is environment (Python version, deps, import mode)
-- Single push only per fix attempt. Do not enter commit-push-wait-fix loops
-- Narrow test scope incrementally: failing test file first, then package, then full suite
-- When fixing CI failures, identify the root cause before applying ANY fix
-- Do not skip or exclude tests without explicit user approval
+```bash
+cd packages/acgs-lite/rust
+maturin develop --release
+```
 
-## Python Packaging
+If you add Rust-only logic, keep the Python fallback behavior intact and verify the Python test
+surface, not only the Rust workspace.
 
-Before publishing to PyPI:
-1. No duplicate keys in pyproject.toml
-2. All URLs are valid and point to correct repos
-3. _compat/shim packages are included
-4. Run `python -m build` locally before publishing
-5. Check git history for large files: `git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectsize) %(rest)' | awk '/^blob/ && $2>1048576 {print $2,$3}' | head -5`
-6. Verify ruff auto-fixes don't introduce untracked module imports
+## Gotchas
 
-## Skill routing
-
-When the user's request matches an available skill, ALWAYS invoke it using the Skill
-tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-The skill has specialized workflows that produce better results than ad-hoc answers.
-
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming → invoke office-hours
-- Bugs, errors, "why is this broken", 500 errors → invoke investigate
-- Ship, deploy, push, create PR → invoke ship
-- QA, test the site, find bugs → invoke qa
-- Code review, check my diff → invoke review
-- Update docs after shipping → invoke document-release
-- Weekly retro → invoke retro
-- Design system, brand → invoke design-consultation
-- Visual audit, design polish → invoke design-review
-- Architecture review → invoke plan-eng-review
-- Save progress, checkpoint, resume → invoke checkpoint
-- Code quality, health check → invoke health
+- `GovernanceEngine.validate()` raises `ConstitutionalViolationError` on violations — it does
+  not return a result with `valid=False`. Catch the exception to inspect violations.
+- Package minimum runtime is Python 3.10.
+- Many integrations are optional extras; preserve lazy import behavior.
+- Rust acceleration is optional and should not become mandatory for baseline tests.
+- Benchmarks and latency claims in docs drift quickly; prefer measured results over hard-coded
+  numbers when updating docs.

@@ -1,9 +1,0 @@
-[workspace]
-members = ["core", "pyo3", "wasm", "spacetime_governance"]
-resolver = "2"
-
-[profile.release]
-opt-level = 3
-lto = "thin"
-codegen-units = 1
-panic = "abort"

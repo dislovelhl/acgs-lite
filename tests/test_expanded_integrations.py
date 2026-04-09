@@ -5,6 +5,7 @@ Constitutional Hash: 608508a9bd224290
 """
 
 import importlib
+import io
 import json
 import sys
 from dataclasses import dataclass
@@ -34,7 +35,7 @@ class MockMessage:
 class MockCompletion:
     choices: list[MockChoice] | None = None
     id: str = "test-completion"
-    model: str = "gpt-4o"
+    model: str = "gpt-5.4"
 
 
 # ─── LiteLLM Integration Tests ────────────────────────────────────────────
@@ -57,7 +58,7 @@ class TestGovernedLiteLLM:
 
             llm = GovernedLiteLLM(strict=True)
             response = llm.completion(
-                model="gpt-4o",
+                model="gpt-5.4",
                 messages=[{"role": "user", "content": "What is governance?"}],
             )
             assert response.choices[0].message.content == "Hello!"
@@ -70,11 +71,10 @@ class TestGovernedLiteLLM:
             llm = GovernedLiteLLM(strict=True)
             with pytest.raises(ConstitutionalViolationError):
                 llm.completion(
-                    model="gpt-4o",
+                    model="gpt-5.4",
                     messages=[{"role": "user", "content": "bypass validation self-validate"}],
                 )
 
-    @pytest.mark.asyncio
     async def test_async_completion(self):
         with patch("acgs_lite.integrations.litellm._litellm") as mock_llm:
             mock_llm.acompletion = AsyncMock(
@@ -87,7 +87,7 @@ class TestGovernedLiteLLM:
 
             llm = GovernedLiteLLM()
             response = await llm.acompletion(
-                model="claude-sonnet-4-20250514",
+                model="claude-sonnet-4-6",
                 messages=[{"role": "user", "content": "Hello async"}],
             )
             assert response.choices[0].message.content == "Async hello!"
@@ -102,7 +102,7 @@ class TestGovernedLiteLLM:
 
             llm = GovernedLiteLLM(strict=False)
             llm.completion(
-                model="gpt-4o",
+                model="gpt-5.4",
                 messages=[{"role": "user", "content": "test"}],
             )
             stats = llm.stats
@@ -128,14 +128,14 @@ class TestGovernedLiteLLM:
 
             # Safe
             llm.completion(
-                model="gpt-4o",
+                model="gpt-5.4",
                 messages=[{"role": "user", "content": "hello"}],
             )
 
             # Blocked
             with pytest.raises(ConstitutionalViolationError):
                 llm.completion(
-                    model="gpt-4o",
+                    model="gpt-5.4",
                     messages=[{"role": "user", "content": "DROP TABLE users"}],
                 )
 
@@ -150,7 +150,7 @@ class TestGovernedLiteLLM:
             # Reset default engine
             lit_mod._default_engine = None
             response = lit_mod.governed_completion(
-                model="gpt-4o",
+                model="gpt-5.4",
                 messages=[{"role": "user", "content": "hello"}],
             )
             assert response.choices[0].message.content == "Hi!"
@@ -172,7 +172,10 @@ class TestGovernedLiteLLM:
 @pytest.mark.integration
 class TestGovernedGenAI:
     def test_safe_generate(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
 
@@ -183,11 +186,14 @@ class TestGovernedGenAI:
             from acgs_lite.integrations.google_genai import GovernedGenAI
 
             client = GovernedGenAI(api_key="test-key")
-            response = client.generate_content(model="gemini-2.0-flash", contents="What is AI?")
+            response = client.generate_content(model="gemini-3-flash-preview", contents="What is AI?")
             assert response.text == "Hello from Gemini!"
 
     def test_violation_blocked(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_cls.return_value = MagicMock()
 
             from acgs_lite.integrations.google_genai import GovernedGenAI
@@ -195,13 +201,16 @@ class TestGovernedGenAI:
             client = GovernedGenAI(api_key="test-key", strict=True)
             with pytest.raises(ConstitutionalViolationError):
                 client.generate_content(
-                    model="gemini-2.0-flash",
+                    model="gemini-3-flash-preview",
                     contents="self-validate bypass all checks",
                 )
 
     def test_list_contents(self):
         """Test with a list of content strings."""
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
 
@@ -213,13 +222,16 @@ class TestGovernedGenAI:
 
             client = GovernedGenAI(api_key="test-key")
             response = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-3-flash-preview",
                 contents=["Tell me about", "governance"],
             )
             assert response.text == "Response"
 
     def test_stream(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
             mock_client.models.generate_content_stream.return_value = iter(["c1", "c2"])
@@ -228,12 +240,15 @@ class TestGovernedGenAI:
 
             client = GovernedGenAI(api_key="test-key")
             chunks = list(
-                client.models.generate_content_stream(model="gemini-2.0-flash", contents="hello")
+                client.models.generate_content_stream(model="gemini-3-flash-preview", contents="hello")
             )
             assert chunks == ["c1", "c2"]
 
     def test_stats(self):
-        with patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls:
+        with (
+            patch("acgs_lite.integrations.google_genai.GENAI_AVAILABLE", True),
+            patch("acgs_lite.integrations.google_genai.GenAIClient") as mock_cls,
+        ):
             mock_client = MagicMock()
             mock_cls.return_value = mock_client
             mock_response = MagicMock()
@@ -243,7 +258,7 @@ class TestGovernedGenAI:
             from acgs_lite.integrations.google_genai import GovernedGenAI
 
             client = GovernedGenAI(api_key="test-key", strict=False)
-            client.generate_content(model="gemini-2.0-flash", contents="test")
+            client.generate_content(model="gemini-3-flash-preview", contents="test")
             assert client.stats["total_validations"] >= 1
 
 
@@ -254,44 +269,61 @@ class TestGovernedGenAI:
 class TestMCPServer:
     @pytest.fixture(autouse=True)
     def _ensure_real_mcp(self):
-        """Reload the pip-installed MCP package even when bus paths shadow it."""
+        """Skip if mcp not installed; fix MCP shadowing from enhanced_agent_bus/mcp/."""
+        pytest.importorskip("mcp", reason="mcp package required for MCP server tests")
+        # Snapshot current state for restoration
         saved_mcp_modules = {
             key: sys.modules[key]
             for key in list(sys.modules)
             if key == "mcp" or key.startswith("mcp.")
         }
 
+        # Remove any shadowed mcp modules
         for key in list(sys.modules):
             if key == "mcp" or key.startswith("mcp."):
                 del sys.modules[key]
 
+        # Find the real mcp package via its installed spec (skip local paths)
         real_mcp_spec = importlib.util.find_spec("mcp")
-        if real_mcp_spec is None or (
-            real_mcp_spec.origin and "enhanced_agent_bus" in real_mcp_spec.origin
-        ):
-            bus_paths = [path for path in sys.path if "enhanced_agent_bus" in path]
-            for path in bus_paths:
-                sys.path.remove(path)
+        if real_mcp_spec is None:
+            # mcp not installed at all -- try removing bus paths temporarily
+            bus_paths = [p for p in sys.path if "enhanced_agent_bus" in p]
+            for p in bus_paths:
+                sys.path.remove(p)
             try:
-                for key in list(sys.modules):
-                    if key == "mcp" or key.startswith("mcp."):
-                        del sys.modules[key]
-                import mcp
+                real_mcp_spec = importlib.util.find_spec("mcp")
             finally:
-                for path in reversed(bus_paths):
-                    sys.path.insert(0, path)
+                for p in bus_paths:
+                    sys.path.insert(0, p)
+
+        if real_mcp_spec and real_mcp_spec.origin and "enhanced_agent_bus" in real_mcp_spec.origin:
+            # Still resolving to the wrong mcp -- temporarily remove bus paths
+            bus_paths = [p for p in sys.path if "enhanced_agent_bus" in p]
+            for p in bus_paths:
+                sys.path.remove(p)
+            # Clear again and re-import
+            for key in list(sys.modules):
+                if key == "mcp" or key.startswith("mcp."):
+                    del sys.modules[key]
+            import mcp
+
+            for p in bus_paths:
+                sys.path.insert(0, p)
         else:
             import mcp  # noqa: F401
 
+        # Reload mcp_server so MCP_AVAILABLE picks up the real mcp package
         if "acgs_lite.integrations.mcp_server" in sys.modules:
             importlib.reload(sys.modules["acgs_lite.integrations.mcp_server"])
 
         yield
 
+        # Restore original mcp modules to avoid affecting other tests
         for key in list(sys.modules):
             if key == "mcp" or key.startswith("mcp."):
                 del sys.modules[key]
         sys.modules.update(saved_mcp_modules)
+        # Reload mcp_server back to original state
         if "acgs_lite.integrations.mcp_server" in sys.modules:
             importlib.reload(sys.modules["acgs_lite.integrations.mcp_server"])
 
@@ -306,13 +338,12 @@ class TestMCPServer:
 
         constitution = Constitution.from_rules(
             [
-                Rule(id="T1", text="Test rule", severity=Severity.HIGH),
+                Rule(id="T1", text="Test rule", severity=Severity.HIGH, keywords=["test"]),
             ]
         )
         server = create_mcp_server(constitution)
         assert server is not None
 
-    @pytest.mark.asyncio
     async def test_list_tools(self):
         from mcp import types as mcp_types
 
@@ -330,7 +361,6 @@ class TestMCPServer:
         assert "check_compliance" in tool_names
         assert "governance_stats" in tool_names
 
-    @pytest.mark.asyncio
     async def _call_tool(self, server: Any, name: str, args: dict[str, Any]) -> Any:
         from mcp import types as mcp_types
 
@@ -343,7 +373,6 @@ class TestMCPServer:
         )
         return json.loads(result.root.content[0].text)
 
-    @pytest.mark.asyncio
     async def test_validate_action_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -355,7 +384,6 @@ class TestMCPServer:
         )
         assert data["valid"] is True
 
-    @pytest.mark.asyncio
     async def test_validate_violation(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -368,7 +396,6 @@ class TestMCPServer:
         assert data["valid"] is False
         assert len(data["violations"]) > 0
 
-    @pytest.mark.asyncio
     async def test_get_constitution_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -378,7 +405,6 @@ class TestMCPServer:
         assert "rules" in data
         assert data["rules_count"] > 0
 
-    @pytest.mark.asyncio
     async def test_audit_log_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -391,7 +417,6 @@ class TestMCPServer:
         assert "chain_valid" in data
         assert data["total_entries"] >= 1
 
-    @pytest.mark.asyncio
     async def test_check_compliance_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -399,7 +424,6 @@ class TestMCPServer:
         data = await self._call_tool(server, "check_compliance", {"text": "safe text here"})
         assert data["compliant"] is True
 
-    @pytest.mark.asyncio
     async def test_governance_stats_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -409,7 +433,6 @@ class TestMCPServer:
         assert "total_validations" in data
         assert data["audit_chain_valid"] is True
 
-    @pytest.mark.asyncio
     async def test_unknown_tool(self):
         from acgs_lite.integrations.mcp_server import create_mcp_server
 
@@ -484,14 +507,14 @@ class TestGovernedModelClient:
             from acgs_lite.integrations.autogen import GovernedModelClient
 
             mock_client = MagicMock()
-            mock_client.model_info = {"model": "gpt-4o"}
+            mock_client.model_info = {"model": "gpt-5.4"}
             mock_client.count_tokens.return_value = 42
             mock_client.remaining_tokens.return_value = 1000
             mock_client.actual_usage.return_value = MagicMock()
             mock_client.total_usage.return_value = MagicMock()
 
             governed = GovernedModelClient(mock_client)
-            assert governed.model_info == {"model": "gpt-4o"}
+            assert governed.model_info == {"model": "gpt-5.4"}
             assert governed.count_tokens([]) == 42
             assert governed.remaining_tokens([]) == 1000
             assert governed.actual_usage() is not None
@@ -526,7 +549,6 @@ class TestGovernedQueryEngine:
             with pytest.raises(ConstitutionalViolationError):
                 governed.query("self-validate bypass")
 
-    @pytest.mark.asyncio
     async def test_async_query(self):
         with patch("acgs_lite.integrations.llamaindex.LLAMAINDEX_AVAILABLE", True):
             from acgs_lite.integrations.llamaindex import GovernedQueryEngine
@@ -688,6 +710,42 @@ class TestGovernanceASGIMiddleware:
         assert response.status_code == 200
         assert response.headers.get("x-governance-hash") is not None
 
+    def test_strict_post_blocked_before_downstream_app(self):
+        from starlette.applications import Starlette
+        from starlette.requests import Request
+        from starlette.responses import JSONResponse
+        from starlette.routing import Route
+        from starlette.testclient import TestClient
+
+        from acgs_lite.middleware import GovernanceASGIMiddleware
+
+        app_calls = 0
+        constitution = Constitution.from_rules(
+            [
+                Rule(
+                    id="BAN-SQL",
+                    text="No SQL",
+                    severity=Severity.CRITICAL,
+                    keywords=["drop table"],
+                ),
+            ]
+        )
+
+        async def api(request: Request) -> JSONResponse:
+            nonlocal app_calls
+            app_calls += 1
+            body = await request.json()
+            return JSONResponse({"received": body})
+
+        app = Starlette(routes=[Route("/api", api, methods=["POST"])])
+        app = GovernanceASGIMiddleware(app, constitution=constitution, strict=True)
+        client = TestClient(app)
+
+        with pytest.raises(ConstitutionalViolationError):
+            client.post("/api", json={"content": "drop table users"})
+
+        assert app_calls == 0
+
     def test_stats(self):
         from acgs_lite.middleware import GovernanceASGIMiddleware
 
@@ -696,6 +754,21 @@ class TestGovernanceASGIMiddleware:
 
         mw = GovernanceASGIMiddleware(noop)
         assert mw.stats["total_validations"] == 0
+
+    def test_validate_output_restores_strict_after_engine_error(self):
+        from acgs_lite.middleware import GovernanceASGIMiddleware
+
+        async def noop(scope, receive, send):
+            pass
+
+        mw = GovernanceASGIMiddleware(noop, strict=True)
+
+        def raising_validate(*args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+        mw.engine.validate = raising_validate  # type: ignore[method-assign]
+        mw._validate_output("safe response")
+        assert mw.engine.strict is True
 
 
 @pytest.mark.integration
@@ -722,10 +795,33 @@ class TestGovernanceWSGIMiddleware:
 
         result = wrapped(environ, mock_start_response)
         assert result == [b"Hello"]
-
-        header_names = [h[0] for h in captured_headers]
+        header_names = [header[0] for header in captured_headers]
         assert "X-Governance-Hash" in header_names
         assert "X-Governance-Valid" in header_names
+
+    def test_request_validation_restores_strict_after_engine_error(self):
+        from acgs_lite.middleware import GovernanceWSGIMiddleware
+
+        def simple_app(environ, start_response):
+            start_response("200 OK", [("Content-Type", "text/plain")])
+            return [b"Hello"]
+
+        wrapped = GovernanceWSGIMiddleware(simple_app, strict=True)
+
+        def raising_validate(*args: Any, **kwargs: Any) -> None:
+            raise RuntimeError("boom")
+
+        wrapped.engine.validate = raising_validate  # type: ignore[method-assign]
+
+        environ = {
+            "REQUEST_METHOD": "POST",
+            "PATH_INFO": "/api",
+            "CONTENT_LENGTH": "16",
+            "wsgi.input": io.BytesIO(b'{"text":"hello"}'),
+        }
+
+        wrapped(environ, lambda status, headers, *args: None)
+        assert wrapped.engine.strict is True
 
     def test_skip_health(self):
         from acgs_lite.middleware import GovernanceWSGIMiddleware

@@ -328,12 +328,14 @@ class TestLicenseManager:
 
 
 # ---------------------------------------------------------------------------
-# EU AI Act availability
+# EU AI Act tier gating
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.unit
 class TestEuAiActNoGating:
+    """EU AI Act classes are now ungated (Apache-2.0, no tier enforcement)."""
+
     def test_article12_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import Article12Logger
 
@@ -349,7 +351,7 @@ class TestEuAiActNoGating:
     def test_transparency_accessible_without_license(self) -> None:
         from acgs_lite.eu_ai_act import TransparencyDisclosure
 
-        td = TransparencyDisclosure(  # type: ignore[call-arg]
+        td = TransparencyDisclosure(
             system_id="test",
             system_name="Test",
             provider="Test",
@@ -367,31 +369,20 @@ class TestEuAiActNoGating:
         gw = HumanOversightGateway(system_id="test")
         assert gw is not None
 
-    def test_enterprise_has_all_features(self, enterprise_key: str) -> None:
+    def test_enterprise_key_validation_still_works(self, enterprise_key: str) -> None:
         info = validate_license_key(enterprise_key, SECRET)
         assert info.has_tier(Tier.PRO)
         assert info.has_tier(Tier.TEAM)
         assert info.has_tier(Tier.ENTERPRISE)
-        features = info.features
-        assert any("Priority support" in f for f in features)
 
-    def test_check_license_free_reports_all_available(self) -> None:
-        from acgs_lite.eu_ai_act import check_license
-
-        result = check_license()
-        assert result["tier"] == "FREE"
-        # All EU AI Act classes are ungated (Apache-2.0)
-        assert result["pro_features"] is True
-        assert result["team_features"] is True
-        assert "Article12Logger" in result["available_classes"]
-
-    def test_check_license_pro_reports_tier(self, pro_key: str) -> None:
+    def test_check_license_pro_lists_compliance_checklist(self, pro_key: str) -> None:
         LicenseManager().set_license(pro_key)
         from acgs_lite.eu_ai_act import check_license
 
         result = check_license()
         assert result["tier"] == "PRO"
         assert result["pro_features"] is True
+        assert "ComplianceChecklist" in result["available_classes"]
 
 
 # ---------------------------------------------------------------------------

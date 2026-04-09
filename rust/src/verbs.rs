@@ -6,7 +6,7 @@
 /// Negative verbs indicate potentially harmful intent (bypass, disable, delete)
 /// that override the positive-verb exemption.
 ///
-/// Constitutional Hash: cdd01ef066bc6cf2
+/// Constitutional Hash: 608508a9bd224290
 
 use regex::Regex;
 use std::collections::HashSet;

@@ -1,177 +1,154 @@
 # Constitutional Hash: 608508a9bd224290
 [build-system]
-requires = ["setuptools>=80.9.0"]
+requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acgs"
-version = "3.0.2"
-description = "Partial-open-source ACGS package line for governance runtime, shared components, and platform tooling"
-requires-python = ">=3.11"
+name = "acgs-lite"
+version = "2.7.2"
+description = "Constitutional AI governance for agents — enforce rules, audit decisions, MACI role separation, formal verification, and 18-framework compliance coverage."
+readme = "README.md"
 license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [
+    {name = "ACGS Team", email = "hello@acgs.dev"},
+]
+keywords = ["ai", "governance", "constitutional", "agents", "safety", "guardrails", "maci", "audit", "eu-ai-act", "ai-governance", "compliance", "constitutional-ai", "llm-safety", "agentic-firewall", "formal-verification", "z3", "lean4", "hipaa", "gdpr", "nist-ai-rmf", "ai-act", "responsible-ai"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Information Technology",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+]
+
 dependencies = [
-    "fastapi>=0.127.0",
-    "httpx>=0.27.0",
-    "pydantic>=2.12.1",
-    "pydantic-settings>=2.13.1",
-    "redis>=5.0.0",
-    "structlog>=25.5.0",
-    "prometheus-client>=0.20.0",
-    "PyJWT>=2.8.0",
-    "orjson>=3.10.0",
-    "cachetools>=5.0.0",
-    "pybreaker>=1.4.1",
-    "slowapi>=0.1.9",
-    "msgpack>=1.0.0",
-    "email-validator>=2.3.0",
-    "python-multipart>=0.0.22",
-    "uvloop>=0.21.0",
-    "httptools>=0.6.0",
-    "PyYAML>=6.0.0",
-    "psutil>=5.9.0",
-    "jsonschema>=4.0.0",
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "click>=8.0",
 ]
 
 [project.optional-dependencies]
+a2a = ["a2a-sdk>=0.2", "httpx>=0.27"]
+openai = ["openai>=1.0"]
+anthropic = ["anthropic>=0.30"]
+langchain = ["langchain-core>=0.2"]
+litellm = ["litellm>=1.0"]
+google = ["google-genai>=1.0"]
+llamaindex = ["llama-index-core>=0.10"]
+autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
+mcp = ["mcp>=1.0"]
+crewai = ["crewai>=0.30"]
+autonoma = ["pyjwt>=2.0", "structlog>=21.0", "fastapi>=0.100"]
+gitlab = ["httpx>=0.27", "starlette>=0.37"]
+google-cloud = ["google-cloud-logging>=3.0"]
+mistral = ["mistralai>=2.0"]
+pdf = ["fpdf2>=2.7"]
+otel = ["opentelemetry-api>=1.0,<2.0", "opentelemetry-sdk>=1.0,<2.0"]
+all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,autonoma,gitlab,google-cloud,pdf,mistral,otel]"]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.25",
+    "mike>=2.0",
+    "mkdocs-git-revision-date-localized-plugin>=1.2",
+]
 dev = [
-    "ruff>=0.8.0",
-    "mypy>=1.13.0",
-    "pre-commit>=4.0.0",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-benchmark>=4.0",
+    "pytest-cov>=4.1",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "acgs-lite[docs]",
 ]
-test = [
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
-    "pytest-xdist>=3.3.1",
-    "pytest-asyncio>=0.24.0",
-    "pytest-timeout>=2.4.0",
-    "pytest-mock>=3.11.0",
-    "pytest-benchmark>=4.0.0",
-    "fakeredis>=2.18.0",
-    "hypothesis>=6.151.9",
-    "respx>=0.20.0",
-    "aiosqlite>=0.20.0",
-    "coverage[toml]>=7.3.0",
-]
-ml = [
-    "numpy>=1.24.0",
-    "scikit-learn>=1.4.0",
-    "pandas>=2.1.0",
-]
-pqc = [
-    "liboqs-python>=0.14.1",
-    "cryptography>=44.0.2",
-]
-postgres = [
-    "asyncpg>=0.31.0",
-    "sqlalchemy>=2.0.38",
-]
+
+[project.scripts]
+"acgs" = "acgs_lite.cli:main"
+"acgs-lite" = "acgs_lite.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/dislovelhl/acgs"
-Documentation = "https://github.com/dislovelhl/acgs/blob/main/README.md"
-Repository = "https://github.com/dislovelhl/acgs"
-Issues = "https://github.com/dislovelhl/acgs/issues"
-Changelog = "https://github.com/dislovelhl/acgs/releases"
-PyPI = "https://pypi.org/project/acgs/"
+Homepage = "https://acgs.ai"
+Documentation = "https://acgs.ai/docs"
+Repository = "https://github.com/dislovelhl/acgs-lite"
+Issues = "https://github.com/dislovelhl/acgs-lite/issues"
+Changelog = "https://github.com/dislovelhl/acgs-lite/releases"
+PyPI = "https://pypi.org/project/acgs-lite/"
 
-[tool.uv]
-managed = true
-package = true
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["acgs*", "acgs_lite*"]
 
-[tool.uv.workspace]
-members = ["packages/enhanced_agent_bus", "packages/acgs-lite", "packages/acgs-deliberation"]
-
-[tool.uv.sources]
-enhanced-agent-bus = { workspace = true }
-acgs-lite = { workspace = true }
-acgs-deliberation = { workspace = true }
+[tool.setuptools.package-data]
+acgs_lite = ["provider_capabilities_manifest.json"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
-exclude = [".claude", ".codex", ".codex-home", ".codex-readiness-integration-test", "demo", "examples", "node_modules", "__pycache__", "tools"]
+target-version = "py310"
+exclude = ["examples", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP", "BLE", "S", "RUF", "C90"]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 ignore = [
     "E501",
-    "B008",
-    "S101",
     "E402",
-    "C901",
+    "SIM102",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110", "B905"]
-"**/tests/**/*.py" = ["S105", "S106", "S108", "BLE001", "S311", "F811", "B017", "S110", "B905"]
-"packages/enhanced_agent_bus/**/*.py" = ["BLE001", "S311"]
-"packages/acgs-lite/**/*.py" = ["BLE001", "S311"]
-"packages/acgs-core/**/*.py" = ["BLE001", "S102"]
-"packages/clinicalguard/**/*.py" = ["BLE001", "S104", "S108", "S110"]
-"packages/constitutional_swarm/**/*.py" = ["S105"]
-"src/**/*.py" = ["BLE001", "S105", "S106", "S108", "RUF001", "RUF002", "RUF003"]
-"src/acgs_lite/**/*.py" = ["BLE001", "S311", "F401", "RUF012"]
-"autoresearch/**/*.py" = ["BLE001", "S311", "T201", "S603", "S110", "RUF001", "RUF002", "RUF003", "RUF005", "RUF046"]
-"**/__init__.py" = ["F401"]
-"**/examples/**/*.py" = ["E402", "S105", "S106", "BLE001"]
-"packages/acgs-lite/examples/*.py" = ["E402", "S105", "S106", "BLE001"]
+# Autoresearch-optimized hot path: semicolons, import order, and line length are deliberate
+"src/acgs_lite/engine.py" = ["E702", "E402", "E501", "SIM102"]
+"src/acgs_lite/constitution.py" = ["SIM102"]
+"src/acgs_lite/__init__.py" = ["F401"]
 
-[tool.ruff.lint.mccabe]
-max-complexity = 15
-
-[tool.ruff.lint.isort]
-known-first-party = ["src", "packages", "acgs_lite", "enhanced_agent_bus", "acgs_deliberation", "clinicalguard"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-m 'not e2e'"
+markers = [
+    "unit: Fast tests with no I/O and no external services",
+    "integration: Tests requiring mocked external services",
+    "compliance: Regulatory framework tests",
+    "constitutional: Governance engine validation tests",
+    "benchmark: Performance tests",
+    "red_team: Adversarial bypass and exhaustion scenarios",
+    "e2e: End-to-end governance scenarios requiring stable fixture baselines",
+]
+filterwarnings = [
+    "ignore:.*_UnionGenericAlias.*deprecated.*:DeprecationWarning:google\\.genai\\.types",
+    "ignore:.*Core Pydantic V1 functionality isn't compatible with Python 3\\.14.*:UserWarning:langchain_core\\._api\\.deprecation",
+]
 
 [tool.mypy]
 python_version = "3.11"
 strict = true
+files = ["src/acgs_lite"]
+exclude = "(?x)(^tests/|^examples/|^src/split_engine\\.py$)"
 ignore_missing_imports = true
-exclude = ["build", "dist", ".codex-home", ".venv", "tests"]
+warn_unused_ignores = false
+allow_untyped_decorators = true
+disable_error_code = ["import-untyped", "import-not-found", "no-untyped-call", "misc", "type-arg", "no-any-return"]
 
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = "--import-mode=importlib"
-pythonpath = ["."]
-testpaths = [
-    "tests",
-    "packages/enhanced_agent_bus",
-    "packages/acgs-lite/tests",
-    "packages/acgs-deliberation/tests",
-    "src/core/shared",
-    "src/core/services/api_gateway/tests",
+[[tool.mypy.overrides]]
+module = [
+    "acgs_lite.constitution.constitution",
+    "acgs_lite.constitution.memoization",
+    "acgs_lite.constitution.policy_export",
+    "acgs_lite.constitution.regulatory",
+    "acgs_lite.constitution.rule",
+    "acgs_lite.engine.batch",
+    "acgs_lite.engine.core",
+    "acgs_lite.integrations.a2a",
+    "acgs_lite.integrations.anthropic",
 ]
-python_files = "test_*.py"
-python_classes = "Test*"
-python_functions = "test_*"
-asyncio_mode = "auto"
-markers = [
-    "unit: marks tests as unit tests",
-    "integration: marks tests as integration tests",
-    "slow: marks tests as slow",
-    "constitutional: marks tests for constitutional policy validation",
-    "benchmark: marks performance benchmark tests",
-    "governance: marks governance critical-path tests",
-    "security: marks security validation tests",
-    "maci: marks MACI enforcement tests",
-    "chaos: marks chaos engineering tests",
-    "pqc: marks post-quantum cryptography tests",
-    "pqc_deprecation: marks PQC deprecation and migration tests",
-    "compliance: marks compliance validation tests",
-    "e2e: marks end-to-end tests",
-    "postgres: marks tests requiring PostgreSQL-specific behavior",
-]
-
-[tool.coverage.run]
-source = ["src", "packages/enhanced_agent_bus", "packages/acgs-lite/src", "packages/acgs-deliberation/src"]
-omit = ["tests/*", "**/tests/*", "**/__init__.py", "src/acgs_lite/*"]
-
-[tool.coverage.report]
-fail_under = 70
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "@(abc\\.)?abstractmethod",
-]
+ignore_errors = true

@@ -1,0 +1,20 @@
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "export restricted dataset", "decision": "deny", "rule_ids": ["ACGS-001"]}
+{"action": "review policy", "decision": "allow", "rule_ids": []}
+{"action": "draft report", "decision": "allow", "rule_ids": []}
+{"action": "approve budget", "decision": "allow", "rule_ids": []}
+{"action": "schedule audit", "decision": "allow", "rule_ids": []}
+{"action": "publish note", "decision": "allow", "rule_ids": []}
+{"action": "triage request", "decision": "allow", "rule_ids": []}
+{"action": "archive memo", "decision": "allow", "rule_ids": []}
+{"action": "prepare summary", "decision": "allow", "rule_ids": []}
+{"action": "update checklist", "decision": "allow", "rule_ids": []}
+{"action": "send reminder", "decision": "allow", "rule_ids": []}

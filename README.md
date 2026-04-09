@@ -1,266 +1,330 @@
-# ACGS -- HTTPS for AI
+# ACGS-Lite: Constitutional AI Governance for Agents
 
-**Constitutional governance infrastructure for AI agents. The missing safety layer between your LLM and production.**
+[![PyPI](https://img.shields.io/pypi/v/acgs-lite?color=blue&style=for-the-badge)](https://pypi.org/project/acgs-lite/)
+[![Python](https://img.shields.io/pypi/pyversions/acgs-lite?style=for-the-badge)](https://pypi.org/project/acgs-lite/)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-green.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
+[![CI](https://img.shields.io/github/actions/workflow/status/dislovelhl/acgs-lite/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/dislovelhl/acgs-lite/actions)
+[![Coverage](https://img.shields.io/badge/tests-4641%20passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
+[![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
 
-`ACGS 2.6.0` | `Apache-2.0` | `up to 560ns P50 on benchmark Rust path` | `4,641+ tests passing`
+**The missing safety layer between your LLM and production.**
 
-> Performance numbers are from `make bench` under the optional Rust/PyO3 hot path. Python-only paths will be slower. Run benchmarks on your own hardware before quoting latency.
+`acgs-lite` is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes — violations are blocked, not just logged.
 
 ---
 
-## The Problem
-
-A single mother applies for a mortgage. 742 credit score. 12 years of stable employment. The AI system rejects her in 340 milliseconds -- no human review, no appeal, no explanation. Billions of consequential decisions flow through AI systems daily with zero verifiable governance. The EU AI Act takes full enforcement in August 2026 with fines up to 7% of global revenue.
-
-## Install
-
-```bash
-pip install acgs-lite
-```
-
-## 5 Lines to Governed AI
+## 🚀 5-Line Quickstart
 
 ```python
 from acgs_lite import Constitution, GovernedAgent
 
-constitution = Constitution.from_template("general")
-agent = GovernedAgent(my_agent, constitution=constitution)
-result = agent.run("process this request")  # Governed.
+constitution = Constitution.from_yaml("constitution.yaml")
+agent = GovernedAgent(my_llm_agent, constitution=constitution)
+result = agent.run("Process this high-risk transaction")
 ```
 
-Every action validated against constitutional rules. Every decision recorded in a tamper-evident audit trail. Every role boundary enforced. Zero false negatives across 4,641+ tested scenarios, with continuous fuzzing for unknown failure modes.
-
-## What You Get
-
-- **Constitutional Engine** -- Define governance rules in YAML. Context-aware matching, 5 domain templates, composable rule layers, constitutional diff auditing.
-- **MACI Architecture** -- Separation of powers for AI. Proposer / Validator / Executor / Observer roles. Agents cannot validate their own output.
-- **Tamper-Proof Audit Trail** -- SHA-256 chain-verified logging. Every boundary check, role assignment, and validation recorded.
-- **Compliance Coverage** -- 72 of 125 checklist items auto-populated across 9 frameworks (EU AI Act, NIST AI RMF, ISO 42001, SOC 2, HIPAA, GDPR, ECOA/FCRA, NYC LL 144, OECD AI).
-- **11 Platform Integrations** -- Anthropic, MCP, GitLab CI/CD, OpenAI, LangChain, LiteLLM, Google GenAI, LlamaIndex, AutoGen, CrewAI, A2A.
-- **5 Governance Sidecars** -- PolicyLinter, GovernanceTestSuite, PolicyLifecycleOrchestrator, RefusalReasoningEngine, GovernanceObservabilityExporter.
-
-## Quick Links
-
-- **[PyPI](https://pypi.org/project/acgs-lite/)** -- `pip install acgs-lite`
-- **[Repository](https://gitlab.com/martin668/acgs-lite)** -- Source + docs
-- **[Engineering Docs Index](docs/README.md)** -- Repo guide by directory, package, and workflow
-- **[Repo Directory Map](docs/repo-map.md)** -- Fast path to the right doc for each repo-owned directory
-- **[EU AI Act Tool](#eu-ai-act-compliance-in-60-seconds)** -- `acgs-lite eu-ai-act --domain healthcare`
-- **[ClinicalGuard](packages/clinicalguard/)** -- Healthcare A2A agent demo
-
----
-
-## EU AI Act Compliance in 60 Seconds
-
-```bash
-pip install acgs-lite
-acgs-lite init                                               # Scaffold rules + CI
-acgs-lite eu-ai-act --system-id "my-system" --domain healthcare   # Assess + PDF report
-```
-
-```
-  EU AI Act Compliance Assessment
-  ==================================================
-  System:            my-system
-  Compliance Score:  65%
-  ACGS Coverage:     65%
-  Enforcement:       August 2, 2026
-  Max Penalty:       7% global revenue / EUR 35M
-
-  EU AI Act Article Checklist (High-Risk):
-    ✅ Article 9:  Risk management system
-    ⬜ Article 10: Data governance
-    ⬜ Article 11: Technical documentation
-    ✅ Article 12: Record-keeping (auto-logged)
-    ✅ Article 13: Transparency (auto-generated)
-    ✅ Article 14: Human oversight (MACI enforced)
-    ✅ Article 72: Conformity assessment
-
-  ✅ Report generated: eu_ai_act_my-system.pdf
-  Hand this to your compliance officer.
-```
-
-Also available: `acgs-lite assess`, `acgs-lite report --pdf`, `acgs-lite lint`, `acgs-lite test`, `acgs-lite lifecycle`, `acgs-lite refusal`, `acgs-lite observe`, `acgs-lite otel`.
-
----
-
-## Governance Authoring Workflows
-
-```bash
-acgs-lite test --generate                           # Create example governance fixtures
-acgs-lite test                                      # Run regression suite against rules.yaml
-
-acgs-lite lifecycle register policy-v2              # Start policy promotion
-acgs-lite lifecycle approve policy-v2 --actor alice # Record approvals
-acgs-lite lifecycle lint-gate policy-v2             # Mark lint gate passed
-acgs-lite lifecycle test-gate policy-v2             # Mark test gate passed
-acgs-lite lifecycle review policy-v2                # draft -> review
-acgs-lite lifecycle stage policy-v2                 # review -> staged (canary rollout)
-acgs-lite lifecycle activate policy-v2              # staged -> active
-
-acgs-lite refusal "deploy a weapon to attack the target" # Explain denial + suggest safe alternatives
-acgs-lite observe "hello world" "deploy a weapon" --watch --interval 1
-acgs-lite otel --actions-file actions.txt --watch --interval 1 --iterations 3
-acgs-lite otel --actions-file actions.txt --bundle-dir telemetry-bundle -o telemetry.json
-bash packages/acgs-lite/examples/demo_cli_sidecars.sh
-```
-
----
-
-## Compliance Coverage Detail
-
-| Regulatory Framework | Primary Business Risk | ACGS Auto-Coverage |
-|---|---|---|
-| **EU AI Act** | 7% global revenue penalty | 5/9 items auto-covered |
-| **NIST AI RMF** | US Federal Procurement gate | 7/16 items auto-covered |
-| **ISO/IEC 42001** | International Audit failure risk | 9/18 items auto-covered |
-| **SOC 2 + AI** | Enterprise gate / Lost contracts | 10/16 items auto-covered |
-| **HIPAA + AI** | $1.5M fine per violation | 9/15 items auto-covered |
-| **GDPR Art. 22** | 4% global revenue | 10/12 items auto-covered |
-| **ECOA/FCRA** | Unlimited damages | 6/12 items auto-covered |
-| **NYC LL 144** | $1,500/day | 6/12 items auto-covered |
-| **OECD AI** | Baseline standard | 10/15 items auto-covered |
-
-```python
-from acgs_lite.compliance import MultiFrameworkAssessor
-
-assessor = MultiFrameworkAssessor()
-report = assessor.assess({"jurisdiction": "EU", "domain": "healthcare"})
-print(report.overall_score)        # 0.62 (auto-populated)
-print(report.cross_framework_gaps) # Items needing manual evidence
-```
-
----
-
-## Platform Integrations
-
-| Platform | Install | Status |
-|----------|---------|--------|
-| **Anthropic** | `acgs-lite[anthropic]` | Production |
-| **MCP** | `acgs-lite[mcp]` | Production |
-| **GitLab CI/CD** | Built-in | Production |
-| OpenAI | `acgs-lite[openai]` | Maintained |
-| LangChain | `acgs-lite[langchain]` | Maintained |
-| LiteLLM | `acgs-lite[litellm]` | Maintained |
-| Google GenAI | `acgs-lite[google]` | Experimental |
-| LlamaIndex | `acgs-lite[llamaindex]` | Experimental |
-| AutoGen | `acgs-lite[autogen]` | Experimental |
-| CrewAI | `acgs-lite[crewai]` | Experimental |
-| A2A | `acgs-lite[a2a]` | Experimental |
-
----
-
-## GitLab CI/CD Integration
+Rules in YAML (`constitution.yaml`):
 
 ```yaml
-# .gitlab-ci.yml
-governance:
-  stage: test
-  image: python:3.11-slim
-  before_script:
-    - pip install acgs-lite
-  script:
-    - python3 -c "
-      import asyncio, os, sys
-      from acgs_lite import Constitution
-      from acgs_lite.integrations.gitlab import GitLabGovernanceBot
+constitutional_hash: "608508a9bd224290"
+rules:
+  - id: no-pii
+    pattern: "SSN|social security|passport number"
+    severity: CRITICAL
+    description: Block PII exposure
 
-      async def main():
-          constitution = Constitution.from_yaml('rules.yaml')
-          bot = GitLabGovernanceBot(
-              token=os.environ['GITLAB_TOKEN'],
-              project_id=int(os.environ['CI_PROJECT_ID']),
-              constitution=constitution,
-          )
-          report = await bot.run_governance_pipeline(
-              mr_iid=int(os.environ['CI_MERGE_REQUEST_IID'])
-          )
-          return 1 if report.violations else 0
+  - id: no-destructive
+    pattern: "delete|drop table|rm -rf"
+    severity: HIGH
+    description: Block destructive operations
 
-      sys.exit(asyncio.run(main()))
-      "
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+  - id: require-approval
+    pattern: "transfer|payment|wire"
+    severity: HIGH
+    description: Financial actions require human approval
 ```
 
 ---
 
-## Architecture
-
-### The MACI Architecture: Ending Self-Validation
-
-```
-PROPOSER          VALIDATOR          EXECUTOR          OBSERVER
-(Agent)     -->   (ACGS Engine) -->  (System)    -->   (Audit Log)
-                       |
-Generates the    Validates against   Only triggers    Cryptographically
-proposed action. immutable YAML      if Validator     chains every
-Cannot execute.  constitution        explicitly       boundary check.
-                 in 560ns.           approves.
-```
-
-**The Critical Structural Boundary:** The Proposer can never act as its own Validator.
-
-### The Three Pillars
-
-| Pillar | What It Does |
-|--------|-------------|
-| **Definition** (Constitutional Engine) | Code-first governance. YAML rules with keywords, regex, severity levels. 5 domain templates, `ConstitutionBuilder` fluent API, `Constitution.merge()` for composable layers. |
-| **Enforcement** (MACI Framework) | Four roles: Proposer, Validator, Executor, Observer. Self-validation prevention. Action risk classification: LOW / MEDIUM / HIGH / CRITICAL. |
-| **Verification** (Tamper-Proof Audit) | SHA-256 chain-verified audit trail. Constitutional hash: `608508a9bd224290`. Prometheus/OpenTelemetry metrics export. |
-
-### Translating Constitutional Law into Code
-
-| The Human Legal Paradigm | The ACGS Machine Equivalent |
-|---|---|
-| **Separation of Powers** (Checks and Balances) | MACI Architecture. Agents cannot act as their own Validator. Role-based isolation ensures structural integrity. |
-| **The Rule of Law** | Constitutional Engine. Immutable YAML rule definitions evaluated with O(n) Aho-Corasick deterministic scanning. |
-| **Due Process & Right to Appeal** | Cryptographic Audit Trails. Every boundary check, role assignment, and validation is logged and tamper-evident. |
-
----
-
-## Why This Exists
-
-### ACGS is HTTPS for AI
-
-| The 1990s Web | | |
-|---|---|---|
-| HTTP (Insecure & Unverifiable) | --> SSL/TLS Protocol Introduced | --> E-Commerce Scales Globally |
-
-*The web could not scale commercially without cryptographic proof of secure transactions.*
-
-| The 2020s Enterprise AI | | |
-|---|---|---|
-| Naked LLMs (Black Box & Unconstrained) | --> ACGS Protocol Introduced | --> Regulated Enterprise AI Adoption |
-
-*AI cannot scale into high-stakes domains without cryptographic proof of constitutional compliance.*
-
-### The Engine Built by the Machines
-
-This entire constitutional governance engine -- 4,641+ passing tests, Aho-Corasick optimization, MACI architecture -- was built by a non-technical founder who could not write a for loop two years ago. It was built entirely through conversation with Claude.
-
-**If an AI is capable enough to help a non-technical founder build its own constitutional governance engine, it is capable enough to do immense damage without one.**
-
-Governance must be democratic. The infrastructure that constrains the machines must be accessible to the people affected by them -- not just the corporations deploying them.
-
----
-
-## Govern Responsibly.
+## 📦 Installation
 
 ```bash
 pip install acgs-lite
 ```
 
-Apache-2.0 Licensed | Open Source
+With framework integrations:
 
-*The question was never whether power would be constrained -- it was whether the constraints would be built by the people affected or imposed after the damage was done.*
-
-### License
-
-Apache-2.0. See [LICENSE](LICENSE).
+```bash
+pip install "acgs-lite[openai]"       # OpenAI
+pip install "acgs-lite[anthropic]"    # Anthropic Claude
+pip install "acgs-lite[langchain]"    # LangChain / LangGraph
+pip install "acgs-lite[mcp]"          # Model Context Protocol server
+pip install "acgs-lite[autogen]"      # AutoGen / AG2
+pip install "acgs-lite[a2a]"          # Google A2A protocol
+pip install "acgs-lite[all]"          # All integrations
+```
 
 ---
 
-**[PyPI](https://pypi.org/project/acgs-lite/) | [Repository](https://gitlab.com/martin668/acgs-lite) | [Docs](https://gitlab.com/martin668/acgs-lite/-/blob/main/README.md)**
+## 🛡️ Core Concepts
 
-*Constitutional Hash: 608508a9bd224290*
+### Governance Engine
+
+The `GovernanceEngine` sits between your agent and its tools. Every action passes through it before execution. Matching rules block or flag the action; the result is an immutable `ValidationResult`.
+
+```python
+from acgs_lite import Constitution, GovernanceEngine, Rule, Severity
+
+constitution = Constitution.from_rules([
+    Rule(id="no-pii", pattern=r"SSN|\bpassport\b", severity=Severity.CRITICAL),
+    Rule(id="no-delete", pattern=r"\bdelete\b|\bdrop\b", severity=Severity.HIGH),
+])
+
+engine = GovernanceEngine(constitution)
+result = engine.validate("summarize the quarterly report", agent_id="analyst-01")
+
+if not result.valid:
+    for v in result.violations:
+        print(f"[{v.severity}] {v.rule_id}: {v.description}")
+```
+
+### MACI — Separation of Powers
+
+MACI prevents a single agent from proposing, validating, and executing the same action:
+
+```python
+from acgs_lite import MACIEnforcer, MACIRole
+
+enforcer = MACIEnforcer()
+
+# Assign roles
+enforcer.assign(agent_id="planner",   role=MACIRole.PROPOSER)
+enforcer.assign(agent_id="reviewer",  role=MACIRole.VALIDATOR)
+enforcer.assign(agent_id="executor",  role=MACIRole.EXECUTOR)
+
+# Proposer creates; Validator checks; Executor runs — never the same agent
+proposal = enforcer.propose("planner", action="deploy v2.1 to production")
+approval = enforcer.validate("reviewer", proposal)
+enforcer.execute("executor", approval)
+```
+
+### Tamper-Evident Audit Trail
+
+Every governance decision is written to an append-only, SHA-256-chained log:
+
+```python
+from acgs_lite import AuditLog
+
+log = AuditLog()
+engine = GovernanceEngine(constitution, audit_log=log)
+
+engine.validate("send email to user@example.com", agent_id="mailer")
+
+for entry in log.entries():
+    print(entry.id, entry.valid, entry.constitutional_hash)
+
+# Verify chain integrity
+assert log.verify_chain(), "Audit log tampered!"
+```
+
+### GovernedAgent — Drop-in Wrapper
+
+```python
+from acgs_lite import Constitution, GovernedAgent
+
+@GovernedAgent.decorate(constitution=constitution, agent_id="summarizer")
+def summarize(text: str) -> str:
+    return my_llm.complete(f"Summarize: {text}")
+
+# Raises ConstitutionalViolationError if text contains violations
+result = summarize("Q4 revenue was $4.2M")
+```
+
+---
+
+## 🌐 Integrations
+
+### OpenAI
+
+```python
+from acgs_lite.integrations.openai import GovernedOpenAI
+from openai import OpenAI
+
+client = GovernedOpenAI(OpenAI(), constitution=constitution)
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Analyze the contract"}],
+)
+```
+
+### Anthropic Claude
+
+```python
+from acgs_lite.integrations.anthropic import GovernedAnthropic
+import anthropic
+
+client = GovernedAnthropic(anthropic.Anthropic(), constitution=constitution)
+message = client.messages.create(
+    model="claude-opus-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Review this code"}],
+)
+```
+
+### LangChain
+
+```python
+from acgs_lite.integrations.langchain import GovernanceRunnable
+from langchain_openai import ChatOpenAI
+
+governed_llm = GovernanceRunnable(
+    ChatOpenAI(model="gpt-4o"),
+    constitution=constitution,
+)
+result = governed_llm.invoke("Translate this document")
+```
+
+### MCP Server
+
+Start a governance server that any MCP-compatible agent can query:
+
+```bash
+acgs serve --host 0.0.0.0 --port 8080
+```
+
+```python
+from acgs_lite.integrations.mcp_server import create_mcp_server
+app = create_mcp_server(constitution=constitution)
+```
+
+---
+
+## 📋 Compliance Coverage
+
+ACGS maps governance controls to 18 regulatory frameworks. Run `acgs assess` to generate a compliance report:
+
+```bash
+acgs assess --framework eu-ai-act --output report.pdf
+```
+
+| Framework | Coverage | Key Controls |
+|-----------|----------|--------------|
+| **EU AI Act (High-Risk)** | Art. 9, 10, 13, 14, 17 | Risk management, human oversight, transparency |
+| **NIST AI RMF** | 7 / 16 functions | Govern, Map, Measure, Manage |
+| **SOC 2 + AI** | 10 / 16 criteria | CC6, CC7, CC9 trust service criteria |
+| **HIPAA + AI** | 9 / 15 safeguards | PHI detection, access controls, audit controls |
+| **GDPR Art. 22** | 10 / 12 requirements | Automated decision-making, right to explanation |
+| **CCPA / CPRA** | 8 / 10 rights | Opt-out, data minimisation, transparency |
+| **ISO 42001** | Clause 6, 8, 9, 10 | AI management system controls |
+| **OWASP LLM Top 10** | 9 / 10 risks | Prompt injection, insecure output, data poisoning |
+
+---
+
+## 🔬 Advanced: Formal Verification
+
+For the highest-risk scenarios, ACGS supports mathematical proof of safety properties.
+
+### Z3 SMT Solver
+
+```python
+from acgs_lite.integrations.z3_verifier import Z3ConstraintVerifier
+
+verifier = Z3ConstraintVerifier()
+result = verifier.verify(
+    action="transfer $50,000 to external account",
+    constraints=["amount <= 10000", "recipient in approved_list"],
+)
+print(result.satisfiable, result.counterexample)
+```
+
+### Lean 4 Proof Certificates (Leanstral)
+
+```python
+from acgs_lite import LeanstralVerifier
+
+verifier = LeanstralVerifier()  # requires mistralai extra
+certificate = await verifier.verify(
+    property="∀ action : Action, action.amount ≤ 10000",
+    context={"action": "transfer $5,000"},
+)
+print(certificate.kernel_verified)  # True only if Lean kernel accepted proof
+print(certificate.to_audit_dict())  # attach to AuditEntry
+```
+
+---
+
+## ⚡ Performance
+
+| Operation | Latency | Notes |
+|-----------|---------|-------|
+| Rule validation (Python) | < 1 ms | Aho-Corasick multi-pattern |
+| Rule validation (Rust) | ~560 ns | Optional Rust extension |
+| Engine batch (100 rules) | ~2 ms | Parallel severity evaluation |
+| Audit write (JSONL) | ~50 µs | Append-only, SHA-256 chained |
+| Compliance report | < 500 ms | 18 frameworks, cached |
+
+---
+
+## 🖥️ CLI
+
+```bash
+# Validate a single action
+acgs validate "send email to user@corp.com" --constitution rules.yaml
+
+# Run governance status check
+acgs status
+
+# Generate compliance report
+acgs assess --framework hipaa --output hipaa_report.pdf
+
+# Audit log inspection
+acgs audit --tail 20
+acgs audit --verify-chain
+
+# Start MCP governance server
+acgs serve --port 8080
+
+# EU AI Act Art. 14(3) kill switch
+acgs halt --agent-id agent-01 --reason "anomalous behaviour detected"
+acgs resume --agent-id agent-01
+```
+
+---
+
+## 📖 Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [Quickstart](https://acgs.ai/docs/quickstart) | Up and running in 5 minutes |
+| [Architecture](https://acgs.ai/docs/architecture) | Engine internals, MACI deep dive |
+| [Integrations](https://acgs.ai/docs/integrations) | OpenAI, Anthropic, LangChain, MCP, A2A |
+| [Compliance](https://acgs.ai/docs/compliance-2026) | 18-framework regulatory mapping |
+| [CLI Reference](https://acgs.ai/docs/cli) | Full command reference |
+| [Why Governance?](https://acgs.ai/docs/why-governance) | The case for deterministic guardrails |
+| [OWASP LLM Top 10](https://acgs.ai/docs/owasp-2026) | ACGS coverage of each risk |
+| [Testing Guide](https://acgs.ai/docs/testing-governance) | Testing governed agents |
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+```bash
+git clone https://github.com/dislovelhl/acgs-lite
+cd acgs-lite/packages/acgs-lite
+pip install -e ".[dev]"
+pytest tests/ --import-mode=importlib
+```
+
+---
+
+## 📄 License
+
+Apache-2.0. See [LICENSE](LICENSE) for details.
+
+Commercial enterprise licences (SLA, support, air-gapped deployment) available at [acgs.ai](https://acgs.ai).
+
+---
+
+*Constitutional Hash: `608508a9bd224290` — embedded in every validation path.*

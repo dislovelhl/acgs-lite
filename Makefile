@@ -1,307 +1,188 @@
-.PHONY: help setup lock-sync lock-validate test test-quick test-lite test-bus test-gw build-root-package publish-root-dry-run publish-root-package build-acgs-lite publish-acgs-lite-dry-run publish-acgs-lite build-acgs publish-dry-run publish-acgs publish-check health-manifest health-overview health-lite health-bus health-bus-governance health-bus-wrappers health-bus-wrappers-batch1-ready health-gw health-constitutional-swarm health-frontend health-worker lint format clean bench cov cov-html codex-doctor autoresearch-promote agent-commit dashboard-install dashboard-dev dashboard-build dashboard-backend
+# acgs-lite package Makefile
+# Run from packages/acgs-lite/ or from repo root via:
+#   make -C packages/acgs-lite <target>
+#
+# All tests run without API keys — InMemory* stubs handle external deps.
 
-LOCK_PYTHON ?= 3.11
-UV ?= uv
-ROOT_DIR := $(CURDIR)
-UV_CACHE_DIR ?= $(ROOT_DIR)/.uv-cache
-VENV_PYTHON := $(ROOT_DIR)/.venv/bin/python
-PYTHON ?= $(if $(wildcard $(VENV_PYTHON)),$(VENV_PYTHON),python3)
-PIP ?= $(PYTHON) -m pip
-WORKSPACE_PYTHONPATH := $(ROOT_DIR)/packages/enhanced_agent_bus:$(ROOT_DIR)/packages/acgs-core/src:$(ROOT_DIR)/packages/acgs-lite/src:$(ROOT_DIR)/packages/acgs-deliberation/src:$(ROOT_DIR)/packages/constitutional_swarm/src:$(ROOT_DIR)/packages/mhc/src:$(ROOT_DIR)/src:$(ROOT_DIR)
-export PYTHONPATH := $(WORKSPACE_PYTHONPATH)$(if $(PYTHONPATH),:$(PYTHONPATH))
-PYTEST_TARGETS ?=
-PYTEST_ARGS ?=
-UV_SYNC_ARGS ?= --frozen --all-packages --extra dev --extra test --extra postgres --extra ml --extra messaging --extra all --python $(LOCK_PYTHON) --no-python-downloads
+PYTHON     ?= python3
+PYTEST      = $(PYTHON) -m pytest
+RUFF        = $(PYTHON) -m ruff
+MYPY        = $(PYTHON) -m mypy
+BUILD       = $(PYTHON) -m build
+TWINE       = $(PYTHON) -m twine
+PACKAGE_DIR = packages/acgs-lite
+SRC_DIR     = src/acgs_lite
+TEST_DIR    = tests
 
+# Detect repo root (two levels up from this Makefile)
+REPO_ROOT := $(shell git rev-parse --show-toplevel 2>/dev/null || echo ../..)
+
+.PHONY: help dev-setup install install-dev test test-quick test-cov test-examples \
+        lint format typecheck check build publish-dry-run publish \
+        examples visualize clean
+
+# ── Help ──────────────────────────────────────────────────────────────────────
 help:
-	@echo "ACGS - Advanced Constitutional Governance System"
+	@echo ""
+	@echo "  acgs-lite development targets"
 	@echo ""
 	@echo "  Setup:"
-	@echo "    make setup        Install deps + pre-commit"
-	@echo "    make lock-sync    Rebuild the project .venv from uv.lock on Python $(LOCK_PYTHON)"
-	@echo "    make lock-validate Verify the locked .venv and run environment smoke tests"
-	@echo "    make codex-doctor  Run repo-local Codex readiness checks"
+	@echo "    make dev-setup     One-shot: create .venv + install all dev deps"
+	@echo "    make install       Install package in editable mode"
+	@echo "    make install-dev   Install package + dev deps (pytest, ruff, mypy)"
 	@echo ""
-	@echo "  Testing:"
-	@echo "    make test         Full test suite"
-	@echo "    make test-quick   Skip slow tests"
-	@echo "    make test-lite    acgs-lite tests only"
-	@echo "    make test-bus     Enhanced Agent Bus tests only"
-	@echo "    make test-gw      API Gateway tests only"
+	@echo "  Testing (no API keys required — InMemory* stubs used):"
+	@echo "    make test          Full test suite"
+	@echo "    make test-quick    Skip slow/benchmark tests (-m 'not slow')"
+	@echo "    make test-cov      Test + coverage report (HTML in htmlcov/)"
+	@echo "    make test-examples Run all examples/ as smoke tests"
+	@echo ""
+	@echo "  Quality:"
+	@echo "    make lint          Ruff linter"
+	@echo "    make format        Ruff auto-fix + format"
+	@echo "    make typecheck     MyPy type check (strict)"
+	@echo "    make check         lint + typecheck + test"
 	@echo ""
 	@echo "  Release:"
-	@echo "    make build-root-package    Build the root package artifacts"
-	@echo "    make publish-root-dry-run  Build and dry-run the root package publish"
-	@echo "    make publish-root-package  Build and publish the root package (requires UV_PUBLISH_TOKEN)"
-	@echo "    make build-acgs-lite       Build the public acgs-lite package artifacts"
-	@echo "    make publish-acgs-lite-dry-run Build and dry-run the public acgs-lite publish"
-	@echo "    make publish-acgs-lite     Build and publish the public acgs-lite package"
-	@echo "    make build-acgs            Legacy alias for make build-root-package"
-	@echo "    make publish-dry-run       Legacy alias for make publish-root-dry-run"
-	@echo "    make publish-acgs          Legacy alias for make publish-root-package"
-	@echo "    make publish-check         Pre-publish validation (URLs, versions, large files)"
+	@echo "    make build         Build wheel + sdist into dist/"
+	@echo "    make publish-dry-run  Dry-run upload to PyPI (no publish)"
+	@echo "    make publish       Upload dist/* to PyPI (needs TWINE_PASSWORD)"
 	@echo ""
-	@echo "  Package Health:"
-	@echo "    make health-manifest Validate package health metadata"
-	@echo "    make health-overview Show per-package owners, namespaces, and verification commands"
-	@echo "    make health-lite    First-class acgs-lite health gate"
-	@echo "    make health-bus     First-class enhanced-agent-bus health gate"
-	@echo "    make health-bus-governance Governance-core slice for enhanced-agent-bus"
-	@echo "    make health-bus-wrappers MessageProcessor wrapper-audit gate"
-	@echo "    make health-bus-wrappers-batch1-ready Fail until Batch 1 wrappers are delete-ready"
-	@echo "    make health-gw      First-class API Gateway health gate"
-	@echo "    make health-constitutional-swarm First-class constitutional-swarm health gate"
-	@echo "    make health-frontend First-class acgs.ai health gate"
-	@echo "    make health-worker  First-class governance-proxy worker health gate"
+	@echo "  Utilities:"
+	@echo "    make examples      Run all examples interactively"
+	@echo "    make visualize     Open visualizer help (see scripts/visualizer.py)"
+	@echo "    make clean         Remove caches, dist, build artifacts"
 	@echo ""
-	@echo "  Code Quality:"
-	@echo "    make lint         Ruff + MyPy"
-	@echo "    make format       Auto-fix formatting"
-	@echo "    make clean        Remove cache files"
+
+# ── Setup ─────────────────────────────────────────────────────────────────────
+# Python 3.11 is the CI-pinned version. Use it when available; fall back to 3.12.
+# crewai/autogen extras require <=3.13 — they are intentionally excluded here.
+# For the full locked environment use: uv sync --all-extras && uv run make test
+PYTHON3_11 := $(shell which python3.11 2>/dev/null || which python3.12 2>/dev/null || echo python3)
+
+dev-setup:
+	@echo "Creating .venv with $(PYTHON3_11) and installing dev deps..."
+	$(PYTHON3_11) -m venv .venv
+	.venv/bin/pip install --upgrade pip -q
+	.venv/bin/pip install -e ".[dev,openai,anthropic,langchain,mcp,mistral,google,llamaindex,litellm,otel]" -q
+	.venv/bin/pip install fastapi httpx -q   # root conftest deps (standalone mode)
 	@echo ""
-	@echo "  Dashboard:"
-	@echo "    make dashboard-dev     Start dashboard dev server (port 3100)"
-	@echo "    make dashboard-backend Start acgs-lite backend (port 8100)"
-	@echo "    make dashboard-build   Production build"
+	@echo "  Virtual environment : .venv/"
+	@echo "  Activate (Unix/macOS): source .venv/bin/activate"
+	@echo "  Activate (Windows)  : .venv\\Scripts\\activate"
 	@echo ""
-	@echo "  Benchmarks:"
-	@echo "    make bench        Run acgs-lite benchmark suite"
+	@if [ ! -f .env.test ]; then cp .env.example .env.test 2>/dev/null || true; fi
+	@echo "  API keys: see .env.example (all placeholders, no real keys needed)"
+	@echo "  Note: crewai/autogen/a2a extras excluded (require Python <=3.13)"
+	@echo "  Full locked env: uv sync --all-extras && uv run make test"
+	@echo "  Ready.  Run: source .venv/bin/activate && make test"
 
-# === Setup ===
-setup: lock-sync
-	@if [ "$${CI:-}" = "true" ]; then \
-		echo "Skipping pre-commit install in CI"; \
-	elif git config --get core.hooksPath >/dev/null 2>&1; then \
-		echo "Skipping pre-commit install because git core.hooksPath is set"; \
-	else \
-		pre-commit install; \
-	fi
-	cd packages/acgs.ai && if [ "$${CI:-}" = "true" ]; then npm ci; else npm install; fi
+install:
+	$(PYTHON) -m pip install -e .
 
-lock-sync:
-	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS)
+install-dev:
+	$(PYTHON) -m pip install -e ".[dev]"
+	@echo ""
+	@echo "Dev environment ready. No API keys required for tests."
+	@echo "Placeholder keys: OPENAI_API_KEY=test-key ANTHROPIC_API_KEY=test-key"
+	@echo "See .env.example for the full set."
 
-lock-validate: lock-sync
-	UV_CACHE_DIR=$(UV_CACHE_DIR) $(UV) sync $(UV_SYNC_ARGS) --check
-	$(PYTHON) -c "import acgs_lite, sys; print(sys.executable); print(sys.version.split()[0]); print(acgs_lite.__file__)"
-	$(PYTHON) -m pytest --import-mode=importlib -q \
-		tests/test_testclient_compat.py \
-		src/core/shared/tests/test_runtime_environment.py \
-		src/core/services/api_gateway/tests/unit/test_lifespan.py::TestVerifyConstitutionalHashAtStartup::test_environment_only_production_still_requires_constitutional_hash
+# ── Testing ───────────────────────────────────────────────────────────────────
+# ACGS tests use InMemory* stubs — zero external deps in CI.
+# Set placeholder key so any import-time validation passes.
+#
+# Canonical path (CI / full suite): uv run make test      (4687+ tests)
+# Standalone venv path: source .venv/bin/activate && make test
+#   Note: test_governed_constrained_output.py imports enhanced_agent_bus
+#   (a workspace-only package). It is excluded from the standalone run via
+#   PYTEST_IGNORE below; the uv workspace run covers it fully.
+PYTEST_IGNORE_STANDALONE := $(if $(wildcard ../../uv.lock),,--ignore=$(TEST_DIR)/test_governed_constrained_output.py)
+TEST_ENV = OPENAI_API_KEY=test-key-for-unit-tests \
+           ANTHROPIC_API_KEY=test-key-for-unit-tests
 
-# === Testing ===
+# --rootdir isolates pytest from the workspace root conftest.py when using a
+# standalone .venv.  uv run pytest (workspace mode) loads the root conftest
+# automatically via PYTHONPATH, so this flag is harmless there too.
+PYTEST_ROOTDIR := --rootdir=$(PACKAGE_DIR)
+
 test:
-	$(PYTHON) -m pytest --import-mode=importlib -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
-	cd packages/acgs.ai && npm run test || echo "WARN: acgs.ai tests skipped (WebGL unavailable in headless CI)"
+	$(TEST_ENV) $(PYTEST) $(TEST_DIR)/ \
+	    $(PYTEST_ROOTDIR) $(PYTEST_IGNORE_STANDALONE) \
+	    --import-mode=importlib \
+	    -v
 
 test-quick:
-	$(PYTHON) -m pytest --import-mode=importlib -m "not slow" -x -v $(PYTEST_TARGETS) $(PYTEST_ARGS)
-	cd packages/acgs.ai && npm run test:unit || echo "WARN: acgs.ai unit tests skipped (WebGL unavailable in headless CI)"
+	$(TEST_ENV) $(PYTEST) $(TEST_DIR)/ \
+	    $(PYTEST_ROOTDIR) $(PYTEST_IGNORE_STANDALONE) \
+	    --import-mode=importlib \
+	    -m "not slow and not benchmark" \
+	    -x -v
 
-test-lite:
-	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/acgs-lite/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
-
-test-bus:
-	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),packages/enhanced_agent_bus/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
-
-test-gw:
-	$(PYTHON) -m pytest $(or $(PYTEST_TARGETS),src/core/services/api_gateway/tests/) -v --import-mode=importlib $(PYTEST_ARGS)
-
-build-root-package:
-	bash scripts/publish-acgs.sh --build-only
-
-publish-root-dry-run:
-	bash scripts/publish-acgs.sh --dry-run
-
-publish-root-package:
-	bash scripts/publish-acgs.sh
-
-build-acgs-lite:
-	PACKAGE_DIR=packages/acgs-lite bash scripts/publish-acgs.sh --build-only
-
-publish-acgs-lite-dry-run:
-	PACKAGE_DIR=packages/acgs-lite bash scripts/publish-acgs.sh --dry-run
-
-publish-acgs-lite:
-	PACKAGE_DIR=packages/acgs-lite bash scripts/publish-acgs.sh
-
-build-acgs: build-root-package
-
-publish-dry-run: publish-root-dry-run
-
-publish-acgs: publish-root-package
-
-# === Pre-publish Validation ===
-publish-check:
-	@echo "=== Checking pyproject.toml validity ==="
-	@for f in packages/*/pyproject.toml; do \
-		$(PYTHON) -c "import tomllib; tomllib.load(open('$$f','rb')); print('OK: $$f')" || exit 1; \
-	done
-	@echo ""
-	@echo "=== Checking for large files in git history ==="
-	@git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectsize) %(rest)' 2>/dev/null | awk '$$1=="blob" && $$2>1048576 {printf "%.1fMB %s\n", $$2/1048576, $$3}' | sort -rnk1 | head -10 || true
-	@echo ""
-	@echo "=== Checking pyproject.toml URLs ==="
-	@$(PYTHON) -c "\
-import tomllib, pathlib; \
-[print(f'  {url}: checking...') or None \
- for p in sorted(pathlib.Path('packages').glob('*/pyproject.toml')) \
- for url in tomllib.load(open(p,'rb')).get('project',{}).get('urls',{}).values()]" || true
-	@echo ""
-	@echo "=== Version consistency ==="
-	@for pkg in packages/acgs-lite packages/acgs-core; do \
-		if [ -f "$$pkg/pyproject.toml" ]; then \
-			$(PYTHON) -c "import tomllib; print(tomllib.load(open('$$pkg/pyproject.toml','rb'))['project']['version'])" 2>/dev/null; \
-		fi; \
-	done
-	@echo "publish-check complete"
-
-health-manifest:
-	$(PYTHON) scripts/package_health.py validate
-
-health-overview: health-manifest
-	$(PYTHON) scripts/package_health.py list
-
-health-lite: test-lite
-
-health-bus: test-bus
-
-health-bus-governance:
-	ruff check \
-		packages/enhanced_agent_bus/governance_core.py \
-		packages/enhanced_agent_bus/message_processor.py \
-		packages/enhanced_agent_bus/verification_orchestrator.py \
-		packages/enhanced_agent_bus/config.py \
-		packages/enhanced_agent_bus/tests/test_governance_core.py \
-		packages/enhanced_agent_bus/tests/test_config.py
-	python3 -m pytest --import-mode=importlib -q \
-		packages/enhanced_agent_bus/tests/test_governance_core.py \
-		packages/enhanced_agent_bus/tests/test_config.py \
-		packages/enhanced_agent_bus/tests/test_message_processor_coverage.py \
-		packages/enhanced_agent_bus/tests/test_processor_redesign.py::TestMessageProcessorBackwardCompat \
-		packages/enhanced_agent_bus/tests/test_environment_check.py \
-		packages/enhanced_agent_bus/tests/test_security_defaults.py \
-		packages/enhanced_agent_bus/tests/test_message_processor_independent_validator_gate.py
-
-health-bus-wrappers:
-	$(PYTHON) packages/enhanced_agent_bus/tools/message_processor_wrapper_audit.py --check
-	$(PYTHON) -m ruff check \
-		packages/enhanced_agent_bus/tools/message_processor_wrapper_audit.py \
-		packages/enhanced_agent_bus/docs/MESSAGE_PROCESSOR_ARCHITECTURE.md \
-		packages/enhanced_agent_bus/docs/MESSAGE_PROCESSOR_FINAL_ARCHITECTURE_AUDIT.md \
-		packages/enhanced_agent_bus/docs/MESSAGE_PROCESSOR_COVERAGE_REGEN_CLEANUP_PLAN.md
-
-health-bus-wrappers-batch1-ready:
-	$(PYTHON) packages/enhanced_agent_bus/tools/message_processor_wrapper_audit.py --ready-batch batch1
-
-health-gw: test-gw
-
-health-constitutional-swarm:
-	$(PYTHON) -m ruff check packages/constitutional_swarm
-	$(PYTHON) -c "import constitutional_swarm"
-	$(PYTHON) -m pytest --import-mode=importlib packages/constitutional_swarm/tests -v
-
-health-frontend:
-	cd packages/acgs.ai && npm run test
-
-health-worker:
-	cd workers/governance-proxy && npm run test
-
-# === Code Quality ===
-lint:
-	$(PYTHON) -m ruff check --extend-exclude .codex-home .
-	$(PYTHON) -m mypy \
-		conftest.py \
-		src/core/shared/cache/models.py \
-		src/core/shared/acgs_logging/agent_workflow_events.py \
-		src/core/shared/agent_workflow_metrics.py \
-		src/core/shared/errors/logging.py \
-		src/core/shared/utilities/tenant_normalizer.py \
-		src/core/shared/security/auth_dependency.py \
-		src/core/services/api_gateway/workos_event_ingestion.py \
-		packages/enhanced_agent_bus/__init__.py \
-		packages/enhanced_agent_bus/acl_adapters/__init__.py \
-		packages/enhanced_agent_bus/agent_health/__init__.py \
-		packages/enhanced_agent_bus/mcp/__init__.py \
-		packages/enhanced_agent_bus/multi_tenancy/__init__.py \
-		packages/acgs-lite/src/acgs_lite/compliance/__init__.py \
-		packages/acgs-lite/src/acgs_lite/compliance/base.py \
-		packages/acgs-lite/src/acgs_lite/compliance/multi_framework.py \
-		packages/acgs-lite/src/acgs_lite/compliance/evidence.py \
-		packages/acgs-lite/src/acgs_lite/compliance/report_exporter.py \
-		packages/acgs-lite/src/acgs_lite/compliance/__main__.py \
-		--ignore-missing-imports \
-		--follow-imports skip
-	cd packages/acgs.ai && npm run check && npm run lint
-
-format:
-	ruff check --fix .
-	ruff format .
-	cd packages/acgs.ai && npm run format
-
-# === Coverage ===
-cov:
-	$(PYTHON) -m pytest --import-mode=importlib --cov --cov-report=term-missing -m "not slow" -x
-
-cov-html:
-	$(PYTHON) -m pytest --import-mode=importlib --cov --cov-report=html -m "not slow"
+test-cov:
+	$(TEST_ENV) $(PYTEST) $(TEST_DIR)/ \
+	    $(PYTEST_ROOTDIR) $(PYTEST_IGNORE_STANDALONE) \
+	    --import-mode=importlib \
+	    --cov=$(SRC_DIR) \
+	    --cov-report=term-missing \
+	    --cov-report=html:htmlcov
 	@echo "Coverage report: htmlcov/index.html"
 
-# === Benchmarks ===
-bench:
-	$(PYTHON) -m pytest packages/acgs-lite/tests/test_benchmark_engine.py -m benchmark -v --import-mode=importlib
+test-examples:
+	@echo "Running examples as smoke tests..."
+	$(TEST_ENV) $(PYTHON) examples/basic_governance/main.py
+	$(TEST_ENV) $(PYTHON) examples/compliance_eu_ai_act/main.py
+	$(TEST_ENV) $(PYTHON) examples/maci_separation/main.py
+	$(TEST_ENV) $(PYTHON) examples/audit_trail/main.py
+	$(TEST_ENV) $(PYTHON) examples/mock_stub_testing/main.py
+	@echo "All examples passed."
 
-# === Per-Rule Eval Harness ===
-eval-rules:
-	$(PYTHON) autoresearch/eval_rules.py --output-dir eval_results
+# ── Quality ───────────────────────────────────────────────────────────────────
+lint:
+	$(RUFF) check $(SRC_DIR)/ $(TEST_DIR)/
 
-eval-rules-generate:
-	$(PYTHON) autoresearch/eval_rules.py --generate
+format:
+	$(RUFF) check --fix $(SRC_DIR)/ $(TEST_DIR)/
+	$(RUFF) format $(SRC_DIR)/ $(TEST_DIR)/
 
-# === ACGS Core ===
-test-core:
-	$(PYTHON) -m pytest packages/acgs-core/tests/ -v --import-mode=importlib
+typecheck:
+	$(MYPY) $(SRC_DIR)/ --ignore-missing-imports
 
-# === Dashboard ===
-dashboard-install:
-	cd packages/acgs-dashboard && npm install
+check: lint typecheck test
 
-dashboard-dev:
-	cd packages/acgs-dashboard && npm run dev
+# ── Release ───────────────────────────────────────────────────────────────────
+build: clean-dist
+	$(BUILD) --wheel --sdist
+	@echo "Artifacts in dist/:"
+	@ls -lh dist/
 
-dashboard-build:
-	cd packages/acgs-dashboard && npm run build
+publish-dry-run: build
+	$(TWINE) check dist/*
+	@echo "Dry-run OK. Run 'make publish' to upload."
 
-dashboard-backend:
-	$(PYTHON) packages/acgs-dashboard/scripts/start-backend.py
+publish: build
+	$(TWINE) upload dist/* \
+	    --username __token__ \
+	    --non-interactive
+	@echo "Published. https://pypi.org/project/acgs-lite/"
 
-# === Codex Bootstrap ===
-codex-doctor:
-	bash ./scripts/codex-doctor.sh
+# ── Utilities ─────────────────────────────────────────────────────────────────
+examples:
+	$(PYTHON) examples/basic_governance/main.py
+	$(PYTHON) examples/compliance_eu_ai_act/main.py
+	$(PYTHON) examples/maci_separation/main.py
+	$(PYTHON) examples/audit_trail/main.py
+	$(PYTHON) examples/mock_stub_testing/main.py
 
-# === Autoresearch ===
-autoresearch-promote:
-	@if [ -z "$(COMMIT)" ]; then \
-	  echo "Usage: make autoresearch-promote COMMIT=<sha>"; \
-	  echo "  Cherry-picks a winning autoresearch commit onto the current branch."; \
-	  exit 1; \
-	fi
-	git cherry-pick $(COMMIT)
-	@echo ""
-	@echo "Cherry-picked $(COMMIT). Verify before pushing:"
-	@echo "  make test-quick && make lint"
+visualize:
+	$(PYTHON) scripts/visualizer.py --help
 
-# === Agent Identity ===
-agent-commit:
-	@if [ -z "$(MSG)" ]; then echo "Usage: make agent-commit MSG='feat: ...' AGENT=claude-code ROLE=validator"; exit 1; fi
-	ACGS_AGENT_ID="$(or $(AGENT),unknown)" ACGS_MACI_ROLE="$(or $(ROLE),unknown)" \
-	  bash scripts/agent-commit.sh -m "$(MSG)"
+clean-dist:
+	rm -rf dist/ build/
 
-# === Cleanup ===
-clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
+clean: clean-dist
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name htmlcov -exec rm -rf {} + 2>/dev/null || true
 	find . -name "*.pyc" -delete 2>/dev/null || true
-	find . -name ".coverage" -delete 2>/dev/null || true
+	@echo "Clean."

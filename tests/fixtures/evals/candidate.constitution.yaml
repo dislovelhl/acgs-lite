@@ -1,0 +1,27 @@
+name: eval-candidate
+version: 1.1.0
+rules:
+  - id: WF-NOTIFY
+    text: Notify on secret upload workflows
+    severity: high
+    keywords: [secret-upload]
+    category: tool-governance
+    workflow_action: block_and_notify
+  - id: PRIV-PII
+    text: Block PII exfiltration requests
+    severity: high
+    keywords: [ssn]
+    category: privacy
+    workflow_action: warn
+  - id: EU-HUMAN
+    text: Human oversight required for model deployment
+    severity: high
+    keywords: [deploy-model]
+    category: eu-ai-act
+    workflow_action: escalate_to_senior
+  - id: OPS-HALT
+    text: Halt destructive production changes
+    severity: critical
+    keywords: [terraform-destroy]
+    category: safety
+    workflow_action: halt_and_alert

@@ -338,12 +338,20 @@ class TestConstitutionMergeControls:
                     text="Base hardcoded rule",
                     severity=Severity.HIGH,
                     hardcoded=True,
+                    keywords=["base"],
                 )
             ],
             name="base",
         )
         overlay = Constitution.from_rules(
-            [Rule(id="R-001", text="Overlay stronger rule", severity=Severity.CRITICAL)],
+            [
+                Rule(
+                    id="R-001",
+                    text="Overlay stronger rule",
+                    severity=Severity.CRITICAL,
+                    keywords=["overlay"],
+                )
+            ],
             name="overlay",
         )
 
@@ -358,12 +366,20 @@ class TestConstitutionMergeControls:
                     text="Base hardcoded rule",
                     severity=Severity.HIGH,
                     hardcoded=True,
+                    keywords=["base"],
                 )
             ],
             name="base",
         )
         overlay = Constitution.from_rules(
-            [Rule(id="R-001", text="Overlay stronger rule", severity=Severity.CRITICAL)],
+            [
+                Rule(
+                    id="R-001",
+                    text="Overlay stronger rule",
+                    severity=Severity.CRITICAL,
+                    keywords=["overlay"],
+                )
+            ],
             name="overlay",
         )
 
@@ -378,15 +394,20 @@ class TestConstitutionMergeControls:
     def test_merge_reports_acknowledged_and_unacknowledged_tensions(self):
         base = Constitution.from_rules(
             [
-                Rule(id="R-001", text="Base tie", severity=Severity.HIGH),
-                Rule(id="R-002", text="Base lower", severity=Severity.LOW),
+                Rule(id="R-001", text="Base tie", severity=Severity.HIGH, keywords=["base"]),
+                Rule(id="R-002", text="Base lower", severity=Severity.LOW, keywords=["base"]),
             ],
             name="base",
         )
         overlay = Constitution.from_rules(
             [
-                Rule(id="R-001", text="Overlay tie", severity=Severity.HIGH),
-                Rule(id="R-002", text="Overlay higher", severity=Severity.CRITICAL),
+                Rule(id="R-001", text="Overlay tie", severity=Severity.HIGH, keywords=["overlay"]),
+                Rule(
+                    id="R-002",
+                    text="Overlay higher",
+                    severity=Severity.CRITICAL,
+                    keywords=["overlay"],
+                ),
             ],
             name="overlay",
         )
@@ -427,6 +448,7 @@ class TestConstitutionCascade:
                     severity=Severity.CRITICAL,
                     hardcoded=True,
                     workflow_action="block",
+                    keywords=["guardrail"],
                 )
             ],
             name="parent",
@@ -438,6 +460,7 @@ class TestConstitutionCascade:
                     text="Child attempts override",
                     severity=Severity.LOW,
                     workflow_action="warn",
+                    keywords=["override"],
                 )
             ],
             name="child",
@@ -452,11 +475,25 @@ class TestConstitutionCascade:
 
     def test_cascade_allows_child_override_for_non_hardcoded_rule(self):
         parent = Constitution.from_rules(
-            [Rule(id="FED-002", text="Parent default", severity=Severity.HIGH)],
+            [
+                Rule(
+                    id="FED-002",
+                    text="Parent default",
+                    severity=Severity.HIGH,
+                    keywords=["parent"],
+                )
+            ],
             name="parent",
         )
         child = Constitution.from_rules(
-            [Rule(id="FED-002", text="Child overlay", severity=Severity.MEDIUM)],
+            [
+                Rule(
+                    id="FED-002",
+                    text="Child overlay",
+                    severity=Severity.MEDIUM,
+                    keywords=["child"],
+                )
+            ],
             name="child",
         )
 
@@ -467,8 +504,12 @@ class TestConstitutionCascade:
         assert rule.text == "Child overlay"
 
     def test_cascade_includes_child_only_rules(self):
-        parent = Constitution.from_rules([Rule(id="P-001", text="Parent", severity=Severity.HIGH)])
-        child = Constitution.from_rules([Rule(id="C-001", text="Child", severity=Severity.HIGH)])
+        parent = Constitution.from_rules(
+            [Rule(id="P-001", text="Parent", severity=Severity.HIGH, keywords=["parent"])]
+        )
+        child = Constitution.from_rules(
+            [Rule(id="C-001", text="Child", severity=Severity.HIGH, keywords=["child"])]
+        )
 
         federated = parent.cascade(child)
         assert federated.get_rule("P-001") is not None

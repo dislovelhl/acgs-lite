@@ -82,6 +82,22 @@ def main() -> None:
     # ── 4. MACI Separation of Powers ──────────────────────────
     print("\n⚖️  4. MACI Separation of Powers")
 
+    enforced_agent = GovernedAgent(
+        my_agent,
+        agent_id="planner-agent",
+        strict=True,
+        maci_role=MACIRole.PROPOSER,
+        enforce_maci=True,
+    )
+    print(
+        "   ✅ Enforced proposer run:",
+        enforced_agent.run("Draft a proposal", governance_action="propose"),
+    )
+    try:
+        enforced_agent.run("Validate this change", governance_action="validate")
+    except MACIViolationError as e:
+        print(f"   🚫 GovernedAgent MACI blocked: {e}")
+
     maci = MACIEnforcer()
     maci.assign_role("planner", MACIRole.PROPOSER)
     maci.assign_role("reviewer", MACIRole.VALIDATOR)
@@ -122,6 +138,7 @@ def main() -> None:
     stats = audit_agent.stats
     print(f"   Total validations: {stats['total_validations']}")
     print(f"   Compliance rate: {stats['compliance_rate']:.1%}")
+    print(f"   Audit mode: {stats['audit_mode']}")
     print(f"   Chain valid: {stats['audit_chain_valid']}")
     print(f"   Constitutional hash: {stats['constitutional_hash']}")
 

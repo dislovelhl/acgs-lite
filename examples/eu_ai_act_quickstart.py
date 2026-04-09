@@ -1,4 +1,4 @@
-"""EU AI Act Compliance Quickstart — ACGS
+"""EU AI Act Compliance Quickstart — acgs-lite
 
 Demonstrates how to achieve Article 12 (Record-Keeping), Article 13
 (Transparency), and Article 14 (Human Oversight) compliance in ~50 lines.
@@ -218,7 +218,7 @@ def compliance_checklist_demo() -> None:
     print("\n=== Step 5: Compliance Checklist ===")
     checklist = ComplianceChecklist(system_id="cv-screener-v1", risk_level="high_risk")
 
-    # Auto-populate items that ACGS directly satisfies
+    # Auto-populate items that acgs-lite directly satisfies
     checklist.auto_populate_acgs_lite()
 
     # Mark remaining items (in real usage: attach your evidence)
@@ -264,7 +264,7 @@ def compliance_checklist_demo() -> None:
 
 
 def main() -> None:
-    print("EU AI Act Compliance Demo — ACGS")
+    print("EU AI Act Compliance Demo — acgs-lite")
     print("=" * 50)
     print("High-risk provisions deadline: 2026-08-02")
 

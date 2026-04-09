@@ -1,37 +1,27 @@
-# Constitutional Hash: 608508a9bd224290
-# ACGS Cloud Run Deployment
-# Minimal production image for GitLab AI Governance Bot
+# ACGS-Lite Constitutional Sentinel — Cloud Run deployment
+#
+# Deploy: cd packages/acgs-lite && gcloud run deploy acgs-sentinel --source . --region us-central1
 
-FROM python:3.11-slim AS base
-
-# Prevent .pyc files and enable unbuffered stdout for Cloud Run logging
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system deps (none needed beyond slim defaults)
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy and install the package
-COPY pyproject.toml README.md LICENSE ./
+# Copy everything needed for pip install
+COPY pyproject.toml .
 COPY src/ src/
 
-RUN pip install --no-cache-dir ".[google-cloud]" "starlette>=0.27" "uvicorn[standard]>=0.24" "httpx>=0.27"
+# Install the package + server deps (uvicorn, starlette, httpx for GitLab API)
+RUN pip install --no-cache-dir ".[google-cloud]" \
+    uvicorn[standard] \
+    starlette \
+    httpx \
+    pyyaml
 
-# Non-root user for production security
-RUN useradd --create-home appuser
+# Create non-root user for Cloud Run security best practices
+RUN useradd --create-home --shell /bin/bash appuser
 USER appuser
 
-# Cloud Run default port
 ENV PORT=8080
 EXPOSE 8080
 
-# Health check against the /health endpoint
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/health || exit 1
-
-# Run the Cloud Run server
-CMD ["python", "-m", "uvicorn", "acgs_lite.integrations.cloud_run_server:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["sh", "-c", "uvicorn acgs_lite.integrations.cloud_run_server:app --host 0.0.0.0 --port ${PORT} --workers 1 --log-level info"]
