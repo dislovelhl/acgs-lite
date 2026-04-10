@@ -1,0 +1,488 @@
+"""AI Compliance Evidence Package — PDF certificate generator.
+
+Produces a signed-looking, court-attachable PDF document from a CDP record dict.
+Suitable for legal filings, HIPAA audit responses, SOC 2 evidence packages, and
+EU AI Act Article 11 technical documentation.
+
+Constitutional Hash: 608508a9bd224290
+
+Usage::
+
+    from acgs_lite.cdp.certificate import generate_certificate
+
+    pdf_bytes = generate_certificate(record.to_dict())
+    with open("cdp-certificate.pdf", "wb") as f:
+        f.write(pdf_bytes)
+
+Requires the ``pdf`` optional extra::
+
+    pip install acgs-lite[pdf]
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import datetime, timezone
+from typing import Any
+
+__all__ = ["generate_certificate"]
+
+# Brand colours (matches the dashboard palette)
+_DARK = (36, 31, 25)       # #241f19
+_CRIMSON = (139, 38, 53)   # #8B2635
+_GREEN = (45, 90, 39)      # #2D5A27
+_AMBER = (180, 120, 20)    # warm amber
+_LIGHT = (246, 242, 234)   # #f6f2ea
+_WHITE = (255, 255, 255)
+_MUTED = (120, 112, 100)
+
+
+def _integrity_hash(record: dict[str, Any]) -> str:
+    """SHA-256 of the full JSON record (deterministic, sorted keys)."""
+    payload = json.dumps(record, sort_keys=True, ensure_ascii=True)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+def _verdict_rgb(verdict: str) -> tuple[int, int, int]:
+    mapping = {
+        "allow": _GREEN,
+        "deny": _CRIMSON,
+        "conditional": _AMBER,
+        "abstain": _MUTED,
+        "error": _MUTED,
+    }
+    return mapping.get(verdict, _MUTED)
+
+
+def _format_ts(ts: str) -> str:
+    """ISO → human-readable UTC string."""
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        return dt.strftime("%B %d, %Y at %H:%M UTC")
+    except Exception:
+        return ts
+
+
+def generate_certificate(
+    record: dict[str, Any],
+    *,
+    title: str = "AI Compliance Evidence Package",
+) -> bytes:
+    """Generate a PDF certificate from a CDP record dict.
+
+    Parameters
+    ----------
+    record:
+        A CDP record serialised as a plain dict (``CDPRecordV1.to_dict()``).
+    title:
+        Document title printed on the cover page.
+
+    Returns
+    -------
+    bytes
+        Raw PDF bytes. Starts with ``b"%PDF"``.
+
+    Raises
+    ------
+    ImportError
+        If ``fpdf2`` is not installed (``pip install acgs-lite[pdf]``).
+    """
+    try:
+        from fpdf import FPDF
+    except ImportError as exc:
+        raise ImportError(
+            "fpdf2 is required to generate PDF certificates. "
+            "Install it with: pip install acgs-lite[pdf]"
+        ) from exc
+
+    integrity = _integrity_hash(record)
+    cdp_id: str = record.get("cdp_id", "unknown")
+    tenant_id: str = record.get("tenant_id", "default")
+    constitutional_hash: str = record.get("constitutional_hash", "")
+    verdict: str = record.get("verdict", "unknown")
+    subject_id: str = record.get("subject_id", "")
+    action: str = record.get("action", "")
+    reasoning: str = record.get("reasoning", "")
+    risk_score: float = float(record.get("risk_score", 0.0))
+    confidence_score: float = float(record.get("confidence_score", 1.0))
+    created_at: str = record.get("created_at", "")
+    matched_rules: list[str] = record.get("matched_rules") or []
+    violated_rules: list[str] = record.get("violated_rules") or []
+    maci_chain: list[dict] = record.get("maci_chain") or []
+    compliance_evidence: list[dict] = record.get("compliance_evidence") or []
+    runtime_obligations: list[dict] = record.get("runtime_obligations") or []
+    intervention: dict | None = record.get("intervention")
+    prev_cdp_hash: str = record.get("prev_cdp_hash", "genesis")
+    input_hash: str = record.get("input_hash", "")
+    compliance_frameworks: list[str] = record.get("compliance_frameworks") or []
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=18)
+    pdf.add_page()
+    pdf.set_margins(20, 20, 20)
+
+    def footer_line() -> None:
+        """Draw the integrity footer on the current page."""
+        pdf.set_y(-14)
+        pdf.set_font("Helvetica", "I", 7)
+        pdf.set_text_color(*_MUTED)
+        short_hash = integrity[:16]
+        footer = (
+            f"Constitutional Hash: {constitutional_hash}  ·  "
+            f"Document Integrity: {short_hash}  ·  "
+            f"Page {pdf.page_no()}"
+        )
+        pdf.cell(0, 6, footer, align="C")
+
+    # ------------------------------------------------------------------ #
+    # Cover / Page 1
+    # ------------------------------------------------------------------ #
+
+    # Top badge bar
+    pdf.set_fill_color(*_DARK)
+    pdf.rect(20, 20, 170, 1.5, "F")
+
+    # Title block
+    pdf.set_xy(20, 28)
+    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_text_color(*_DARK)
+    pdf.cell(0, 10, title, ln=True)
+
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*_MUTED)
+    pdf.set_x(20)
+    pdf.cell(0, 6, "Generated by ACGS Constitutional Governance System", ln=True)
+
+    # CDP ID + date
+    pdf.ln(4)
+    pdf.set_font("Courier", "", 9)
+    pdf.set_text_color(*_DARK)
+    pdf.set_x(20)
+    pdf.cell(40, 6, "CDP Record ID:", border=0)
+    pdf.set_text_color(*_CRIMSON)
+    pdf.cell(0, 6, cdp_id, ln=True)
+
+    pdf.set_font("Courier", "", 9)
+    pdf.set_text_color(*_DARK)
+    pdf.set_x(20)
+    pdf.cell(40, 6, "Issued:", border=0)
+    pdf.set_text_color(*_MUTED)
+    pdf.cell(0, 6, _format_ts(created_at) if created_at else "-", ln=True)
+
+    pdf.set_x(20)
+    pdf.cell(40, 6, "Tenant:", border=0)
+    pdf.set_text_color(*_MUTED)
+    pdf.cell(0, 6, tenant_id, ln=True)
+
+    # Verdict chip
+    pdf.ln(6)
+    verdict_color = _verdict_rgb(verdict)
+    pdf.set_fill_color(*verdict_color)
+    pdf.set_text_color(*_WHITE)
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.set_x(20)
+    pdf.cell(38, 9, f"  VERDICT: {verdict.upper()}  ", fill=True, ln=True)
+
+    # Risk + confidence bars
+    pdf.ln(4)
+    _draw_score_bar(pdf, "Risk Score", risk_score, _CRIMSON if risk_score >= 0.7 else _AMBER if risk_score >= 0.4 else _GREEN)
+    _draw_score_bar(pdf, "Confidence", confidence_score, _GREEN)
+
+    # Divider
+    pdf.ln(6)
+    pdf.set_draw_color(*_DARK)
+    pdf.set_line_width(0.3)
+    pdf.line(20, pdf.get_y(), 190, pdf.get_y())
+    pdf.ln(4)
+
+    # Subject + Action
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*_MUTED)
+    pdf.set_x(20)
+    pdf.cell(0, 5, "SUBJECT / ACTION", ln=True)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.set_text_color(*_DARK)
+    pdf.set_x(20)
+    pdf.multi_cell(170, 5, f"{subject_id}  ·  {action}")
+
+    # Reasoning
+    if reasoning:
+        pdf.ln(3)
+        pdf.set_font("Helvetica", "B", 9)
+        pdf.set_text_color(*_MUTED)
+        pdf.set_x(20)
+        pdf.cell(0, 5, "REASONING", ln=True)
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(*_DARK)
+        pdf.set_x(20)
+        pdf.multi_cell(170, 5, reasoning[:600] + ("..." if len(reasoning) > 600 else ""))
+
+    # Matched / violated rules
+    if matched_rules:
+        pdf.ln(3)
+        _section_heading(pdf, "MATCHED RULES")
+        pdf.set_font("Courier", "", 8)
+        pdf.set_text_color(*_GREEN)
+        pdf.set_x(20)
+        pdf.multi_cell(170, 4.5, "  ·  ".join(matched_rules))
+
+    if violated_rules:
+        pdf.ln(2)
+        _section_heading(pdf, "VIOLATED RULES")
+        pdf.set_font("Courier", "", 8)
+        pdf.set_text_color(*_CRIMSON)
+        pdf.set_x(20)
+        pdf.multi_cell(170, 4.5, "  ·  ".join(violated_rules))
+
+    # Frameworks
+    if compliance_frameworks:
+        pdf.ln(2)
+        _section_heading(pdf, "COMPLIANCE FRAMEWORKS")
+        pdf.set_font("Helvetica", "", 8)
+        pdf.set_text_color(*_DARK)
+        pdf.set_x(20)
+        pdf.cell(0, 5, "  ·  ".join(f.upper() for f in compliance_frameworks), ln=True)
+
+    footer_line()
+
+    # ------------------------------------------------------------------ #
+    # Page 2: MACI chain + compliance evidence
+    # ------------------------------------------------------------------ #
+    if maci_chain or compliance_evidence:
+        pdf.add_page()
+
+        if maci_chain:
+            _page_section_header(pdf, "MACI Governance Chain")
+            _draw_maci_table(pdf, maci_chain)
+            pdf.ln(6)
+
+        if compliance_evidence:
+            _page_section_header(pdf, "Compliance Evidence")
+            _draw_evidence_table(pdf, compliance_evidence)
+
+        footer_line()
+
+    # ------------------------------------------------------------------ #
+    # Page 3: Runtime obligations + intervention + integrity chain
+    # ------------------------------------------------------------------ #
+    pdf.add_page()
+    _page_section_header(pdf, "Runtime Obligations")
+
+    if runtime_obligations:
+        _draw_obligations_table(pdf, runtime_obligations)
+    else:
+        pdf.set_font("Helvetica", "I", 9)
+        pdf.set_text_color(*_MUTED)
+        pdf.set_x(20)
+        pdf.cell(0, 6, "No runtime obligations recorded for this decision.", ln=True)
+
+    if intervention:
+        pdf.ln(6)
+        _page_section_header(pdf, "Intervention Outcome")
+        triggered = intervention.get("triggered", False)
+        act = intervention.get("action", "-")
+        reason = intervention.get("reason", "-")
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(*(_CRIMSON if triggered else _GREEN))
+        pdf.set_x(20)
+        pdf.cell(0, 5, f"{'TRIGGERED' if triggered else 'NOT TRIGGERED'}  ·  {act.upper()}", ln=True)
+        if reason:
+            pdf.set_text_color(*_DARK)
+            pdf.set_x(20)
+            pdf.multi_cell(170, 5, reason)
+
+    # Chain integrity block
+    pdf.ln(8)
+    _page_section_header(pdf, "Chain Integrity")
+    pdf.set_font("Courier", "", 8)
+    pdf.set_text_color(*_DARK)
+
+    for label, value in [
+        ("Constitutional Hash", constitutional_hash),
+        ("Input Hash (SHA-256)", input_hash or "-"),
+        ("Previous CDP Hash", prev_cdp_hash or "genesis"),
+        ("Document Integrity (SHA-256)", integrity),
+    ]:
+        pdf.set_x(20)
+        pdf.set_font("Helvetica", "B", 8)
+        pdf.set_text_color(*_MUTED)
+        pdf.cell(52, 5, label + ":", border=0)
+        pdf.set_font("Courier", "", 8)
+        pdf.set_text_color(*_DARK)
+        pdf.multi_cell(118, 5, value)
+
+    # Bottom bar
+    pdf.ln(6)
+    pdf.set_fill_color(*_DARK)
+    pdf.set_x(20)
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.set_text_color(*_MUTED)
+    pdf.multi_cell(
+        170,
+        5,
+        "This document was generated by the ACGS Constitutional Governance System. "
+        "The document integrity hash above is a SHA-256 digest of the full CDP record "
+        "and can be used to verify that this certificate has not been altered. "
+        "The constitutional hash 608508a9bd224290 identifies the governing constitution "
+        "under which this decision was made.",
+    )
+
+    footer_line()
+
+    return bytes(pdf.output())
+
+
+# ------------------------------------------------------------------ #
+# Drawing helpers
+# ------------------------------------------------------------------ #
+
+def _section_heading(pdf: Any, text: str) -> None:
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.set_text_color(*_MUTED)
+    pdf.set_x(20)
+    pdf.cell(0, 5, text, ln=True)
+
+
+def _page_section_header(pdf: Any, text: str) -> None:
+    pdf.set_fill_color(*_LIGHT)
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(*_DARK)
+    pdf.set_x(20)
+    pdf.cell(170, 8, f"  {text}", fill=True, ln=True)
+    pdf.ln(3)
+
+
+def _draw_score_bar(pdf: Any, label: str, value: float, color: tuple[int, int, int]) -> None:
+    bar_w = 100
+    filled = int(bar_w * min(max(value, 0.0), 1.0))
+    pdf.set_x(20)
+    pdf.set_font("Helvetica", "", 8)
+    pdf.set_text_color(*_DARK)
+    pdf.cell(38, 5, label + ":", border=0)
+    # background
+    pdf.set_fill_color(220, 215, 208)
+    pdf.rect(pdf.get_x(), pdf.get_y() + 1, bar_w, 3, "F")
+    # filled
+    if filled > 0:
+        pdf.set_fill_color(*color)
+        pdf.rect(pdf.get_x(), pdf.get_y() + 1, filled, 3, "F")
+    pdf.set_x(pdf.get_x() + bar_w + 2)
+    pdf.set_text_color(*_MUTED)
+    pdf.cell(0, 5, f"{round(value * 100)}%", ln=True)
+
+
+def _draw_maci_table(pdf: Any, steps: list[dict]) -> None:
+    headers = ["#", "Role", "Agent ID", "Action", "Outcome", "Timestamp"]
+    widths = [8, 22, 42, 42, 22, 34]
+    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_fill_color(*_DARK)
+    pdf.set_text_color(*_WHITE)
+    pdf.set_x(20)
+    for h, w in zip(headers, widths):
+        pdf.cell(w, 6, h, border=0, fill=True)
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 7)
+    for i, step in enumerate(steps):
+        outcome = step.get("outcome", "")
+        role = step.get("role", "")
+        color = _GREEN if outcome == "allow" else _CRIMSON if outcome == "deny" else _DARK
+        bg = (248, 244, 237) if i % 2 == 0 else _WHITE
+        pdf.set_fill_color(*bg)
+        pdf.set_text_color(*_DARK)
+        pdf.set_x(20)
+        pdf.cell(widths[0], 5.5, str(i + 1), fill=True)
+        pdf.set_text_color(*_CRIMSON if role == "validator" else _DARK)
+        pdf.cell(widths[1], 5.5, role, fill=True)
+        pdf.set_text_color(*_MUTED)
+        agent = step.get("agent_id", "")[:18]
+        pdf.cell(widths[2], 5.5, agent, fill=True)
+        pdf.set_text_color(*_DARK)
+        pdf.cell(widths[3], 5.5, step.get("action", "")[:22], fill=True)
+        pdf.set_text_color(*color)
+        pdf.cell(widths[4], 5.5, outcome, fill=True)
+        pdf.set_text_color(*_MUTED)
+        ts = _format_ts(step.get("timestamp", ""))[:20]
+        pdf.cell(widths[5], 5.5, ts, fill=True)
+        pdf.ln()
+
+        # Reasoning (truncated, indented)
+        reasoning = step.get("reasoning", "").strip()
+        if reasoning:
+            pdf.set_font("Helvetica", "I", 6.5)
+            pdf.set_text_color(*_MUTED)
+            pdf.set_x(28)
+            pdf.multi_cell(162, 4, reasoning[:200] + ("..." if len(reasoning) > 200 else ""))
+            pdf.set_font("Helvetica", "", 7)
+
+
+def _draw_evidence_table(pdf: Any, evidence: list[dict]) -> None:
+    headers = ["Framework", "Article", "Evidence", "Compliant"]
+    widths = [28, 28, 98, 16]
+    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_fill_color(*_DARK)
+    pdf.set_text_color(*_WHITE)
+    pdf.set_x(20)
+    for h, w in zip(headers, widths):
+        pdf.cell(w, 6, h, border=0, fill=True)
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 7)
+    for i, item in enumerate(evidence):
+        compliant = item.get("compliant", True)
+        bg = (248, 244, 237) if i % 2 == 0 else _WHITE
+        pdf.set_fill_color(*bg)
+        pdf.set_x(20)
+        pdf.set_text_color(*_DARK)
+        fw = item.get("framework_id", "")[:14].upper()
+        pdf.cell(widths[0], 5.5, fw, fill=True)
+        pdf.cell(widths[1], 5.5, item.get("article_ref", "")[:14], fill=True)
+        ev = item.get("evidence", "")
+        # Evidence may overflow — use multi_cell trick with saved position
+        x_before = pdf.get_x()
+        y_before = pdf.get_y()
+        pdf.multi_cell(widths[2], 5.5, ev[:120], fill=True)
+        new_y = pdf.get_y()
+        pdf.set_xy(x_before + widths[2], y_before)
+        pdf.set_text_color(*_GREEN if compliant else _CRIMSON)
+        pdf.cell(widths[3], 5.5, "Yes" if compliant else "No", fill=True)
+        pdf.set_y(new_y)
+
+
+def _draw_obligations_table(pdf: Any, obligations: list[dict]) -> None:
+    headers = ["Type", "Severity", "Framework", "Article", "Satisfied"]
+    widths = [38, 22, 28, 28, 18]
+    pdf.set_font("Helvetica", "B", 7)
+    pdf.set_fill_color(*_DARK)
+    pdf.set_text_color(*_WHITE)
+    pdf.set_x(20)
+    for h, w in zip(headers, widths):
+        pdf.cell(w, 6, h, border=0, fill=True)
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 7)
+    for i, ob in enumerate(obligations):
+        satisfied = ob.get("satisfied", False)
+        severity = ob.get("severity", "advisory")
+        bg = (248, 244, 237) if i % 2 == 0 else _WHITE
+        pdf.set_fill_color(*bg)
+        pdf.set_x(20)
+        pdf.set_text_color(*_DARK)
+        pdf.cell(widths[0], 5.5, ob.get("obligation_type", "")[:20], fill=True)
+        pdf.set_text_color(*_CRIMSON if severity == "blocking" else _MUTED)
+        pdf.cell(widths[1], 5.5, severity, fill=True)
+        pdf.set_text_color(*_DARK)
+        pdf.cell(widths[2], 5.5, ob.get("framework_id", "")[:14], fill=True)
+        pdf.cell(widths[3], 5.5, ob.get("article_ref", "")[:14], fill=True)
+        pdf.set_text_color(*_GREEN if satisfied else _CRIMSON)
+        pdf.cell(widths[4], 5.5, "Yes" if satisfied else "No", fill=True)
+        pdf.ln()
+
+        desc = ob.get("description", "").strip()
+        if desc:
+            pdf.set_font("Helvetica", "I", 6.5)
+            pdf.set_text_color(*_MUTED)
+            pdf.set_x(28)
+            pdf.multi_cell(162, 4, desc[:180] + ("..." if len(desc) > 180 else ""))
+            pdf.set_font("Helvetica", "", 7)

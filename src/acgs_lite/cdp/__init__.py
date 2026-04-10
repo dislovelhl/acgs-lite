@@ -11,6 +11,7 @@ Constitutional Hash: 608508a9bd224290
 """
 
 from acgs_lite.cdp.assembler import assemble_cdp_record
+from acgs_lite.cdp.certificate import generate_certificate
 from acgs_lite.cdp.record import (
     CDPRecordV1,
     ComplianceEvidenceRef,
@@ -27,4 +28,5 @@ __all__ = [
     "InterventionOutcome",
     "MACIStep",
     "assemble_cdp_record",
+    "generate_certificate",
 ]

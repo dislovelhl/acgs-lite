@@ -344,6 +344,32 @@ def create_governance_app(
             "broken_ids": broken_ids,
         }
 
+    @app.get("/cdp/records/{cdp_id}/certificate")
+    def get_cdp_certificate(cdp_id: str, title: str = "AI Compliance Evidence Package") -> Any:
+        """Return a PDF certificate for a CDP record.
+
+        Requires the ``pdf`` optional extra (``pip install acgs-lite[pdf]``).
+        """
+        from fastapi.responses import Response
+
+        record = _cdp_backend.get(cdp_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail=f"CDP record {cdp_id!r} not found")
+        try:
+            from acgs_lite.cdp.certificate import generate_certificate
+        except ImportError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail="PDF generation requires fpdf2. Install with: pip install acgs-lite[pdf]",
+            ) from exc
+        pdf_bytes = generate_certificate(record.to_dict(), title=title)
+        filename = f"cdp-certificate-{cdp_id[:8]}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
     # --- Health & Stats ---
 
     @app.get("/health")
