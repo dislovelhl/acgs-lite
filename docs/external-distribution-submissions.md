@@ -2,7 +2,7 @@
 
 Date: 2026-04-10
 
-Use this file as the submission-ready source for curated lists, launch posts, and comparison contexts.
+Use this file as the reusable source for curated-list submissions, launch posts, and comparison contexts.
 
 ## One-line description
 
@@ -18,11 +18,11 @@ Use this file as the submission-ready source for curated lists, launch posts, an
 
 ## MCP / agent infrastructure blurb
 
-`acgs-lite` can also run as shared governance infrastructure for agent systems, with an MCP path for central policy enforcement and auditability.
+`acgs-lite` can also run as shared governance infrastructure for agent systems, with an MCP path for centralized policy enforcement and auditability.
 
 ## How `acgs-lite` differs
 
-Unlike prompt-only guardrails, `acgs-lite` is aimed at deterministic pre-execution governance in the runtime path. The wedge is:
+Unlike prompt-only guardrails, `acgs-lite` is aimed at deterministic pre-execution governance in the runtime path. The key wedge is:
 
 - block before execution, not just advise
 - MACI separation of powers, not single-agent self-approval

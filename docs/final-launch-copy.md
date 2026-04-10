@@ -2,7 +2,7 @@
 
 Date: 2026-04-10
 
-Use this as the posting-ready copy set for the first concentrated launch window.
+Use this as the posting-ready copy set for the first concentrated launch window. Keep the copy concrete, technical, and demo-led.
 
 ## Positioning anchor
 
@@ -32,7 +32,7 @@ The core idea is simple:
 
 The fastest proof path in the repo is:
 - run `python examples/basic_governance/main.py`
-- watch safe actions pass and unsafe ones get blocked
+- watch a safe request pass and unsafe requests get blocked
 - inspect the audit trail example
 - try the MCP path if you want shared governance infrastructure
 
@@ -66,7 +66,7 @@ Built this because a lot of agent safety tooling still feels advisory instead of
 
 There’s a simple no-key proof path in the repo:
 - `python examples/basic_governance/main.py`
-- see safe actions pass and unsafe ones get blocked
+- see a safe request pass and unsafe requests get blocked
 - then inspect the audit trail and MCP examples
 
 Repo: https://github.com/dislovelhl/acgs-lite

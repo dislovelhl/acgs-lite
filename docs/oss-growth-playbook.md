@@ -57,10 +57,10 @@ That means the problem is not lack of material. The problem is lack of a **singl
 
 ## Main weaknesses blocking traction
 
-### 1. Above-the-fold conversion is still too abstract
-The README is strong, but not maximally persuasive.
+### 1. Above-the-fold conversion still needs proof density
+The README is stronger than before, but the top section still lives or dies on proof.
 
-Missing near the top:
+Highest-value elements near the top:
 - visual proof artifact (GIF / screenshot / architecture card)
 - explicit star CTA
 - one obvious canonical first demo
@@ -106,6 +106,11 @@ That message is better than broader claims because it is:
 ### A. Add one proof artifact above the fold
 Best option:
 - short terminal GIF of a blocked unsafe action, followed by audit output
+
+Status:
+- README placement prepared
+- capture plan drafted
+- asset still needs to be produced
 
 Good alternatives:
 - minimal sequence diagram: request → governance engine → block/allow → audit log
@@ -233,6 +238,11 @@ Examples of weekly content:
 3. add "Start here in 3 minutes"
 4. add one canonical blocked-action demo snippet near the top
 5. keep compliance table lower, not as the first proof asset
+
+Status on this list:
+- 2, 3, and 4 are now in place
+- 1 is prepared but waiting on the actual GIF asset
+- 5 should be preserved during future README edits
 
 ### Example changes
 1. rename or promote one demo as the default proof path

@@ -1,6 +1,6 @@
 # Example: Basic Constitutional Governance
 
-Govern any Python callable with a `Constitution` in ~5 lines. No API keys required.
+Govern any Python callable with a `Constitution` in a few lines. No API keys required.
 
 ## What it shows
 
@@ -32,8 +32,10 @@ python examples/basic_governance/main.py
 
 🚫  Blocked:  no-harmful-content — Block requests containing harmful keywords
 
-🚫  PII gate: no-pii — Prevent PII leakage in responses
+🚫  PII gate: no-pii — Prevent PII leakage in requests
 ```
+
+This is the fastest no-key proof that `acgs-lite` can sit in the runtime path and deny unsafe inputs before execution.
 
 ## Key concepts
 
