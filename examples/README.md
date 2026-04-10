@@ -1,7 +1,7 @@
-# ACGS-Lite 2026.1.0 — Examples
+# ACGS-Lite Examples
 
-Runnable quickstarts covering the core **Agentic Firewall** and **MACI** governance patterns.
-**No API keys or network access required** for any of these examples.
+Runnable quickstarts covering the core runtime-governance and MACI patterns in `acgs-lite`.
+**No API keys are required** for the canonical demo path.
 
 ## Canonical demo path
 
@@ -15,7 +15,7 @@ pip install acgs-lite
 python examples/basic_governance/main.py
 ```
 
-This is the fastest proof that `acgs-lite` is real: safe requests pass, unsafe ones are blocked.
+This is the fastest proof that `acgs-lite` is real: safe requests pass, harmful requests are blocked, and PII-like input is denied.
 
 ### 2. Inspect the audit evidence
 Run [`audit_trail/`](./audit_trail/).
@@ -39,14 +39,15 @@ This is the shared-service story: agent actions can be validated against a gover
 ## Quickstart
 
 ```bash
-pip install "acgs-lite[mcp]==2026.1.0"
-
-# Run any example
+pip install acgs-lite
 python examples/basic_governance/main.py
+
+# Optional: MCP example
+pip install "acgs-lite[mcp]"
 python examples/mcp_agent_client.py
 ```
 
-## 2026-Ready Examples
+## Examples by goal
 
 | Example | What it teaches | Difficulty |
 |---------|----------------|------------|

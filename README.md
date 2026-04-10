@@ -42,12 +42,12 @@ pip install acgs-lite
 python examples/basic_governance/main.py
 ```
 
-Expected result:
+Expected result includes these three outcomes near the top:
 
 ```text
-✅ Allowed: safe request passes
-🚫 Blocked: harmful request denied
-🚫 PII gate: sensitive content denied
+✅  Allowed:  Response to: What is the capital of France?
+🚫  Blocked:  no-harmful-content — Block requests containing harmful keywords
+🚫  PII gate: no-pii — Prevent PII leakage in requests
 ```
 
 If you want the full example path, go to [`examples/README.md`](./examples/README.md).
