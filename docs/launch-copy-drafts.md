@@ -2,7 +2,7 @@
 
 Date: 2026-04-09
 
-Use these as starting points, not sacred text. The right launch copy for `acgs-lite` should feel technical, direct, and concrete.
+Use these as starting points, not sacred text. The right launch copy for `acgs-lite` should feel technical, direct, concrete, and demo-led.
 
 ## Core positioning
 
@@ -47,7 +47,7 @@ The core idea is simple:
 
 The fastest proof path is:
 - run the basic governance demo,
-- see unsafe actions get blocked,
+- watch a safe request pass and unsafe requests get blocked,
 - inspect the audit trail,
 - then run the MCP example if you want the shared-service model.
 
@@ -86,7 +86,7 @@ Built this because a lot of agent safety tooling still feels advisory, not enfor
 
 The first demo is intentionally simple, no API keys required:
 - run `python examples/basic_governance/main.py`
-- see safe actions pass and unsafe ones get blocked
+- see a safe request pass and unsafe requests get blocked
 
 Repo: https://github.com/dislovelhl/acgs-lite
 
@@ -151,6 +151,7 @@ So one agent doesn’t silently propose + approve + execute the same risky actio
 - run the basic governance demo
 - inspect the audit trail demo
 - try the MCP governance server path
+- lead with the blocked-action proof before broader architecture claims
 
 5. If you’re building agent infra, I’d love feedback on:
 - whether this is a real need
