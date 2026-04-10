@@ -32,6 +32,7 @@ Unlike prompt-only guardrails, `acgs-lite` is aimed at deterministic pre-executi
 ## Best category fit by target
 
 - `awesome-llm-security` → **Defensive & Guardrail Tools**
+- `awesome-ai-agents-security` → **Agent Firewalls & Gateways (Runtime Protection)**
 - agent-security roundups → **agent runtime governance / policy enforcement**
 - MCP security roundups → **MCP governance / policy enforcement layer**
 
