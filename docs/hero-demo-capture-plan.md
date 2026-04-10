@@ -62,9 +62,9 @@ python examples/basic_governance/main.py
 Ideal visible output emphasis:
 
 ```text
-✅ Allowed: safe request passes
-🚫 Blocked: harmful request denied
-🚫 PII gate: sensitive content denied
+✅  Allowed:  Response to: What is the capital of France?
+🚫  Blocked:  no-harmful-content — Block requests containing harmful keywords
+🚫  PII gate: no-pii — Prevent PII leakage in requests
 ```
 
 ## Editing rules
@@ -89,7 +89,7 @@ Optional companions:
 ## Supporting copy for README
 
 Hero caption:
-- `20-second proof: safe actions pass, unsafe actions get blocked before execution.`
+- `20-second proof: a safe request passes, unsafe requests get blocked before execution.`
 
 Alt text:
 - `Terminal demo of acgs-lite allowing a safe request and blocking harmful and PII-like requests before execution.`
