@@ -9,7 +9,42 @@
 
 **The missing safety layer between your LLM and production.**
 
-`acgs-lite` is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes — violations are blocked, not just logged.
+`acgs-lite` is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes, violations are blocked, not just logged.
+
+**Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
+
+---
+
+## Start here in 3 minutes
+
+**Fastest proof path:**
+
+1. **Block an unsafe action** with [`examples/basic_governance/`](./examples/basic_governance/)
+2. **Inspect the audit evidence** with [`examples/audit_trail/`](./examples/audit_trail/)
+3. **Run governance as shared infrastructure** with [`examples/mcp_agent_client.py`](./examples/mcp_agent_client.py)
+
+```bash
+pip install acgs-lite
+python examples/basic_governance/main.py
+```
+
+Expected result:
+
+```text
+✅ Allowed: safe request passes
+🚫 Blocked: harmful request denied
+🚫 PII gate: sensitive content denied
+```
+
+If you want the full example path, go to [`examples/README.md`](./examples/README.md).
+
+---
+
+## What this proves
+
+- **Block before execution**: unsafe actions are denied before your agent runs them
+- **Separate powers with MACI**: proposer, validator, executor do not collapse into one actor
+- **Keep audit evidence**: each decision can be chained, inspected, and verified later
 
 ---
 
@@ -295,6 +330,7 @@ acgs resume --agent-id agent-01
 
 | Guide | Description |
 |-------|-------------|
+| [Examples](./examples/README.md) | Canonical demo path: block, audit, then MCP |
 | [Quickstart](https://acgs.ai/docs/quickstart) | Up and running in 5 minutes |
 | [Architecture](https://acgs.ai/docs/architecture) | Engine internals, MACI deep dive |
 | [Integrations](https://acgs.ai/docs/integrations) | OpenAI, Anthropic, LangChain, MCP, A2A |

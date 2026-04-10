@@ -3,6 +3,39 @@
 Runnable quickstarts covering the core **Agentic Firewall** and **MACI** governance patterns.
 **No API keys or network access required** for any of these examples.
 
+## Canonical demo path
+
+If you only try three things, do them in this order:
+
+### 1. Block an unsafe action
+Run [`basic_governance/`](./basic_governance/) first.
+
+```bash
+pip install acgs-lite
+python examples/basic_governance/main.py
+```
+
+This is the fastest proof that `acgs-lite` is real: safe requests pass, unsafe ones are blocked.
+
+### 2. Inspect the audit evidence
+Run [`audit_trail/`](./audit_trail/).
+
+```bash
+python examples/audit_trail/main.py
+```
+
+This shows that governance decisions are not just transient checks, they become tamper-evident evidence.
+
+### 3. Run governance as infrastructure
+Run [`mcp_agent_client.py`](./mcp_agent_client.py).
+
+```bash
+pip install "acgs-lite[mcp]"
+python examples/mcp_agent_client.py
+```
+
+This is the shared-service story: agent actions can be validated against a governance server before execution.
+
 ## Quickstart
 
 ```bash
@@ -36,10 +69,10 @@ python examples/mcp_agent_client.py
 
 ## Learning path
 
-```
-basic_governance  →  mcp_agent_client  →  maci_separation
+```text
+basic_governance  →  audit_trail  →  mcp_agent_client
         ↓
-compliance_eu_ai_act  →  audit_trail  →  mock_stub_testing
+maci_separation   →  compliance_eu_ai_act  →  mock_stub_testing
 ```
 
 For production deployments, see [`CONTRIBUTING.md`](../CONTRIBUTING.md), the
