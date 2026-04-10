@@ -13,6 +13,20 @@
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
 
+## Hero demo
+
+**20-second proof:** safe actions pass, unsafe actions get blocked before execution.
+
+- run `python examples/basic_governance/main.py`
+- watch a safe request pass
+- watch harmful and PII-like requests get blocked
+
+<!-- Hero asset placement, add once captured:
+<p align="center">
+  <img src="./docs/assets/basic-governance-hero.gif" alt="Terminal demo of acgs-lite allowing a safe request and blocking harmful and PII-like requests before execution." width="900" />
+</p>
+-->
+
 ---
 
 ## Start here in 3 minutes
