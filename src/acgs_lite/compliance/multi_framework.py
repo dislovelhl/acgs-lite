@@ -44,6 +44,7 @@ from acgs_lite.compliance.dora import DORAFramework
 from acgs_lite.compliance.eu_ai_act import EUAIActFramework
 from acgs_lite.compliance.gdpr import GDPRFramework
 from acgs_lite.compliance.hipaa_ai import HIPAAAIFramework
+from acgs_lite.compliance.igaming import IGamingFramework
 from acgs_lite.compliance.india_dpdp import IndiaDPDPFramework
 from acgs_lite.compliance.iso_42001 import ISO42001Framework
 from acgs_lite.compliance.nist_ai_rmf import NISTAIRMFFramework
@@ -77,6 +78,8 @@ _FRAMEWORK_REGISTRY: dict[str, type] = {
     "brazil_lgpd": BrazilLGPDFramework,
     "china_ai": ChinaAIFramework,
     "ccpa_cpra": CCPACPRAFramework,
+    # Round 4: iGaming vertical
+    "igaming": IGamingFramework,
 }
 
 # Jurisdiction -> frameworks that apply
@@ -86,7 +89,9 @@ _JURISDICTION_MAP: dict[str, list[str]] = {
     "international": ["iso_42001", "oecd_ai"],
     "new_york_city": ["nist_ai_rmf", "soc2_ai", "nyc_ll144", "oecd_ai"],
     "canada": ["canada_aida", "nist_ai_rmf", "oecd_ai"],
-    "united_kingdom": ["uk_ai_framework", "iso_42001", "oecd_ai"],
+    "united_kingdom": ["uk_ai_framework", "iso_42001", "oecd_ai", "igaming"],
+    "malta": ["igaming", "eu_ai_act"],
+    "gibraltar": ["igaming"],
     "singapore": ["singapore_maigf", "iso_42001", "oecd_ai"],
     "asean": ["singapore_maigf", "oecd_ai"],
     "india": ["india_dpdp", "oecd_ai"],
@@ -112,6 +117,11 @@ _DOMAIN_MAP: dict[str, list[str]] = {
     "hiring": ["nyc_ll144"],
     "general_purpose_ai": ["eu_ai_act"],
     "gpai": ["eu_ai_act"],
+    "gambling": ["igaming"],
+    "igaming": ["igaming"],
+    "sports_betting": ["igaming"],
+    "casino": ["igaming"],
+    "betting": ["igaming"],
 }
 
 _plugins_loaded = False

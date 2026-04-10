@@ -112,6 +112,8 @@ class GovernedAgent:
         enforce_maci: bool = False,
         max_retries: int = 0,
         circuit_breaker: GovernanceCircuitBreaker | None = None,
+        cdp_backend: Any | None = None,
+        intervention_engine: Any | None = None,
     ) -> None:
         webhook_url = os.getenv("ACGS_HALT_WEBHOOK_URL")
         if circuit_breaker is None and webhook_url:
@@ -141,6 +143,8 @@ class GovernedAgent:
         )
         self.maci = MACIEnforcer(audit_log=self.audit_log)
         self._refusal_engine = RefusalReasoningEngine(self.constitution)
+        self._cdp_backend = cdp_backend  # None = disabled; set via ACGS_CDP_ENABLED too
+        self._intervention_engine = intervention_engine
 
         if maci_role:
             self.maci.assign_role(agent_id, maci_role)
@@ -240,7 +244,9 @@ class GovernedAgent:
         normalized_model = model
         if ":" in model:
             prefixed_provider_name, normalized_model = model.split(":", 1)
-        resolved_provider_name = provider_name if isinstance(provider_name, str) else prefixed_provider_name
+        resolved_provider_name = (
+            provider_name if isinstance(provider_name, str) else prefixed_provider_name
+        )
         return capability_registry.resolve(normalized_model, resolved_provider_name)
 
     def _prepare_execution_kwargs(
@@ -323,11 +329,19 @@ class GovernedAgent:
         for attempt in range(1, self.max_retries + 2):  # 1-indexed, includes original
             try:
                 self._validate_output(result)
+                self._emit_cdp(input, verdict="allow", context=context)
                 return result
             except ConstitutionalViolationError as exc:
                 last_error = exc
                 retries_remaining = self.max_retries - attempt + 1
                 if retries_remaining <= 0:
+                    self._emit_cdp(
+                        input,
+                        verdict="deny",
+                        context=context,
+                        violated_rules=[exc.rule_id or "UNKNOWN"],
+                        risk_score=1.0,
+                    )
                     raise
                 # Audit the retry attempt
                 self.audit_log.record(
@@ -353,6 +367,99 @@ class GovernedAgent:
         if last_error is not None:
             raise last_error
         return result
+
+    def _emit_cdp(
+        self,
+        raw_input: str,
+        *,
+        verdict: str = "allow",
+        context: dict[str, Any] | None = None,
+        matched_rules: list[str] | None = None,
+        violated_rules: list[str] | None = None,
+        compliance_frameworks: list[str] | None = None,
+        risk_score: float = 0.0,
+    ) -> None:
+        """Assemble and persist a CDP record if CDP is enabled (post-decision, AD-6)."""
+        if not os.getenv("ACGS_CDP_ENABLED") and self._cdp_backend is None:
+            return
+
+        _halt_error: Exception | None = None
+        try:
+            from acgs_lite.cdp.assembler import assemble_cdp_record
+
+            backend = self._cdp_backend
+            if backend is None:
+                # Lazy import of default global backend from server module
+                try:
+                    from acgs_lite.server import _cdp_backend as _server_backend
+
+                    backend = _server_backend
+                except Exception:
+                    from acgs_lite.cdp.store import InMemoryCDPBackend
+
+                    backend = InMemoryCDPBackend()
+
+            audit_entries = list(self.audit_log._entries)
+            action = (context or {}).get("governance_action", "")
+
+            # Run compliance checker to derive runtime obligations (Phase 2)
+            obligations: list[Any] = []
+            effective_verdict = verdict
+            try:
+                from acgs_lite.compliance.runtime_checker import RuntimeComplianceChecker
+
+                checker = RuntimeComplianceChecker()
+                decision_context: dict[str, Any] = {
+                    "verdict": verdict,
+                    "risk_score": risk_score,
+                    "matched_rules": list(matched_rules or []),
+                    "violated_rules": list(violated_rules or []),
+                    "compliance_frameworks": list(compliance_frameworks or []),
+                    "human_approval": (context or {}).get("human_approval"),
+                    "domain": (context or {}).get("domain", ""),
+                }
+                obligations = checker.check(decision_context)
+                # If blocking obligations are unsatisfied, escalate verdict to conditional
+                blocking_unsatisfied = [
+                    o for o in obligations if o.is_blocking and not o.satisfied
+                ]
+                if blocking_unsatisfied and effective_verdict == "allow":
+                    effective_verdict = "conditional"
+            except Exception:
+                pass  # Compliance check failure must not affect CDP emission
+
+            record = assemble_cdp_record(
+                raw_input=raw_input,
+                agent_id=self.agent_id,
+                constitutional_hash=self.engine._const_hash,
+                verdict=effective_verdict,
+                action=str(action),
+                matched_rules=list(matched_rules or []),
+                violated_rules=violated_rules or [],
+                risk_score=risk_score,
+                compliance_frameworks=list(compliance_frameworks or []),
+                runtime_obligations=obligations,
+                audit_entries=audit_entries,
+            )
+            backend.save(record)
+
+            # Phase 5: Run intervention engine if configured (post-CDP, AD-6)
+            if self._intervention_engine is not None:
+                from acgs_lite.circuit_breaker import GovernanceHaltError as _GHE
+
+                try:
+                    self._intervention_engine.evaluate(record.to_dict())
+                except _GHE as exc:
+                    _halt_error = exc  # Defer re-raise past the outer except
+                except Exception:
+                    pass  # All other handler failures are non-fatal
+        except Exception:
+            # CDP emission must never fail the governed call (fail-open for observability)
+            pass
+
+        # Re-raise BLOCK halt outside the CDP fail-open guard so it reaches the caller
+        if _halt_error is not None:
+            raise _halt_error
 
     async def _aexecute_agent(self, input: str, **kwargs: Any) -> Any:
         """Execute the underlying agent (async)."""

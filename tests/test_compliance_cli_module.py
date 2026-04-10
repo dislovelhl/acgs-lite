@@ -47,7 +47,7 @@ class TestFrameworksCmd:
     def test_lists_18_frameworks(self):
         code, out = run(["frameworks"])
         assert code == 0
-        assert "18" in out
+        assert "19" in out
 
     def test_lists_all_known_ids_in_text_output(self):
         code, out = run(["frameworks"])
@@ -68,7 +68,7 @@ class TestFrameworksCmd:
         assert code == 0
         rows = json.loads(out)
         assert isinstance(rows, list)
-        assert len(rows) == 18
+        assert len(rows) == 19
 
     def test_json_rows_have_required_fields(self):
         code, out = run(["frameworks", "--json"])

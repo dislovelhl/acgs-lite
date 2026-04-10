@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from acgs_lite._meta import VERSION
 from acgs_lite.audit import AuditEntry, AuditLog
+from acgs_lite.cdp.store import InMemoryCDPBackend
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
 from acgs_lite.events import get_event_bus
@@ -25,6 +26,9 @@ from acgs_lite.integrations.openshell_governance import (
     JsonFileGovernanceStateBackend,
     create_openshell_governance_router,
 )
+
+# Module-level CDP backend (shared across requests, replaceable for testing)
+_cdp_backend: InMemoryCDPBackend = InMemoryCDPBackend()
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
@@ -307,6 +311,39 @@ def create_governance_app(
     def audit_count() -> dict[str, int]:
         return {"count": _audit_count()}
 
+    # --- Constitutional Decision Provenance (CDP) ---
+
+    @app.get("/cdp/records")
+    def list_cdp_records(
+        tenant_id: str | None = None,
+        limit: int = Query(default=50, ge=1, le=500),
+        offset: int = Query(default=0, ge=0),
+    ) -> dict[str, Any]:
+        records = _cdp_backend.list(tenant_id=tenant_id, limit=limit, offset=offset)
+        total = _cdp_backend.count(tenant_id=tenant_id)
+        return {
+            "records": [r.to_dict() for r in records],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    @app.get("/cdp/records/{cdp_id}")
+    def get_cdp_record(cdp_id: str) -> dict[str, Any]:
+        record = _cdp_backend.get(cdp_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail=f"CDP record {cdp_id!r} not found")
+        return record.to_dict()
+
+    @app.get("/cdp/chain")
+    def cdp_chain_status(tenant_id: str | None = None) -> dict[str, Any]:
+        is_valid, broken_ids = _cdp_backend.verify_chain(tenant_id=tenant_id)
+        return {
+            "valid": is_valid,
+            "record_count": _cdp_backend.count(tenant_id=tenant_id),
+            "broken_ids": broken_ids,
+        }
+
     # --- Health & Stats ---
 
     @app.get("/health")
@@ -359,7 +396,9 @@ def create_governance_app(
                         if pending_event is None:
                             pending_event = asyncio.create_task(subscription.__anext__())
                         try:
-                            event = await asyncio.wait_for(asyncio.shield(pending_event), timeout=30.0)
+                            event = await asyncio.wait_for(
+                                asyncio.shield(pending_event), timeout=30.0
+                            )
                         except asyncio.TimeoutError:
                             yield 'data: {"type":"heartbeat"}\n\n'
                             continue
