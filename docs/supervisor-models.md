@@ -90,4 +90,4 @@ assert result.is_safe == True
 ## Next Steps
 - Learn more about [Z3 Integration](architecture.md#formal-verification) in the Architecture doc.
 - See how to use [MACI Roles](maci.md) to separate Proposer and Supervisor.
-- Explore [Industry Use Cases](why-governance.md#industry-use-cases) for these patterns.
+- Explore [Industry Use Cases](use-cases.md) for these patterns.

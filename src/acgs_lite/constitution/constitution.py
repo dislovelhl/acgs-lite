@@ -176,6 +176,11 @@ class Constitution(BaseModel):
                 return Severity(value.strip().lower())
             return Severity(value)
 
+        def _resolve_workflow_action(rule_data: dict[str, Any], severity: Severity) -> ViolationAction:
+            if "workflow_action" in rule_data:
+                return rule_data["workflow_action"]
+            return ViolationAction.BLOCK if severity.blocks() else ViolationAction.WARN
+
         if not isinstance(data, dict):
             raise ValueError("Constitution data must be a mapping/object")
         rules_data = data.get("rules", [])
@@ -184,32 +189,34 @@ class Constitution(BaseModel):
         for index, raw_rule in enumerate(rules_data):
             if not isinstance(raw_rule, dict):
                 raise ValueError(f"Constitution rule at index {index} must be a mapping/object")
-        rules = [
-            Rule(
-                id=r["id"],
-                text=r["text"],
-                severity=_coerce_severity(r.get("severity", "high")),
-                keywords=r.get("keywords", []),
-                patterns=r.get("patterns", []),
-                category=r.get("category", "general"),
-                subcategory=r.get("subcategory", ""),
-                depends_on=r.get("depends_on", []),
-                enabled=r.get("enabled", True),
-                workflow_action=r.get("workflow_action", ""),
-                hardcoded=r.get("hardcoded", False),
-                tags=r.get("tags", []),
-                priority=int(r.get("priority", 0)),
-                condition=dict(r.get("condition", {})),
-                deprecated=bool(r.get("deprecated", False)),
-                replaced_by=str(r.get("replaced_by", "")),
-                valid_from=str(r.get("valid_from", "")),
-                valid_until=str(r.get("valid_until", "")),
-                embedding=list(r.get("embedding", [])),
-                provenance=list(r.get("provenance", [])),
-                metadata=r.get("metadata", {}),
+        rules: list[Rule] = []
+        for rule_data in rules_data:
+            severity = _coerce_severity(rule_data.get("severity", "high"))
+            rules.append(
+                Rule(
+                    id=rule_data["id"],
+                    text=rule_data["text"],
+                    severity=severity,
+                    keywords=rule_data.get("keywords", []),
+                    patterns=rule_data.get("patterns", []),
+                    category=rule_data.get("category", "general"),
+                    subcategory=rule_data.get("subcategory", ""),
+                    depends_on=rule_data.get("depends_on", []),
+                    enabled=rule_data.get("enabled", True),
+                    workflow_action=_resolve_workflow_action(rule_data, severity),
+                    hardcoded=rule_data.get("hardcoded", False),
+                    tags=rule_data.get("tags", []),
+                    priority=int(rule_data.get("priority", 0)),
+                    condition=dict(rule_data.get("condition", {})),
+                    deprecated=bool(rule_data.get("deprecated", False)),
+                    replaced_by=str(rule_data.get("replaced_by", "")),
+                    valid_from=str(rule_data.get("valid_from", "")),
+                    valid_until=str(rule_data.get("valid_until", "")),
+                    embedding=list(rule_data.get("embedding", [])),
+                    provenance=list(rule_data.get("provenance", [])),
+                    metadata=rule_data.get("metadata", {}),
+                )
             )
-            for r in rules_data
-        ]
         return cls(
             name=data.get("name", "default"),
             version=data.get("version", "1.0.0"),

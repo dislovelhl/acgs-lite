@@ -1,4 +1,5 @@
 """Constitution deployer: applies approved rules and rotates the constitutional hash."""
+
 from __future__ import annotations
 
 import logging

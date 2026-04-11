@@ -35,7 +35,10 @@ def _normalize(value: Any) -> Any:
     if isinstance(value, list):
         return [_normalize(item) for item in value]
     if isinstance(value, dict):
-        return {str(key): _normalize(item) for key, item in sorted(value.items(), key=lambda item: str(item[0]))}
+        return {
+            str(key): _normalize(item)
+            for key, item in sorted(value.items(), key=lambda item: str(item[0]))
+        }
     return value
 
 
@@ -65,9 +68,7 @@ def _field_change_descriptions(field_changes: dict[str, dict[str, Any]]) -> list
         if field_name == "text":
             descriptions.append("text changed")
         elif field_name in {"keywords", "patterns"}:
-            descriptions.append(
-                f"{field_name}: {len(change['before'])} -> {len(change['after'])}"
-            )
+            descriptions.append(f"{field_name}: {len(change['before'])} -> {len(change['after'])}")
         else:
             descriptions.append(f"{field_name}: {change['before']} -> {change['after']}")
     return descriptions

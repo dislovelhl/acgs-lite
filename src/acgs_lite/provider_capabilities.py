@@ -66,13 +66,17 @@ class ProviderCapabilityProfile:
     def from_dict(cls, data: dict[str, Any]) -> ProviderCapabilityProfile:
         """Build a profile from manifest data."""
         aliases_raw = data.get("aliases", [])
-        aliases = tuple(str(alias) for alias in aliases_raw) if isinstance(aliases_raw, list) else ()
+        aliases = (
+            tuple(str(alias) for alias in aliases_raw) if isinstance(aliases_raw, list) else ()
+        )
         return cls(
             provider_id=str(data["provider_id"]),
             model_id=str(data["model_id"]),
             display_name=str(data["display_name"]),
             provider_type=str(data["provider_type"]),
-            structured_output=CapabilityLevel(str(data.get("structured_output", CapabilityLevel.NONE.value))),
+            structured_output=CapabilityLevel(
+                str(data.get("structured_output", CapabilityLevel.NONE.value))
+            ),
             support_level=CapabilitySupportLevel(
                 str(data.get("support_level", CapabilitySupportLevel.UNSUPPORTED.value))
             ),
@@ -240,7 +244,9 @@ class CapabilityRegistry:
             return list(self._profiles)
         return [profile for profile in self._profiles if profile.is_active]
 
-    def resolve(self, model: str, provider_name: str | None = None) -> ProviderCapabilityProfile | None:
+    def resolve(
+        self, model: str, provider_name: str | None = None
+    ) -> ProviderCapabilityProfile | None:
         """Resolve a profile via exact ID or declared alias only."""
         for profile in self.get_all_profiles(active_only=False):
             if profile.matches(model, provider_name):

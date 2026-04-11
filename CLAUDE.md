@@ -1,6 +1,6 @@
 # ACGS-Lite
 
-For repo-wide rules, see `/AGENTS.md`. Use `/CLAUDE.md` only if a tool specifically loads it.
+For repo-wide rules, see `/CLAUDE.md` and `.claude/rules/` (Claude Code auto-loads these). AGENTS.md serves Codex/OMX.
 
 ## Structure
 
@@ -14,6 +14,7 @@ src/acgs_lite/
 ├── governed.py       # Governed wrappers
 ├── maci.py           # MACI enforcement
 ├── eu_ai_act/        # EU AI Act assessment subpackage
+├── constrained_decoding.py  # llguidance-inspired constrained output decoding
 └── server.py         # FastAPI wrapper
 
 rust/

@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from acgs_lite.constitution.constitution import Constitution
-from acgs_lite.constitution.rule import AcknowledgedTension, Rule, Severity
+from acgs_lite.constitution.rule import AcknowledgedTension, Rule, Severity, ViolationAction
 from acgs_lite.errors import ConstitutionalViolationError
 
 # ---------------------------------------------------------------------------
@@ -110,6 +110,19 @@ class TestFromDict:
         assert c.name == "default"
         assert c.rules[0].id == "X-1"
         assert c.rules[0].severity == Severity.LOW
+
+    def test_missing_workflow_action_uses_severity_default(self) -> None:
+        c = Constitution.from_dict(
+            {
+                "rules": [
+                    {"id": "M-1", "text": "Warn only", "severity": "medium", "keywords": ["warn"]},
+                    {"id": "C-1", "text": "Block hard", "severity": "critical", "keywords": ["block"]},
+                ]
+            }
+        )
+        by_id = {rule.id: rule for rule in c.rules}
+        assert by_id["M-1"].workflow_action == ViolationAction.WARN
+        assert by_id["C-1"].workflow_action == ViolationAction.BLOCK
 
     def test_with_all_fields(self) -> None:
         c = Constitution.from_dict(

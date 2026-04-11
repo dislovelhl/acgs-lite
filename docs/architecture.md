@@ -77,6 +77,17 @@ For financial or safety-critical logic, ACGS-Lite supports the **Z3 SMT Solver**
 ### Leanstral Proof Certificates
 For high-assurance environments, the `LeanstralVerifier` can generate Lean 4 proof certificates using Mistral models, providing a machine-verifiable proof of safety for every governance decision.
 
+## Cloud Run
+
+If you need a remote governance endpoint instead of an in-process wrapper, package the ACGS runtime behind a small HTTP service and deploy it to Cloud Run. The important constraints are:
+
+- Keep the governance engine fail-closed on internal errors so transport retries never bypass validation.
+- Expose health and audit endpoints separately from action execution so operators can inspect the system without widening the execution surface.
+- Pin the constitutional hash and configuration through environment variables or a mounted config bundle so every deployed revision is auditable.
+- Emit audit logs and latency telemetry to a durable backend before acknowledging requests, which keeps compliance evidence intact across container restarts.
+
+Cloud Run is a good fit when you want autoscaling, private service-to-service auth, and a single governance plane shared by multiple agents or MCP clients.
+
 ---
 
 ## Next Steps

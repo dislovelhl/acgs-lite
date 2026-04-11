@@ -54,12 +54,13 @@ def _can_inject_request_shape(capability_profile: StructuredOutputProfile) -> bo
     if capability_profile.request_shape == RequestShape.NONE:
         return False
     return (
-        capability_profile.stability != CapabilityStability.PREVIEW
-        or _allow_preview_capabilities()
+        capability_profile.stability != CapabilityStability.PREVIEW or _allow_preview_capabilities()
     )
 
 
-def _build_openai_response_format(schema: dict[str, Any], constitution: ResponseSchemaProvider) -> dict[str, Any]:
+def _build_openai_response_format(
+    schema: dict[str, Any], constitution: ResponseSchemaProvider
+) -> dict[str, Any]:
     return {
         "type": "json_schema",
         "json_schema": {

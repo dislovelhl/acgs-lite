@@ -305,19 +305,19 @@ def _resolve_lean_command_with_error() -> tuple[list[str] | None, str | None]:
                 parsed = json.loads(stripped)
             except json.JSONDecodeError as exc:
                 return None, f"Invalid {_LEAN_CMD_ENV_VAR} JSON array: {exc}"
-            if not isinstance(parsed, list) or not parsed or not all(
-                isinstance(item, str) and item for item in parsed
+            if (
+                not isinstance(parsed, list)
+                or not parsed
+                or not all(isinstance(item, str) and item for item in parsed)
             ):
-                return None, (
-                    f"{_LEAN_CMD_ENV_VAR} JSON form must be a non-empty array of strings"
-                )
+                return None, (f"{_LEAN_CMD_ENV_VAR} JSON form must be a non-empty array of strings")
             return parsed, None
 
         shell_tokens = ("|", "&&", "||", ";", "$(", "`", ">", "<")
         if any(token in stripped for token in shell_tokens):
             return None, (
                 f"Unsupported shell syntax in {_LEAN_CMD_ENV_VAR}; use a wrapper script or a JSON "
-                "array like [\"lake\", \"env\", \"lean\"]"
+                'array like ["lake", "env", "lean"]'
             )
         try:
             command = shlex.split(stripped)
@@ -354,7 +354,9 @@ def _resolve_lean_workdir(default_cwd: Path) -> tuple[Path, str | None]:
 def _extract_lean_errors(result: subprocess.CompletedProcess[str], command: list[str]) -> list[str]:
     """Extract useful Lean diagnostics from stderr/stdout."""
     combined_output = "\n".join(
-        chunk.strip() for chunk in (result.stderr, result.stdout) if isinstance(chunk, str) and chunk.strip()
+        chunk.strip()
+        for chunk in (result.stderr, result.stdout)
+        if isinstance(chunk, str) and chunk.strip()
     )
     errors: list[str] = []
     if result.returncode != 0:
@@ -538,7 +540,7 @@ def _build_theorem_statement(
 
     field_names = _extract_action_ctx_fields(prelude)
     action_field = _match_action_ctx_field(field_names, "action") or "action"
-    assumptions = [f'(h_{action_field} : ctx.{action_field} = {_lean_literal(action)})']
+    assumptions = [f"(h_{action_field} : ctx.{action_field} = {_lean_literal(action)})"]
 
     for key, value in (context or {}).items():
         field_name = _match_action_ctx_field(field_names, key)
@@ -633,9 +635,13 @@ class LeanstralVerifier:
             response = client.chat.complete(model=self._model, **request)
         except Exception as exc:
             message = str(exc).lower()
-            should_fallback = self._model == _LEANSTRAL_MODEL and "model" in message and any(
-                token in message
-                for token in ("not found", "unknown", "unavailable", "does not exist", "404")
+            should_fallback = (
+                self._model == _LEANSTRAL_MODEL
+                and "model" in message
+                and any(
+                    token in message
+                    for token in ("not found", "unknown", "unavailable", "does not exist", "404")
+                )
             )
             if not should_fallback:
                 raise
@@ -814,7 +820,8 @@ class LeanstralVerifier:
                 certificate = ProofCertificate(
                     lean_statement=theorem,
                     lean_proof=proof_body,
-                    kernel_verified=_lean_runtime_available() and "lean not installed" not in " ".join(errors),
+                    kernel_verified=_lean_runtime_available()
+                    and "lean not installed" not in " ".join(errors),
                     rules_formalized=predicates,
                     proof_hash=hashlib.sha256(full_source.encode()).hexdigest(),
                     model_used=self._model,

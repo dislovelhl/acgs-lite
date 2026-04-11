@@ -115,7 +115,11 @@ class ConstitutionBuilder:
             raise ValueError(f"Rule ID {rule_id!r} already exists in this builder")
 
         _sev = Severity(severity) if isinstance(severity, str) else severity
-        _wa = ViolationAction(workflow_action) if isinstance(workflow_action, str) and workflow_action else workflow_action
+        _wa = (
+            ViolationAction(workflow_action)
+            if isinstance(workflow_action, str) and workflow_action
+            else workflow_action
+        )
         rule = Rule(
             id=rule_id,
             text=text,

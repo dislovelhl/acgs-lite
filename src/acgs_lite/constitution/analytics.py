@@ -48,6 +48,7 @@ _NEGATIVE_VERBS_RE = re.compile(
 
 _POSITIVE_VERBS_SET = frozenset(
     {
+        "perform",
         "run",
         "test",
         "generate",
@@ -83,7 +84,7 @@ _POSITIVE_VERBS_SET = frozenset(
 
 _KW_NEGATIVE_RE = re.compile(
     r"without|disable|bypass|remove|skip|delete|override|hide|"
-    r"auto-reject|self-approve|proxy for|secret|credential|token|password|ssn|pii|"
+    r"auto-reject|self-approve|proxy for|secret|credential|token|password|ssn|"
     r"terraform-destroy",
     re.IGNORECASE,
 )

@@ -53,10 +53,11 @@ def evaluate_scenario(engine: GovernanceEngine, scenario: EvalScenario) -> EvalS
     failures: list[str] = []
     actual_rule_ids = tuple(actual["rule_ids"])
     if actual["valid"] != scenario.expected_valid:
-        failures.append(
-            f"expected_valid={scenario.expected_valid} actual_valid={actual['valid']}"
-        )
-    if scenario.expected_action_taken is not None and actual["action_taken"] != scenario.expected_action_taken:
+        failures.append(f"expected_valid={scenario.expected_valid} actual_valid={actual['valid']}")
+    if (
+        scenario.expected_action_taken is not None
+        and actual["action_taken"] != scenario.expected_action_taken
+    ):
         failures.append(
             "expected_action_taken="
             f"{scenario.expected_action_taken} actual_action_taken={actual['action_taken']}"
@@ -73,7 +74,9 @@ def evaluate_scenario(engine: GovernanceEngine, scenario: EvalScenario) -> EvalS
     ):
         expected_value = getattr(scenario, field_name)
         if expected_value is not None and actual[actual_key] != expected_value:
-            failures.append(f"{field_name}={expected_value} actual_{actual_key}={actual[actual_key]}")
+            failures.append(
+                f"{field_name}={expected_value} actual_{actual_key}={actual[actual_key]}"
+            )
 
     return EvalScenarioResult(
         scenario_id=scenario.id,

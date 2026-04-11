@@ -16,8 +16,36 @@ import argparse
 import json
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 from acgs_lite.observability.session_observer import ToolObservation
+
+EXPLORATION_TOOLS = frozenset(
+    {
+        "task",
+        "grep",
+        "glob",
+        "bash",
+        "ast_grep_search",
+        "websearch",
+        "webfetch",
+        "context7_resolve",
+        "context7_query",
+        "claude-mem_mcp",
+        "rg",
+    }
+)
+PRODUCTION_TOOLS = frozenset({"edit", "write"})
+PREPARATION_TOOLS = frozenset({"read", "skill"})
+COORDINATION_TOOLS = frozenset(
+    {"todowrite", "background_output", "background_cancel", "question", "lsp_diagnostics"}
+)
+CATEGORY_TOOL_SETS: dict[str, frozenset[str]] = {
+    "exploration_tools": EXPLORATION_TOOLS,
+    "production_tools": PRODUCTION_TOOLS,
+    "preparation_tools": PREPARATION_TOOLS,
+    "coordination_tools": COORDINATION_TOOLS,
+}
 
 
 def load_observations(path: Path) -> list[ToolObservation]:
@@ -30,40 +58,47 @@ def load_observations(path: Path) -> list[ToolObservation]:
     ]
 
 
-def analyze(obs: list[ToolObservation]) -> dict:
-    total = len(obs)
-    if total == 0:
-        return {"error": "no observations found"}
+def _category_stats(
+    observations: list[ToolObservation],
+    tools_set: frozenset[str],
+) -> dict[str, Any]:
+    category_observations = [observation for observation in observations if observation.tool_type in tools_set]
+    category_total = len(category_observations)
+    category_successes = sum(1 for observation in category_observations if observation.success)
+    category_errors = Counter(
+        observation.error_type for observation in category_observations if observation.error_type
+    )
+    tool_frequencies = {
+        tool_name: sum(1 for observation in category_observations if observation.tool_type == tool_name)
+        for tool_name in sorted(tools_set)
+    }
+    return {
+        "total": category_total,
+        "tool_frequencies": tool_frequencies,
+        "success_rate": category_successes / category_total if category_total > 0 else 0.0,
+        "error_types": dict(category_errors.most_common()),
+    }
 
+
+def analyze(obs: list[ToolObservation]) -> dict[str, Any]:
+    total = len(obs)
     tool_counts = Counter(o.tool_type for o in obs)
     success_count = sum(1 for o in obs if o.success)
     error_counts = Counter(o.error_type for o in obs if o.error_type)
+    categories = {
+        category_name: _category_stats(obs, tools_set)
+        for category_name, tools_set in CATEGORY_TOOL_SETS.items()
+    }
 
-    exploration_tools = frozenset(
-        {
-            "task",
-            "grep",
-            "glob",
-            "bash",
-            "ast_grep_search",
-            "websearch",
-            "webfetch",
-            "context7_resolve",
-            "context7_query",
-            "claude-mem_mcp",
-            "rg",
-        }
-    )
-    production_tools = frozenset({"edit", "write"})
-    preparation_tools = frozenset({"read", "skill"})
-    coordination_tools = frozenset(
-        {"todowrite", "background_output", "background_cancel", "question", "lsp_diagnostics"}
-    )
+    exploration_stats = categories["exploration_tools"]
+    production_stats = categories["production_tools"]
+    preparation_stats = categories["preparation_tools"]
+    coordination_stats = categories["coordination_tools"]
 
-    exploration = sum(tool_counts.get(t, 0) for t in exploration_tools)
-    production = sum(tool_counts.get(t, 0) for t in production_tools)
-    preparation = sum(tool_counts.get(t, 0) for t in preparation_tools)
-    coordination = sum(tool_counts.get(t, 0) for t in coordination_tools)
+    exploration = exploration_stats["total"]
+    production = production_stats["total"]
+    preparation = preparation_stats["total"]
+    coordination = coordination_stats["total"]
 
     sessions = Counter(o.session_id for o in obs if o.session_id)
 
@@ -72,7 +107,7 @@ def analyze(obs: list[ToolObservation]) -> dict:
         session_obs = [o for o in obs if o.session_id == sid]
         edits = 0
         for o in session_obs:
-            if o.tool_type in production_tools:
+            if o.tool_type in PRODUCTION_TOOLS:
                 edits += 1
             elif o.tool_type == "test" or (
                 o.metadata.get("command", "").startswith(("pytest", "make test"))
@@ -100,15 +135,16 @@ def analyze(obs: list[ToolObservation]) -> dict:
 
     return {
         "total": total,
+        "success_rate": success_count / total if total > 0 else 0.0,
+        "error_types": dict(error_counts.most_common()),
+        "categories": categories,
         "sessions": dict(sessions),
-        "success_rate": success_count / total,
         "tool_distribution": dict(tool_counts.most_common()),
         "exploration": exploration,
         "production": production,
         "preparation": preparation,
         "coordination": coordination,
         "exploration_to_production_ratio": exploration / production if production else float("inf"),
-        "error_types": dict(error_counts.most_common(10)),
         "grep": {
             "total": grep_count,
             "ripgrep": rg_count,

@@ -126,7 +126,9 @@ def add_parser(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None
     p = sub.add_parser("capabilities", help="Inspect pinned model capability metadata")
     caps_sub = p.add_subparsers(dest="capability_action", required=True)
 
-    validate_parser = caps_sub.add_parser("validate", help="Validate capability manifest drift rules")
+    validate_parser = caps_sub.add_parser(
+        "validate", help="Validate capability manifest drift rules"
+    )
     validate_parser.add_argument("--max-age-days", type=int, default=45)
     validate_parser.add_argument("--json", dest="json_out", action="store_true")
 
@@ -187,7 +189,9 @@ def handler(args: argparse.Namespace) -> int:
         diff_text = _render_manifest_diff(candidate_manifest)
 
         if args.write_candidate:
-            args.write_candidate.write_text(json.dumps(candidate_manifest, indent=2) + "\n", encoding="utf-8")
+            args.write_candidate.write_text(
+                json.dumps(candidate_manifest, indent=2) + "\n", encoding="utf-8"
+            )
 
         payload: dict[str, Any] = {
             "providers": providers,

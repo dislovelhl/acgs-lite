@@ -178,7 +178,8 @@ def compare_eval_reports(baseline: EvalRunReport, candidate: EvalRunReport) -> E
 
     all_actions = set(baseline.action_distribution) | set(candidate.action_distribution)
     distribution_delta = {
-        action: candidate.action_distribution.get(action, 0) - baseline.action_distribution.get(action, 0)
+        action: candidate.action_distribution.get(action, 0)
+        - baseline.action_distribution.get(action, 0)
         for action in sorted(all_actions)
     }
 

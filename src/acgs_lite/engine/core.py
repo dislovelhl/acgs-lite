@@ -965,7 +965,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
         text_lower = action.lower()
         _first_word, _, _ = text_lower.partition(" ")
-        if _has_ac and _first_word in _pos_verbs:
+        _has_neg = bool(_NEGATIVE_VERBS_RE.search(text_lower))
+        if _has_ac and _first_word in _pos_verbs and not _has_neg:
             violations = self._validate_python_ac(
                 action,
                 strict,
@@ -981,7 +982,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 False,
                 violations,
             )
-        elif _first_word in _POSITIVE_VERBS_SET and self._neg_findall is not None:
+        elif _first_word in _POSITIVE_VERBS_SET and self._neg_findall is not None and not _has_neg:
             violations = self._validate_python_regex(
                 action,
                 strict,
