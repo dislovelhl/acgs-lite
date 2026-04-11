@@ -151,7 +151,7 @@ class TestListTools:
         tools = await _list_tools(server)
 
         tool_names = {t.name for t in tools}
-        expected = {
+        core_tools = {
             "validate_action",
             "get_constitution",
             "get_audit_log",
@@ -161,7 +161,8 @@ class TestListTools:
             "check_capability_tier",
             "verify_audit_chain",
         }
-        assert tool_names == expected
+        # Workflow tools are included when constitutional_swarm is installed
+        assert core_tools.issubset(tool_names)
 
     @pytest.mark.asyncio
     async def test_tool_schemas_have_required_fields(
@@ -944,3 +945,123 @@ class TestVerifyAuditChain:
 
         assert "error" in result
         assert result["error"] == "RuntimeError"
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: compile_workflow + execute_workflow
+# ---------------------------------------------------------------------------
+
+try:
+    from constitutional_swarm import GoalSpec  # noqa: F401
+
+    _SWARM_AVAILABLE = True
+except ImportError:
+    _SWARM_AVAILABLE = False
+
+_SIMPLE_WORKFLOW = {
+    "goal": "Validate then audit",
+    "domains": ["validation", "audit"],
+    "steps": [
+        {"title": "validate", "domain": "validation", "depends_on": []},
+        {"title": "audit-step", "domain": "audit", "depends_on": ["validate"]},
+    ],
+}
+
+_PARALLEL_WORKFLOW = {
+    "goal": "Check compliance and stats, then audit",
+    "domains": ["compliance", "stats", "audit"],
+    "steps": [
+        {"title": "check-compliance", "domain": "compliance", "depends_on": []},
+        {"title": "governance-stats", "domain": "stats", "depends_on": []},
+        {
+            "title": "audit-results",
+            "domain": "audit",
+            "depends_on": ["check-compliance", "governance-stats"],
+        },
+    ],
+}
+
+
+@pytest.mark.skipif(not _SWARM_AVAILABLE, reason="constitutional_swarm not installed")
+class TestCompileWorkflow:
+    @pytest.mark.asyncio
+    async def test_compile_returns_nodes(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "compile_workflow", {"workflow": _SIMPLE_WORKFLOW})
+        assert "nodes" in result
+        assert len(result["nodes"]) == 2
+
+    @pytest.mark.asyncio
+    async def test_compile_nodes_have_required_fields(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "compile_workflow", {"workflow": _SIMPLE_WORKFLOW})
+        for node in result["nodes"]:
+            assert "node_id" in node
+            assert "title" in node
+            assert "domain" in node
+
+    @pytest.mark.asyncio
+    async def test_compile_parallel_three_nodes(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "compile_workflow", {"workflow": _PARALLEL_WORKFLOW})
+        assert len(result["nodes"]) == 3
+
+    @pytest.mark.asyncio
+    async def test_compile_unknown_domain_returns_error(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        bad = {"goal": "Bad", "domains": ["nonexistent"], "steps": [{"title": "s", "domain": "nonexistent", "depends_on": []}]}
+        result = await _call_tool(server, "compile_workflow", {"workflow": bad})
+        assert "error" in result
+
+    @pytest.mark.asyncio
+    async def test_compile_missing_workflow_key_returns_error(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "compile_workflow", {})
+        assert "error" in result
+
+    @pytest.mark.asyncio
+    async def test_compile_includes_constitutional_hash(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "compile_workflow", {"workflow": _SIMPLE_WORKFLOW})
+        assert result.get("constitutional_hash") == "608508a9bd224290"
+
+
+@pytest.mark.skipif(not _SWARM_AVAILABLE, reason="constitutional_swarm not installed")
+class TestExecuteWorkflow:
+    @pytest.mark.asyncio
+    async def test_execute_returns_step_results(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "execute_workflow", {"workflow": _SIMPLE_WORKFLOW, "inputs": {"action": "read data", "text": "read data"}})
+        assert "steps" in result
+        assert len(result["steps"]) == 2
+
+    @pytest.mark.asyncio
+    async def test_execute_step_fields(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "execute_workflow", {"workflow": _SIMPLE_WORKFLOW, "inputs": {"action": "read data"}})
+        for step in result["steps"]:
+            assert "node_id" in step
+            assert "title" in step
+            assert "domain" in step
+            assert "constitutional_hash" in step
+
+    @pytest.mark.asyncio
+    async def test_execute_parallel_all_steps(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "execute_workflow", {"workflow": _PARALLEL_WORKFLOW, "inputs": {"text": "safe content", "action": "get"}})
+        assert len(result["steps"]) == 3
+
+    @pytest.mark.asyncio
+    async def test_execute_unknown_domain_returns_error(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        bad = {"goal": "Bad", "domains": ["nonexistent"], "steps": [{"title": "s", "domain": "nonexistent", "depends_on": []}]}
+        result = await _call_tool(server, "execute_workflow", {"workflow": bad, "inputs": {}})
+        assert "error" in result
+
+    @pytest.mark.asyncio
+    async def test_workflow_tools_in_list_tools(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        tools = await _list_tools(server)
+        names = {t.name for t in tools}
+        assert "compile_workflow" in names
+        assert "execute_workflow" in names

@@ -1,0 +1,25 @@
+goal: "Validate an agent action and explain any violations"
+domains:
+  - validation
+  - explain
+  - audit
+steps:
+  - title: "validate-action"
+    domain: "validation"
+    description: "Check the action against constitutional governance rules"
+    depends_on: []
+    priority: 10
+
+  - title: "explain-violations"
+    domain: "explain"
+    description: "Provide human-readable explanation of any violations found"
+    depends_on:
+      - "validate-action"
+    priority: 5
+
+  - title: "record-audit"
+    domain: "audit"
+    description: "Record the validation decision in the audit log"
+    depends_on:
+      - "explain-violations"
+    priority: 1

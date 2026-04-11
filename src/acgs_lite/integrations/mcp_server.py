@@ -27,6 +27,12 @@ import structlog
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations.workflow import (
+    WORKFLOW_AVAILABLE,
+    GovernanceWorkflowCompiler,
+    GovernanceWorkflowExecutor,
+    list_workflow_templates,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -208,6 +214,66 @@ def create_mcp_server(
                         },
                     },
                 },
+            ),
+            *(
+                [
+                    types.Tool(
+                        name="compile_workflow",
+                        description=(
+                            "Compile a governance workflow GoalSpec into an executable TaskDAG. "
+                            "Validates step domains against known governance domains and returns "
+                            "node list with IDs, titles, domains, and dependency edges."
+                        ),
+                        inputSchema={
+                            "type": "object",
+                            "properties": {
+                                "workflow": {
+                                    "type": "object",
+                                    "description": (
+                                        "GoalSpec dict with keys: goal (str), "
+                                        "domains (list[str]), steps (list[dict])"
+                                    ),
+                                },
+                            },
+                        },
+                    ),
+                    types.Tool(
+                        name="execute_workflow",
+                        description=(
+                            "Compile and execute a governance workflow. Each step is dispatched "
+                            "to the matching acgs-lite governance function. Returns per-step results "
+                            "with constitutional proof."
+                        ),
+                        inputSchema={
+                            "type": "object",
+                            "properties": {
+                                "workflow": {
+                                    "type": "object",
+                                    "description": "GoalSpec dict (same as compile_workflow)",
+                                },
+                                "inputs": {
+                                    "type": "object",
+                                    "description": (
+                                        "Shared inputs for steps: action (str), text (str), "
+                                        "limit (int)"
+                                    ),
+                                    "default": {},
+                                },
+                            },
+                        },
+                    ),
+                    types.Tool(
+                        name="list_workflow_templates",
+                        description=(
+                            "List pre-built governance workflow templates. "
+                            "Returns template names and YAML file paths for common patterns: "
+                            "action_validation, compliance_assessment, agent_onboarding."
+                        ),
+                        inputSchema={"type": "object", "properties": {}},
+                    ),
+                ]
+                if WORKFLOW_AVAILABLE
+                else []
             ),
         ]
 
@@ -453,6 +519,108 @@ def create_mcp_server(
                         text=json.dumps({"error": type(exc).__name__}),
                     )
                 ]
+
+        elif name == "compile_workflow" and WORKFLOW_AVAILABLE:
+            workflow_spec = arguments.get("workflow") if arguments else None
+            if not workflow_spec:
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Missing required argument: workflow"}),
+                    )
+                ]
+            try:
+                compiler = GovernanceWorkflowCompiler(CONSTITUTIONAL_HASH)
+                dag = compiler.compile_from_dict(workflow_spec)
+                nodes = [
+                    {
+                        "node_id": node.node_id,
+                        "title": node.title,
+                        "domain": node.domain,
+                        "depends_on": list(node.depends_on),
+                        "priority": node.priority,
+                    }
+                    for node in dag.nodes.values()
+                ]
+                data = {
+                    "dag_id": dag.dag_id,
+                    "goal": dag.goal,
+                    "node_count": len(nodes),
+                    "nodes": nodes,
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                }
+                logger.info(
+                    "compile_workflow",
+                    node_count=len(nodes),
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [types.TextContent(type="text", text=json.dumps(data, indent=2))]
+            except Exception as exc:
+                logger.warning(
+                    "compile_workflow_error",
+                    error_type=type(exc).__name__,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps({"error": type(exc).__name__, "detail": str(exc)}),
+                    )
+                ]
+
+        elif name == "execute_workflow" and WORKFLOW_AVAILABLE:
+            workflow_spec = arguments.get("workflow") if arguments else None
+            if not workflow_spec:
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps({"error": "Missing required argument: workflow"}),
+                    )
+                ]
+            inputs: dict[str, Any] = (arguments.get("inputs") or {}) if arguments else {}
+            try:
+                compiler = GovernanceWorkflowCompiler(CONSTITUTIONAL_HASH)
+                dag = compiler.compile_from_dict(workflow_spec)
+                executor = GovernanceWorkflowExecutor(
+                    engine=engine,
+                    constitution=constitution,
+                    audit_log=audit_log,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                step_results = executor.execute(dag, inputs)
+                data = {
+                    "goal": dag.goal,
+                    "steps_completed": len(step_results),
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                    "steps": [sr.to_dict() for sr in step_results],
+                }
+                logger.info(
+                    "execute_workflow",
+                    steps_completed=len(step_results),
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [types.TextContent(type="text", text=json.dumps(data, indent=2, default=str))]
+            except Exception as exc:
+                logger.warning(
+                    "execute_workflow_error",
+                    error_type=type(exc).__name__,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps({"error": type(exc).__name__, "detail": str(exc)}),
+                    )
+                ]
+
+        elif name == "list_workflow_templates" and WORKFLOW_AVAILABLE:
+            templates = list_workflow_templates()
+            data = {
+                "templates": templates,
+                "count": len(templates),
+                "constitutional_hash": CONSTITUTIONAL_HASH,
+            }
+            return [types.TextContent(type="text", text=json.dumps(data, indent=2))]
 
         else:
             return [

@@ -1,0 +1,25 @@
+goal: "Onboard a new agent: check capability tier, validate first action, then audit"
+domains:
+  - capability
+  - validation
+  - audit
+steps:
+  - title: "check-capability-tier"
+    domain: "capability"
+    description: "Determine the autonomy tier for the agent's declared capability domain"
+    depends_on: []
+    priority: 10
+
+  - title: "validate-first-action"
+    domain: "validation"
+    description: "Validate the agent's initial action against constitutional rules"
+    depends_on:
+      - "check-capability-tier"
+    priority: 5
+
+  - title: "audit-onboarding"
+    domain: "audit"
+    description: "Record the onboarding decision in the audit log"
+    depends_on:
+      - "validate-first-action"
+    priority: 1
