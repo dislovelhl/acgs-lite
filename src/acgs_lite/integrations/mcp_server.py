@@ -22,9 +22,19 @@ import asyncio
 import json
 from typing import Any
 
+import structlog
+
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
+
+logger = structlog.get_logger(__name__)
+
+CONSTITUTIONAL_HASH = "608508a9bd224290"
+
+# Keywords used by check_capability_tier heuristic (no CapabilityPassport available)
+_RESTRICTED_KEYWORDS = frozenset({"delete", "destroy", "admin", "override", "drop", "truncate"})
+_FULL_KEYWORDS = frozenset({"read", "list", "get", "fetch", "view", "show", "describe"})
 
 try:
     from mcp import types
@@ -139,6 +149,66 @@ def create_mcp_server(
                     "properties": {},
                 },
             ),
+            types.Tool(
+                name="explain_violation",
+                description=(
+                    "Explain a constitutional violation in human-readable form. "
+                    "Validates the action and returns detailed violation information "
+                    "including rule text, severity, and description."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "description": "The action text to explain violations for",
+                        },
+                        "rule_id": {
+                            "type": "string",
+                            "description": "Optional rule ID to filter explanation to a specific rule",
+                        },
+                    },
+                    "required": ["action"],
+                },
+            ),
+            types.Tool(
+                name="check_capability_tier",
+                description=(
+                    "Check the autonomy capability tier for an action. "
+                    "Returns RESTRICTED, SUPERVISED, or FULL based on the action content."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "action_text": {
+                            "type": "string",
+                            "description": "The action text to check the capability tier for",
+                        },
+                        "domain": {
+                            "type": "string",
+                            "description": "Optional domain context for tier determination",
+                        },
+                    },
+                    "required": ["action_text"],
+                },
+            ),
+            types.Tool(
+                name="verify_audit_chain",
+                description=(
+                    "Verify the integrity of the audit chain. "
+                    "Checks hash chain consistency across recent audit entries."
+                ),
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "type": "integer",
+                            "description": "Maximum number of recent entries to check",
+                            "default": 100,
+                        },
+                    },
+                },
+            ),
         ]
 
     @server.call_tool()  # type: ignore[untyped-decorator]
@@ -234,6 +304,155 @@ def create_mcp_server(
                     text=json.dumps(stats, indent=2),
                 )
             ]
+
+        elif name == "explain_violation":
+            action = arguments.get("action", "")
+            rule_id_filter: str | None = arguments.get("rule_id")
+
+            try:
+                old_strict = engine.strict
+                engine.strict = False
+                result = engine.validate(action, agent_id="explain-tool")
+                engine.strict = old_strict
+
+                violations = result.violations
+                if rule_id_filter:
+                    violations = [v for v in violations if v.rule_id == rule_id_filter]
+
+                explanation: dict[str, Any] = {
+                    "action": action,
+                    "compliant": result.valid,
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                    "violations": [
+                        {
+                            "rule_id": v.rule_id,
+                            "severity": v.severity.value,
+                            "rule_text": v.rule_text,
+                            "description": getattr(v, "description", v.rule_text),
+                        }
+                        for v in violations
+                    ],
+                    "summary": (
+                        f"Action is compliant — no violations found."
+                        if result.valid
+                        else (
+                            f"Action violates {len(violations)} rule(s): "
+                            + ", ".join(v.rule_id for v in violations)
+                        )
+                    ),
+                }
+                logger.info(
+                    "explain_violation",
+                    action_length=len(action),
+                    violations_count=len(violations),
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps(explanation, indent=2),
+                    )
+                ]
+            except Exception as exc:
+                logger.warning(
+                    "explain_violation_error",
+                    error_type=type(exc).__name__,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps({"error": type(exc).__name__, "action": action}),
+                    )
+                ]
+
+        elif name == "check_capability_tier":
+            action_text = arguments.get("action_text", "")
+            domain: str | None = arguments.get("domain")
+
+            try:
+                lower = action_text.lower()
+                words = set(lower.split())
+
+                if words & _RESTRICTED_KEYWORDS:
+                    tier = "RESTRICTED"
+                elif words & _FULL_KEYWORDS:
+                    tier = "FULL"
+                else:
+                    tier = "SUPERVISED"
+
+                data: dict[str, Any] = {
+                    "tier": tier,
+                    "action": action_text,
+                    "domain": domain,
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                }
+                logger.info(
+                    "check_capability_tier",
+                    tier=tier,
+                    domain=domain,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps(data, indent=2),
+                    )
+                ]
+            except Exception as exc:
+                logger.warning(
+                    "check_capability_tier_error",
+                    error_type=type(exc).__name__,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps(
+                            {"error": type(exc).__name__, "action_text": action_text}
+                        ),
+                    )
+                ]
+
+        elif name == "verify_audit_chain":
+            limit = arguments.get("limit", 100)
+
+            try:
+                chain_valid = audit_log.verify_chain()
+                entries = audit_log.export_dicts()
+                recent = entries[-limit:] if len(entries) > limit else entries
+
+                result_data: dict[str, Any] = {
+                    "status": "ok" if chain_valid else "chain_broken",
+                    "chain_valid": chain_valid,
+                    "total_entries": len(entries),
+                    "entries_checked": len(recent),
+                    "constitutional_hash": CONSTITUTIONAL_HASH,
+                }
+                logger.info(
+                    "verify_audit_chain",
+                    chain_valid=chain_valid,
+                    entries_checked=len(recent),
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps(result_data, indent=2),
+                    )
+                ]
+            except Exception as exc:
+                logger.warning(
+                    "verify_audit_chain_error",
+                    error_type=type(exc).__name__,
+                    constitutional_hash=CONSTITUTIONAL_HASH,
+                )
+                return [
+                    types.TextContent(
+                        type="text",
+                        text=json.dumps({"error": type(exc).__name__}),
+                    )
+                ]
 
         else:
             return [

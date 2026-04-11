@@ -146,7 +146,7 @@ class TestListTools:
     """Tests for the tool listing endpoint."""
 
     @pytest.mark.asyncio
-    async def test_lists_all_five_tools(self, default_constitution: Constitution) -> None:
+    async def test_lists_all_tools(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
         tools = await _list_tools(server)
 
@@ -157,6 +157,9 @@ class TestListTools:
             "get_audit_log",
             "check_compliance",
             "governance_stats",
+            "explain_violation",
+            "check_capability_tier",
+            "verify_audit_chain",
         }
         assert tool_names == expected
 
@@ -729,3 +732,215 @@ class TestCrossToolIntegration:
         rule_ids = {v["rule_id"] for v in result["violations"]}
         # Should match both TEST-001 (forbidden) and TEST-002 (suspicious)
         assert "TEST-001" in rule_ids
+
+
+# ---------------------------------------------------------------------------
+# explain_violation tool
+# ---------------------------------------------------------------------------
+
+
+class TestExplainViolation:
+    """Tests for the explain_violation governance tool."""
+
+    @pytest.mark.asyncio
+    async def test_compliant_action_returns_no_violations(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "explain_violation", {"action": "hello world"})
+
+        assert result["compliant"] is True
+        assert result["violations"] == []
+        assert result["constitutional_hash"] == "608508a9bd224290"
+        assert "compliant" in result["summary"].lower()
+
+    @pytest.mark.asyncio
+    async def test_violating_action_returns_explanation(
+        self, custom_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(custom_constitution)
+        result = await _call_tool(
+            server, "explain_violation", {"action": "this is forbidden content"}
+        )
+
+        assert result["compliant"] is False
+        assert len(result["violations"]) > 0
+        violation = result["violations"][0]
+        assert violation["rule_id"] == "TEST-001"
+        assert violation["severity"] == "critical"
+        assert "rule_text" in violation
+        assert "description" in violation
+        assert "TEST-001" in result["summary"]
+
+    @pytest.mark.asyncio
+    async def test_rule_id_filter(self, custom_constitution: Constitution) -> None:
+        server = create_mcp_server(custom_constitution)
+        result = await _call_tool(
+            server,
+            "explain_violation",
+            {"action": "this is forbidden and suspicious", "rule_id": "TEST-001"},
+        )
+
+        assert result["compliant"] is False
+        assert all(v["rule_id"] == "TEST-001" for v in result["violations"])
+
+    @pytest.mark.asyncio
+    async def test_action_field_present_in_response(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server, "explain_violation", {"action": "some safe action"}
+        )
+
+        assert result["action"] == "some safe action"
+
+    @pytest.mark.asyncio
+    async def test_error_path_returns_error_dict(
+        self, default_constitution: Constitution
+    ) -> None:
+        from unittest.mock import patch
+
+        server = create_mcp_server(default_constitution)
+        # Patch GovernanceEngine.validate to raise, simulating an engine failure
+        with patch(
+            "acgs_lite.engine.GovernanceEngine.validate",
+            side_effect=RuntimeError("simulated engine failure"),
+        ):
+            result = await _call_tool(server, "explain_violation", {"action": "anything"})
+
+        assert "error" in result
+        assert result["error"] == "RuntimeError"
+
+
+# ---------------------------------------------------------------------------
+# check_capability_tier tool
+# ---------------------------------------------------------------------------
+
+
+class TestCheckCapabilityTier:
+    """Tests for the check_capability_tier governance tool."""
+
+    @pytest.mark.asyncio
+    async def test_restricted_action(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server, "check_capability_tier", {"action_text": "delete all records"}
+        )
+
+        assert result["tier"] == "RESTRICTED"
+        assert result["constitutional_hash"] == "608508a9bd224290"
+
+    @pytest.mark.asyncio
+    async def test_full_action(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server, "check_capability_tier", {"action_text": "get user profile"}
+        )
+
+        assert result["tier"] == "FULL"
+
+    @pytest.mark.asyncio
+    async def test_supervised_action(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server, "check_capability_tier", {"action_text": "update user settings"}
+        )
+
+        assert result["tier"] == "SUPERVISED"
+
+    @pytest.mark.asyncio
+    async def test_domain_field_echoed(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server,
+            "check_capability_tier",
+            {"action_text": "list items", "domain": "inventory"},
+        )
+
+        assert result["domain"] == "inventory"
+        assert result["action"] == "list items"
+
+    @pytest.mark.asyncio
+    async def test_no_domain_returns_none(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server, "check_capability_tier", {"action_text": "destroy data"}
+        )
+
+        assert result["domain"] is None
+
+    @pytest.mark.asyncio
+    async def test_empty_action_returns_supervised(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server, "check_capability_tier", {"action_text": ""}
+        )
+
+        assert result["tier"] == "SUPERVISED"
+
+
+# ---------------------------------------------------------------------------
+# verify_audit_chain tool
+# ---------------------------------------------------------------------------
+
+
+class TestVerifyAuditChain:
+    """Tests for the verify_audit_chain governance tool."""
+
+    @pytest.mark.asyncio
+    async def test_empty_log_returns_ok(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(server, "verify_audit_chain", {})
+
+        assert result["status"] == "ok"
+        assert result["chain_valid"] is True
+        assert result["total_entries"] == 0
+        assert result["entries_checked"] == 0
+        assert result["constitutional_hash"] == "608508a9bd224290"
+
+    @pytest.mark.asyncio
+    async def test_chain_valid_after_validations(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+
+        for i in range(5):
+            await _call_tool(server, "validate_action", {"action": f"action {i}"})
+
+        result = await _call_tool(server, "verify_audit_chain", {})
+
+        assert result["status"] == "ok"
+        assert result["chain_valid"] is True
+        assert result["total_entries"] == 5
+        assert result["entries_checked"] == 5
+
+    @pytest.mark.asyncio
+    async def test_limit_parameter_respected(self, default_constitution: Constitution) -> None:
+        server = create_mcp_server(default_constitution)
+
+        for i in range(10):
+            await _call_tool(server, "validate_action", {"action": f"action {i}"})
+
+        result = await _call_tool(server, "verify_audit_chain", {"limit": 3})
+
+        assert result["total_entries"] == 10
+        assert result["entries_checked"] == 3
+
+    @pytest.mark.asyncio
+    async def test_error_path_returns_error_dict(
+        self, default_constitution: Constitution
+    ) -> None:
+        from unittest.mock import patch
+
+        server = create_mcp_server(default_constitution)
+        with patch(
+            "acgs_lite.integrations.mcp_server.AuditLog.verify_chain",
+            side_effect=RuntimeError("simulated chain failure"),
+        ):
+            result = await _call_tool(server, "verify_audit_chain", {})
+
+        assert "error" in result
+        assert result["error"] == "RuntimeError"
