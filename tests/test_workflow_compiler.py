@@ -114,6 +114,28 @@ def test_compile_rejects_unknown_domain() -> None:
         compiler.compile(spec)
 
 
+def test_compile_rejects_missing_domain() -> None:
+    compiler = GovernanceWorkflowCompiler("608508a9bd224290")
+    spec = GoalSpec(
+        goal="Missing domain",
+        domains=[],
+        steps=[{"title": "step1", "depends_on": []}],  # no "domain" key
+    )
+    with pytest.raises(ValueError, match="missing a domain"):
+        compiler.compile(spec)
+
+
+def test_compile_rejects_empty_domain() -> None:
+    compiler = GovernanceWorkflowCompiler("608508a9bd224290")
+    spec = GoalSpec(
+        goal="Empty domain",
+        domains=[],
+        steps=[{"title": "step1", "domain": "", "depends_on": []}],
+    )
+    with pytest.raises(ValueError, match="missing a domain"):
+        compiler.compile(spec)
+
+
 def test_compile_rejects_cycle() -> None:
     compiler = GovernanceWorkflowCompiler("608508a9bd224290")
     spec = GoalSpec(

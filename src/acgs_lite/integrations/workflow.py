@@ -289,18 +289,26 @@ class GovernanceWorkflowCompiler:
     def compile(self, spec: GoalSpec) -> TaskDAG:  # type: ignore[name-defined]
         """Compile a GoalSpec into a TaskDAG.
 
-        Validates that every step's domain is in ``GOVERNANCE_DOMAINS``
-        before delegating to ``DAGCompiler.compile()``.
+        Validates that every step declares a non-empty ``domain`` and that the
+        domain is in ``GOVERNANCE_DOMAINS`` before delegating to
+        ``DAGCompiler.compile()``.
 
         Raises:
-            ValueError: If any step uses an unrecognised governance domain,
-                or if ``DAGCompiler`` rejects the spec (cycles, missing deps…).
+            ValueError: If any step is missing a domain, uses an empty domain,
+                or uses an unrecognised governance domain, or if
+                ``DAGCompiler`` rejects the spec (cycles, missing deps…).
         """
         for step in spec.steps:
+            title = step.get("title", "?")
             domain = step.get("domain", "")
-            if domain and domain not in GOVERNANCE_DOMAINS:
+            if not domain:
                 raise ValueError(
-                    f"Step {step.get('title', '?')!r} uses domain {domain!r}, "
+                    f"Step {title!r} is missing a domain. "
+                    f"Each step must declare one of: {sorted(GOVERNANCE_DOMAINS)}"
+                )
+            if domain not in GOVERNANCE_DOMAINS:
+                raise ValueError(
+                    f"Step {title!r} uses domain {domain!r}, "
                     f"which is not a governance domain. "
                     f"Allowed: {sorted(GOVERNANCE_DOMAINS)}"
                 )
