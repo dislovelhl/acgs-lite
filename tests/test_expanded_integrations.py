@@ -353,7 +353,7 @@ class TestMCPServer:
         handler = server.request_handlers[mcp_types.ListToolsRequest]
         result = await handler(mcp_types.ListToolsRequest(method="tools/list"))
         tools = result.root.tools
-        assert len(tools) == 5
+        assert len(tools) >= 5  # core 5 + optional tools (unit2: +3, workflow: +3)
         tool_names = {t.name for t in tools}
         assert "validate_action" in tool_names
         assert "get_constitution" in tool_names

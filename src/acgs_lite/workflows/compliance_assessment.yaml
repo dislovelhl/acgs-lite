@@ -1,0 +1,25 @@
+goal: "Assess compliance of a text against governance rules, collect stats, then audit"
+domains:
+  - compliance
+  - stats
+  - audit
+steps:
+  - title: "check-compliance"
+    domain: "compliance"
+    description: "Run compliance check on the submitted text"
+    depends_on: []
+    priority: 10
+
+  - title: "collect-stats"
+    domain: "stats"
+    description: "Collect current governance statistics (runs in parallel with compliance check)"
+    depends_on: []
+    priority: 10
+
+  - title: "audit-assessment"
+    domain: "audit"
+    description: "Record both compliance result and stats in the audit log"
+    depends_on:
+      - "check-compliance"
+      - "collect-stats"
+    priority: 1
