@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 __all__ = ["generate_certificate"]
@@ -379,9 +379,10 @@ def _draw_maci_table(pdf: Any, steps: list[dict]) -> None:
     pdf.set_fill_color(*_DARK)
     pdf.set_text_color(*_WHITE)
     pdf.set_x(20)
-    for h, w in zip(headers, widths):
+    for h, w in zip(headers, widths, strict=False):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
+
 
     pdf.set_font("Helvetica", "", 7)
     for i, step in enumerate(steps):
@@ -424,7 +425,7 @@ def _draw_evidence_table(pdf: Any, evidence: list[dict]) -> None:
     pdf.set_fill_color(*_DARK)
     pdf.set_text_color(*_WHITE)
     pdf.set_x(20)
-    for h, w in zip(headers, widths):
+    for h, w in zip(headers, widths, strict=False):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
 
@@ -457,7 +458,7 @@ def _draw_obligations_table(pdf: Any, obligations: list[dict]) -> None:
     pdf.set_fill_color(*_DARK)
     pdf.set_text_color(*_WHITE)
     pdf.set_x(20)
-    for h, w in zip(headers, widths):
+    for h, w in zip(headers, widths, strict=False):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
 

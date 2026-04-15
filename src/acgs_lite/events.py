@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -52,7 +52,7 @@ class EventBus:
             except asyncio.QueueFull:
                 continue
 
-    async def subscribe(self, maxsize: int = 100) -> AsyncIterator[GovernanceEvent]:
+    async def subscribe(self, maxsize: int = 100) -> AsyncGenerator[GovernanceEvent, None]:
         queue: asyncio.Queue[GovernanceEvent] = asyncio.Queue(maxsize=maxsize)
         self._subscribers.append(queue)
         try:
