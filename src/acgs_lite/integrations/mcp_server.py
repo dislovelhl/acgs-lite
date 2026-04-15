@@ -399,7 +399,7 @@ def create_mcp_server(
                         for v in violations
                     ],
                     "summary": (
-                        f"Action is compliant — no violations found."
+                        "Action is compliant — no violations found."
                         if result.valid
                         else (
                             f"Action violates {len(violations)} rule(s): "
@@ -447,7 +447,7 @@ def create_mcp_server(
                 else:
                     tier = "SUPERVISED"
 
-                data: dict[str, Any] = {
+                data: dict[str, Any] = {  # type: ignore[no-redef]
                     "tier": tier,
                     "action": action_text,
                     "domain": domain,
