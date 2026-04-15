@@ -12,6 +12,7 @@ import pytest
 from acgs_lite.constitution import Constitution
 from acgs_lite.constitution.bundle import BundleStatus
 from acgs_lite.constitution.bundle_store import InMemoryBundleStore
+from acgs_lite.constitution.rule import Rule
 from acgs_lite.constitution.evidence import (
     InMemoryLifecycleAuditSink,
     LifecycleAuditSinkError,
@@ -20,6 +21,7 @@ from acgs_lite.constitution.evidence import (
 from acgs_lite.constitution.lifecycle_service import (
     ConcurrentLifecycleError,
     ConstitutionLifecycle,
+    LifecycleError,
     LifecycleEvidenceError,
 )
 from acgs_lite.constitution.provenance import RuleProvenanceGraph
@@ -645,3 +647,219 @@ class TestSelfApprovalGuard:
         # Different actor — should not raise
         bundle = await lc.approve(draft.bundle_id, "approver-distinct", signature="sig-ok")
         assert bundle is not None
+
+
+# ── rule editing ─────────────────────────────────────────────────────────
+
+
+class TestRuleEditing:
+    """Tests for add_rule, remove_rule, and modify_rule — DRAFT-only mutations."""
+
+    @pytest.mark.asyncio
+    async def test_add_rule_to_draft(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        initial_count = len(draft.constitution.rules)
+        new_rule = Rule(id="TEST-NEW-001", text="New test rule for hardening coverage")
+
+        bundle = await lc.add_rule(draft.bundle_id, new_rule)
+
+        assert len(bundle.constitution.rules) == initial_count + 1
+        assert any(r.id == "TEST-NEW-001" for r in bundle.constitution.rules)
+        assert bundle.status == BundleStatus.DRAFT
+
+    @pytest.mark.asyncio
+    async def test_add_rule_on_non_draft_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-b", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")  # → REVIEW
+
+        with pytest.raises(LifecycleError, match="DRAFT"):
+            await lc.add_rule(draft.bundle_id, Rule(id="WONT-ADD", text="blocked"))
+
+    @pytest.mark.asyncio
+    async def test_remove_rule_from_draft(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-c", "proposer-1")
+        rule_to_remove = draft.constitution.rules[0].id
+        initial_count = len(draft.constitution.rules)
+
+        bundle = await lc.remove_rule(draft.bundle_id, rule_to_remove)
+
+        assert len(bundle.constitution.rules) == initial_count - 1
+        assert all(r.id != rule_to_remove for r in bundle.constitution.rules)
+
+    @pytest.mark.asyncio
+    async def test_remove_rule_unknown_id_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-d", "proposer-1")
+
+        with pytest.raises(LifecycleError, match="not found"):
+            await lc.remove_rule(draft.bundle_id, "NO-SUCH-RULE")
+
+    @pytest.mark.asyncio
+    async def test_modify_rule_happy_path(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-e", "proposer-1")
+        rule_id = draft.constitution.rules[0].id
+
+        bundle = await lc.modify_rule(draft.bundle_id, rule_id, {"text": "Updated coverage text"})
+
+        updated = next(r for r in bundle.constitution.rules if r.id == rule_id)
+        assert updated.text == "Updated coverage text"
+        assert bundle.status == BundleStatus.DRAFT
+
+    @pytest.mark.asyncio
+    async def test_modify_rule_unknown_id_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-f", "proposer-1")
+
+        with pytest.raises(LifecycleError, match="not found"):
+            await lc.modify_rule(draft.bundle_id, "NO-SUCH-RULE", {"text": "irrelevant"})
+
+
+# ── additional audit-sink unwind paths ───────────────────────────────────
+
+
+class TestAdditionalUnwindPaths:
+    """Covers create_draft, submit, reject, and withdraw unwind paths."""
+
+    @pytest.mark.asyncio
+    async def test_create_draft_raises_evidence_error_on_sink_failure(self) -> None:
+        sink = _FailAfterNAppendsSink(fail_on=1)
+        lc = _make_lifecycle(sink=sink)
+
+        with pytest.raises(LifecycleEvidenceError, match="create_draft"):
+            await lc.create_draft("tenant-sink-1", "proposer-1")
+
+    @pytest.mark.asyncio
+    async def test_submit_unwinds_bundle_to_draft_on_sink_failure(self) -> None:
+        store = InMemoryBundleStore()
+        # fail_on=2: first append (create_draft) passes, second (submit) fails
+        sink = _FailAfterNAppendsSink(fail_on=2)
+        lc = _make_lifecycle(sink=sink, store=store)
+
+        draft = await lc.create_draft("tenant-sink-2", "proposer-1")
+
+        with pytest.raises(LifecycleEvidenceError, match="submit_for_review"):
+            await lc.submit_for_review(draft.bundle_id, "proposer-1")
+
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.status == BundleStatus.DRAFT
+
+    @pytest.mark.asyncio
+    async def test_reject_unwinds_bundle_to_review_on_sink_failure(self) -> None:
+        """reject() restores REVIEW status when evidence append fails."""
+        store = InMemoryBundleStore()
+        lc = _make_lifecycle(store=store)
+
+        draft = await lc.create_draft("tenant-sink-3", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")  # → REVIEW
+
+        # Install failing sink; next append (reject evidence) fails
+        lc._sink = _FailAfterNAppendsSink(fail_on=1)
+
+        with pytest.raises(LifecycleEvidenceError, match="reject"):
+            await lc.reject(draft.bundle_id, "validator-1", reason="compliance fail")
+
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.status == BundleStatus.REVIEW
+
+    @pytest.mark.asyncio
+    async def test_withdraw_unwinds_bundle_on_sink_failure(self) -> None:
+        """withdraw() restores prior status when evidence append fails."""
+        store = InMemoryBundleStore()
+        lc = _make_lifecycle(store=store)
+
+        draft = await lc.create_draft("tenant-sink-4", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")  # → REVIEW
+
+        lc._sink = _FailAfterNAppendsSink(fail_on=1)
+
+        with pytest.raises(LifecycleEvidenceError, match="withdraw"):
+            await lc.withdraw(draft.bundle_id, "proposer-1", reason="changed mind")
+
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.status == BundleStatus.REVIEW
+
+
+# ── canary agent IDs ──────────────────────────────────────────────────────
+
+
+class TestCanaryAgentIds:
+    @pytest.mark.asyncio
+    async def test_stage_stores_canary_agent_ids(self) -> None:
+        store = InMemoryBundleStore()
+        lc = _make_lifecycle(store=store)
+
+        draft = await lc.create_draft("tenant-canary", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[EvalScenario(id="s1", input_action="check status", expected_valid=True)],
+        )
+        await lc.approve(draft.bundle_id, "approver-1", signature="sig-ok")
+
+        canary_ids = ["agent-alpha", "agent-beta"]
+        bundle = await lc.stage(draft.bundle_id, "executor-1", canary_agent_ids=canary_ids)
+
+        assert bundle.canary_agent_ids == canary_ids
+
+
+# ── state-guard errors ───────────────────────────────────────────────────
+
+
+class TestStateGuardErrors:
+    """Tests that pre-state checks raise LifecycleError for wrong states."""
+
+    @pytest.mark.asyncio
+    async def test_run_evaluation_on_non_eval_state_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-guard", "proposer-1")
+        # Still DRAFT — run_evaluation requires EVAL
+        with pytest.raises(LifecycleError, match="must be in EVAL state"):
+            await lc.run_evaluation(
+                draft.bundle_id,
+                scenarios=[EvalScenario(id="s1", input_action="check", expected_valid=True)],
+            )
+
+    @pytest.mark.asyncio
+    async def test_reject_unwinds_on_audit_sink_failure(self) -> None:
+        store = InMemoryBundleStore()
+        lc = _make_lifecycle(store=store)
+
+        draft = await lc.create_draft("tenant-rej-uw", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+
+        lc._sink = _FailAfterNAppendsSink(fail_on=1)
+        with pytest.raises(LifecycleEvidenceError):
+            await lc.reject(draft.bundle_id, "reviewer-1", reason="bad")
+
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.status.value == "review"
+
+    @pytest.mark.asyncio
+    async def test_approve_unwinds_on_audit_sink_failure(self) -> None:
+        store = InMemoryBundleStore()
+        lc = _make_lifecycle(store=store)
+
+        draft = await lc.create_draft("tenant-app-uw", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[EvalScenario(id="s1", input_action="check", expected_valid=True)],
+        )
+
+        lc._sink = _FailAfterNAppendsSink(fail_on=1)
+        with pytest.raises(LifecycleEvidenceError):
+            await lc.approve(draft.bundle_id, "approver-1", signature="sig-fail")
+
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.status.value == "eval"

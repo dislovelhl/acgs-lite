@@ -164,3 +164,192 @@ class TestSQLiteBundleStoreRoundTrip:
 
         assert fetched is not None
         assert fetched.bundle_id == draft.bundle_id
+
+
+# ── atomic_transition ────────────────────────────────────────────────────
+
+
+
+
+# ── atomic_transition ────────────────────────────────────────────────────
+
+
+class TestAtomicTransition:
+    @pytest.mark.asyncio
+    async def test_atomic_transition_saves_bundle_and_activation(
+        self, tmp_path: Path
+    ) -> None:
+        from acgs_lite.constitution.activation import ActivationRecord
+        from acgs_lite.constitution.bundle import BundleStatus
+
+        store = _make_store(tmp_path)
+        lc = _make_lifecycle(store)
+
+        # Use the lifecycle to produce a properly-formed ACTIVE bundle
+        draft = await lc.create_draft("tenant-atomic", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[EvalScenario(id="s1", input_action="check", expected_valid=True)],
+        )
+        await lc.approve(draft.bundle_id, "approver-1", signature="sig-1")
+        await lc.stage(draft.bundle_id, "executor-1")
+
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        bundle.status = BundleStatus.ACTIVE
+        bundle.activated_by = "executor-1"
+
+        activation = ActivationRecord(
+            bundle_id=bundle.bundle_id,
+            version=bundle.version,
+            tenant_id="tenant-atomic",
+            constitutional_hash=bundle.constitutional_hash,
+            activated_by="executor-1",
+            rollback_to_bundle_id=None,
+            signature="sig-atomic",
+        )
+
+        store.save_bundle_transactional(bundles=[bundle], activation=activation)
+
+        fetched = store.get_bundle(bundle.bundle_id)
+        assert fetched is not None
+        assert fetched.status == BundleStatus.ACTIVE
+
+        fetched_activation = store.get_activation("tenant-atomic")
+        assert fetched_activation is not None
+        assert fetched_activation.bundle_id == bundle.bundle_id
+
+    @pytest.mark.asyncio
+    async def test_atomic_transition_saves_multiple_bundles_no_activation(
+        self, tmp_path: Path
+    ) -> None:
+        from acgs_lite.constitution.bundle import BundleStatus
+
+        store = _make_store(tmp_path)
+        lc = _make_lifecycle(store)
+
+        b1 = await lc.create_draft("tenant-multi", "proposer-1")
+        b2 = await lc.create_draft("tenant-multi", "proposer-2")
+
+        bundle1 = store.get_bundle(b1.bundle_id)
+        bundle2 = store.get_bundle(b2.bundle_id)
+        assert bundle1 is not None and bundle2 is not None
+
+        bundle1.status = BundleStatus.WITHDRAWN
+        store.save_bundle_transactional(bundles=[bundle1, bundle2], activation=None)
+
+        assert store.get_bundle(b1.bundle_id) is not None
+        assert store.get_bundle(b2.bundle_id) is not None
+        assert store.get_activation("tenant-multi") is None
+
+    @pytest.mark.asyncio
+    async def test_atomic_transition_overwrites_existing_bundle(self, tmp_path: Path) -> None:
+        from acgs_lite.constitution.bundle import BundleStatus
+
+        store = _make_store(tmp_path)
+        lc = _make_lifecycle(store)
+
+        draft = await lc.create_draft("tenant-overwrite", "proposer-1")
+        bundle = store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.status == BundleStatus.DRAFT
+
+        bundle.status = BundleStatus.WITHDRAWN
+        store.save_bundle_transactional(bundles=[bundle], activation=None)
+
+        fetched = store.get_bundle(draft.bundle_id)
+        assert fetched is not None
+        assert fetched.status == BundleStatus.WITHDRAWN
+
+
+# ── error wrapping ───────────────────────────────────────────────────────
+
+
+class TestOperationalErrorWrapping:
+    def test_wrap_converts_operational_error_to_lifecycle_error(self, tmp_path: Path) -> None:
+        import sqlite3
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+        exc = sqlite3.OperationalError("disk I/O error")
+        wrapped = store._wrap(exc)
+
+        assert isinstance(wrapped, LifecycleError)
+        assert "disk I/O error" in str(wrapped)
+
+    def test_get_bundle_returns_none_for_unknown_id(self, tmp_path: Path) -> None:
+        store = _make_store(tmp_path)
+        result = store.get_bundle("does-not-exist-xyz")
+        assert result is None
+
+    def test_get_active_bundle_returns_none_when_no_active(self, tmp_path: Path) -> None:
+        store = _make_store(tmp_path)
+        result = store.get_active_bundle("no-such-tenant")
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_list_bundles_with_offset_skips_first_n(self, tmp_path: Path) -> None:
+        store = _make_store(tmp_path)
+        lc = _make_lifecycle(store)
+
+        for _ in range(3):
+            await lc.create_draft("tenant-offset", "proposer-1")
+
+        all_bundles = store.list_bundles("tenant-offset", limit=10)
+        assert len(all_bundles) == 3
+
+        offset_bundles = store.list_bundles("tenant-offset", limit=10, offset=1)
+        assert len(offset_bundles) == 2
+        assert all_bundles[1].bundle_id == offset_bundles[0].bundle_id
+
+    def test_save_bundle_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        """save_bundle's except clause converts OperationalError to LifecycleError."""
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+        bundle = ConstitutionBundle(
+            tenant_id="t1",
+            constitution=_make_constitution(),
+            proposed_by="p1",
+        )
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(
+                side_effect=sqlite3.OperationalError("disk full")
+            )
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="disk full"):
+                store.save_bundle(bundle)
+
+    def test_get_bundle_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        """get_bundle's except clause converts OperationalError to LifecycleError."""
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_conn = MagicMock()
+            mock_conn.execute.side_effect = sqlite3.OperationalError("read error")
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(return_value=mock_conn)
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="read error"):
+                store.get_bundle("some-id")

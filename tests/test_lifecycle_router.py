@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from acgs_lite.constitution.lifecycle_router import create_lifecycle_router
+from acgs_lite.evals.schema import EvalScenario
 
 
 def _make_app(api_key: str | None = "test-secret") -> FastAPI:
@@ -231,12 +232,236 @@ class TestHappyPath:
 
     @pytest.mark.asyncio
     async def test_reject_on_unknown_bundle_returns_error(self, client: AsyncClient) -> None:
-        # _load_bundle raises LifecycleError (not LookupError) for missing bundles,
-        # so the router surfaces a 400 lifecycle error rather than a 404.
         resp = await client.post(
             f"{BASE}/nonexistent-bundle/reject",
             json={"reason": "bad"},
             headers=HEADERS,
         )
-        assert resp.status_code == 400
-        assert resp.json()["detail"]["code"] == "LIFECYCLE_ERROR"
+        assert resp.status_code == 404
+        assert resp.json()["detail"]["code"] == "NOT_FOUND"
+
+
+
+
+# ── MACI-aware header helpers ─────────────────────────────────────────────
+
+REVIEWER_HEADERS = {**HEADERS, "X-Actor-ID": "reviewer-distinct-1"}
+APPROVER_HEADERS = {**HEADERS, "X-Actor-ID": "approver-distinct-1"}
+EXECUTOR_HEADERS = {**HEADERS, "X-Actor-ID": "executor-distinct-1"}
+
+
+async def _drive_to_staged_http(client: AsyncClient, tenant_id: str) -> str:
+    """HTTP-level helper: drive a bundle from DRAFT → STAGED using MACI-correct actors."""
+    resp = await client.post(
+        f"{BASE}/draft", json={"tenant_id": tenant_id}, headers=HEADERS
+    )
+    assert resp.status_code == 200
+    bundle_id = resp.json()["bundle_id"]
+
+    r = await client.post(f"{BASE}/{bundle_id}/submit", headers=HEADERS)
+    assert r.status_code == 200
+
+    r = await client.post(f"{BASE}/{bundle_id}/review", headers=REVIEWER_HEADERS)
+    assert r.status_code == 200
+
+    r = await client.post(
+        f"{BASE}/{bundle_id}/eval",
+        json={"scenarios": [{"id": "s1", "input_action": "check status", "expected_valid": True}]},
+        headers=HEADERS,
+    )
+    assert r.status_code == 200
+
+    r = await client.post(
+        f"{BASE}/{bundle_id}/approve", json={"signature": "sig-ok"}, headers=APPROVER_HEADERS
+    )
+    assert r.status_code == 200
+
+    r = await client.post(f"{BASE}/{bundle_id}/stage", headers=EXECUTOR_HEADERS)
+    assert r.status_code == 200
+
+    return bundle_id
+
+
+class TestUncoveredEndpoints:
+    """Hardening coverage for stage/activate/rollback/withdraw/get_bundle/get_active."""
+
+    @pytest.mark.asyncio
+    async def test_get_bundle_by_id_200(self, client: AsyncClient) -> None:
+        resp = await client.post(
+            f"{BASE}/draft",
+            json={"tenant_id": "tenant-get-id"},
+            headers=HEADERS,
+        )
+        assert resp.status_code == 200
+        bundle_id = resp.json()["bundle_id"]
+
+        resp = await client.get(f"{BASE}/{bundle_id}")
+        assert resp.status_code == 200
+        assert resp.json()["bundle_id"] == bundle_id
+
+    @pytest.mark.asyncio
+    async def test_get_bundle_by_id_404(self, client: AsyncClient) -> None:
+        resp = await client.get(f"{BASE}/nonexistent-bundle-id-xyz")
+        assert resp.status_code == 404
+
+    @pytest.mark.asyncio
+    async def test_get_active_bundle_returns_engine_binding_fields(self) -> None:
+        """GET /active/{tenant} on a tenant with an active bundle returns engine_binding fields."""
+        from acgs_lite.constitution.bundle_store import InMemoryBundleStore
+        from acgs_lite.constitution.evidence import InMemoryLifecycleAuditSink
+        from acgs_lite.constitution.lifecycle_service import ConstitutionLifecycle
+
+        lc = ConstitutionLifecycle(
+            store=InMemoryBundleStore(), sink=InMemoryLifecycleAuditSink()
+        )
+        draft = await lc.create_draft("tenant-active-get", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[EvalScenario(id="s1", input_action="check status", expected_valid=True)],
+        )
+        await lc.approve(draft.bundle_id, "approver-1", signature="sig-1")
+        await lc.stage(draft.bundle_id, "executor-1")
+        await lc.activate(draft.bundle_id, "executor-1")
+
+        app2 = FastAPI()
+        app2.include_router(create_lifecycle_router(lifecycle=lc, api_key=KEY))
+        async with AsyncClient(
+            transport=ASGITransport(app=app2), base_url="http://test"
+        ) as c:
+            resp = await c.get(f"{BASE}/active/tenant-active-get")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "active"
+        assert "engine_binding_active" in data
+        assert data["engine_binding_active"] is False
+        assert "engine_binding_note" in data
+
+    @pytest.mark.asyncio
+    async def test_stage_endpoint_200(self, client: AsyncClient) -> None:
+        resp = await client.post(
+            f"{BASE}/draft", json={"tenant_id": "tenant-stage-test"}, headers=HEADERS
+        )
+        bundle_id = resp.json()["bundle_id"]
+        await client.post(f"{BASE}/{bundle_id}/submit", headers=HEADERS)
+        await client.post(f"{BASE}/{bundle_id}/review", headers=REVIEWER_HEADERS)
+        await client.post(
+            f"{BASE}/{bundle_id}/eval",
+            json={"scenarios": [{"id": "s1", "input_action": "check", "expected_valid": True}]},
+            headers=HEADERS,
+        )
+        await client.post(
+            f"{BASE}/{bundle_id}/approve", json={"signature": "sig-stage"}, headers=APPROVER_HEADERS
+        )
+
+        resp = await client.post(f"{BASE}/{bundle_id}/stage", headers=EXECUTOR_HEADERS)
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "staged"
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("endpoint", "body"),
+        [
+            ("submit", None),
+            ("review", None),
+            ("eval", {"scenarios": [{"id": "s1", "input_action": "check", "expected_valid": True}]}),
+            ("approve", {"signature": "sig-missing"}),
+            ("stage", None),
+            ("activate", None),
+            ("rollback", {"reason": "missing bundle"}),
+            ("reject", {"reason": "missing bundle"}),
+            ("withdraw", {"reason": "missing bundle"}),
+        ],
+    )
+    async def test_missing_bundle_mutations_return_not_found(
+        self,
+        client: AsyncClient,
+        endpoint: str,
+        body: dict[str, object] | None,
+    ) -> None:
+        resp = await client.post(
+            f"{BASE}/nonexistent-bundle/{endpoint}",
+            json=body,
+            headers=HEADERS,
+        )
+
+        assert resp.status_code == 404
+        assert resp.json()["detail"]["code"] == "NOT_FOUND"
+
+    @pytest.mark.asyncio
+    async def test_activate_endpoint_returns_activation_record(
+        self, client: AsyncClient
+    ) -> None:
+        bundle_id = await _drive_to_staged_http(client, "tenant-activate-test")
+
+        resp = await client.post(f"{BASE}/{bundle_id}/activate", headers=EXECUTOR_HEADERS)
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "bundle_id" in data
+        assert "tenant_id" in data
+        assert data["bundle_id"] == bundle_id
+        assert data["tenant_id"] == "tenant-activate-test"
+
+    @pytest.mark.asyncio
+    async def test_rollback_endpoint_200(self, client: AsyncClient) -> None:
+        # v1: activate
+        bid1 = await _drive_to_staged_http(client, "tenant-rollback-test")
+        r = await client.post(f"{BASE}/{bid1}/activate", headers=EXECUTOR_HEADERS)
+        assert r.status_code == 200
+
+        # v2: activate to replace v1, then rollback
+        bid2 = await _drive_to_staged_http(client, "tenant-rollback-test")
+        r = await client.post(f"{BASE}/{bid2}/activate", headers=EXECUTOR_HEADERS)
+        assert r.status_code == 200
+
+        resp = await client.post(
+            f"{BASE}/{bid2}/rollback",
+            json={"reason": "reverting to stable v1"},
+            headers=EXECUTOR_HEADERS,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "bundle_id" in data  # ActivationRecord shape
+
+    @pytest.mark.asyncio
+    async def test_withdraw_endpoint_200(self, client: AsyncClient) -> None:
+        resp = await client.post(
+            f"{BASE}/draft", json={"tenant_id": "tenant-withdraw-test"}, headers=HEADERS
+        )
+        bundle_id = resp.json()["bundle_id"]
+
+        resp = await client.post(
+            f"{BASE}/{bundle_id}/withdraw",
+            json={"reason": "no longer needed"},
+            headers=HEADERS,
+        )
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "withdrawn"
+
+    @pytest.mark.asyncio
+    async def test_concurrent_modification_returns_409(self) -> None:
+        """ConcurrentLifecycleError raised by the service returns HTTP 409."""
+        from unittest.mock import AsyncMock, MagicMock
+
+        from acgs_lite.constitution.lifecycle_service import ConcurrentLifecycleError
+
+        mock_lc = MagicMock()
+        mock_lc.create_draft = AsyncMock(
+            side_effect=ConcurrentLifecycleError("tenant version changed")
+        )
+
+        app2 = FastAPI()
+        app2.include_router(create_lifecycle_router(lifecycle=mock_lc, api_key=KEY))
+        async with AsyncClient(
+            transport=ASGITransport(app=app2), base_url="http://test"
+        ) as c:
+            resp = await c.post(
+                f"{BASE}/draft",
+                json={"tenant_id": "tenant-conflict"},
+                headers=HEADERS,
+            )
+
+        assert resp.status_code == 409
+        assert resp.json()["detail"]["code"] == "CONCURRENT_CONFLICT"
