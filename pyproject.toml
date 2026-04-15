@@ -43,6 +43,7 @@ dependencies = [
 a2a = ["a2a-sdk>=0.2", "httpx>=0.27"]
 openai = ["openai>=1.0"]
 anthropic = ["anthropic>=0.30"]
+agno = ["agno>=2.5"]
 langchain = ["langchain-core>=0.2"]
 litellm = ["litellm>=1.0"]
 google = ["google-genai>=1.0"]
@@ -51,12 +52,13 @@ autogen = ["autogen-core>=0.4", "autogen-agentchat>=0.4"]
 mcp = ["mcp>=1.0"]
 crewai = ["crewai>=0.30"]
 autonoma = ["pyjwt>=2.0", "structlog>=21.0", "fastapi>=0.100"]
+server = ["fastapi>=0.100", "uvicorn>=0.24"]
 gitlab = ["httpx>=0.27", "starlette>=0.37"]
 google-cloud = ["google-cloud-logging>=3.0"]
 mistral = ["mistralai>=2.0"]
 pdf = ["fpdf2>=2.7"]
 otel = ["opentelemetry-api>=1.0,<2.0", "opentelemetry-sdk>=1.0,<2.0"]
-all = ["acgs-lite[a2a,openai,anthropic,langchain,litellm,google,llamaindex,autogen,mcp,crewai,autonoma,gitlab,google-cloud,pdf,mistral,otel]"]
+all = ["acgs-lite[a2a,openai,anthropic,agno,langchain,litellm,google,llamaindex,autogen,mcp,crewai,autonoma,gitlab,google-cloud,pdf,mistral,otel]"]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.25",
