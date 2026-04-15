@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Phase A — Real eval integration**: `ConstitutionLifecycle.run_evaluation()` now executes actual `EvalScenario` objects against a `GovernanceEngine` built from the bundle's constitution. Pass rate is recorded in `bundle.eval_summary`. Vacuous-pass bypass (empty/None scenarios) raises `LifecycleError`. Self-approval guard added to `approve()`.
 - **Phase B — SQLite persistent BundleStore**: New `SQLiteBundleStore` survives process restarts. WAL journal mode, `BEGIN EXCLUSIVE` transactions for multi-step writes, and a partial unique index enforce one active bundle per tenant at the database level. Raw `sqlite3.OperationalError` is wrapped as `LifecycleError` with context.
-- **Phase C — FastAPI lifecycle router**: Ten REST endpoints under `/constitution/lifecycle/` expose the full saga lifecycle. All mutation endpoints require `X-API-Key` authentication. Pydantic request models provide OpenAPI schema. Active-bundle response includes `engine_binding_active: bool` to surface the Phase C/E gap explicitly.
+- **Phase C — FastAPI lifecycle router**: Eleven REST endpoints under `/constitution/lifecycle/` expose the full saga lifecycle, including `POST /{id}/reject` for VALIDATOR-role rejection. All mutation endpoints require `X-API-Key` authentication. Pydantic request models provide OpenAPI schema. Active-bundle response includes `engine_binding_active: bool` to surface the Phase C/E gap explicitly.
 - **Phase E — BundleAwareGovernanceEngine**: `BundleAwareGovernanceEngine(store).for_active_bundle(tenant_id)` returns a `GovernanceEngine` built from the tenant's active bundle constitution. Engine cache is keyed by `(tenant_id, bundle_hash)` with `threading.Lock`. `invalidate(tenant_id)` is called automatically after `activate()` and `rollback()`.
 - **Agno integration adapter**: New `acgs_lite.integrations.agno` adapter for the Agno agent framework (optional `[agno]` extra).
-- **`[server]` extra**: `fastapi` + `uvicorn` extras now available as `pip install acgs[server]` for the lifecycle HTTP router.
+- **`[server]` extra**: `fastapi` + `uvicorn` now installable as `pip install acgs-lite[server]` for the lifecycle HTTP router.
 - **Lifecycle quickstart example**: `examples/lifecycle_quickstart.py` demonstrates the full `create_draft → run_evaluation → activate → validate()` flow end-to-end.
+- **Lifecycle HTTP API docs**: `docs/api/lifecycle.md` documents all eleven endpoints with request/response shapes, error codes, and auth requirements.
+- **Audit trail parity in `withdraw()`**: `withdraw()` now passes `reason` to `status_history`, matching the audit record written by `reject()`. Both ops now leave a full operator-reason trail.
 
 ## [2.7.2] - 2026-04-09
 

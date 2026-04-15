@@ -2,6 +2,9 @@
 
 The `Constitution` class is the core rule container. It loads governance rules from YAML, validates them, and exposes matching and amendment APIs.
 
+For the HTTP lifecycle surface that manages constitution bundle state over
+FastAPI, see [Constitution Lifecycle HTTP API](lifecycle.md).
+
 ## Class Reference
 
 ::: acgs_lite.constitution.constitution.Constitution

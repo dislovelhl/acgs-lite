@@ -27,6 +27,11 @@ extra:
   version:
     provider: mike
     default: stable
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dislovelhl/acgs-lite
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/acgs-lite/
 
 theme:
   name: material
@@ -78,6 +83,7 @@ nav:
       - Adding an Integration: contributing-integrations.md
       - Adding a Compliance Framework: contributing-frameworks.md
   - API Reference:
+      - Constitution Lifecycle: api/lifecycle.md
       - Constitution: api/constitution.md
       - GovernedAgent: api/governed_agent.md
       - MACI: api/maci.md
@@ -102,9 +108,3 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: [".", "../.."]
       check_paths: false
-
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/dislovelhl/acgs-lite
-    - icon: fontawesome/brands/python
-      link: https://pypi.org/project/acgs-lite/
