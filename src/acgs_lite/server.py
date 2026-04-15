@@ -99,6 +99,8 @@ def create_governance_app(
     openshell_state_path: str | Path | None = None,
     include_autonoma: bool = False,
     autonoma_scenarios_path: str | Path | None = None,
+    include_lifecycle: bool | None = None,
+    lifecycle_api_key: str | None = None,
 ) -> FastAPI:
     """Create a FastAPI app exposing governance validation endpoints.
 
@@ -113,6 +115,12 @@ def create_governance_app(
     when the external ``acgs`` package is installed.
 
     ``include_openshell_experimental`` is kept as a compatibility alias.
+
+    Set ``include_lifecycle=True`` (or set the ``ACGS_LIFECYCLE_ENABLED``
+    environment variable) to mount the constitution lifecycle router at
+    ``/constitution/lifecycle/*``.  Use ``lifecycle_api_key`` (or
+    ``ACGS_LIFECYCLE_API_KEY``) to require API-key authentication on mutation
+    endpoints.
     """
     from fastapi import FastAPI, HTTPException, Query
 
@@ -404,6 +412,12 @@ def create_governance_app(
 
         scenarios_path_resolved = Path(autonoma_scenarios_path) if autonoma_scenarios_path else None
         app.include_router(create_autonoma_router(scenarios_path=scenarios_path_resolved))
+
+    _include_lifecycle = include_lifecycle if include_lifecycle is not None else bool(os.getenv("ACGS_LIFECYCLE_ENABLED"))
+    if _include_lifecycle:
+        from acgs_lite.constitution.lifecycle_router import create_lifecycle_router
+
+        app.include_router(create_lifecycle_router(api_key=lifecycle_api_key))
 
     if os.getenv("ACGS_FEDERATION_ENABLED"):
         app.include_router(federation_router, prefix="/v1/federation")
