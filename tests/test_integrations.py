@@ -341,25 +341,51 @@ class TestA2AClient:
             return False
 
     def test_validate_action(self):
-        """Test A2A client against the live governance agent on Brev."""
+        """Test A2A client with mocked HTTP transport."""
         from acgs_lite.integrations.a2a import A2AGovernedClient
 
-        if not self._a2a_agent_available():
-            pytest.skip("A2A agent not available at localhost:9000")
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.json.return_value = {
+            "jsonrpc": "2.0",
+            "id": "test-1",
+            "result": {
+                "status": "completed",
+                "result": {"valid": True, "action": "Deploy new feature safely"},
+            },
+        }
 
-        # Try connecting to local port-forwarded A2A agent
-        client = A2AGovernedClient("http://localhost:9000", timeout=5.0)
-        result = asyncio.run(client.validate("Deploy new feature safely"))
+        mock_client_instance = AsyncMock()
+        mock_client_instance.post.return_value = mock_response
+        mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_instance.__aexit__ = AsyncMock(return_value=False)
+
+        with patch("httpx.AsyncClient", return_value=mock_client_instance):
+            client = A2AGovernedClient("http://localhost:9000", timeout=5.0)
+            result = asyncio.run(client.validate("Deploy new feature safely"))
         assert "valid" in result or "action" in result
 
     def test_agent_card(self):
+        """Test A2A agent card retrieval with mocked HTTP transport."""
         from acgs_lite.integrations.a2a import A2AGovernedClient
 
-        if not self._a2a_agent_available():
-            pytest.skip("A2A agent not available at localhost:9000")
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.raise_for_status = MagicMock()
+        mock_response.json.return_value = {
+            "name": "ACGS Governance Agent",
+            "skills": [{"name": "validate", "description": "Validate actions"}],
+        }
 
-        client = A2AGovernedClient("http://localhost:9000", timeout=5.0)
-        card = asyncio.run(client.get_agent_card())
+        mock_client_instance = AsyncMock()
+        mock_client_instance.get.return_value = mock_response
+        mock_client_instance.__aenter__ = AsyncMock(return_value=mock_client_instance)
+        mock_client_instance.__aexit__ = AsyncMock(return_value=False)
+
+        with patch("httpx.AsyncClient", return_value=mock_client_instance):
+            client = A2AGovernedClient("http://localhost:9000", timeout=5.0)
+            card = asyncio.run(client.get_agent_card())
         assert "name" in card
         assert "skills" in card
 

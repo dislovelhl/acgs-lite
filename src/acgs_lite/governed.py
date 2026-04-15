@@ -420,9 +420,7 @@ class GovernedAgent:
                 }
                 obligations = checker.check(decision_context)
                 # If blocking obligations are unsatisfied, escalate verdict to conditional
-                blocking_unsatisfied = [
-                    o for o in obligations if o.is_blocking and not o.satisfied
-                ]
+                blocking_unsatisfied = [o for o in obligations if o.is_blocking and not o.satisfied]
                 if blocking_unsatisfied and effective_verdict == "allow":
                     effective_verdict = "conditional"
             except Exception:

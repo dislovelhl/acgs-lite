@@ -23,17 +23,17 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 __all__ = ["generate_certificate"]
 
 # Brand colours (matches the dashboard palette)
-_DARK = (36, 31, 25)       # #241f19
-_CRIMSON = (139, 38, 53)   # #8B2635
-_GREEN = (45, 90, 39)      # #2D5A27
-_AMBER = (180, 120, 20)    # warm amber
-_LIGHT = (246, 242, 234)   # #f6f2ea
+_DARK = (36, 31, 25)  # #241f19
+_CRIMSON = (139, 38, 53)  # #8B2635
+_GREEN = (45, 90, 39)  # #2D5A27
+_AMBER = (180, 120, 20)  # warm amber
+_LIGHT = (246, 242, 234)  # #f6f2ea
 _WHITE = (255, 255, 255)
 _MUTED = (120, 112, 100)
 
@@ -186,7 +186,12 @@ def generate_certificate(
 
     # Risk + confidence bars
     pdf.ln(4)
-    _draw_score_bar(pdf, "Risk Score", risk_score, _CRIMSON if risk_score >= 0.7 else _AMBER if risk_score >= 0.4 else _GREEN)
+    _draw_score_bar(
+        pdf,
+        "Risk Score",
+        risk_score,
+        _CRIMSON if risk_score >= 0.7 else _AMBER if risk_score >= 0.4 else _GREEN,
+    )
     _draw_score_bar(pdf, "Confidence", confidence_score, _GREEN)
 
     # Divider
@@ -286,7 +291,9 @@ def generate_certificate(
         pdf.set_font("Helvetica", "", 9)
         pdf.set_text_color(*(_CRIMSON if triggered else _GREEN))
         pdf.set_x(20)
-        pdf.cell(0, 5, f"{'TRIGGERED' if triggered else 'NOT TRIGGERED'}  ·  {act.upper()}", ln=True)
+        pdf.cell(
+            0, 5, f"{'TRIGGERED' if triggered else 'NOT TRIGGERED'}  ·  {act.upper()}", ln=True
+        )
         if reason:
             pdf.set_text_color(*_DARK)
             pdf.set_x(20)
@@ -337,6 +344,7 @@ def generate_certificate(
 # Drawing helpers
 # ------------------------------------------------------------------ #
 
+
 def _section_heading(pdf: Any, text: str) -> None:
     pdf.set_font("Helvetica", "B", 9)
     pdf.set_text_color(*_MUTED)
@@ -379,7 +387,7 @@ def _draw_maci_table(pdf: Any, steps: list[dict]) -> None:
     pdf.set_fill_color(*_DARK)
     pdf.set_text_color(*_WHITE)
     pdf.set_x(20)
-    for h, w in zip(headers, widths):
+    for h, w in zip(headers, widths, strict=True):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
 
@@ -424,7 +432,7 @@ def _draw_evidence_table(pdf: Any, evidence: list[dict]) -> None:
     pdf.set_fill_color(*_DARK)
     pdf.set_text_color(*_WHITE)
     pdf.set_x(20)
-    for h, w in zip(headers, widths):
+    for h, w in zip(headers, widths, strict=True):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
 
@@ -457,7 +465,7 @@ def _draw_obligations_table(pdf: Any, obligations: list[dict]) -> None:
     pdf.set_fill_color(*_DARK)
     pdf.set_text_color(*_WHITE)
     pdf.set_x(20)
-    for h, w in zip(headers, widths):
+    for h, w in zip(headers, widths, strict=True):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
 
