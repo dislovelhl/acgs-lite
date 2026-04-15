@@ -24,6 +24,7 @@ from acgs_lite.constitution.lifecycle_service import (
 )
 from acgs_lite.constitution.provenance import RuleProvenanceGraph
 from acgs_lite.errors import MACIViolationError
+from acgs_lite.evals.schema import EvalScenario
 
 # ── fixtures ────────────────────────────────────────────────────────────
 
@@ -68,7 +69,16 @@ async def _drive_to_staged(
     draft = await lc.create_draft(tenant_id, "proposer-1", base_bundle_id=base_id)
     await lc.submit_for_review(draft.bundle_id, "proposer-1")
     await lc.approve_review(draft.bundle_id, "reviewer-1")
-    await lc.run_evaluation(draft.bundle_id)
+    await lc.run_evaluation(
+        draft.bundle_id,
+        scenarios=[
+            EvalScenario(
+                id="s1",
+                input_action="check current status of the system",
+                expected_valid=True,
+            )
+        ],
+    )
     await lc.approve(draft.bundle_id, "approver-1", signature="sig-1")
     await lc.stage(draft.bundle_id, "executor-1")
     return draft.bundle_id
@@ -202,7 +212,10 @@ class TestAuditFailureUnwind:
         draft = await lc.create_draft("tenant-a", "proposer-1")
         await lc.submit_for_review(draft.bundle_id, "proposer-1")
         await lc.approve_review(draft.bundle_id, "reviewer-1")
-        await lc.run_evaluation(draft.bundle_id)
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[EvalScenario(id="s1", input_action="check status", expected_valid=True)],
+        )
         await lc.approve(draft.bundle_id, "approver-1", signature="sig-1")
 
         with pytest.raises(LifecycleEvidenceError, match="stage"):
@@ -261,7 +274,10 @@ class TestAuditFailureUnwind:
         draft_v2 = await lc.create_draft("tenant-a", "proposer-1")
         await lc.submit_for_review(draft_v2.bundle_id, "proposer-1")
         await lc.approve_review(draft_v2.bundle_id, "reviewer-1")
-        await lc.run_evaluation(draft_v2.bundle_id)
+        await lc.run_evaluation(
+            draft_v2.bundle_id,
+            scenarios=[EvalScenario(id="s1", input_action="check status", expected_valid=True)],
+        )
         await lc.approve(draft_v2.bundle_id, "approver-1", signature="sig-2")
         await lc.stage(draft_v2.bundle_id, "executor-1")
 
@@ -515,3 +531,117 @@ class TestLifecycleAuditSink:
         assert len(records) == 2
         assert records[0].to_status == "draft"
         assert records[1].to_status == "review"
+
+
+
+# ── Phase A additional tests ─────────────────────────────────────────────
+
+
+class TestEvalIntegration:
+    @pytest.mark.asyncio
+    async def test_run_evaluation_passing_scenarios_sets_status_passed(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[
+                EvalScenario(
+                    id="s1",
+                    input_action="check current status of the system",
+                    expected_valid=True,
+                )
+            ],
+        )
+
+        bundle = lc._store.get_bundle(draft.bundle_id)
+        assert bundle is not None
+        assert bundle.eval_summary is not None
+        assert bundle.eval_summary["status"] == "passed"
+
+    @pytest.mark.asyncio
+    async def test_run_evaluation_with_none_scenarios_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        with pytest.raises(LifecycleError, match="[Ss]cenario"):
+            await lc.run_evaluation(draft.bundle_id, scenarios=None)
+
+    @pytest.mark.asyncio
+    async def test_run_evaluation_with_empty_scenarios_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        with pytest.raises(LifecycleError, match="[Ss]cenario"):
+            await lc.run_evaluation(draft.bundle_id, scenarios=[])
+
+    @pytest.mark.asyncio
+    async def test_run_evaluation_non_list_element_raises(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        with pytest.raises((LifecycleError, TypeError)):
+            await lc.run_evaluation(
+                draft.bundle_id,
+                scenarios=[{"id": "s1", "input_action": "x"}],  # type: ignore[list-item]
+            )
+
+
+class TestSelfApprovalGuard:
+    @pytest.mark.asyncio
+    async def test_approve_self_raises(self) -> None:
+        """Proposer cannot approve their own bundle (library-level MACI guard)."""
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[
+                EvalScenario(
+                    id="s1",
+                    input_action="check current status of the system",
+                    expected_valid=True,
+                )
+            ],
+        )
+
+        with pytest.raises(LifecycleError, match="[Ss]elf.approval|[Pp]roposer|[Aa]pprover"):
+            await lc.approve(draft.bundle_id, "proposer-1", signature="self-sig")
+
+    @pytest.mark.asyncio
+    async def test_approve_different_actor_succeeds(self) -> None:
+        lc = _make_lifecycle()
+        draft = await lc.create_draft("tenant-a", "proposer-1")
+        await lc.submit_for_review(draft.bundle_id, "proposer-1")
+        await lc.approve_review(draft.bundle_id, "reviewer-1")
+        await lc.run_evaluation(
+            draft.bundle_id,
+            scenarios=[
+                EvalScenario(
+                    id="s1",
+                    input_action="check current status of the system",
+                    expected_valid=True,
+                )
+            ],
+        )
+
+        # Different actor — should not raise
+        bundle = await lc.approve(draft.bundle_id, "approver-distinct", signature="sig-ok")
+        assert bundle is not None

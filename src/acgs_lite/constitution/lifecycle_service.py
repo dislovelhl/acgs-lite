@@ -415,13 +415,37 @@ class ConstitutionLifecycle:
     async def run_evaluation(
         self,
         bundle_id: str,
+        scenarios: list[Any] | None = None,
         eval_run_id: str | None = None,
+        pass_threshold: float = 1.0,
     ) -> ConstitutionBundle:
-        """Record an evaluation run on a bundle in EVAL state.
+        """Execute eval scenarios against a bundle in EVAL state.
 
-        This does not execute actual evals — it records the eval reference
-        and summary. Actual eval execution is plugged in at Week 3+.
+        :param bundle_id: ID of the bundle to evaluate.
+        :param scenarios: Non-empty list of ``EvalScenario`` objects.
+            Raises ``LifecycleError`` when *None* or empty — vacuous-pass
+            bypass (passing zero scenarios to force a "passed" result) is
+            explicitly rejected.
+        :param eval_run_id: Optional explicit run ID; auto-generated if omitted.
+        :param pass_threshold: Fraction of scenarios that must pass (0.0–1.0).
+            Defaults to 1.0 (all scenarios must pass).
         """
+        from acgs_lite.evals.runner import evaluate_scenario
+        from acgs_lite.evals.schema import EvalScenario
+        from acgs_lite.engine import GovernanceEngine
+
+        if not scenarios:
+            raise LifecycleError(
+                "run_evaluation() requires a non-empty list of EvalScenario objects. "
+                "Passing None or an empty list is rejected to prevent vacuous-pass bypass."
+            )
+        for i, s in enumerate(scenarios):
+            if not isinstance(s, EvalScenario):
+                raise LifecycleError(
+                    f"scenarios[{i}] is {type(s).__name__!r}, expected EvalScenario. "
+                    "Passing raw dicts causes AttributeError deep in the eval runner."
+                )
+
         bundle = self._load_bundle(bundle_id)
         if bundle.status != BundleStatus.EVAL:
             raise LifecycleError(
@@ -431,8 +455,21 @@ class ConstitutionLifecycle:
 
         audit_head = self._sink.head()
         run_id = eval_run_id or f"eval-{bundle.bundle_id[:8]}"
+
+        engine = GovernanceEngine(bundle.constitution, strict=False)
+        total = len(scenarios)
+        passed = sum(1 for s in scenarios if evaluate_scenario(engine, s).passed)
+        pass_rate = passed / total
+        status = "passed" if pass_rate >= pass_threshold else "failed"
+
         bundle.eval_run_ids.append(run_id)
-        bundle.eval_summary = {"status": "passed", "run_id": run_id}
+        bundle.eval_summary = {
+            "status": status,
+            "run_id": run_id,
+            "total": total,
+            "passed": passed,
+            "pass_rate": pass_rate,
+        }
         self._store.save_bundle(bundle)
 
         evidence = self._make_evidence(
@@ -441,8 +478,8 @@ class ConstitutionLifecycle:
             to_status=BundleStatus.EVAL.value,
             actor_id="system",
             actor_role="system",
-            reason=f"Evaluation completed: {run_id}",
-            metadata={"eval_run_id": run_id},
+            reason=f"Evaluation completed: {run_id} ({passed}/{total} passed, {status})",
+            metadata={"eval_run_id": run_id, "pass_rate": pass_rate, "status": status},
         )
         self._append_evidence(evidence, audit_head)
         return self._load_bundle(bundle_id)
@@ -455,6 +492,10 @@ class ConstitutionLifecycle:
     ) -> ConstitutionBundle:
         """EVAL -> APPROVE. Approver must != proposer. Requires passing eval."""
         bundle = self._load_bundle(bundle_id)
+        if approver_id == bundle.proposed_by:
+            raise LifecycleError(
+                f"Approver {approver_id!r} cannot be the same actor as the proposer"
+            )
         tv = self._read_tenant_version(bundle.tenant_id)
         audit_head = self._sink.head()
         from_status = bundle.status.value

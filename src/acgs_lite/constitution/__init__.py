@@ -128,6 +128,7 @@ _LAZY_REGISTRY: dict[str, tuple[str, str]] = {
     "ActivationRecord": ("activation", "lifecycle"),
     "BundleStore": ("bundle_store", "lifecycle"),
     "InMemoryBundleStore": ("bundle_store", "lifecycle"),
+    "SQLiteBundleStore": ("sqlite_bundle_store", "lifecycle"),
     "PolicyWaiver": ("waivers", "lifecycle"),
     "WaiverRegistry": ("waivers", "lifecycle"),
     "WaiverStatus": ("waivers", "lifecycle"),
