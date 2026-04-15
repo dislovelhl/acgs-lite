@@ -22,22 +22,23 @@ from __future__ import annotations
 
 import hmac
 import os
-from typing import Any
+from typing import Any, NoReturn
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 
+from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import ConstitutionBundle
 from acgs_lite.constitution.bundle_store import InMemoryBundleStore
 from acgs_lite.constitution.evidence import InMemoryLifecycleAuditSink
 from acgs_lite.constitution.lifecycle_service import (
-    ConstitutionLifecycle,
     ConcurrentLifecycleError,
+    ConstitutionLifecycle,
     LifecycleError,
 )
-from acgs_lite.evals.schema import EvalScenario
 from acgs_lite.errors import MACIViolationError
+from acgs_lite.evals.schema import EvalScenario
 
 _API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
 _ACTOR_HEADER = "X-Actor-ID"
@@ -103,10 +104,14 @@ class WithdrawRequest(BaseModel):
     reason: str = Field(default="withdrawn by proposer", description="Reason for withdrawal")
 
 
+class RejectRequest(BaseModel):
+    reason: str = Field(default="rejected by validator", description="Reason for rejection")
+
+
 # ── Error envelope ────────────────────────────────────────────────────────
 
 
-def _error(message: str, *, code: str, bundle_id: str | None = None, status_code: int) -> None:
+def _error(message: str, *, code: str, bundle_id: str | None = None, status_code: int) -> NoReturn:
     raise HTTPException(
         status_code=status_code,
         detail={"error": message, "code": code, "bundle_id": bundle_id},
@@ -116,6 +121,10 @@ def _error(message: str, *, code: str, bundle_id: str | None = None, status_code
 def _bundle_response(bundle: ConstitutionBundle) -> dict[str, Any]:
     data = bundle.model_dump(mode="json")
     return data
+
+
+def _activation_response(record: ActivationRecord) -> dict[str, Any]:
+    return record.model_dump(mode="json")
 
 
 # ── Router factory ────────────────────────────────────────────────────────
@@ -158,7 +167,7 @@ def create_lifecycle_router(
 
     # ── Exception helpers ──────────────────────────────────────────────
 
-    def _handle_lifecycle_exc(exc: Exception, bundle_id: str | None = None) -> None:
+    def _handle_lifecycle_exc(exc: Exception, bundle_id: str | None = None) -> NoReturn:
         if isinstance(exc, MACIViolationError):
             _error(str(exc), code="MACI_VIOLATION", bundle_id=bundle_id, status_code=403)
         if isinstance(exc, ConcurrentLifecycleError):
@@ -244,10 +253,11 @@ def create_lifecycle_router(
         return _bundle_response(bundle)
 
     @router.post("/{bundle_id}/stage", dependencies=[Depends(_require_auth)])
-    async def stage(bundle_id: str) -> dict[str, Any]:
+    async def stage(bundle_id: str, request: Request) -> dict[str, Any]:
         """Stage a bundle for activation (STAGED → STAGED, canary step)."""
+        executor_id = await _get_actor(request)
         try:
-            bundle = await _lc.stage(bundle_id)
+            bundle = await _lc.stage(bundle_id, executor_id)
         except LookupError:
             _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
         except Exception as exc:
@@ -255,21 +265,35 @@ def create_lifecycle_router(
         return _bundle_response(bundle)
 
     @router.post("/{bundle_id}/activate", dependencies=[Depends(_require_auth)])
-    async def activate(bundle_id: str) -> dict[str, Any]:
+    async def activate(bundle_id: str, request: Request) -> dict[str, Any]:
         """Activate a staged bundle (STAGED → ACTIVE)."""
+        executor_id = await _get_actor(request)
         try:
-            bundle = await _lc.activate(bundle_id)
+            activation = await _lc.activate(bundle_id, executor_id)
         except LookupError:
             _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
-        return _bundle_response(bundle)
+        return _activation_response(activation)
 
     @router.post("/{bundle_id}/rollback", dependencies=[Depends(_require_auth)])
-    async def rollback(bundle_id: str, body: RollbackRequest) -> dict[str, Any]:
+    async def rollback(bundle_id: str, body: RollbackRequest, request: Request) -> dict[str, Any]:
         """Roll back the active bundle to its predecessor."""
+        executor_id = await _get_actor(request)
         try:
-            bundle = await _lc.rollback(bundle_id, reason=body.reason)
+            activation = await _lc.rollback(bundle_id, executor_id, reason=body.reason)
+        except LookupError:
+            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+        except Exception as exc:
+            _handle_lifecycle_exc(exc, bundle_id)
+        return _activation_response(activation)
+
+    @router.post("/{bundle_id}/reject", dependencies=[Depends(_require_auth)])
+    async def reject(bundle_id: str, body: RejectRequest, request: Request) -> dict[str, Any]:
+        """Reject a bundle (VALIDATOR role). Any pre-active state → REJECTED."""
+        actor = await _get_actor(request)
+        try:
+            bundle = await _lc.reject(bundle_id, actor, reason=body.reason)
         except LookupError:
             _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
         except Exception as exc:

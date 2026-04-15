@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-
 from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
 
 from acgs_lite.constitution.lifecycle_router import create_lifecycle_router
 
@@ -202,3 +201,42 @@ class TestHappyPath:
         data = resp.json()
         assert isinstance(data, list)
         assert len(data) >= 1
+
+    @pytest.mark.asyncio
+    async def test_reject_endpoint(self, client: AsyncClient) -> None:
+        """VALIDATOR can reject a bundle in review state."""
+        # actor-1 (from HEADERS) creates the draft and submits it (proposer role)
+        resp = await client.post(
+            f"{BASE}/draft",
+            json={"tenant_id": "reject-tenant"},
+            headers=HEADERS,
+        )
+        assert resp.status_code == 200
+        bundle_id = resp.json()["bundle_id"]
+
+        resp = await client.post(f"{BASE}/{bundle_id}/submit", headers=HEADERS)
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "review"
+
+        # VALIDATOR rejects the bundle
+        validator_headers = {**HEADERS, "X-Actor-ID": "validator-reject-1"}
+        resp = await client.post(
+            f"{BASE}/{bundle_id}/reject",
+            json={"reason": "does not meet compliance standards"},
+            headers=validator_headers,
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "rejected"
+
+    @pytest.mark.asyncio
+    async def test_reject_on_unknown_bundle_returns_error(self, client: AsyncClient) -> None:
+        # _load_bundle raises LifecycleError (not LookupError) for missing bundles,
+        # so the router surfaces a 400 lifecycle error rather than a 404.
+        resp = await client.post(
+            f"{BASE}/nonexistent-bundle/reject",
+            json={"reason": "bad"},
+            headers=HEADERS,
+        )
+        assert resp.status_code == 400
+        assert resp.json()["detail"]["code"] == "LIFECYCLE_ERROR"

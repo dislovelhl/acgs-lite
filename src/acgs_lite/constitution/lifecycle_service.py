@@ -430,9 +430,9 @@ class ConstitutionLifecycle:
         :param pass_threshold: Fraction of scenarios that must pass (0.0–1.0).
             Defaults to 1.0 (all scenarios must pass).
         """
+        from acgs_lite.engine import GovernanceEngine
         from acgs_lite.evals.runner import evaluate_scenario
         from acgs_lite.evals.schema import EvalScenario
-        from acgs_lite.engine import GovernanceEngine
 
         if not scenarios:
             raise LifecycleError(
@@ -865,6 +865,7 @@ class ConstitutionLifecycle:
         self,
         bundle_id: str,
         proposer_id: str,
+        reason: str = "withdrawn by proposer",
     ) -> ConstitutionBundle:
         """Any pre-active -> WITHDRAWN. Only original proposer."""
         bundle = self._load_bundle(bundle_id)
@@ -876,6 +877,7 @@ class ConstitutionLifecycle:
             BundleStatus.WITHDRAWN,
             actor_id=proposer_id,
             actor_role=MACIRole.PROPOSER,
+            reason=reason,
         )
         self._store.save_bundle(bundle)
 
@@ -885,7 +887,7 @@ class ConstitutionLifecycle:
             to_status=BundleStatus.WITHDRAWN.value,
             actor_id=proposer_id,
             actor_role=MACIRole.PROPOSER.value,
-            reason="Withdrawn by proposer",
+            reason=reason,
         )
         try:
             self._append_evidence(evidence, audit_head)
