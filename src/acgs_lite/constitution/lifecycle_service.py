@@ -37,6 +37,10 @@ class LifecycleError(Exception):
     """Base error for lifecycle coordinator failures."""
 
 
+class BundleNotFoundError(LifecycleError, LookupError):
+    """Raised when a lifecycle operation references a missing bundle."""
+
+
 class ConcurrentLifecycleError(LifecycleError):
     """Raised when a tenant-level CAS check fails."""
 
@@ -124,7 +128,7 @@ class ConstitutionLifecycle:
     def _load_bundle(self, bundle_id: str) -> ConstitutionBundle:
         bundle = self._store.get_bundle(bundle_id)
         if bundle is None:
-            raise LifecycleError(f"Bundle not found: {bundle_id!r}")
+            raise BundleNotFoundError(f"Bundle not found: {bundle_id!r}")
         return bundle
 
     def _next_version(self, tenant_id: str) -> int:
