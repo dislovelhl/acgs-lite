@@ -1,70 +1,91 @@
-# ACGS
+# ACGS-Lite Agent Guide
 
-> Scope: `packages/acgs-lite/` — standalone governance library published on PyPI as `acgs`, with `acgs_lite` retained as the compatibility import namespace.
+> **Language**: Python | **Line Length**: 100
 
-## Planning
-
-- Planning notes live in `PLANS.md`.
+AI governance library for constitutional rule enforcement, lifecycle management, and audit-backed validation.
 
 ## Structure
 
-```
-acgs-lite/
+```text
+packages/acgs-lite/
 ├── src/acgs_lite/
-│   ├── engine/              # Core validation and execution logic
-│   ├── constitution/        # Constitution loading, templates, policy export
-│   ├── compliance/          # Compliance mapping and regulatory helpers
-│   ├── integrations/        # Adapter modules for external agent ecosystems
-│   ├── governed.py          # GovernedAgent / GovernedCallable wrappers
-│   ├── maci.py              # MACI role enforcement
-│   ├── matcher.py           # Rule matching hot path
+│   ├── constitution/        # Rules, lifecycle, bundle store, HTTP router
+│   ├── engine/              # Validation engine and bundle binding
+│   ├── compliance/          # Regulatory mapping and assessments
+│   ├── integrations/        # External adapters
 │   ├── audit.py             # Tamper-evident audit trail
-│   ├── cli.py               # `acgs` CLI entrypoint (`acgs-lite` alias also supported)
+│   ├── governed.py          # Governed wrappers
+│   ├── maci.py              # MACI role enforcement
 │   └── server.py            # FastAPI wrapper
-├── src/eu_ai_act_tool/      # EU AI Act assessment tool
-├── rust/                    # Optional Rust workspace (`core/`, `pyo3/`, `wasm/`)
-├── tests/                   # Python package tests
-└── examples/                # Quickstarts and examples
+├── docs/                    # MkDocs documentation
+├── examples/                # Smoke-test examples and quickstarts
+├── rust/                    # Optional Rust workspace
+└── tests/                   # Python tests
+```
+
+## Commands
+
+```bash
+# Setup
+pip install -e ".[dev]"
+
+# Testing
+make test
+make test-quick
+python -m pytest tests/ -v --import-mode=importlib
+
+# Linting
+make lint
+ruff check .
+ruff format --check .
+
+# Type check
+make typecheck
+mypy src/acgs_lite
+
+# Build
+make build
+python -m mkdocs build
 ```
 
 ## Where to Look
 
 | Task | Location |
-| ---- | -------- |
-| Add governance rule type | `src/acgs_lite/constitution/` |
-| Change validation logic | `src/acgs_lite/engine/`, `src/acgs_lite/matcher.py` |
-| Add integration adapter | `src/acgs_lite/integrations/` |
-| Compliance framework work | `src/acgs_lite/compliance/` |
-| MACI role boundaries | `src/acgs_lite/maci.py` |
-| MCP server tools | `src/acgs_lite/integrations/mcp_server.py` |
-| GitLab governance integration | `src/acgs_lite/integrations/gitlab.py` |
-| Audit trail | `src/acgs_lite/audit.py` |
-| CLI commands | `src/acgs_lite/cli.py` |
-| Rust acceleration | `rust/` |
+| --- | --- |
+| Entry point | `src/acgs_lite/cli.py` |
+| HTTP API | `src/acgs_lite/server.py`, `src/acgs_lite/constitution/lifecycle_router.py` |
+| Lifecycle logic | `src/acgs_lite/constitution/lifecycle_service.py` |
+| Bundle store | `src/acgs_lite/constitution/bundle_store.py`, `sqlite_bundle_store.py` |
+| Engine binding | `src/acgs_lite/engine/bundle_binding.py` |
+| Rules / constitution | `src/acgs_lite/constitution/` |
+| Docs | `docs/`, especially `docs/api/` |
+| Tests | `tests/` |
+| Shared utilities | `src/acgs_lite/audit.py`, `src/acgs_lite/maci.py` |
 
 ## Conventions
 
-- Package runtime target is Python 3.10+.
+- Python 3.10+.
 - Keep integrations optional through extras and lazy imports.
-- Keep Python fallbacks when Rust acceleration is optional.
-- Constitutional hash `608508a9bd224290` is part of validation flows.
+- Do not import optional SDKs at module import time.
+- Constitutional hash `608508a9bd224290` is part of the validation flow.
 - Use `_make_*` helpers in tests for fixture creation when available.
 
-## Anti-Patterns
+## Anti-Patterns (Forbidden)
 
-- Do not import optional platform SDKs at module import time.
-- Do not change `matcher.py` hot-path behavior without benchmarking or targeted tests.
-- Do not bypass MACI enforcement in wrappers or integrations.
-- Do not rely on raw `cargo test` as the only verification for Python-facing Rust changes.
+| Pattern | Alternative |
+| --- | --- |
+| Importing optional SDKs at module import time | Guarded imports inside functions |
+| Changing `matcher.py` hot-path behavior without tests | Add targeted benchmarks or regression tests |
+| Bypassing MACI enforcement | Keep role checks in the flow |
+| Relying on raw `cargo test` alone | Run the Python test surface too |
+| Skipping verification before marking complete | Run `make lint && make typecheck && make test` |
 
-## Commands
+## Coverage Thresholds
 
-```bash
-make test-lite
-python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
-cd packages/acgs-lite/rust && maturin develop --release
-acgs status
-```
+- System-wide: 80%
+- Critical paths: 90%
 
-If you touch the Rust-backed validation path, rebuild with `maturin develop --release` and then
-run the relevant pytest selection from the repo root.
+## Notes
+
+- Existing repo docs already cover the broader product story. Use this file for navigation and commands.
+- Add subdirectory `AGENTS.md` files later if a sub-area grows large enough to need its own guide.

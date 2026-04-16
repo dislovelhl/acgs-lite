@@ -280,8 +280,7 @@ class GovernanceWorkflowCompiler:
     def __init__(self, constitutional_hash: str) -> None:
         if not WORKFLOW_AVAILABLE:
             raise ImportError(
-                "constitutional_swarm is required. "
-                "Install with: pip install constitutional-swarm"
+                "constitutional_swarm is required. Install with: pip install constitutional-swarm"
             )
         self.constitutional_hash = constitutional_hash
         self._compiler = DAGCompiler()

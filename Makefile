@@ -91,12 +91,9 @@ install-dev:
 # ACGS tests use InMemory* stubs — zero external deps in CI.
 # Set placeholder key so any import-time validation passes.
 #
-# Canonical path (CI / full suite): uv run make test      (4687+ tests)
+# Canonical path (CI / full suite): uv run make test      (4951+ tests)
 # Standalone venv path: source .venv/bin/activate && make test
-#   Note: test_governed_constrained_output.py imports enhanced_agent_bus
-#   (a workspace-only package). It is excluded from the standalone run via
-#   PYTEST_IGNORE below; the uv workspace run covers it fully.
-PYTEST_IGNORE_STANDALONE := $(if $(wildcard ../../uv.lock),,--ignore=$(TEST_DIR)/test_governed_constrained_output.py)
+PYTEST_IGNORE_STANDALONE :=
 TEST_ENV = OPENAI_API_KEY=test-key-for-unit-tests \
            ANTHROPIC_API_KEY=test-key-for-unit-tests
 

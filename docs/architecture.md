@@ -90,6 +90,32 @@ Cloud Run is a good fit when you want autoscaling, private service-to-service au
 
 ---
 
+## 🔄 Constitution Lifecycle
+
+The Constitution Lifecycle system manages how governance rules evolve safely over time without downtime. It introduces a bundle-based saga pattern that keeps MACI role separation in the update path itself.
+
+### Bundle Saga
+
+A `ConstitutionBundle` moves through a defined set of statuses:
+
+```
+DRAFT → UNDER_REVIEW → EVALUATED → APPROVED → STAGED → ACTIVE
+                                  ↓                   ↓
+                               REJECTED            ROLLED_BACK
+                          (at any point) WITHDRAWN
+```
+
+Each transition is gated: only the originating PROPOSER can submit, only a VALIDATOR can approve or reject, and staging requires a passing eval run recorded in `bundle.eval_summary`.
+
+### Key Components
+
+- **`ConstitutionLifecycle`** — the core service that owns the saga logic and enforces MACI role checks on every transition.
+- **`SQLiteBundleStore`** — persistent store using WAL journal mode and `BEGIN EXCLUSIVE` transactions. A partial unique index enforces one `ACTIVE` bundle per tenant at the database level.
+- **`BundleAwareGovernanceEngine`** — wraps `ConstitutionLifecycle` to return a `GovernanceEngine` built from the tenant's active bundle. Engine instances are cached by `(tenant_id, bundle_hash)` and invalidated automatically after `activate()` and `rollback()`.
+- **FastAPI lifecycle router** — eleven REST endpoints under `/constitution/lifecycle/` expose the full saga over HTTP. All mutation endpoints require `X-API-Key` + `X-Actor-ID` headers. See [Constitution Lifecycle API](api/lifecycle.md) for the full reference.
+
+---
+
 ## Next Steps
 - Learn how to [Configure Your First Rules](quickstart.md).
 - See [2026 Regulatory Compliance](compliance-2026.md) mappings.

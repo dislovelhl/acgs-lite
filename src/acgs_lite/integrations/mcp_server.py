@@ -474,9 +474,7 @@ def create_mcp_server(
                 return [
                     types.TextContent(
                         type="text",
-                        text=json.dumps(
-                            {"error": type(exc).__name__, "action_text": action_text}
-                        ),
+                        text=json.dumps({"error": type(exc).__name__, "action_text": action_text}),
                     )
                 ]
 
@@ -599,7 +597,9 @@ def create_mcp_server(
                     steps_completed=len(step_results),
                     constitutional_hash=CONSTITUTIONAL_HASH,
                 )
-                return [types.TextContent(type="text", text=json.dumps(data, indent=2, default=str))]
+                return [
+                    types.TextContent(type="text", text=json.dumps(data, indent=2, default=str))
+                ]
             except Exception as exc:
                 logger.warning(
                     "execute_workflow_error",

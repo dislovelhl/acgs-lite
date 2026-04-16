@@ -29,12 +29,25 @@ from acgs_lite.audit import (
 from acgs_lite.circuit_breaker import GovernanceCircuitBreaker, GovernanceHaltError
 from acgs_lite.constitution import (
     AcknowledgedTension,
+    ActivationRecord,
+    BundleStatus,
+    BundleStore,
+    ConcurrentLifecycleError,
     Constitution,
     ConstitutionBuilder,
+    ConstitutionBundle,
+    ConstitutionLifecycle,
+    InMemoryBundleStore,
+    InMemoryLifecycleAuditSink,
+    LifecycleAuditSink,
+    LifecycleError,
+    LifecycleEvidenceError,
+    LifecycleEvidenceRecord,
     Rule,
     RuleSnapshot,
     RuleSynthesisProvider,
     Severity,
+    StatusTransition,
 )
 from acgs_lite.constitution.rule import ViolationAction
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
@@ -135,11 +148,17 @@ __all__ = [
     # Core
     "Constitution",
     "ConstitutionBuilder",
+    "ConstitutionBundle",
     "Rule",
     "RuleSynthesisProvider",
     "AcknowledgedTension",
+    "ActivationRecord",
+    "BundleStatus",
+    "BundleStore",
+    "InMemoryBundleStore",
     "RuleSnapshot",
     "Severity",
+    "StatusTransition",
     "ViolationAction",
     # Engine
     "GovernanceEngine",

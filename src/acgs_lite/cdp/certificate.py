@@ -410,6 +410,7 @@ def _draw_maci_table(pdf: Any, steps: list[dict]) -> None:
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
 
+
     pdf.set_font("Helvetica", "", 7)
     for i, step in enumerate(steps):
         outcome = step.get("outcome", "")
