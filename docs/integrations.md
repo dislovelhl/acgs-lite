@@ -11,6 +11,7 @@ ACGS-Lite is designed to be framework-agnostic. It provides native adapters for 
 | **Anthropic** | `acgs-lite[anthropic]` | `GovernedAnthropic` | Production |
 | **OpenAI** | `acgs-lite[openai]` | `GovernedOpenAI` | Production |
 | **MCP Server** | `acgs-lite[mcp]` | `create_mcp_server` | 2026 Standard |
+| **Agno** | `acgs-lite[agno]` | `AgnoACGSGovernor` | Maintained |
 | **LangChain** | `acgs-lite[langchain]` | `GovernanceRunnable` | Maintained |
 | **LiteLLM** | `acgs-lite[litellm]` | `GovernedLiteLLM` | Maintained |
 | **Google GenAI** | `acgs-lite[google]` | `GovernedGenAI` | Production |
@@ -110,6 +111,29 @@ from acgs_lite.integrations.mcp_server import create_mcp_server, run_mcp_server
 
 # Expose governance tools to any MCP-compliant client
 run_mcp_server(constitution=constitution)
+```
+
+## 🧠 Agno (Agent Runtime)
+
+Agno provides an agent runtime with pre-hooks (input) and post-hooks (output) and a FastAPI
+server (AgentOS). ACGS-Lite plugs in as a guardrail + output check.
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+from acgs_lite import Constitution
+from acgs_lite.integrations.agno import AgnoACGSGovernor
+
+constitution = Constitution.from_yaml("rules.yaml")
+governor = AgnoACGSGovernor(constitution=constitution, agent_id="agno-agent")
+
+agent = Agent(
+    name="Governed Agent",
+    model=OpenAIChat(id="gpt-5.4-mini"),
+    pre_hooks=[governor],                 # blocks unconstitutional user input
+    post_hooks=[governor.output_hook],    # warns by default, can be configured to block
+)
 ```
 
 ---

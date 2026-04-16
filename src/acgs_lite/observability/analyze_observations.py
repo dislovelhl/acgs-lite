@@ -62,14 +62,18 @@ def _category_stats(
     observations: list[ToolObservation],
     tools_set: frozenset[str],
 ) -> dict[str, Any]:
-    category_observations = [observation for observation in observations if observation.tool_type in tools_set]
+    category_observations = [
+        observation for observation in observations if observation.tool_type in tools_set
+    ]
     category_total = len(category_observations)
     category_successes = sum(1 for observation in category_observations if observation.success)
     category_errors = Counter(
         observation.error_type for observation in category_observations if observation.error_type
     )
     tool_frequencies = {
-        tool_name: sum(1 for observation in category_observations if observation.tool_type == tool_name)
+        tool_name: sum(
+            1 for observation in category_observations if observation.tool_type == tool_name
+        )
         for tool_name in sorted(tools_set)
     }
     return {

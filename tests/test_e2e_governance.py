@@ -838,8 +838,9 @@ class TestIntegratedGovernanceFlow:
         assert results[0].valid is True  # safe
         assert results[1].valid is True  # safe
         # bypass rate limit: medium severity = non-blocking, valid=True with warnings
-        assert len(results[2].violations) > 0
-        assert results[2].violations[0].severity == Severity.MEDIUM
+        # Medium-severity matches go to .warnings (non-blocking), not .violations
+        assert len(results[2].warnings) > 0
+        assert results[2].warnings[0].severity == Severity.MEDIUM
 
     async def test_governed_agent_repr(self, e2e_governed_agent: GovernedAgent) -> None:
         """GovernedAgent has a useful string representation."""

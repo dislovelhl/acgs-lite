@@ -176,7 +176,9 @@ class Constitution(BaseModel):
                 return Severity(value.strip().lower())
             return Severity(value)
 
-        def _resolve_workflow_action(rule_data: dict[str, Any], severity: Severity) -> ViolationAction:
+        def _resolve_workflow_action(
+            rule_data: dict[str, Any], severity: Severity
+        ) -> ViolationAction:
             if "workflow_action" in rule_data:
                 return rule_data["workflow_action"]
             return ViolationAction.BLOCK if severity.blocks() else ViolationAction.WARN

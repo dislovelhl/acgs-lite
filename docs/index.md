@@ -57,6 +57,7 @@ Explore the architecture and setup guides to integrate ACGS into your agentic wo
 - [MACI Architecture](maci.md) -- Implementing separation of powers for AI
 - [Architecture Overview](architecture.md) -- Internal engine and validation lifecycle
 - [CLI Reference](cli.md) -- All CLI commands for CI/CD and terminal use
+- [Constitution Lifecycle API](api/lifecycle.md) -- HTTP endpoints for draft, review, eval, activation, and rollback
 
 ---
 !!! info "Constitutional Hash"

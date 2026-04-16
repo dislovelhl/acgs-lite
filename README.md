@@ -110,6 +110,8 @@ pip install "acgs-lite[langchain]"    # LangChain / LangGraph
 pip install "acgs-lite[mcp]"          # Model Context Protocol server
 pip install "acgs-lite[autogen]"      # AutoGen / AG2
 pip install "acgs-lite[a2a]"          # Google A2A protocol
+pip install "acgs-lite[agno]"         # Agno agent framework
+pip install "acgs-lite[server]"       # FastAPI lifecycle HTTP server
 pip install "acgs-lite[all]"          # All integrations
 ```
 
@@ -353,6 +355,7 @@ acgs resume --agent-id agent-01
 | [Why Governance?](https://acgs.ai/docs/why-governance) | The case for deterministic guardrails |
 | [OWASP LLM Top 10](https://acgs.ai/docs/owasp-2026) | ACGS coverage of each risk |
 | [Testing Guide](https://acgs.ai/docs/testing-governance) | Testing governed agents |
+| [Constitution Lifecycle API](./docs/api/lifecycle.md) | HTTP endpoints for draft, review, eval, activation, rollback, and reject |
 
 ---
 

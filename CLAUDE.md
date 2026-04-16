@@ -2,98 +2,216 @@
 
 For repo-wide rules, see `/CLAUDE.md` and `.claude/rules/` (Claude Code auto-loads these). AGENTS.md serves Codex/OMX.
 
-## Structure
+## Project Overview
 
-```
-src/acgs_lite/
-├── constitution/     # Constitution models, loading, templates, export
-├── engine/           # Validation engine and execution helpers
-├── compliance/       # Compliance mapping and assessment helpers
-├── integrations/     # External ecosystem adapters
-├── audit.py          # Audit trail
-├── governed.py       # Governed wrappers
-├── maci.py           # MACI enforcement
-├── eu_ai_act/        # EU AI Act assessment subpackage
-├── constrained_decoding.py  # llguidance-inspired constrained output decoding
-└── server.py         # FastAPI wrapper
+| Key | Value |
+| --- | --- |
+| **Project** | ACGS-Lite |
+| **Language** | Python |
+| **Framework** | FastAPI, MkDocs |
+| **Package Mgr** | pip / Make |
+| **Line Length** | 100 |
+| **Target** | Python 3.10+ |
 
-rust/
-├── core/             # Core Rust crate
-├── pyo3/             # Python bindings crate
-├── wasm/             # WASM target
-└── src.legacy/       # Legacy Rust sources kept for reference/migration
-```
+AI governance library for constitutional rule enforcement, lifecycle management, and audit-backed validation.
 
-## Testing
+## Quick Commands
+
+### Testing
 
 ```bash
-# From repo root
-python -m pytest packages/acgs-lite/tests/ -v --import-mode=importlib
+# Full suite
+make test
+python -m pytest tests/ -v --import-mode=importlib --rootdir=.
 
-# From package root (preferred for acgs-lite-only work)
-cd packages/acgs-lite
-make test            # full suite
-make test-quick      # skip slow/benchmark tests
-make test-cov        # coverage report → htmlcov/
-make test-examples   # smoke-test all examples/
+# Single file / single test
+python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib
+python -m pytest tests/test_lifecycle_router.py -k test_create_draft_200 -v --import-mode=importlib
 
-# Rust-backed tests (only needed when Rust paths change)
-cd packages/acgs-lite/rust && maturin develop --release
+# By category
+python -m pytest -m "not e2e" -v --import-mode=importlib
+python -m pytest -m e2e -v --import-mode=importlib
 ```
 
-**No API keys required.** All tests use `InMemory*` stubs for external deps.
-Set placeholder keys to silence import-time validation:
-```bash
-export OPENAI_API_KEY=test-key-for-unit-tests
-export ANTHROPIC_API_KEY=test-key-for-unit-tests
-```
+**Critical test notes:**
 
-## Mock/Stub Pattern (Pluggable Protocol)
+- Tests use `InMemory*` stubs and should not import live services.
+- Set placeholder keys when needed: `OPENAI_API_KEY=test-key-for-unit-tests` and `ANTHROPIC_API_KEY=test-key-for-unit-tests`.
 
-Every external dependency is defined as a `typing.Protocol` with an `InMemory*`
-stub for tests. **Never import live services in test code.**
-
-```
-typing.Protocol              ← interface (structural typing, no inheritance)
-     ↑                              ↑
-InMemory*Stub                RealImplementation
-(tests, CI — zero I/O)       (production — swap at runtime)
-```
-
-### Built-in stubs
-
-| Protocol | InMemory stub | Where |
-|----------|--------------|-------|
-| `GovernanceStateBackend` | `InMemoryGovernanceStateBackend` | `acgs_lite.openshell_state` |
-| `ChainSubmitter` | `InMemorySubmitter` | `constitutional_swarm.bittensor.chain_anchor` |
-| `ArweaveClient` | `InMemoryArweaveClient` | `constitutional_swarm.bittensor.arweave_audit_log` |
-
-### Pattern rules
-
-1. **Protocol first** — define the interface before any implementation
-2. **`InMemory*` ships with the Protocol** — always in the same module
-3. **No `isinstance()` checks on Protocol types** — duck typing only
-4. **Add `save_calls` / `load_calls` lists** to stubs for assertion in tests
-5. **Chaos stubs for error paths** — `class FailingFoo` raises always
-
-See [`examples/mock_stub_testing/`](examples/mock_stub_testing/) for a full walkthrough.
-
-## Rust Build
+### Linting & Formatting
 
 ```bash
-cd packages/acgs-lite/rust
-maturin develop --release
+make lint
+ruff check .
+ruff format --check .
+ruff format .
+make typecheck
+mypy src/acgs_lite
 ```
 
-If you add Rust-only logic, keep the Python fallback behavior intact and verify the Python test
-surface, not only the Rust workspace.
+### Build
 
-## Gotchas
+```bash
+make build
+python -m mkdocs build
+```
 
-- `GovernanceEngine.validate()` raises `ConstitutionalViolationError` on violations — it does
-  not return a result with `valid=False`. Catch the exception to inspect violations.
-- Package minimum runtime is Python 3.10.
-- Many integrations are optional extras; preserve lazy import behavior.
-- Rust acceleration is optional and should not become mandatory for baseline tests.
-- Benchmarks and latency claims in docs drift quickly; prefer measured results over hard-coded
-  numbers when updating docs.
+---
+
+## Autonomous Verification (Mandatory)
+
+Do not assume code changes are correct. Always verify before handing work back.
+
+**Required sequence:**
+
+```bash
+make lint
+make typecheck
+make test
+make build
+```
+
+If any step fails, fix the issue and rerun the full sequence from the top. Do not skip steps.
+
+**Shortcut:** `bash .claude/commands/test-and-verify.sh`
+
+---
+
+## Architecture & Conventions
+
+- Keep integrations optional through extras and lazy imports.
+- Keep Python fallbacks when optional Rust or third-party acceleration exists.
+- Constitution lifecycle code lives in `src/acgs_lite/constitution/`.
+- HTTP surfaces live in `src/acgs_lite/server.py` and `src/acgs_lite/constitution/lifecycle_router.py`.
+- Docs for API surfaces live under `docs/api/`.
+- Use `_make_*` helpers in tests for fixture creation when available.
+
+---
+
+## Coding Standards
+
+### Naming Conventions
+
+| Type | Convention | Example |
+| --- | --- | --- |
+| Classes | PascalCase | `ConstitutionLifecycle` |
+| Functions | snake_case | `run_evaluation` |
+| Constants | UPPER_SNAKE_CASE | `MAX_RETRIES` |
+| Files | snake_case | `lifecycle_router.py` |
+
+### Import Order
+
+```python
+# 1. Standard library
+# 2. Third-party packages
+# 3. Local / first-party
+```
+
+### Error Handling
+
+```python
+# Use project-specific error types. No bare except blocks or silent fallthrough.
+```
+
+### Logging
+
+```python
+# Use structured logging where available. Do not add print() for production flow.
+```
+
+---
+
+## Testing Standards
+
+### Coverage Requirements
+
+| Scope | Minimum | Target |
+| --- | --- | --- |
+| System-wide | 80% | 90%+ |
+| Critical paths | 90% | 95%+ |
+| PRs | 80% | 90%+ |
+
+### Mock Strategy
+
+- External services: always mock in unit tests.
+- File system: mock in unit tests, real in integration tests.
+- Time and randomness: mock for deterministic assertions.
+- Use `InMemory*` stubs instead of live SDKs in tests.
+
+### Pytest Notes
+
+- Default suite excludes `e2e` via `pytest.ini` / `pyproject.toml`.
+- Run targeted lifecycle tests with `python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib`.
+- When adding a branch, add tests for both the happy path and the failure path.
+
+---
+
+## Security
+
+- Never hardcode secrets, API keys, tokens, or passwords.
+- Validate all external input at service boundaries.
+- Keep optional SDK imports out of module import time.
+- Prefer safe placeholders in examples: `dev-*`, `test-*`, `your-*-here`.
+- Do not weaken MACI or lifecycle auth checks to make tests pass.
+
+---
+
+## Environment Variables
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | `test-key-for-unit-tests` | Placeholder to silence import-time validation |
+| `ANTHROPIC_API_KEY` | `test-key-for-unit-tests` | Placeholder to silence import-time validation |
+| `ACGS_LIFECYCLE_ENABLED` | unset | Enables the lifecycle router in `server.py` |
+| `ACGS_LIFECYCLE_API_KEY` | unset | API key required by lifecycle mutation endpoints |
+
+---
+
+## What NOT to Do
+
+- Never import optional platform SDKs at module import time.
+- Never bypass MACI enforcement in wrappers or integrations.
+- Never change `matcher.py` hot-path behavior without targeted tests.
+- Never rely on raw `cargo test` as the only verification for Python-facing Rust changes.
+- Never skip the verification sequence before marking a task complete.
+
+---
+
+## Git Workflow
+
+- Branch naming: `feature/`, `fix/`, `refactor/`, `docs/`, `test/`, `chore/`.
+- Commits: `type(scope): description` (conventional commits).
+- Keep commits atomic and bisectable.
+- Never force push to shared branches.
+
+---
+
+## Compounding Knowledge
+
+Update this section whenever a mistake is made so it never happens again.
+
+| ID | Lesson | Detail |
+| --- | --- | --- |
+| CK-001 | Optional integrations stay lazy | Import optional SDKs only inside guarded code paths. |
+| CK-002 | Validation failures raise | `GovernanceEngine.validate()` raises `ConstitutionalViolationError` instead of returning `valid=False`. |
+| CK-003 | Bundle hashes are derived | `ConstitutionBundle.constitutional_hash` is populated from `constitution.hash`. |
+
+---
+
+## Skill Routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming -> invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors -> invoke investigate
+- Ship, deploy, push, create PR -> invoke ship
+- QA, test the site, find bugs -> invoke qa
+- Code review, check my diff -> invoke review
+- Update docs after shipping -> invoke document-release
+- Weekly retro -> invoke retro
+- Design system, brand -> invoke design-consultation
+- Visual audit, design polish -> invoke design-review
+- Architecture review -> invoke plan-eng-review
+- Save progress, checkpoint, resume -> invoke checkpoint
+- Code quality, health check -> invoke health
