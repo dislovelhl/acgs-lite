@@ -29,11 +29,9 @@ class BundleStore(Protocol):
         """
         ...
 
-    def get_bundle(self, bundle_id: str) -> ConstitutionBundle | None:
-        ...
+    def get_bundle(self, bundle_id: str) -> ConstitutionBundle | None: ...
 
-    def get_active_bundle(self, tenant_id: str) -> ConstitutionBundle | None:
-        ...
+    def get_active_bundle(self, tenant_id: str) -> ConstitutionBundle | None: ...
 
     def list_bundles(
         self,
@@ -42,14 +40,11 @@ class BundleStore(Protocol):
         status: BundleStatus | None = None,
         limit: int | None = None,
         offset: int = 0,
-    ) -> list[ConstitutionBundle]:
-        ...
+    ) -> list[ConstitutionBundle]: ...
 
-    def save_activation(self, record: ActivationRecord) -> None:
-        ...
+    def save_activation(self, record: ActivationRecord) -> None: ...
 
-    def get_activation(self, tenant_id: str) -> ActivationRecord | None:
-        ...
+    def get_activation(self, tenant_id: str) -> ActivationRecord | None: ...
 
     def get_tenant_version(self, tenant_id: str) -> int:
         """Return the current CAS version counter for a tenant."""
@@ -101,9 +96,10 @@ class InMemoryBundleStore:
         self._bundles.move_to_end(candidate.bundle_id)
         while len(self._bundles) > self._max_bundles:
             dropped_id, dropped = self._bundles.popitem(last=False)
-            if self._activations.get(dropped.tenant_id, None) and self._activations[
-                dropped.tenant_id
-            ].bundle_id == dropped_id:
+            if (
+                self._activations.get(dropped.tenant_id, None)
+                and self._activations[dropped.tenant_id].bundle_id == dropped_id
+            ):
                 del self._activations[dropped.tenant_id]
 
     def get_bundle(self, bundle_id: str) -> ConstitutionBundle | None:

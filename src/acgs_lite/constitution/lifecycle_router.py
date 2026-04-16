@@ -69,7 +69,9 @@ class EvalRequest(BaseModel):
     scenarios: list[EvalScenarioRequest] = Field(
         ..., description="Non-empty list of scenarios to run (empty list rejected by service layer)"
     )
-    pass_threshold: float = Field(default=1.0, gt=0.0, le=1.0, description="Fraction of scenarios that must pass")
+    pass_threshold: float = Field(
+        default=1.0, gt=0.0, le=1.0, description="Fraction of scenarios that must pass"
+    )
     eval_run_id: str | None = Field(default=None, description="Optional explicit run ID")
 
     model_config = {
@@ -164,7 +166,11 @@ def create_lifecycle_router(
         if not actor:
             _error(f"Missing {_ACTOR_HEADER} header", code="ACTOR_REQUIRED", status_code=400)
         if len(actor) > 256:
-            _error(f"{_ACTOR_HEADER} value exceeds 256 characters", code="ACTOR_TOO_LONG", status_code=400)
+            _error(
+                f"{_ACTOR_HEADER} value exceeds 256 characters",
+                code="ACTOR_TOO_LONG",
+                status_code=400,
+            )
         return actor
 
     # ── Exception helpers ──────────────────────────────────────────────
@@ -202,7 +208,12 @@ def create_lifecycle_router(
         try:
             bundle = await _lc.submit_for_review(bundle_id, actor)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -214,7 +225,12 @@ def create_lifecycle_router(
         try:
             bundle = await _lc.approve_review(bundle_id, actor)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -239,7 +255,12 @@ def create_lifecycle_router(
                 pass_threshold=body.pass_threshold,
             )
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -251,7 +272,12 @@ def create_lifecycle_router(
         try:
             bundle = await _lc.approve(bundle_id, actor, signature=body.signature)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -263,7 +289,12 @@ def create_lifecycle_router(
         try:
             bundle = await _lc.stage(bundle_id, executor_id)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -275,7 +306,12 @@ def create_lifecycle_router(
         try:
             activation = await _lc.activate(bundle_id, executor_id)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _activation_response(activation)
@@ -287,7 +323,12 @@ def create_lifecycle_router(
         try:
             activation = await _lc.rollback(bundle_id, executor_id, reason=body.reason)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _activation_response(activation)
@@ -299,7 +340,12 @@ def create_lifecycle_router(
         try:
             bundle = await _lc.reject(bundle_id, actor, reason=body.reason)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -311,7 +357,12 @@ def create_lifecycle_router(
         try:
             bundle = await _lc.withdraw(bundle_id, actor, reason=body.reason)
         except LookupError:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         except Exception as exc:
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
@@ -321,7 +372,12 @@ def create_lifecycle_router(
         """Retrieve a bundle by ID."""
         bundle = await _lc.get_bundle(bundle_id)
         if bundle is None:
-            _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
+            _error(
+                f"Bundle {bundle_id!r} not found",
+                code="NOT_FOUND",
+                bundle_id=bundle_id,
+                status_code=404,
+            )
         return _bundle_response(bundle)
 
     @router.get("/active/{tenant_id}", dependencies=[Depends(_require_auth)])

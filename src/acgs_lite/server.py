@@ -419,9 +419,7 @@ def create_governance_app(
         app.include_router(create_autonoma_router(scenarios_path=scenarios_path_resolved))
 
     _include_lifecycle = (
-        include_lifecycle
-        if include_lifecycle is not None
-        else _env_flag("ACGS_LIFECYCLE_ENABLED")
+        include_lifecycle if include_lifecycle is not None else _env_flag("ACGS_LIFECYCLE_ENABLED")
     )
     if _include_lifecycle:
         from acgs_lite.constitution.lifecycle_router import create_lifecycle_router
