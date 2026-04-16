@@ -399,7 +399,7 @@ def create_mcp_server(
                         for v in violations
                     ],
                     "summary": (
-                        f"Action is compliant — no violations found."
+                        "Action is compliant — no violations found."
                         if result.valid
                         else (
                             f"Action violates {len(violations)} rule(s): "
@@ -447,7 +447,7 @@ def create_mcp_server(
                 else:
                     tier = "SUPERVISED"
 
-                data: dict[str, Any] = {
+                tier_payload: dict[str, Any] = {
                     "tier": tier,
                     "action": action_text,
                     "domain": domain,
@@ -462,7 +462,7 @@ def create_mcp_server(
                 return [
                     types.TextContent(
                         type="text",
-                        text=json.dumps(data, indent=2),
+                        text=json.dumps(tier_payload, indent=2),
                     )
                 ]
             except Exception as exc:

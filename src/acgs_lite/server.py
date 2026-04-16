@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from collections.abc import AsyncIterator
 from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast
@@ -18,7 +19,7 @@ from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.cdp.store import InMemoryCDPBackend
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
-from acgs_lite.events import get_event_bus
+from acgs_lite.events import GovernanceEvent, get_event_bus
 from acgs_lite.federation import federation_router
 from acgs_lite.integrations.openshell_governance import (
     GovernanceStateBackend,
@@ -415,12 +416,15 @@ def create_governance_app(
         async def stream_events() -> StreamingResponse:
             subscription = get_event_bus().subscribe()
 
-            async def event_stream():
+            async def next_event() -> GovernanceEvent:
+                return await subscription.__anext__()
+
+            async def event_stream() -> AsyncIterator[str]:
                 pending_event: asyncio.Task[Any] | None = None
                 try:
                     while True:
                         if pending_event is None:
-                            pending_event = asyncio.create_task(subscription.__anext__())
+                            pending_event = asyncio.create_task(next_event())
                         try:
                             event = await asyncio.wait_for(
                                 asyncio.shield(pending_event), timeout=30.0
