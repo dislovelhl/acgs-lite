@@ -10,9 +10,12 @@
 [![GitHub forks](https://img.shields.io/github/forks/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/network/members)
 [![Featured in Awesome LLM Security](https://awesome.re/badge-flat2.svg)](https://github.com/beyefendi/awesome-llm-security)
 
-**The missing safety layer between your LLM and production.**
 
-`acgs-lite` is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes, violations are blocked, not just logged.
+<img width="1280" height="680" alt="ACGS_Lite" src="https://github.com/user-attachments/assets/0d6deeef-40fe-4e8e-9dc0-537744162dff" />
+
+# **The missing safety layer between your LLM and production.**
+
+'acgs-lite' is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes, violations are blocked, not just logged.
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
 
