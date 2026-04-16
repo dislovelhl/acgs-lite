@@ -48,8 +48,8 @@ _ACTOR_HEADER = "X-Actor-ID"
 
 
 class DraftRequest(BaseModel):
-    tenant_id: str = Field(..., description="Tenant that owns the draft")
-    name: str = Field("", description="Human-readable name for the bundle")
+    tenant_id: str = Field(..., max_length=256, description="Tenant that owns the draft")
+    name: str = Field("", max_length=256, description="Human-readable name for the bundle")
 
     model_config = {"json_schema_extra": {"example": {"tenant_id": "acme", "name": "v2-rules"}}}
 
@@ -69,7 +69,7 @@ class EvalRequest(BaseModel):
     scenarios: list[EvalScenarioRequest] = Field(
         ..., description="Non-empty list of scenarios to run (empty list rejected by service layer)"
     )
-    pass_threshold: float = Field(default=1.0, ge=0.0, le=1.0, description="Fraction of scenarios that must pass")
+    pass_threshold: float = Field(default=1.0, gt=0.0, le=1.0, description="Fraction of scenarios that must pass")
     eval_run_id: str | None = Field(default=None, description="Optional explicit run ID")
 
     model_config = {
@@ -163,6 +163,8 @@ def create_lifecycle_router(
         actor = request.headers.get(_ACTOR_HEADER, "")
         if not actor:
             _error(f"Missing {_ACTOR_HEADER} header", code="ACTOR_REQUIRED", status_code=400)
+        if len(actor) > 256:
+            _error(f"{_ACTOR_HEADER} value exceeds 256 characters", code="ACTOR_TOO_LONG", status_code=400)
         return actor
 
     # ── Exception helpers ──────────────────────────────────────────────
@@ -174,6 +176,8 @@ def create_lifecycle_router(
             _error(str(exc), code="CONCURRENT_CONFLICT", bundle_id=bundle_id, status_code=409)
         if isinstance(exc, LifecycleError):
             _error(str(exc), code="LIFECYCLE_ERROR", bundle_id=bundle_id, status_code=400)
+        if isinstance(exc, ValueError):
+            _error(str(exc), code="INVALID_TRANSITION", bundle_id=bundle_id, status_code=400)
         raise exc
 
     # ── Endpoints ──────────────────────────────────────────────────────
@@ -312,7 +316,7 @@ def create_lifecycle_router(
             _handle_lifecycle_exc(exc, bundle_id)
         return _bundle_response(bundle)
 
-    @router.get("/{bundle_id}")
+    @router.get("/{bundle_id}", dependencies=[Depends(_require_auth)])
     async def get_bundle(bundle_id: str) -> dict[str, Any]:
         """Retrieve a bundle by ID."""
         bundle = _lc._store.get_bundle(bundle_id)
@@ -320,7 +324,7 @@ def create_lifecycle_router(
             _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
         return _bundle_response(bundle)
 
-    @router.get("/active/{tenant_id}")
+    @router.get("/active/{tenant_id}", dependencies=[Depends(_require_auth)])
     async def get_active_bundle(tenant_id: str) -> dict[str, Any]:
         """Retrieve the active bundle for a tenant.
 
@@ -344,7 +348,7 @@ def create_lifecycle_router(
         )
         return data
 
-    @router.get("/history/{tenant_id}")
+    @router.get("/history/{tenant_id}", dependencies=[Depends(_require_auth)])
     async def get_bundle_history(tenant_id: str) -> list[dict[str, Any]]:
         """List all bundles for a tenant in chronological order."""
         bundles = _lc._store.list_bundles(tenant_id)

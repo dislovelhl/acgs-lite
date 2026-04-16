@@ -88,7 +88,7 @@ class TestDraftEndpoint:
 
     @pytest.mark.asyncio
     async def test_404_on_unknown_bundle(self, client: AsyncClient) -> None:
-        resp = await client.get(f"{BASE}/nonexistent-bundle-id")
+        resp = await client.get(f"{BASE}/nonexistent-bundle-id", headers=HEADERS)
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -121,7 +121,7 @@ class TestDraftEndpoint:
     async def test_active_bundle_includes_engine_binding_active_field(
         self, client: AsyncClient
     ) -> None:
-        resp = await client.get(f"{BASE}/active/tenant-no-bundle")
+        resp = await client.get(f"{BASE}/active/tenant-no-bundle", headers=HEADERS)
         # Either 404 (no active bundle) or 200 with engine_binding_active field
         # When no active bundle exists, router returns 404
         assert resp.status_code == 404
@@ -197,7 +197,7 @@ class TestHappyPath:
         )
         assert resp.status_code == 200
 
-        resp = await client.get(f"{BASE}/history/hist-tenant")
+        resp = await client.get(f"{BASE}/history/hist-tenant", headers=HEADERS)
         assert resp.status_code == 200
         data = resp.json()
         assert isinstance(data, list)
@@ -295,13 +295,13 @@ class TestUncoveredEndpoints:
         assert resp.status_code == 200
         bundle_id = resp.json()["bundle_id"]
 
-        resp = await client.get(f"{BASE}/{bundle_id}")
+        resp = await client.get(f"{BASE}/{bundle_id}", headers=HEADERS)
         assert resp.status_code == 200
         assert resp.json()["bundle_id"] == bundle_id
 
     @pytest.mark.asyncio
     async def test_get_bundle_by_id_404(self, client: AsyncClient) -> None:
-        resp = await client.get(f"{BASE}/nonexistent-bundle-id-xyz")
+        resp = await client.get(f"{BASE}/nonexistent-bundle-id-xyz", headers=HEADERS)
         assert resp.status_code == 404
 
     @pytest.mark.asyncio
@@ -330,7 +330,7 @@ class TestUncoveredEndpoints:
         async with AsyncClient(
             transport=ASGITransport(app=app2), base_url="http://test"
         ) as c:
-            resp = await c.get(f"{BASE}/active/tenant-active-get")
+            resp = await c.get(f"{BASE}/active/tenant-active-get", headers=HEADERS)
 
         assert resp.status_code == 200
         data = resp.json()
@@ -465,3 +465,49 @@ class TestUncoveredEndpoints:
 
         assert resp.status_code == 409
         assert resp.json()["detail"]["code"] == "CONCURRENT_CONFLICT"
+
+
+class TestMACIViolation:
+    @pytest.mark.asyncio
+    async def test_403_when_reviewer_equals_proposer(self, app: FastAPI, client: AsyncClient) -> None:
+        """MACI: the reviewer cannot be the same actor who submitted the bundle."""
+        # proposer creates and submits the draft
+        draft_resp = await client.post(
+            f"{BASE}/draft",
+            json={"tenant_id": "tenant-maci"},
+            headers={"X-API-Key": KEY, "X-Actor-ID": PROPOSER},
+        )
+        assert draft_resp.status_code == 200
+        bid = draft_resp.json()["bundle_id"]
+
+        await client.post(
+            f"{BASE}/{bid}/submit",
+            headers={"X-API-Key": KEY, "X-Actor-ID": PROPOSER},
+        )
+
+        # same actor attempts to review — should be rejected
+        review_resp = await client.post(
+            f"{BASE}/{bid}/review",
+            headers={"X-API-Key": KEY, "X-Actor-ID": PROPOSER},
+        )
+        assert review_resp.status_code == 403
+        assert review_resp.json()["detail"]["code"] == "MACI_VIOLATION"
+
+
+class TestInvalidTransition:
+    @pytest.mark.asyncio
+    async def test_400_on_invalid_state_transition(self, client: AsyncClient) -> None:
+        """Calling /submit on an already-submitted bundle returns 400."""
+        draft_resp = await client.post(
+            f"{BASE}/draft",
+            json={"tenant_id": "tenant-trans"},
+            headers=HEADERS,
+        )
+        bid = draft_resp.json()["bundle_id"]
+
+        # first submit succeeds
+        await client.post(f"{BASE}/{bid}/submit", headers=HEADERS)
+
+        # second submit on same bundle violates VALID_TRANSITIONS
+        resp = await client.post(f"{BASE}/{bid}/submit", headers=HEADERS)
+        assert resp.status_code == 400

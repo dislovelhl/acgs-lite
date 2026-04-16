@@ -54,8 +54,8 @@ class TestBundleStateMachine:
             BundleStatus.REVIEW,
             BundleStatus.WITHDRAWN,
         }
+        # DRAFT removed from ROLLED_BACK transitions (security: prevent silent re-draft after rollback)
         assert VALID_TRANSITIONS[BundleStatus.ROLLED_BACK] == {
-            BundleStatus.DRAFT,
             BundleStatus.SUPERSEDED,
         }
         assert VALID_TRANSITIONS[BundleStatus.SUPERSEDED] == set()

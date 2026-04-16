@@ -25,10 +25,10 @@ import json
 import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
+from acgs_lite.constitution.bundle_store import CASVersionConflict
 from acgs_lite.constitution.lifecycle_service import LifecycleError
 
 _SCHEMA_VERSION = 1
@@ -92,6 +92,11 @@ class SQLiteBundleStore:
                     payload     TEXT NOT NULL,
                     updated_at  TEXT NOT NULL
                 );
+
+                CREATE TABLE IF NOT EXISTS tenant_versions (
+                    tenant_id   TEXT PRIMARY KEY,
+                    version     INTEGER NOT NULL DEFAULT 0
+                );
                 """
             )
             existing = conn.execute(
@@ -135,7 +140,7 @@ class SQLiteBundleStore:
                 )
                 conn.commit()
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
+            raise self._wrap(exc) from exc
 
     def get_bundle(self, bundle_id: str) -> ConstitutionBundle | None:
         try:
@@ -145,7 +150,7 @@ class SQLiteBundleStore:
                     (bundle_id,),
                 ).fetchone()
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
+            raise self._wrap(exc) from exc
         if row is None:
             return None
         return ConstitutionBundle.model_validate(json.loads(row["payload"]))
@@ -158,7 +163,7 @@ class SQLiteBundleStore:
                     (tenant_id,),
                 ).fetchone()
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
+            raise self._wrap(exc) from exc
         if row is None:
             return None
         return ConstitutionBundle.model_validate(json.loads(row["payload"]))
@@ -171,26 +176,26 @@ class SQLiteBundleStore:
         limit: int | None = None,
         offset: int = 0,
     ) -> list[ConstitutionBundle]:
+        limit_clause = f"LIMIT {int(limit)}" if limit is not None else ""
+        offset_clause = f"OFFSET {int(offset)}" if offset else ""
+        order_clause = "ORDER BY json_extract(payload, '$.version') DESC"
         try:
             with self._connect() as conn:
                 if status is not None:
                     rows = conn.execute(
-                        "SELECT payload FROM bundles WHERE tenant_id = ? AND status = ?",
+                        f"SELECT payload FROM bundles WHERE tenant_id = ? AND status = ?"
+                        f" {order_clause} {limit_clause} {offset_clause}",
                         (tenant_id, status.value),
                     ).fetchall()
                 else:
                     rows = conn.execute(
-                        "SELECT payload FROM bundles WHERE tenant_id = ?",
+                        f"SELECT payload FROM bundles WHERE tenant_id = ?"
+                        f" {order_clause} {limit_clause} {offset_clause}",
                         (tenant_id,),
                     ).fetchall()
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
-        bundles = [ConstitutionBundle.model_validate(json.loads(r["payload"])) for r in rows]
-        if offset:
-            bundles = bundles[offset:]
-        if limit is not None:
-            bundles = bundles[:limit]
-        return bundles
+            raise self._wrap(exc) from exc
+        return [ConstitutionBundle.model_validate(json.loads(r["payload"])) for r in rows]
 
     def save_activation(self, activation: ActivationRecord) -> None:
         payload = json.dumps(activation.model_dump(mode="json"))
@@ -215,7 +220,7 @@ class SQLiteBundleStore:
                 )
                 conn.commit()
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
+            raise self._wrap(exc) from exc
 
     def get_activation(self, tenant_id: str) -> ActivationRecord | None:
         try:
@@ -225,7 +230,7 @@ class SQLiteBundleStore:
                     (tenant_id,),
                 ).fetchone()
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
+            raise self._wrap(exc) from exc
         if row is None:
             return None
         return ActivationRecord.model_validate(json.loads(row["payload"]))
@@ -287,4 +292,42 @@ class SQLiteBundleStore:
                     )
                 conn.execute("COMMIT")
         except sqlite3.OperationalError as exc:
-            raise self._wrap(exc)
+            raise self._wrap(exc) from exc
+
+    def get_tenant_version(self, tenant_id: str) -> int:
+        try:
+            with self._connect() as conn:
+                row = conn.execute(
+                    "SELECT version FROM tenant_versions WHERE tenant_id = ?",
+                    (tenant_id,),
+                ).fetchone()
+        except sqlite3.OperationalError as exc:
+            raise self._wrap(exc) from exc
+        return 0 if row is None else row["version"]
+
+    def cas_tenant_version(self, tenant_id: str, expected: int) -> None:
+        try:
+            with self._connect() as conn:
+                conn.execute("BEGIN EXCLUSIVE")
+                row = conn.execute(
+                    "SELECT version FROM tenant_versions WHERE tenant_id = ?",
+                    (tenant_id,),
+                ).fetchone()
+                current = 0 if row is None else row["version"]
+                if current != expected:
+                    conn.execute("ROLLBACK")
+                    raise CASVersionConflict(
+                        f"Tenant {tenant_id!r} version conflict: expected {expected}, current {current}"
+                    )
+                conn.execute(
+                    """
+                    INSERT INTO tenant_versions (tenant_id, version) VALUES (?, ?)
+                    ON CONFLICT(tenant_id) DO UPDATE SET version = excluded.version
+                    """,
+                    (tenant_id, current + 1),
+                )
+                conn.execute("COMMIT")
+        except CASVersionConflict:
+            raise
+        except sqlite3.OperationalError as exc:
+            raise self._wrap(exc) from exc

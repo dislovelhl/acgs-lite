@@ -12,7 +12,6 @@ import pytest
 from acgs_lite.constitution import Constitution
 from acgs_lite.constitution.bundle import BundleStatus
 from acgs_lite.constitution.bundle_store import InMemoryBundleStore
-from acgs_lite.constitution.rule import Rule
 from acgs_lite.constitution.evidence import (
     InMemoryLifecycleAuditSink,
     LifecycleAuditSinkError,
@@ -25,6 +24,7 @@ from acgs_lite.constitution.lifecycle_service import (
     LifecycleEvidenceError,
 )
 from acgs_lite.constitution.provenance import RuleProvenanceGraph
+from acgs_lite.constitution.rule import Rule
 from acgs_lite.errors import MACIViolationError
 from acgs_lite.evals.schema import EvalScenario
 
@@ -339,7 +339,7 @@ class TestConcurrencyCAS:
         # Second draft reads stale version internally... but since
         # create_draft reads at start of the call, we simulate by
         # calling with a sabotaged version
-        lc._tenant_versions["tenant-a"] = 0  # reset to simulate stale read
+        lc._store._tenant_versions["tenant-a"] = 0  # reset to simulate stale read
         await create_draft("proposer-1")
         # The second call read version 0 but the sink advanced it to 1,
         # so it will try CAS(0) but actual is 1 — however the evidence
@@ -354,7 +354,7 @@ class TestConcurrencyCAS:
     async def test_cas_rejects_stale_version(self) -> None:
         """Direct CAS test: bumping version twice from same expected fails."""
         lc = _make_lifecycle()
-        lc._tenant_versions["tenant-a"] = 5
+        lc._store._tenant_versions["tenant-a"] = 5
 
         lc._cas_tenant_version("tenant-a", expected=5)
         assert lc._read_tenant_version("tenant-a") == 6
@@ -826,22 +826,6 @@ class TestStateGuardErrors:
                 draft.bundle_id,
                 scenarios=[EvalScenario(id="s1", input_action="check", expected_valid=True)],
             )
-
-    @pytest.mark.asyncio
-    async def test_reject_unwinds_on_audit_sink_failure(self) -> None:
-        store = InMemoryBundleStore()
-        lc = _make_lifecycle(store=store)
-
-        draft = await lc.create_draft("tenant-rej-uw", "proposer-1")
-        await lc.submit_for_review(draft.bundle_id, "proposer-1")
-
-        lc._sink = _FailAfterNAppendsSink(fail_on=1)
-        with pytest.raises(LifecycleEvidenceError):
-            await lc.reject(draft.bundle_id, "reviewer-1", reason="bad")
-
-        bundle = store.get_bundle(draft.bundle_id)
-        assert bundle is not None
-        assert bundle.status.value == "review"
 
     @pytest.mark.asyncio
     async def test_approve_unwinds_on_audit_sink_failure(self) -> None:

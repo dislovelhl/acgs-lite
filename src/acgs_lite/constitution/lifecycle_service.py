@@ -21,7 +21,7 @@ from typing import Any
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
-from acgs_lite.constitution.bundle_store import BundleStore
+from acgs_lite.constitution.bundle_store import BundleStore, CASVersionConflict
 from acgs_lite.constitution.evidence import (
     LifecycleAuditSink,
     LifecycleAuditSinkError,
@@ -63,7 +63,6 @@ class ConstitutionLifecycle:
         "_store",
         "_sink",
         "_provenance",
-        "_tenant_versions",
     )
 
     def __init__(
@@ -75,20 +74,17 @@ class ConstitutionLifecycle:
         self._store = store
         self._sink = sink
         self._provenance = provenance if provenance is not None else RuleProvenanceGraph()
-        self._tenant_versions: dict[str, int] = {}
 
     # ── tenant CAS guard ────────────────────────────────────────────────
 
     def _read_tenant_version(self, tenant_id: str) -> int:
-        return self._tenant_versions.get(tenant_id, 0)
+        return self._store.get_tenant_version(tenant_id)
 
     def _cas_tenant_version(self, tenant_id: str, expected: int) -> None:
-        current = self._tenant_versions.get(tenant_id, 0)
-        if current != expected:
-            raise ConcurrentLifecycleError(
-                f"Tenant {tenant_id!r} version conflict: expected {expected}, current {current}"
-            )
-        self._tenant_versions[tenant_id] = current + 1
+        try:
+            self._store.cas_tenant_version(tenant_id, expected)
+        except CASVersionConflict as exc:
+            raise ConcurrentLifecycleError(str(exc)) from exc
 
     # ── evidence helper ─────────────────────────────────────────────────
 
@@ -132,10 +128,8 @@ class ConstitutionLifecycle:
         return bundle
 
     def _next_version(self, tenant_id: str) -> int:
-        bundles = self._store.list_bundles(tenant_id, limit=1)
-        if not bundles:
-            return 1
-        return bundles[0].version + 1
+        bundles = self._store.list_bundles(tenant_id)
+        return max((b.version for b in bundles), default=0) + 1
 
     # ── public API ──────────────────────────────────────────────────────
 
@@ -457,9 +451,15 @@ class ConstitutionLifecycle:
                 f"current: {bundle.status.value!r}"
             )
 
+        if bundle.eval_attempt_count >= 5:
+            raise LifecycleError(
+                f"Bundle {bundle_id!r} has reached the maximum of 5 evaluation attempts."
+            )
+
         audit_head = self._sink.head()
         run_id = eval_run_id or f"eval-{bundle.bundle_id[:8]}"
 
+        bundle.eval_attempt_count += 1
         engine = GovernanceEngine(bundle.constitution, strict=False)
         total = len(scenarios)
         passed = sum(1 for s in scenarios if evaluate_scenario(engine, s).passed)

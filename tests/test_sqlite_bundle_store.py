@@ -168,12 +168,6 @@ class TestSQLiteBundleStoreRoundTrip:
 
 # ── atomic_transition ────────────────────────────────────────────────────
 
-
-
-
-# ── atomic_transition ────────────────────────────────────────────────────
-
-
 class TestAtomicTransition:
     @pytest.mark.asyncio
     async def test_atomic_transition_saves_bundle_and_activation(

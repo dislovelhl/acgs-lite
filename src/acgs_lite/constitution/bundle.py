@@ -49,7 +49,9 @@ VALID_TRANSITIONS: dict[BundleStatus, set[BundleStatus]] = {
     BundleStatus.APPROVE: {BundleStatus.STAGED, BundleStatus.REJECTED, BundleStatus.WITHDRAWN},
     BundleStatus.STAGED: {BundleStatus.ACTIVE, BundleStatus.ROLLED_BACK, BundleStatus.WITHDRAWN},
     BundleStatus.ACTIVE: {BundleStatus.ROLLED_BACK, BundleStatus.SUPERSEDED},
-    BundleStatus.ROLLED_BACK: {BundleStatus.DRAFT, BundleStatus.SUPERSEDED},
+    # TODO: ROLLED_BACK → DRAFT was removed to prevent version conflicts on re-entry;
+    # operators must create a new draft instead of recycling a rolled-back bundle.
+    BundleStatus.ROLLED_BACK: {BundleStatus.SUPERSEDED},
     BundleStatus.SUPERSEDED: set(),
     BundleStatus.REJECTED: set(),
     BundleStatus.WITHDRAWN: set(),
@@ -111,6 +113,7 @@ class ConstitutionBundle(BaseModel):
 
     eval_run_ids: list[str] = Field(default_factory=list)
     eval_summary: dict[str, Any] = Field(default_factory=dict)
+    eval_attempt_count: int = 0
 
     evidence_bundle_id: str | None = None
     approval_signature: str | None = None

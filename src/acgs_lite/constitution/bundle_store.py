@@ -12,6 +12,10 @@ from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
 
 
+class CASVersionConflict(Exception):
+    """Raised when a compare-and-swap tenant version check fails."""
+
+
 @runtime_checkable
 class BundleStore(Protocol):
     """Protocol for constitution bundle persistence backends."""
@@ -47,6 +51,18 @@ class BundleStore(Protocol):
     def get_activation(self, tenant_id: str) -> ActivationRecord | None:
         ...
 
+    def get_tenant_version(self, tenant_id: str) -> int:
+        """Return the current CAS version counter for a tenant."""
+        ...
+
+    def cas_tenant_version(self, tenant_id: str, expected: int) -> None:
+        """Atomically increment the tenant version if it matches *expected*.
+
+        Raises :class:`CASVersionConflict` when the stored version differs
+        from *expected* (concurrent write detected).
+        """
+        ...
+
 
 class InMemoryBundleStore:
     """In-process bundle store for tests and single-process use."""
@@ -55,6 +71,7 @@ class InMemoryBundleStore:
         self._bundles: OrderedDict[str, ConstitutionBundle] = OrderedDict()
         self._activations: dict[str, ActivationRecord] = {}
         self._max_bundles = max_bundles
+        self._tenant_versions: dict[str, int] = {}
 
     def save_bundle(self, bundle: ConstitutionBundle) -> None:
         existing = self._bundles.get(bundle.bundle_id)
@@ -124,5 +141,16 @@ class InMemoryBundleStore:
         record = self._activations.get(tenant_id)
         return None if record is None else record.model_copy(deep=True)
 
+    def get_tenant_version(self, tenant_id: str) -> int:
+        return self._tenant_versions.get(tenant_id, 0)
 
-__all__ = ["BundleStore", "InMemoryBundleStore"]
+    def cas_tenant_version(self, tenant_id: str, expected: int) -> None:
+        current = self._tenant_versions.get(tenant_id, 0)
+        if current != expected:
+            raise CASVersionConflict(
+                f"Tenant {tenant_id!r} version conflict: expected {expected}, current {current}"
+            )
+        self._tenant_versions[tenant_id] = current + 1
+
+
+__all__ = ["BundleStore", "CASVersionConflict", "InMemoryBundleStore"]
