@@ -6,12 +6,24 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/dislovelhl/acgs-lite/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/dislovelhl/acgs-lite/actions)
 [![Coverage](https://img.shields.io/badge/tests-4641%20passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
 [![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
+[![GitHub stars](https://img.shields.io/github/stars/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/network/members)
+[![Featured in Awesome LLM Security](https://awesome.re/badge-flat2.svg)](https://github.com/beyefendi/awesome-llm-security)
 
 **The missing safety layer between your LLM and production.**
 
 `acgs-lite` is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes, violations are blocked, not just logged.
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
+
+## ❤️ Community favorites
+
+If you found ACGS-Lite through [Awesome LLM Security](https://github.com/beyefendi/awesome-llm-security), these are the most shared starting points:
+
+- **Fastest proof** — [`examples/basic_governance/`](./examples/basic_governance/) shows safe requests passing and unsafe ones blocked before execution
+- **Best audit demo** — [`examples/audit_trail/`](./examples/audit_trail/) shows the tamper-evident decision chain
+- **Favorite infrastructure path** — [`examples/mcp_agent_client.py`](./examples/mcp_agent_client.py) runs governance as shared MCP-compatible infrastructure
+- **Favorite compliance proof** — `acgs assess --framework eu-ai-act` maps controls to real regulatory requirements
 
 ## Hero demo
 
