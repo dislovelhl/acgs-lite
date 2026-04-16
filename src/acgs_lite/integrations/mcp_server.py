@@ -447,7 +447,7 @@ def create_mcp_server(
                 else:
                     tier = "SUPERVISED"
 
-                data: dict[str, Any] = {
+                data: dict[str, Any] = {  # type: ignore[no-redef]
                     "tier": tier,
                     "action": action_text,
                     "domain": domain,

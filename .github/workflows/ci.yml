@@ -29,7 +29,6 @@ jobs:
         run: python -m acgs_lite.cli capabilities validate --max-age-days 45
       - name: Type check
         if: matrix.python-version == '3.11'
-        continue-on-error: true
         run: mypy --config-file pyproject.toml
       - name: Test
         env:
@@ -39,8 +38,6 @@ jobs:
           python -m pytest tests/ \
             --import-mode=importlib \
             -m "not slow and not benchmark and not e2e" \
-            --ignore=tests/test_expanded_integrations.py \
-            --ignore=tests/test_governed_constrained_output.py \
             -v --tb=short
 
   coverage:
@@ -65,8 +62,6 @@ jobs:
             --cov=src/acgs_lite \
             --cov-report=term-missing \
             --cov-fail-under=70 \
-            --ignore=tests/test_expanded_integrations.py \
-            --ignore=tests/test_governed_constrained_output.py \
             -m "not slow and not benchmark and not e2e"
 
   package:
@@ -77,7 +72,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install build tools
-        run: pip install build twine
+        run: pip install build twine "packaging>=24.1"
       - name: Build wheel and sdist
         run: python -m build --wheel --sdist
       - name: Validate package
