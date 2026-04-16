@@ -98,21 +98,23 @@ The Constitution Lifecycle system manages how governance rules evolve safely ove
 
 A `ConstitutionBundle` moves through a defined set of statuses:
 
-```
-DRAFT → UNDER_REVIEW → EVALUATED → APPROVED → STAGED → ACTIVE
-                                  ↓                   ↓
-                               REJECTED            ROLLED_BACK
-                          (at any point) WITHDRAWN
+```text
+draft → review → eval → approve → staged → active
+                        ↓               ↓
+                     rejected       rolled_back
+              (at any point) withdrawn
 ```
 
-Each transition is gated: only the originating PROPOSER can submit, only a VALIDATOR can approve or reject, and staging requires a passing eval run recorded in `bundle.eval_summary`.
+Each transition is gated: only the originating proposer can submit, a reviewer advances
+`review -> eval`, an approver advances `eval -> approve`, a validator can reject, and
+an operator handles staging, activation, and rollback.
 
 ### Key Components
 
 - **`ConstitutionLifecycle`** — the core service that owns the saga logic and enforces MACI role checks on every transition.
 - **`SQLiteBundleStore`** — persistent store using WAL journal mode and `BEGIN EXCLUSIVE` transactions. A partial unique index enforces one `ACTIVE` bundle per tenant at the database level.
-- **`BundleAwareGovernanceEngine`** — wraps `ConstitutionLifecycle` to return a `GovernanceEngine` built from the tenant's active bundle. Engine instances are cached by `(tenant_id, bundle_hash)` and invalidated automatically after `activate()` and `rollback()`.
-- **FastAPI lifecycle router** — eleven REST endpoints under `/constitution/lifecycle/` expose the full saga over HTTP. All mutation endpoints require `X-API-Key` + `X-Actor-ID` headers. See [Constitution Lifecycle API](api/lifecycle.md) for the full reference.
+- **`BundleAwareGovernanceEngine`** — wraps `ConstitutionLifecycle` to return a `GovernanceEngine` built from the tenant's active bundle. Engine instances are cached by `(tenant_id, bundle_hash)`. Host applications must call `invalidate(tenant_id)` after lifecycle changes that should refresh the bound engine.
+- **FastAPI lifecycle router** — thirteen REST endpoints under `/constitution/lifecycle/` expose the full saga over HTTP (10 `POST` mutation endpoints + 3 `GET` read endpoints). When configured, all lifecycle endpoints require `X-API-Key`; mutation endpoints also require `X-Actor-ID`. See [Constitution Lifecycle API](api/lifecycle.md) for the full reference.
 
 ---
 

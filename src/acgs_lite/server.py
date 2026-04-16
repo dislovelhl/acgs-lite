@@ -73,6 +73,11 @@ class _AuditStoreAdapter:
         return self._store.count()
 
 
+def _env_flag(name: str) -> bool:
+    value = os.getenv(name, "")
+    return value.lower() in {"1", "true", "yes", "on"}
+
+
 def _build_default_audit_store(path: str | Path) -> _AuditStoreLike | None:
     """Build an audit store from the optional external compatibility package."""
     try:
@@ -413,7 +418,11 @@ def create_governance_app(
         scenarios_path_resolved = Path(autonoma_scenarios_path) if autonoma_scenarios_path else None
         app.include_router(create_autonoma_router(scenarios_path=scenarios_path_resolved))
 
-    _include_lifecycle = include_lifecycle if include_lifecycle is not None else bool(os.getenv("ACGS_LIFECYCLE_ENABLED"))
+    _include_lifecycle = (
+        include_lifecycle
+        if include_lifecycle is not None
+        else _env_flag("ACGS_LIFECYCLE_ENABLED")
+    )
     if _include_lifecycle:
         from acgs_lite.constitution.lifecycle_router import create_lifecycle_router
 

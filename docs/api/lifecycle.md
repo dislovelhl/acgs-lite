@@ -30,7 +30,7 @@ export ACGS_LIFECYCLE_API_KEY=dev-lifecycle-key
 
 - **Mutation endpoints** require `X-API-Key` when a lifecycle key is configured.
 - **Actor identity** comes from `X-Actor-ID`, not the request body.
-- **Read endpoints** (`GET`) do not require the API key.
+- **Read endpoints** (`GET`) also require `X-API-Key` when a lifecycle key is configured.
 - If no lifecycle key is configured, auth is disabled. That is useful for tests,
   not for production.
 
@@ -68,7 +68,8 @@ Common `code` values:
 
 ## Bundle response shape
 
-Most lifecycle endpoints return a serialized `ConstitutionBundle`.
+Most lifecycle endpoints return a serialized `ConstitutionBundle`. `POST /activate`
+and `POST /rollback` return an `ActivationRecord` payload instead.
 
 ```json
 {
@@ -97,7 +98,7 @@ activation metadata.
 | `POST` | `/constitution/lifecycle/{bundle_id}/submit` | Move `draft -> review` |
 | `POST` | `/constitution/lifecycle/{bundle_id}/review` | Reviewer sign-off, move `review -> eval` |
 | `POST` | `/constitution/lifecycle/{bundle_id}/eval` | Run evaluation scenarios |
-| `POST` | `/constitution/lifecycle/{bundle_id}/approve` | Final approval, move `eval -> staged` |
+| `POST` | `/constitution/lifecycle/{bundle_id}/approve` | Final approval, move `eval -> approve` |
 | `POST` | `/constitution/lifecycle/{bundle_id}/stage` | Canary/staging step |
 | `POST` | `/constitution/lifecycle/{bundle_id}/activate` | Activate staged bundle |
 | `POST` | `/constitution/lifecycle/{bundle_id}/rollback` | Roll back an active bundle |

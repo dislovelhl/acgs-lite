@@ -10,8 +10,8 @@ import pytest
 from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
-from acgs_lite.audit import AuditEntry
 from acgs_lite import Constitution, Rule, Severity
+from acgs_lite.audit import AuditEntry
 from acgs_lite.server import create_governance_app
 
 
@@ -171,3 +171,17 @@ class TestGovernanceServer:
         app = self._make_app(tmp_path)
         evaluate = self._route_endpoint(app, "/governance/evaluate-action")
         assert callable(evaluate)
+
+    def test_lifecycle_env_flag_parses_false_values(self, tmp_path: Any) -> None:
+        with patch.dict("os.environ", {"ACGS_LIFECYCLE_ENABLED": "false"}, clear=False):
+            app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+
+        with pytest.raises(AssertionError):
+            self._route_endpoint(app, "/constitution/lifecycle/draft")
+
+    def test_lifecycle_env_flag_parses_true_values(self, tmp_path: Any) -> None:
+        with patch.dict("os.environ", {"ACGS_LIFECYCLE_ENABLED": "yes"}, clear=False):
+            app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+
+        draft = self._route_endpoint(app, "/constitution/lifecycle/draft")
+        assert callable(draft)

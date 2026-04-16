@@ -246,7 +246,7 @@ def create_lifecycle_router(
 
     @router.post("/{bundle_id}/approve", dependencies=[Depends(_require_auth)])
     async def approve(bundle_id: str, body: ApproveRequest, request: Request) -> dict[str, Any]:
-        """Final MACI approval (EVAL → STAGED). Actor from X-Actor-ID header."""
+        """Final MACI approval (`eval` → `approve`). Actor from `X-Actor-ID`."""
         actor = await _get_actor(request)
         try:
             bundle = await _lc.approve(bundle_id, actor, signature=body.signature)
@@ -258,7 +258,7 @@ def create_lifecycle_router(
 
     @router.post("/{bundle_id}/stage", dependencies=[Depends(_require_auth)])
     async def stage(bundle_id: str, request: Request) -> dict[str, Any]:
-        """Stage a bundle for activation (STAGED → STAGED, canary step)."""
+        """Stage an approved bundle for activation (`approve` → `staged`)."""
         executor_id = await _get_actor(request)
         try:
             bundle = await _lc.stage(bundle_id, executor_id)
@@ -319,7 +319,7 @@ def create_lifecycle_router(
     @router.get("/{bundle_id}", dependencies=[Depends(_require_auth)])
     async def get_bundle(bundle_id: str) -> dict[str, Any]:
         """Retrieve a bundle by ID."""
-        bundle = _lc._store.get_bundle(bundle_id)
+        bundle = await _lc.get_bundle(bundle_id)
         if bundle is None:
             _error(f"Bundle {bundle_id!r} not found", code="NOT_FOUND", bundle_id=bundle_id, status_code=404)
         return _bundle_response(bundle)
@@ -333,7 +333,7 @@ def create_lifecycle_router(
         is wired into the validation path.  It is always ``false`` here because
         this router does not manage the engine binding — wire Phase E for that.
         """
-        bundle = _lc._store.get_active_bundle(tenant_id)
+        bundle = await _lc.get_active_bundle(tenant_id)
         if bundle is None:
             _error(
                 f"No active bundle for tenant {tenant_id!r}",
@@ -351,7 +351,7 @@ def create_lifecycle_router(
     @router.get("/history/{tenant_id}", dependencies=[Depends(_require_auth)])
     async def get_bundle_history(tenant_id: str) -> list[dict[str, Any]]:
         """List all bundles for a tenant in chronological order."""
-        bundles = _lc._store.list_bundles(tenant_id)
+        bundles = await _lc.get_bundle_history(tenant_id)
         return [_bundle_response(b) for b in bundles]
 
     return router
