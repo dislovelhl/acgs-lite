@@ -164,7 +164,9 @@ class AgnoACGSGovernor(BaseGuardrail):
                 additional_data={
                     "acgs_rule_id": e.rule_id,
                     "acgs_severity": e.severity,
-                    "acgs_enforcement_action": getattr(e.enforcement_action, "value", str(e.enforcement_action)),
+                    "acgs_enforcement_action": getattr(
+                        e.enforcement_action, "value", str(e.enforcement_action)
+                    ),
                     "audit_chain_valid": self.audit_log.verify_chain(),
                 },
             ) from e
@@ -188,7 +190,9 @@ class AgnoACGSGovernor(BaseGuardrail):
                 additional_data={
                     "acgs_rule_id": e.rule_id,
                     "acgs_severity": e.severity,
-                    "acgs_enforcement_action": getattr(e.enforcement_action, "value", str(e.enforcement_action)),
+                    "acgs_enforcement_action": getattr(
+                        e.enforcement_action, "value", str(e.enforcement_action)
+                    ),
                     "audit_chain_valid": self.audit_log.verify_chain(),
                 },
             ) from e

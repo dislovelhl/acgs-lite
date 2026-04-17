@@ -534,6 +534,29 @@ class TestLifecycleAuditSink:
         assert records[0].to_status == "draft"
         assert records[1].to_status == "review"
 
+    def test_content_hash_includes_frozen_metadata(self) -> None:
+        record_a = LifecycleEvidenceRecord(
+            bundle_id="b1",
+            tenant_id="t1",
+            from_status="none",
+            to_status="draft",
+            actor_id="a1",
+            actor_role="proposer",
+            metadata={"eval": {"scenarios": ["s1"]}},
+        )
+        record_b = LifecycleEvidenceRecord(
+            bundle_id="b1",
+            tenant_id="t1",
+            from_status="none",
+            to_status="draft",
+            actor_id="a1",
+            actor_role="proposer",
+            metadata={"eval": {"scenarios": ["s2"]}},
+        )
+        assert record_a.content_hash != record_b.content_hash
+        with pytest.raises(TypeError):
+            record_a.metadata["changed"] = True  # type: ignore[index]
+
 
 
 # ── Phase A additional tests ─────────────────────────────────────────────

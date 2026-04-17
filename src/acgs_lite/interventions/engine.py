@@ -39,11 +39,16 @@ class InterventionEngine:
         self,
         rules: list[InterventionRule] | None = None,
         webhook_url: str | None = None,
+        quarantine: Any | None = None,
     ) -> None:
+        import threading
+
         self.rules: list[InterventionRule] = sorted((rules or []), key=lambda r: r.priority)
         self._throttle_state: dict[str, tuple[int, float]] = {}
         self._cooloff_state: dict[str, float] = {}
+        self._state_lock = threading.Lock()
         self._webhook_url = webhook_url
+        self._quarantine = quarantine
 
     def add_rule(self, rule: InterventionRule) -> None:
         """Add a rule and re-sort by priority."""
@@ -89,7 +94,8 @@ class InterventionEngine:
 
     def is_cooled_off(self, key: str) -> bool:
         """Return True if key is currently in a cool-off period."""
-        unlock_at = self._cooloff_state.get(key)
+        with self._state_lock:
+            unlock_at = self._cooloff_state.get(key)
         if unlock_at is None:
             return False
         return time.time() < unlock_at
@@ -129,16 +135,17 @@ class InterventionEngine:
         )
 
     def _handle_throttle(self, rule: InterventionRule, subject_id: str) -> InterventionOutcome:
-        """THROTTLE: in-memory sliding window rate limiter."""
+        """THROTTLE: in-memory sliding window rate limiter (thread-safe)."""
         window_seconds: float = float(rule.metadata.get("window_seconds", 60))
         max_requests: int = int(rule.metadata.get("max_requests", 10))
         key = f"{rule.rule_id}:{subject_id}"
         now = time.time()
-        count, window_start = self._throttle_state.get(key, (0, now))
-        if now - window_start > window_seconds:
-            count, window_start = 0, now
-        count += 1
-        self._throttle_state[key] = (count, window_start)
+        with self._state_lock:
+            count, window_start = self._throttle_state.get(key, (0, now))
+            if now - window_start > window_seconds:
+                count, window_start = 0, now
+            count += 1
+            self._throttle_state[key] = (count, window_start)
         triggered = count > max_requests
         return InterventionOutcome(
             action="throttle",
@@ -181,20 +188,44 @@ class InterventionEngine:
     def _handle_escalate(
         self, rule: InterventionRule, cdp_record: dict[str, Any]
     ) -> InterventionOutcome:
-        """ESCALATE: mark as requiring review."""
+        """ESCALATE: mark as requiring review and submit to quarantine if configured."""
+        metadata: dict[str, Any] = {"requires_review": True}
+        if self._quarantine is not None:
+            try:
+                item = self._quarantine.submit(
+                    action=str(cdp_record.get("action", "")),
+                    reason=f"intervention:{rule.rule_id}",
+                    sphere=str(cdp_record.get("domain", "")),
+                    risk_score=float(cdp_record.get("risk_score", 0.0)),
+                    severity=str(cdp_record.get("severity", "")),
+                    agent_id=str(cdp_record.get("subject_id", "")),
+                    timeout_at=str(rule.metadata.get("timeout_at", "")),
+                    timeout_policy=rule.metadata.get("timeout_policy"),
+                    metadata={"cdp_id": cdp_record.get("cdp_id"), "rule_id": rule.rule_id},
+                )
+                metadata["quarantine_id"] = item.quarantine_id
+            except Exception as exc:
+                logger.error(
+                    "Quarantine submit failed for rule %s: %s",
+                    rule.rule_id,
+                    type(exc).__name__,
+                    exc_info=True,
+                )
+                metadata["quarantine_error"] = type(exc).__name__
         return InterventionOutcome(
             action="escalate",
             triggered=True,
             reason=f"rule:{rule.rule_id}",
-            metadata={"requires_review": True},
+            metadata=metadata,
         )
 
     def _handle_cool_off(self, rule: InterventionRule, subject_id: str) -> InterventionOutcome:
-        """COOL_OFF: set time-based lockout."""
+        """COOL_OFF: set time-based lockout (thread-safe)."""
         duration_seconds: float = float(rule.metadata.get("duration_seconds", 86400))  # 24h
         key = f"{rule.rule_id}:{subject_id}"
         unlock_at = time.time() + duration_seconds
-        self._cooloff_state[key] = unlock_at
+        with self._state_lock:
+            self._cooloff_state[key] = unlock_at
         return InterventionOutcome(
             action="cool_off",
             triggered=True,

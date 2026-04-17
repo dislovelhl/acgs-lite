@@ -166,26 +166,28 @@ class TestHappyPath:
         )
         assert resp.status_code == 200
 
-        # 5. Approve (actor-1 ≠ proposer in lifecycle metadata since lifecycle
-        #    tracks proposed_by as whoever called create_draft, which was "actor-1"
-        #    from X-Actor-ID header).
-        # Self-approval guard: actor-1 was the proposer, so we need a different actor.
+        # 5. Approve — use a distinct actor from the proposer.
         approve_headers = {**HEADERS, "X-Actor-ID": "approver-distinct-1"}
         resp = await client.post(
             f"{BASE}/{bundle_id}/approve",
             json={"signature": "sig-ok"},
             headers=approve_headers,
         )
-        assert resp.status_code in (200, 400)  # 400 if self-approval guard fires
-
-        # If we got a self-approval guard (400), the test is still valid — it means
-        # the guard is working correctly.  Log and skip remainder.
-        if resp.status_code == 400:
-            assert "MACI" in resp.json().get("detail", {}).get("code", "") or \
-                   "self" in resp.json().get("detail", {}).get("error", "").lower()
-            return
-
         assert resp.status_code == 200
+        assert resp.json()["status"] == "approve"
+
+        # 6. Stage
+        stage_headers = {**HEADERS, "X-Actor-ID": "executor-1"}
+        resp = await client.post(f"{BASE}/{bundle_id}/stage", headers=stage_headers)
+        assert resp.status_code == 200
+        assert resp.json()["status"] == "staged"
+
+        # 7. Activate
+        resp = await client.post(f"{BASE}/{bundle_id}/activate", headers=stage_headers)
+        assert resp.status_code == 200
+        activation = resp.json()
+        assert activation["tenant_id"] == "tenant-x"
+        assert activation["bundle_id"] == bundle_id
 
     @pytest.mark.asyncio
     async def test_history_endpoint(self, client: AsyncClient) -> None:

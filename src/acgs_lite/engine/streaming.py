@@ -105,6 +105,7 @@ class StreamingValidator:
         "_flush_interval",
         "_blocking_sevs",
         "_audit_log",
+        "_fail_open_on_error",
         "_window",
         "_pending_chars",
         "_position",
@@ -119,12 +120,27 @@ class StreamingValidator:
         flush_interval_chars: int = 500,
         blocking_severities: set[str] | None = None,
         audit_log: AuditLog | None = None,
+        fail_open_on_error: bool = False,
     ) -> None:
         self._engine = engine
         self._window_size = max(1, window_size)
         self._flush_interval = max(1, flush_interval_chars)
-        self._blocking_sevs: set[str] = blocking_severities or set()
+        if blocking_severities is None:
+            import warnings as _warnings
+
+            _warnings.warn(
+                "StreamingValidator: blocking_severities is unset — no severity "
+                "level will halt the stream. Pass blocking_severities={'critical'} "
+                "(or higher) to enable halt-on-violation. This will become the "
+                "default in acgs-lite 3.0.",
+                UserWarning,
+                stacklevel=2,
+            )
+            self._blocking_sevs: set[str] = set()
+        else:
+            self._blocking_sevs = blocking_severities
         self._audit_log = audit_log
+        self._fail_open_on_error = fail_open_on_error
         self._window: list[str] = []
         self._pending_chars: int = 0
         self._position: int = 0
@@ -210,18 +226,34 @@ class StreamingValidator:
             result = self._validate_nonstrict(window_text)
             violations = list(result.violations)
         except Exception as exc:
-            log.warning(
-                "streaming validation failed; treating chunk as passed: %s",
+            elapsed_ms = (time.monotonic() - t0) * 1000
+            self._stats.latency_ms += elapsed_ms
+            if self._fail_open_on_error:
+                log.warning(
+                    "streaming validation failed; fail_open_on_error=True, "
+                    "treating chunk as passed: %s",
+                    exc,
+                    exc_info=True,
+                )
+                return StreamChunkResult(
+                    chunk=chunk,
+                    passed=True,
+                    violations=[],
+                    should_halt=False,
+                    buffer_position=self._position,
+                    window_text=window_text,
+                )
+            log.error(
+                "streaming validation failed; halting stream (fail-closed): %s",
                 exc,
                 exc_info=True,
             )
-            elapsed_ms = (time.monotonic() - t0) * 1000
-            self._stats.latency_ms += elapsed_ms
+            self._stats.halted = True
             return StreamChunkResult(
                 chunk=chunk,
-                passed=True,
+                passed=False,
                 violations=[],
-                should_halt=False,
+                should_halt=True,
                 buffer_position=self._position,
                 window_text=window_text,
             )

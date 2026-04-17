@@ -9,8 +9,8 @@ import asyncio
 from acgs_lite.constitution.bundle_store import InMemoryBundleStore
 from acgs_lite.constitution.evidence import InMemoryLifecycleAuditSink
 from acgs_lite.constitution.lifecycle_service import ConstitutionLifecycle
-from acgs_lite.evals.runner import EvalScenario
 from acgs_lite.engine.bundle_binding import BundleAwareGovernanceEngine
+from acgs_lite.evals.schema import EvalScenario
 
 
 async def main() -> None:

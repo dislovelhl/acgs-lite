@@ -817,11 +817,11 @@ class TestEdgeCases:
 
 
 class TestStreamingEngineError:
-    def test_feed_survives_engine_exception(
+    def test_feed_fail_closed_on_engine_exception_by_default(
         self,
         engine: GovernanceEngine,
     ) -> None:
-        """If engine raises, feed() returns a passing result."""
+        """Default (fail_open_on_error=False): engine exception halts the stream."""
         from unittest.mock import MagicMock
 
         mock_engine = MagicMock()
@@ -834,6 +834,35 @@ class TestStreamingEngineError:
         sv = StreamingValidator(
             mock_engine,
             flush_interval_chars=10,
+            blocking_severities={"critical"},
+        )
+
+        result = sv.feed("a" * 15)
+        assert result.passed is False
+        assert result.should_halt is True
+        assert result.violations == []
+        assert sv.stats.validations_performed == 1
+        assert sv.stats.halted is True
+
+    def test_feed_survives_engine_exception_when_fail_open_opt_in(
+        self,
+        engine: GovernanceEngine,
+    ) -> None:
+        """With fail_open_on_error=True, engine exception yields passing result (legacy behavior)."""
+        from unittest.mock import MagicMock
+
+        mock_engine = MagicMock()
+        mock_engine.non_strict.return_value.__enter__ = MagicMock()
+        mock_engine.non_strict.return_value.__exit__ = MagicMock(return_value=False)
+        mock_engine.validate.side_effect = RuntimeError(
+            "unexpected engine failure",
+        )
+
+        sv = StreamingValidator(
+            mock_engine,
+            flush_interval_chars=10,
+            blocking_severities={"critical"},
+            fail_open_on_error=True,
         )
 
         result = sv.feed("a" * 15)
@@ -842,11 +871,11 @@ class TestStreamingEngineError:
         assert result.violations == []
         assert sv.stats.validations_performed == 1
 
-    def test_feed_continues_after_engine_exception(
+    def test_feed_continues_after_engine_exception_when_fail_open_opt_in(
         self,
         engine: GovernanceEngine,
     ) -> None:
-        """Stream can process further chunks after error."""
+        """With fail_open_on_error=True, stream can process further chunks after error."""
         from unittest.mock import MagicMock
 
         call_count = 0
@@ -869,6 +898,8 @@ class TestStreamingEngineError:
         sv = StreamingValidator(
             mock_engine,
             flush_interval_chars=10,
+            blocking_severities={"critical"},
+            fail_open_on_error=True,
         )
 
         r1 = sv.feed("a" * 15)

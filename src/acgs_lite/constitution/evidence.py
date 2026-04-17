@@ -12,13 +12,33 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from types import MappingProxyType
 from typing import Any, Protocol, runtime_checkable
 
 
 def _utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+def _freeze_metadata(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        frozen_items = {str(key): _freeze_metadata(item) for key, item in value.items()}
+        return MappingProxyType(frozen_items)
+    if isinstance(value, list | tuple):
+        return tuple(_freeze_metadata(item) for item in value)
+    return value
+
+
+def _json_ready(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_json_ready(item) for item in value]
+    return value
 
 
 @dataclass(frozen=True)
@@ -38,6 +58,9 @@ class LifecycleEvidenceRecord:
     timestamp: datetime = field(default_factory=_utcnow)
     metadata: dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
+
     @property
     def content_hash(self) -> str:
         """Deterministic hash of the record content."""
@@ -51,6 +74,7 @@ class LifecycleEvidenceRecord:
                 "actor_role": self.actor_role,
                 "reason": self.reason,
                 "timestamp": self.timestamp.isoformat(),
+                "metadata": _json_ready(self.metadata),
             },
             sort_keys=True,
         )
@@ -66,7 +90,7 @@ class LifecycleEvidenceRecord:
             "actor_role": self.actor_role,
             "reason": self.reason,
             "timestamp": self.timestamp.isoformat(),
-            "metadata": dict(self.metadata),
+            "metadata": _json_ready(self.metadata),
             "content_hash": self.content_hash,
         }
 
@@ -122,39 +146,44 @@ class InMemoryLifecycleAuditSink:
     def __init__(self) -> None:
         self._records: list[LifecycleEvidenceRecord] = []
         self._chain_hashes: list[str] = []
+        self._lock = threading.Lock()
 
     def head(self) -> str | None:
-        return self._chain_hashes[-1] if self._chain_hashes else None
+        with self._lock:
+            return self._chain_hashes[-1] if self._chain_hashes else None
 
     def append(
         self,
         record: LifecycleEvidenceRecord,
         expected_prev_hash: str | None,
     ) -> LifecycleAuditReceipt:
-        current_head = self.head()
-        if expected_prev_hash != current_head:
-            raise LifecycleAuditSinkError(
-                f"CAS mismatch: expected head {expected_prev_hash!r}, actual {current_head!r}"
+        with self._lock:
+            current_head = self._chain_hashes[-1] if self._chain_hashes else None
+            if expected_prev_hash != current_head:
+                raise LifecycleAuditSinkError(
+                    f"CAS mismatch: expected head {expected_prev_hash!r}, actual {current_head!r}"
+                )
+
+            prev = current_head or "genesis"
+            chain_input = f"{prev}|{record.content_hash}"
+            chain_hash = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
+
+            self._records.append(record)
+            self._chain_hashes.append(chain_hash)
+
+            return LifecycleAuditReceipt(
+                chain_hash=chain_hash,
+                index=len(self._records) - 1,
+                record=record,
             )
 
-        prev = current_head or "genesis"
-        chain_input = f"{prev}|{record.content_hash}"
-        chain_hash = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
-
-        self._records.append(record)
-        self._chain_hashes.append(chain_hash)
-
-        return LifecycleAuditReceipt(
-            chain_hash=chain_hash,
-            index=len(self._records) - 1,
-            record=record,
-        )
-
     def records(self) -> list[LifecycleEvidenceRecord]:
-        return list(self._records)
+        with self._lock:
+            return list(self._records)
 
     def __len__(self) -> int:
-        return len(self._records)
+        with self._lock:
+            return len(self._records)
 
 
 __all__ = [
