@@ -17,6 +17,7 @@ import hashlib
 import json
 import logging
 import os
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -174,6 +175,10 @@ class AuditLog:
         self.max_entries = max_entries
         self._backend = backend
         self._pqc_signer = pqc_signer
+        # Protects _entries / _chain_hashes against concurrent record() calls
+        # from multi-agent or multi-threaded workloads. Chain hash integrity
+        # requires read-modify-write atomicity.
+        self._lock = threading.Lock()
 
     @property
     def entries(self) -> list[AuditEntry]:
@@ -205,28 +210,32 @@ class AuditLog:
         if self._pqc_signer is not None:
             entry.pqc_signature = self._pqc_signer.sign(entry.entry_hash.encode())
 
-        # Build chain hash
-        prev_hash = self._chain_hashes[-1] if self._chain_hashes else "genesis"
-        chain_input = f"{prev_hash}|{entry.entry_hash}"
-        chain_hash = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
+        # Chain hash computation + append must be atomic to prevent
+        # racing writers from corrupting the chain under multi-agent load.
+        with self._lock:
+            # Build chain hash
+            prev_hash = self._chain_hashes[-1] if self._chain_hashes else "genesis"
+            chain_input = f"{prev_hash}|{entry.entry_hash}"
+            chain_hash = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
 
-        self._entries.append(entry)
-        self._chain_hashes.append(chain_hash)
+            self._entries.append(entry)
+            self._chain_hashes.append(chain_hash)
 
-        # Persist to backend if configured
+            # Trim if over max; recompute the first retained entry's hash against
+            # 'genesis' so verify_chain() remains valid over the trimmed window.
+            if len(self._entries) > self.max_entries:
+                self._entries = self._entries[-self.max_entries :]
+                self._chain_hashes = self._chain_hashes[-self.max_entries :]
+                first_chain_input = f"genesis|{self._entries[0].entry_hash}"
+                self._chain_hashes[0] = hashlib.sha256(first_chain_input.encode()).hexdigest()[:16]
+
+        # Persist to backend outside the lock; backends may block on I/O
+        # and we don't want to serialize all recorders on disk latency.
         if self._backend is not None:
             try:
                 self._backend.write(entry.to_dict(), chain_hash)
             except Exception as exc:
                 logger.warning("audit backend write failed: %s", exc, exc_info=True)
-
-        # Trim if over max; recompute the first retained entry's hash against
-        # 'genesis' so verify_chain() remains valid over the trimmed window.
-        if len(self._entries) > self.max_entries:
-            self._entries = self._entries[-self.max_entries :]
-            self._chain_hashes = self._chain_hashes[-self.max_entries :]
-            first_chain_input = f"genesis|{self._entries[0].entry_hash}"
-            self._chain_hashes[0] = hashlib.sha256(first_chain_input.encode()).hexdigest()[:16]
 
         return chain_hash
 

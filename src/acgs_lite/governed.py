@@ -16,10 +16,14 @@ from __future__ import annotations
 import asyncio
 import functools
 import inspect
+import logging
 import os
 import uuid
+import warnings
 from collections.abc import Callable
 from typing import Any, Protocol, TypeVar, cast, runtime_checkable
+
+_log = logging.getLogger(__name__)
 
 _MAX_RETRIES_LIMIT = 10
 
@@ -150,6 +154,15 @@ class GovernedAgent:
             self.maci.assign_role(agent_id, maci_role)
         if self.enforce_maci and self.maci_role is None:
             raise ValueError("enforce_maci=True requires an explicit maci_role")
+        if maci_role is not None and not self.enforce_maci:
+            warnings.warn(
+                "maci_role is set but enforce_maci=False — role separation is "
+                "advisory only. The default will change to enforce_maci=True in "
+                "acgs-lite 3.0. Pass enforce_maci=True now (with governance_action "
+                "on every run) to opt in early and silence this warning.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
     def _check_maci(self, governance_action: str | None) -> None:
         if not self.enforce_maci:
@@ -394,7 +407,11 @@ class GovernedAgent:
                     from acgs_lite.server import _cdp_backend as _server_backend
 
                     backend = _server_backend
-                except Exception:
+                except Exception as exc:
+                    _log.debug(
+                        "cdp: server backend unavailable (%s); falling back to in-memory",
+                        type(exc).__name__,
+                    )
                     from acgs_lite.cdp.store import InMemoryCDPBackend
 
                     backend = InMemoryCDPBackend()
@@ -423,8 +440,13 @@ class GovernedAgent:
                 blocking_unsatisfied = [o for o in obligations if o.is_blocking and not o.satisfied]
                 if blocking_unsatisfied and effective_verdict == "allow":
                     effective_verdict = "conditional"
-            except Exception:
-                pass  # Compliance check failure must not affect CDP emission
+            except Exception as exc:
+                # Compliance check failure must not affect CDP emission, but it must be observable.
+                _log.error(
+                    "cdp: runtime compliance check failed (%s); continuing without obligations",
+                    type(exc).__name__,
+                    exc_info=True,
+                )
 
             record = assemble_cdp_record(
                 raw_input=raw_input,
@@ -449,11 +471,21 @@ class GovernedAgent:
                     self._intervention_engine.evaluate(record.to_dict())
                 except _GHE as exc:
                     _halt_error = exc  # Defer re-raise past the outer except
-                except Exception:
-                    pass  # All other handler failures are non-fatal
-        except Exception:
+                except Exception as exc:
+                    # All other handler failures are non-fatal, but must be observable.
+                    _log.error(
+                        "cdp: intervention handler failed (%s); continuing",
+                        type(exc).__name__,
+                        exc_info=True,
+                    )
+        except Exception as exc:
             # CDP emission must never fail the governed call (fail-open for observability)
-            pass
+            # but the failure must be observable in logs.
+            _log.error(
+                "cdp: emission failed (%s); governed call continues without CDP record",
+                type(exc).__name__,
+                exc_info=True,
+            )
 
         # Re-raise BLOCK halt outside the CDP fail-open guard so it reaches the caller
         if _halt_error is not None:

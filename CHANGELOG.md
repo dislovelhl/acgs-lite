@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.8.1] - 2026-04-16
+
+### Changed (fail-closed hardening, non-breaking)
+
+- **Streaming validator is now fail-closed on engine exception.** `StreamingValidator._validate_window` previously swallowed any engine exception and returned `passed=True, should_halt=False` — a silent fail-open that defeats constitutional guarantees when the engine is unstable. The default is now `passed=False, should_halt=True` with an `ERROR`-level log line. A new `fail_open_on_error: bool = False` constructor flag restores the legacy behavior for callers that genuinely need it. Existing test coverage was migrated to the explicit opt-in, and new tests pin the fail-closed default.
+- **`StreamingValidator` now emits a `UserWarning` when `blocking_severities` is unset.** The empty-set default means no severity level halts the stream; this is a silent safety gap. Pass `blocking_severities={"critical"}` (or higher) to silence the warning. The default will change to `{"critical"}` in 3.0.
+- **`GovernedAgent` emits a `DeprecationWarning` when `maci_role` is set but `enforce_maci=False`.** This is the most common misconfiguration surfaced by the v2.8 gap analysis — MACI role separation looks enforced but is advisory. The `enforce_maci` default will flip to `True` in 3.0. Opt in now with `enforce_maci=True` plus `governance_action=...` on every run.
+
+### Added
+
+- **Opt-in quarantine wiring in `InterventionEngine`.** New constructor parameter `quarantine: GovernanceQuarantine | None = None`. When supplied, the `ESCALATE` action submits the offending CDP record to quarantine (with `quarantine_id` surfaced on the outcome metadata) instead of only flagging `requires_review`. The previously orphan `GovernanceQuarantine` module is now reachable from the standard intervention pipeline without any API break — default `None` preserves v2.8.0 behavior.
+
+### Fixed
+
+- **Observable error handling in `GovernedAgent._emit_cdp`.** Three blanket `except Exception: pass` blocks (runtime compliance check, intervention handler, outer CDP emission) are replaced with logged `ERROR` entries including exception type and traceback. Fail-open semantics are preserved for CDP (the governed call never fails from CDP trouble), but failures are now diagnosable instead of silent. The inner `server`-backend import fallback is now logged at `DEBUG`.
+- **Thread-safety for `AuditLog.record()`.** `AuditLog._entries` and `AuditLog._chain_hashes` are now protected by a `threading.Lock` during read-modify-write (chain hash computation, append, trim-on-overflow). The backend write is deliberately released outside the lock to avoid serializing all recorders on disk I/O. Eliminates the race where concurrent recorders could corrupt the chain hash.
+- **Thread-safety for `InterventionEngine` throttle and cool-off state.** `_handle_throttle` and `_handle_cool_off` now take a `threading.Lock` around dict read-modify-write; `is_cooled_off` takes the lock for the read. Eliminates lost-update and torn-read bugs under concurrent evaluation.
+
+### Deprecation notices
+
+- `StreamingValidator(blocking_severities=None)` — default will change in 3.0.
+- `GovernedAgent(maci_role=<role>, enforce_maci=False)` — default will flip in 3.0.
+
 ## [2.8.0] - 2026-04-15
 
 ### Added
