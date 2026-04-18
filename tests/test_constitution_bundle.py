@@ -62,8 +62,12 @@ class TestBundleStateMachine:
 
     def test_happy_path_transitions_append_history(self) -> None:
         bundle = _make_bundle()
-        bundle.transition_to(BundleStatus.REVIEW, actor_id="proposer-1", actor_role=MACIRole.PROPOSER)
-        bundle.transition_to(BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR)
+        bundle.transition_to(
+            BundleStatus.REVIEW, actor_id="proposer-1", actor_role=MACIRole.PROPOSER
+        )
+        bundle.transition_to(
+            BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR
+        )
         bundle.transition_to(
             BundleStatus.APPROVE,
             actor_id="approver-1",
@@ -127,8 +131,12 @@ class TestBundleStateMachine:
 class TestMACISeparation:
     def test_proposer_cannot_approve_bundle(self) -> None:
         bundle = _make_bundle(proposed_by="same-actor")
-        bundle.transition_to(BundleStatus.REVIEW, actor_id="same-actor", actor_role=MACIRole.PROPOSER)
-        bundle.transition_to(BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR)
+        bundle.transition_to(
+            BundleStatus.REVIEW, actor_id="same-actor", actor_role=MACIRole.PROPOSER
+        )
+        bundle.transition_to(
+            BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR
+        )
 
         with pytest.raises(MACIViolationError, match="approver must differ from proposer"):
             bundle.transition_to(
@@ -139,8 +147,12 @@ class TestMACISeparation:
 
     def test_only_staging_executor_can_activate(self) -> None:
         bundle = _make_bundle()
-        bundle.transition_to(BundleStatus.REVIEW, actor_id="proposer-1", actor_role=MACIRole.PROPOSER)
-        bundle.transition_to(BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR)
+        bundle.transition_to(
+            BundleStatus.REVIEW, actor_id="proposer-1", actor_role=MACIRole.PROPOSER
+        )
+        bundle.transition_to(
+            BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR
+        )
         bundle.transition_to(
             BundleStatus.APPROVE,
             actor_id="approver-1",
@@ -174,8 +186,12 @@ class TestSerialization:
 
     def test_activation_record_from_active_bundle(self) -> None:
         bundle = _make_bundle()
-        bundle.transition_to(BundleStatus.REVIEW, actor_id="proposer-1", actor_role=MACIRole.PROPOSER)
-        bundle.transition_to(BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR)
+        bundle.transition_to(
+            BundleStatus.REVIEW, actor_id="proposer-1", actor_role=MACIRole.PROPOSER
+        )
+        bundle.transition_to(
+            BundleStatus.EVAL, actor_id="reviewer-1", actor_role=MACIRole.VALIDATOR
+        )
         bundle.transition_to(
             BundleStatus.APPROVE,
             actor_id="approver-1",

@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import threading
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -50,6 +51,19 @@ class AuditBackend(Protocol):
         """Read all stored (entry_dict, chain_hash) pairs in order."""
         ...
 
+    def begin_checkpoint(self) -> Any:
+        """Return an opaque token representing the current backend state.
+
+        Used by ``record_atomic`` to roll back a durable append if persist fails.
+        Backends that cannot rewind must still implement this: the returned
+        token will be passed unchanged to ``rollback_to``.
+        """
+        ...
+
+    def rollback_to(self, token: Any) -> None:
+        """Revert backend state to the checkpoint represented by *token*."""
+        ...
+
 
 class InMemoryAuditBackend:
     """In-memory backend (default). No durability guarantees."""
@@ -65,6 +79,12 @@ class InMemoryAuditBackend:
 
     def read_all(self) -> list[tuple[dict[str, Any], str]]:
         return list(self._records)
+
+    def begin_checkpoint(self) -> int:
+        return len(self._records)
+
+    def rollback_to(self, token: int) -> None:
+        del self._records[token:]
 
 
 class JSONLAuditBackend:
@@ -84,6 +104,16 @@ class JSONLAuditBackend:
 
     def flush(self) -> None:
         self._fd.flush()
+        os.fsync(self._fd.fileno())
+
+    def begin_checkpoint(self) -> int:
+        self._fd.flush()
+        return self._fd.tell()
+
+    def rollback_to(self, token: int) -> None:
+        self._fd.flush()
+        self._fd.truncate(token)
+        self._fd.seek(token)
         os.fsync(self._fd.fileno())
 
     def read_all(self) -> list[tuple[dict[str, Any], str]]:
@@ -178,7 +208,14 @@ class AuditLog:
         # Protects _entries / _chain_hashes against concurrent record() calls
         # from multi-agent or multi-threaded workloads. Chain hash integrity
         # requires read-modify-write atomicity.
-        self._lock = threading.Lock()
+        #
+        # RLock (not plain Lock) because record_atomic() holds the lock across
+        # a user-supplied ``persist`` callback whose implementation may call
+        # back into the log (``export_json`` → ``verify_chain`` re-acquires
+        # the lock).  With a plain Lock that would deadlock; with RLock the
+        # re-entry is safe and the transaction remains serialized against
+        # other writers.
+        self._lock = threading.RLock()
 
     @property
     def entries(self) -> list[AuditEntry]:
@@ -196,6 +233,32 @@ class AuditLog:
         The chain hash includes the previous entry's hash, providing
         tamper detection.
         """
+        self._prepare_entry(entry, proof_certificate, provenance)
+
+        # Chain hash computation + append + backend write must all be serialized.
+        # Previously the backend write happened outside the lock as an I/O
+        # optimization, but that let a record() from thread B race past a
+        # concurrent record_atomic() from thread A: if B's write landed
+        # between A's checkpoint and A's persist, A's rollback_to() would
+        # truncate the backend past B's committed entry. Correctness
+        # requires the backend write to be ordered against the state lock.
+        with self._lock:
+            chain_hash = self._append_locked(entry)
+            if self._backend is not None:
+                try:
+                    self._backend.write(entry.to_dict(), chain_hash)
+                except Exception as exc:
+                    logger.warning("audit backend write failed: %s", exc, exc_info=True)
+
+        return chain_hash
+
+    def _prepare_entry(
+        self,
+        entry: AuditEntry,
+        proof_certificate: Any | None,
+        provenance: Any | None,
+    ) -> None:
+        """Inject metadata + signature onto *entry* before append. Lock-free."""
         if proof_certificate is not None:
             entry.metadata["proof_certificate"] = (
                 proof_certificate.to_audit_dict()
@@ -206,38 +269,103 @@ class AuditLog:
             entry.metadata["provenance"] = (
                 provenance.to_dict() if hasattr(provenance, "to_dict") else provenance
             )
-
         if self._pqc_signer is not None:
             entry.pqc_signature = self._pqc_signer.sign(entry.entry_hash.encode())
 
-        # Chain hash computation + append must be atomic to prevent
-        # racing writers from corrupting the chain under multi-agent load.
-        with self._lock:
-            # Build chain hash
-            prev_hash = self._chain_hashes[-1] if self._chain_hashes else "genesis"
-            chain_input = f"{prev_hash}|{entry.entry_hash}"
-            chain_hash = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
+    def _append_locked(self, entry: AuditEntry) -> str:
+        """Compute chain hash, append entry + hash, trim if needed. Caller holds ``_lock``."""
+        prev_hash = self._chain_hashes[-1] if self._chain_hashes else "genesis"
+        chain_input = f"{prev_hash}|{entry.entry_hash}"
+        chain_hash = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
 
-            self._entries.append(entry)
-            self._chain_hashes.append(chain_hash)
+        self._entries.append(entry)
+        self._chain_hashes.append(chain_hash)
 
-            # Trim if over max; recompute the first retained entry's hash against
-            # 'genesis' so verify_chain() remains valid over the trimmed window.
-            if len(self._entries) > self.max_entries:
-                self._entries = self._entries[-self.max_entries :]
-                self._chain_hashes = self._chain_hashes[-self.max_entries :]
-                first_chain_input = f"genesis|{self._entries[0].entry_hash}"
-                self._chain_hashes[0] = hashlib.sha256(first_chain_input.encode()).hexdigest()[:16]
-
-        # Persist to backend outside the lock; backends may block on I/O
-        # and we don't want to serialize all recorders on disk latency.
-        if self._backend is not None:
-            try:
-                self._backend.write(entry.to_dict(), chain_hash)
-            except Exception as exc:
-                logger.warning("audit backend write failed: %s", exc, exc_info=True)
+        if len(self._entries) > self.max_entries:
+            self._entries = self._entries[-self.max_entries :]
+            self._chain_hashes = self._chain_hashes[-self.max_entries :]
+            first_chain_input = f"genesis|{self._entries[0].entry_hash}"
+            self._chain_hashes[0] = hashlib.sha256(first_chain_input.encode()).hexdigest()[:16]
 
         return chain_hash
+
+    def record_atomic(
+        self,
+        entry: AuditEntry,
+        *,
+        persist: Callable[[AuditLog], None] | None = None,
+        proof_certificate: Any | None = None,
+        provenance: Any | None = None,
+    ) -> str:
+        """Record *entry* and, if *persist* is supplied, invoke it atomically.
+
+        Snapshot + append + persist run under a single held lock so that a
+        rollback on persist failure cannot wipe out concurrent writers that
+        raced in between snapshotting and persisting.  If ``persist``
+        raises, the just-appended entry and its chain hash are rolled
+        back so a retry does not produce a duplicate audit history with
+        a different ``id``.
+
+        Because the lock is held across the persist callback, this
+        operation serializes writers — callers that care about write
+        throughput should keep ``persist`` I/O-light.  The lock is an
+        RLock, so callbacks may re-enter the log (``export_json``
+        calls back into ``verify_chain``, for example) without
+        deadlocking.
+
+        Note on trimming: if appending *entry* pushed the log past
+        ``max_entries``, the trim is applied *before* persist runs.
+        Rollback restores the pre-append snapshot (including the trimmed
+        entry) so the log is fully reverted rather than left in a
+        silently-smaller state.
+
+        Durability: the backend write is performed *inside* the lock and
+        is covered by rollback. If the backend implements
+        ``begin_checkpoint`` / ``rollback_to`` (both ``InMemoryAuditBackend``
+        and ``JSONLAuditBackend`` do), a persist failure truncates the
+        durable log back to its pre-append state so a later
+        ``from_backend`` reconstruction will not replay a phantom entry.
+        Backends that don't implement checkpointing get a warning logged
+        — the in-memory state still rolls back, but durable divergence
+        cannot be prevented.
+        """
+        self._prepare_entry(entry, proof_certificate, provenance)
+
+        with self._lock:
+            pre_entries = list(self._entries)
+            pre_chain_hashes = list(self._chain_hashes)
+
+            checkpoint: Any = None
+            can_checkpoint = self._backend is not None and hasattr(
+                self._backend, "begin_checkpoint"
+            )
+            if can_checkpoint:
+                checkpoint = self._backend.begin_checkpoint()  # type: ignore[union-attr]
+            elif self._backend is not None:
+                logger.warning(
+                    "audit backend %s does not implement begin_checkpoint; "
+                    "record_atomic rollback cannot cover durable state",
+                    type(self._backend).__name__,
+                )
+
+            chain_hash = self._append_locked(entry)
+
+            try:
+                if self._backend is not None:
+                    self._backend.write(entry.to_dict(), chain_hash)
+                if persist is not None:
+                    persist(self)
+            except Exception:
+                self._entries = pre_entries
+                self._chain_hashes = pre_chain_hashes
+                if can_checkpoint:
+                    try:
+                        self._backend.rollback_to(checkpoint)  # type: ignore[union-attr]
+                    except Exception as rb_exc:
+                        logger.error("audit backend rollback failed: %s", rb_exc, exc_info=True)
+                raise
+
+            return chain_hash
 
     def flush(self) -> None:
         """Flush pending writes to the backend. No-op if no backend."""
@@ -278,18 +406,22 @@ class AuditLog:
 
         Returns True if no entries have been tampered with.
         """
-        if not self._entries:
+        with self._lock:
+            entries = list(self._entries)
+            chain_hashes = list(self._chain_hashes)
+
+        if not entries:
             return True
 
         prev_hash = "genesis"
-        for i, entry in enumerate(self._entries):
+        for i, entry in enumerate(entries):
             chain_input = f"{prev_hash}|{entry.entry_hash}"
             expected = hashlib.sha256(chain_input.encode()).hexdigest()[:16]
 
-            if expected != self._chain_hashes[i]:
+            if expected != chain_hashes[i]:
                 return False
 
-            prev_hash = self._chain_hashes[i]
+            prev_hash = chain_hashes[i]
 
         return True
 

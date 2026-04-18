@@ -14,7 +14,9 @@ def _constitution_with_rules(*rules: Rule) -> Constitution:
 
 
 def test_null_verification_gate_always_allows() -> None:
-    rule = Rule(id="RULE-001", text="block secrets", severity=Severity.CRITICAL, keywords=["secret"])
+    rule = Rule(
+        id="RULE-001", text="block secrets", severity=Severity.CRITICAL, keywords=["secret"]
+    )
 
     result = NullVerificationGate().check(rule, _constitution_with_rules(rule))
 
@@ -24,7 +26,9 @@ def test_null_verification_gate_always_allows() -> None:
 
 
 def test_z3_verification_gate_warns_when_z3_unavailable() -> None:
-    rule = Rule(id="RULE-001", text="block secrets", severity=Severity.CRITICAL, keywords=["secret"])
+    rule = Rule(
+        id="RULE-001", text="block secrets", severity=Severity.CRITICAL, keywords=["secret"]
+    )
 
     result = Z3VerificationGate(z3_module=None).check(rule, _constitution_with_rules(rule))
 

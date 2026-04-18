@@ -396,6 +396,160 @@ class TestAuditLog:
             log.record(AuditEntry(id=str(i), type="test", valid=True))
         assert len(log) == 5
 
+    def test_record_atomic_rolls_back_on_persist_failure(self):
+        """A failing persist callback must leave the log unchanged."""
+        log = AuditLog()
+        log.record(AuditEntry(id="pre", type="test", valid=True))
+        pre_len = len(log)
+        pre_entries = list(log.entries)
+
+        def failing_persist(_log):
+            raise OSError("disk full")
+
+        entry = AuditEntry(id="would-be-rolled-back", type="test", valid=True)
+        with pytest.raises(OSError):
+            log.record_atomic(entry, persist=failing_persist)
+
+        # Log is back to pre-append state — no orphan entry, chain still valid.
+        assert len(log) == pre_len
+        assert [e.id for e in log.entries] == [e.id for e in pre_entries]
+        assert log.verify_chain()
+
+    def test_record_atomic_commits_when_persist_succeeds(self):
+        log = AuditLog()
+        committed: list[bool] = []
+
+        def ok_persist(_log):
+            committed.append(True)
+
+        log.record_atomic(
+            AuditEntry(id="committed", type="test", valid=True),
+            persist=ok_persist,
+        )
+        assert committed == [True]
+        assert len(log) == 1
+        assert log.entries[0].id == "committed"
+        assert log.verify_chain()
+
+    def test_record_atomic_retry_is_idempotent_on_persist_error(self):
+        """Reviewer's concern: a retry after persist failure must not
+        leave a stale duplicate behind.  With rollback + idempotent
+        retry, the log ends up with exactly one entry, not two."""
+        log = AuditLog()
+        fail_count = [0]
+
+        def flaky_persist(_log):
+            fail_count[0] += 1
+            if fail_count[0] == 1:
+                raise OSError("transient disk fault")
+
+        entry = AuditEntry(id="retry-me", type="test", valid=True)
+
+        # First attempt: persist fails, rollback runs.
+        with pytest.raises(OSError):
+            log.record_atomic(entry, persist=flaky_persist)
+        assert len(log) == 0
+
+        # Caller retries with a semantically-identical entry.
+        log.record_atomic(entry, persist=flaky_persist)
+        assert len(log) == 1
+        assert log.entries[0].id == "retry-me"
+        assert log.verify_chain()
+
+    def test_record_atomic_rollback_preserves_concurrent_writer(self, tmp_path):
+        """Codex finding: a rollback from record_atomic must not erase an
+        entry that a concurrent record() caller committed between checkpoint
+        and persist. Regression test for the backend-write-outside-lock race."""
+        import threading
+        import time
+
+        from acgs_lite.audit import JSONLAuditBackend
+
+        backend_path = tmp_path / "audit.jsonl"
+        backend = JSONLAuditBackend(backend_path)
+        log = AuditLog(backend=backend)
+
+        # Atomic writer's persist blocks until the concurrent writer has landed,
+        # then fails — forcing rollback to happen *after* the other write.
+        concurrent_done = threading.Event()
+
+        def slow_failing_persist(_log):
+            # Give the other thread a window to sneak a record() in.
+            concurrent_done.wait(timeout=2.0)
+            raise OSError("persist failed — triggers rollback")
+
+        errors: list[BaseException] = []
+
+        def atomic_writer():
+            try:
+                log.record_atomic(
+                    AuditEntry(id="atomic-rolled-back", type="test", valid=True),
+                    persist=slow_failing_persist,
+                )
+            except OSError:
+                pass
+            except BaseException as e:
+                errors.append(e)
+
+        def concurrent_writer():
+            # Small delay so the atomic writer has acquired the lock first.
+            time.sleep(0.05)
+            log.record(AuditEntry(id="concurrent-committed", type="test", valid=True))
+            concurrent_done.set()
+
+        t1 = threading.Thread(target=atomic_writer)
+        t2 = threading.Thread(target=concurrent_writer)
+        t1.start()
+        t2.start()
+        t1.join(timeout=5.0)
+        t2.join(timeout=5.0)
+
+        assert not errors, f"unexpected errors: {errors}"
+
+        # In-memory: exactly the committed entry survives.
+        ids = [e.id for e in log.entries]
+        assert ids == ["concurrent-committed"], f"unexpected entries: {ids}"
+
+        # Durable backend: same — rollback did not erase the concurrent write.
+        backend.flush()
+        reconstructed = AuditLog.from_backend(JSONLAuditBackend(backend_path))
+        rec_ids = [e.id for e in reconstructed.entries]
+        assert rec_ids == ["concurrent-committed"], f"backend has: {rec_ids}"
+        assert reconstructed.verify_chain()
+
+    def test_record_atomic_rolls_back_durable_backend_on_persist_failure(self, tmp_path):
+        """Codex finding: durable backends must roll back too, otherwise
+        from_backend() replays a phantom entry after a failed atomic write."""
+        from acgs_lite.audit import JSONLAuditBackend
+
+        backend_path = tmp_path / "audit.jsonl"
+        backend = JSONLAuditBackend(backend_path)
+        log = AuditLog(backend=backend)
+
+        # First entry commits normally.
+        log.record_atomic(AuditEntry(id="committed", type="test", valid=True))
+
+        def failing_persist(_log):
+            raise OSError("persist failed after backend write")
+
+        with pytest.raises(OSError):
+            log.record_atomic(
+                AuditEntry(id="rolled-back", type="test", valid=True),
+                persist=failing_persist,
+            )
+
+        # In-memory: rollback worked.
+        assert len(log) == 1
+        assert log.entries[0].id == "committed"
+
+        # Durable backend: rollback also worked — the file does not contain
+        # the rolled-back entry, so reconstruction sees only the committed one.
+        backend.flush()
+        reconstructed = AuditLog.from_backend(JSONLAuditBackend(backend_path))
+        assert len(reconstructed) == 1
+        assert reconstructed.entries[0].id == "committed"
+        assert reconstructed.verify_chain()
+
 
 # ─── MACI Tests ────────────────────────────────────────────────────────────
 

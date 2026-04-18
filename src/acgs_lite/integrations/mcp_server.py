@@ -447,7 +447,7 @@ def create_mcp_server(
                 else:
                     tier = "SUPERVISED"
 
-                tier_payload: dict[str, Any] = {
+                tier_data: dict[str, Any] = {
                     "tier": tier,
                     "action": action_text,
                     "domain": domain,
@@ -462,7 +462,7 @@ def create_mcp_server(
                 return [
                     types.TextContent(
                         type="text",
-                        text=json.dumps(tier_payload, indent=2),
+                        text=json.dumps(tier_data, indent=2),
                     )
                 ]
             except Exception as exc:

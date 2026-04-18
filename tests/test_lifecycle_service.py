@@ -558,7 +558,6 @@ class TestLifecycleAuditSink:
             record_a.metadata["changed"] = True  # type: ignore[index]
 
 
-
 # ── Phase A additional tests ─────────────────────────────────────────────
 
 

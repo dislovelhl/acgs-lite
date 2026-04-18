@@ -34,4 +34,3 @@ def test_agno_governor_missing_dependency_error_message() -> None:
         AgnoACGSGovernor()
 
     assert "pip install acgs-lite[agno]" in str(excinfo.value)
-

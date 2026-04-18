@@ -8,11 +8,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-import pytest
-
 from acgs_lite.constitution.spot_check import (
     AuditPolicy,
-    CompletedCase,
     SpotCheckAuditor,
     TrustAdjustment,
     ValidatorProfile,

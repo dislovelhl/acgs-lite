@@ -243,8 +243,6 @@ class TestHappyPath:
         assert resp.json()["detail"]["code"] == "NOT_FOUND"
 
 
-
-
 # ── MACI-aware header helpers ─────────────────────────────────────────────
 
 REVIEWER_HEADERS = {**HEADERS, "X-Actor-ID": "reviewer-distinct-1"}
@@ -254,9 +252,7 @@ EXECUTOR_HEADERS = {**HEADERS, "X-Actor-ID": "executor-distinct-1"}
 
 async def _drive_to_staged_http(client: AsyncClient, tenant_id: str) -> str:
     """HTTP-level helper: drive a bundle from DRAFT → STAGED using MACI-correct actors."""
-    resp = await client.post(
-        f"{BASE}/draft", json={"tenant_id": tenant_id}, headers=HEADERS
-    )
+    resp = await client.post(f"{BASE}/draft", json={"tenant_id": tenant_id}, headers=HEADERS)
     assert resp.status_code == 200
     bundle_id = resp.json()["bundle_id"]
 
@@ -313,9 +309,7 @@ class TestUncoveredEndpoints:
         from acgs_lite.constitution.evidence import InMemoryLifecycleAuditSink
         from acgs_lite.constitution.lifecycle_service import ConstitutionLifecycle
 
-        lc = ConstitutionLifecycle(
-            store=InMemoryBundleStore(), sink=InMemoryLifecycleAuditSink()
-        )
+        lc = ConstitutionLifecycle(store=InMemoryBundleStore(), sink=InMemoryLifecycleAuditSink())
         draft = await lc.create_draft("tenant-active-get", "proposer-1")
         await lc.submit_for_review(draft.bundle_id, "proposer-1")
         await lc.approve_review(draft.bundle_id, "reviewer-1")
@@ -329,9 +323,7 @@ class TestUncoveredEndpoints:
 
         app2 = FastAPI()
         app2.include_router(create_lifecycle_router(lifecycle=lc, api_key=KEY))
-        async with AsyncClient(
-            transport=ASGITransport(app=app2), base_url="http://test"
-        ) as c:
+        async with AsyncClient(transport=ASGITransport(app=app2), base_url="http://test") as c:
             resp = await c.get(f"{BASE}/active/tenant-active-get", headers=HEADERS)
 
         assert resp.status_code == 200
@@ -368,7 +360,10 @@ class TestUncoveredEndpoints:
         [
             ("submit", None),
             ("review", None),
-            ("eval", {"scenarios": [{"id": "s1", "input_action": "check", "expected_valid": True}]}),
+            (
+                "eval",
+                {"scenarios": [{"id": "s1", "input_action": "check", "expected_valid": True}]},
+            ),
             ("approve", {"signature": "sig-missing"}),
             ("stage", None),
             ("activate", None),
@@ -393,9 +388,7 @@ class TestUncoveredEndpoints:
         assert resp.json()["detail"]["code"] == "NOT_FOUND"
 
     @pytest.mark.asyncio
-    async def test_activate_endpoint_returns_activation_record(
-        self, client: AsyncClient
-    ) -> None:
+    async def test_activate_endpoint_returns_activation_record(self, client: AsyncClient) -> None:
         bundle_id = await _drive_to_staged_http(client, "tenant-activate-test")
 
         resp = await client.post(f"{BASE}/{bundle_id}/activate", headers=EXECUTOR_HEADERS)
@@ -456,9 +449,7 @@ class TestUncoveredEndpoints:
 
         app2 = FastAPI()
         app2.include_router(create_lifecycle_router(lifecycle=mock_lc, api_key=KEY))
-        async with AsyncClient(
-            transport=ASGITransport(app=app2), base_url="http://test"
-        ) as c:
+        async with AsyncClient(transport=ASGITransport(app=app2), base_url="http://test") as c:
             resp = await c.post(
                 f"{BASE}/draft",
                 json={"tenant_id": "tenant-conflict"},
@@ -471,7 +462,9 @@ class TestUncoveredEndpoints:
 
 class TestMACIViolation:
     @pytest.mark.asyncio
-    async def test_403_when_reviewer_equals_proposer(self, app: FastAPI, client: AsyncClient) -> None:
+    async def test_403_when_reviewer_equals_proposer(
+        self, app: FastAPI, client: AsyncClient
+    ) -> None:
         """MACI: the reviewer cannot be the same actor who submitted the bundle."""
         # proposer creates and submits the draft
         draft_resp = await client.post(

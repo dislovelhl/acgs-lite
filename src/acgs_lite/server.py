@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast
@@ -435,12 +435,12 @@ def create_governance_app(
 
         @app.get("/v1/events/stream")
         async def stream_events() -> StreamingResponse:
-            subscription = get_event_bus().subscribe()
+            subscription = cast(AsyncGenerator[GovernanceEvent, None], get_event_bus().subscribe())
 
             async def next_event() -> GovernanceEvent:
                 return await subscription.__anext__()
 
-            async def event_stream() -> AsyncIterator[str]:
+            async def event_stream() -> AsyncGenerator[str, None]:
                 pending_event: asyncio.Task[Any] | None = None
                 try:
                     while True:

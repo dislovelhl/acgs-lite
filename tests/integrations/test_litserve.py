@@ -170,13 +170,16 @@ def test_maci_validator_role_enforced() -> None:
     api.setup(device="cpu")
 
     assert api._maci is not None
-    with pytest.raises(_HTTPException) as exc_info, patch.object(
-        api._maci,
-        "check",
-        side_effect=MACIViolationError(
-            "blocked",
-            actor_role=MACIRole.VALIDATOR.value,
-            attempted_action="execute",
+    with (
+        pytest.raises(_HTTPException) as exc_info,
+        patch.object(
+            api._maci,
+            "check",
+            side_effect=MACIViolationError(
+                "blocked",
+                actor_role=MACIRole.VALIDATOR.value,
+                attempted_action="execute",
+            ),
         ),
     ):
         api.predict({"input": "safe"})

@@ -495,9 +495,11 @@ class TestCloudLoggingAuditExporter:
         """When CLOUD_LOGGING_AVAILABLE is False, constructor raises ImportError."""
         from acgs_lite.integrations import cloud_logging as cl_mod
 
-        with patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", False):
-            with pytest.raises(ImportError, match="google-cloud-logging"):
-                cl_mod.CloudLoggingAuditExporter(project_id="test")
+        with (
+            patch.object(cl_mod, "CLOUD_LOGGING_AVAILABLE", False),
+            pytest.raises(ImportError, match="google-cloud-logging"),
+        ):
+            cl_mod.CloudLoggingAuditExporter(project_id="test")
 
     def test_init_with_mock_client(self):
         from acgs_lite.integrations import cloud_logging as cl_mod
@@ -648,7 +650,7 @@ class TestCloudRunServer:
         """Returns None when cloud logging import fails."""
         import acgs_lite.integrations.cloud_run_server as srv
 
-        with patch.dict("sys.modules", {"acgs_lite.integrations.cloud_logging": None}):
+        with patch.dict("sys.modules", {"acgs_lite.integrations.cloud_logging": None}):  # noqa: SIM117
             # Force ImportError
             with (
                 patch(
