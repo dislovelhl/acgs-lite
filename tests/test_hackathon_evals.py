@@ -166,7 +166,7 @@ class TestGitLabPipeline:
 
         r = GovernanceReport(mr_iid=42, title="test", passed=True, risk_score=0.0)
         assert r.mr_iid == 42
-        with pytest.raises(Exception):
+        with pytest.raises((AttributeError, TypeError)):
             r.passed = False  # type: ignore[misc]
 
     def test_cap_gl_02_report_markdown(self) -> None:
@@ -356,7 +356,7 @@ def authenticate(username, password):
 +
 """
         lines = _parse_added_lines(diff)
-        secret_lines = [(n, l) for n, l in lines if "abc123secret" in l]
+        secret_lines = [(n, line) for n, line in lines if "abc123secret" in line]
         assert len(secret_lines) == 1
         assert secret_lines[0][0] == 2
 

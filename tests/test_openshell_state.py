@@ -11,10 +11,10 @@ from pydantic import BaseModel
 from acgs_lite.constitution.quorum import QuorumManager
 from acgs_lite.openshell_state import (
     GovernanceStateChecksumError,
+    InMemoryGovernanceStateBackend,
     JsonFileGovernanceStateBackend,
     PersistentGovernanceState,
     RedisGovernanceStateBackend,
-    InMemoryGovernanceStateBackend,
     compute_state_checksum,
     migrate_state,
     verify_state_checksum,

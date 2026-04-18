@@ -11,6 +11,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
+from pydantic import ValidationError
 
 from acgs_lite.constitution.amendments import (
     _VALID_TRANSITIONS,
@@ -604,10 +605,10 @@ class TestApplyChanges:
         mock_c.version = "1.0"
         mock_c.rules = []
 
-        with pytest.raises(Exception):
+        with pytest.raises((AttributeError, TypeError, ImportError, ValidationError)):
             # Will try to import Rule and Constitution; catches import chain
-            # This is expected in test isolation - the important thing is
-            # the code path is exercised
+            # including pydantic ValidationError when mocks fail Pydantic v2 checks.
+            # The important thing is the code path is exercised.
             AmendmentProtocol._apply_changes(amd, mock_c)
 
     def test_remove_rule(self) -> None:
@@ -624,8 +625,9 @@ class TestApplyChanges:
         mock_c.version = "1.0"
         mock_c.rules = [mock_rule_1, mock_rule_2]
 
-        with pytest.raises(Exception):
-            # Same as add_rule - imports Constitution in-method
+        with pytest.raises((AttributeError, TypeError, ImportError, ValidationError)):
+            # Same as add_rule - imports Constitution in-method;
+            # pydantic ValidationError is also acceptable when mocks fail v2 checks.
             AmendmentProtocol._apply_changes(amd, mock_c)
 
 

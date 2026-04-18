@@ -28,6 +28,7 @@ from typing import Any
 
 __all__ = ["generate_certificate"]
 
+
 # Brand colours (matches the dashboard palette)
 _DARK = (36, 31, 25)  # #241f19
 _CRIMSON = (139, 38, 53)  # #8B2635
@@ -408,6 +409,7 @@ def _draw_maci_table(pdf: Any, steps: list[dict]) -> None:
     for h, w in zip(headers, widths, strict=True):
         pdf.cell(w, 6, h, border=0, fill=True)
     pdf.ln()
+
 
     pdf.set_font("Helvetica", "", 7)
     for i, step in enumerate(steps):
