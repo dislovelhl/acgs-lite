@@ -26,7 +26,8 @@ class InMemoryPQCSigner:
 
 try:
     from oqs import Signature as _OQSSignature
-except ImportError:
+except (ImportError, RuntimeError):
+    # RuntimeError covers missing liboqs shared library at import time
     DilithiumSigner = None
 else:
 
