@@ -32,7 +32,7 @@ class CDPBackend(Protocol):
         tenant_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> list[CDPRecordV1]:
+    ) -> builtins.list[CDPRecordV1]:
         """Return a paginated list of records, newest first."""
         ...
 
@@ -75,7 +75,7 @@ class InMemoryCDPBackend:
         tenant_id: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> list[CDPRecordV1]:
+    ) -> builtins.list[CDPRecordV1]:
         records = list(self._records.values())
         if tenant_id is not None:
             records = [r for r in records if r.tenant_id == tenant_id]
@@ -99,7 +99,7 @@ class InMemoryCDPBackend:
         if tenant_id is not None:
             records = [r for r in records if r.tenant_id == tenant_id]
 
-        broken: list[str] = []
+        broken: builtins.list[str] = []
         prev_hash = "genesis"
 
         for record in records:

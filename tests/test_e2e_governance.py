@@ -838,7 +838,7 @@ class TestIntegratedGovernanceFlow:
         assert results[0].valid is True  # safe
         assert results[1].valid is True  # safe
         # bypass rate limit: medium severity = non-blocking, valid=True with warnings
-        # Medium-severity matches go to .warnings (non-blocking), not .violations
+        assert results[2].violations == []
         assert len(results[2].warnings) > 0
         assert results[2].warnings[0].severity == Severity.MEDIUM
 
