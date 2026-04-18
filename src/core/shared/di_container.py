@@ -54,7 +54,7 @@ class AgentScope:
     # Context-manager support (fail-closed)
     # ------------------------------------------------------------------
 
-    def __enter__(self) -> "AgentScope":
+    def __enter__(self) -> AgentScope:
         return self
 
     def __exit__(
