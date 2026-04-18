@@ -37,6 +37,10 @@ from acgs_lite.constitution import (
     ConstitutionBuilder,
     ConstitutionBundle,
     ConstitutionLifecycle,
+    GovernanceMemoryPrecedentHit,
+    GovernanceMemoryReport,
+    GovernanceMemoryRetriever,
+    GovernanceMemorySummary,
     InMemoryBundleStore,
     InMemoryLifecycleAuditSink,
     LifecycleAuditSink,
@@ -50,6 +54,34 @@ from acgs_lite.constitution import (
     StatusTransition,
 )
 from acgs_lite.constitution.rule import ViolationAction
+from acgs_lite.constitution.spot_check import (
+    AuditPolicy,
+    CompletedCase,
+    SpotCheckAuditor,
+    SpotCheckResult,
+    TrustAdjustment,
+    ValidatorAssessment,
+    ValidatorProfile,
+)
+from acgs_lite.constitution.claim_lifecycle import (
+    CaseConfig,
+    CaseManager,
+    CaseRecord,
+    CaseState,
+    TransitionRecord,
+)
+from acgs_lite.constitution.trust_score import (
+    TrustConfig,
+    TrustEvent,
+    TrustScoreManager,
+    TrustTier,
+)
+from acgs_lite.constitution.validator_selection import (
+    SelectionPolicy,
+    SelectionResult,
+    ValidatorPool,
+    ValidatorSelector,
+)
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
 from acgs_lite.errors import (
     ConstitutionalViolationError,
@@ -111,6 +143,7 @@ from acgs_lite.trajectory import (
     CumulativeValueRule,
     FrequencyThresholdRule,
     InMemoryTrajectoryStore,
+    SensitiveToolSequenceRule,
     TrajectoryMonitor,
     TrajectorySession,
     TrajectoryViolation,
@@ -153,6 +186,10 @@ __all__ = [
     "RuleSynthesisProvider",
     "AcknowledgedTension",
     "ActivationRecord",
+    "GovernanceMemoryPrecedentHit",
+    "GovernanceMemoryReport",
+    "GovernanceMemoryRetriever",
+    "GovernanceMemorySummary",
     "BundleStatus",
     "BundleStore",
     "InMemoryBundleStore",
@@ -160,6 +197,27 @@ __all__ = [
     "Severity",
     "StatusTransition",
     "ViolationAction",
+    # Spot-check audit / governance lifecycle
+    "AuditPolicy",
+    "CompletedCase",
+    "SpotCheckAuditor",
+    "SpotCheckResult",
+    "TrustAdjustment",
+    "ValidatorAssessment",
+    "ValidatorProfile",
+    "CaseConfig",
+    "CaseManager",
+    "CaseRecord",
+    "CaseState",
+    "TransitionRecord",
+    "TrustConfig",
+    "TrustEvent",
+    "TrustScoreManager",
+    "TrustTier",
+    "SelectionPolicy",
+    "SelectionResult",
+    "ValidatorPool",
+    "ValidatorSelector",
     # Engine
     "GovernanceEngine",
     "ValidationResult",
@@ -198,6 +256,7 @@ __all__ = [
     "InMemoryTrajectoryStore",
     "FrequencyThresholdRule",
     "CumulativeValueRule",
+    "SensitiveToolSequenceRule",
     # Z3 formal verification
     "Z3ConstraintVerifier",
     "Z3VerifyResult",
