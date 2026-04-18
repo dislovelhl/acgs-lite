@@ -26,7 +26,9 @@ def test_manifest_documented_entries_have_request_shape() -> None:
 
 def test_manifest_preview_entries_are_explicitly_marked() -> None:
     preview_profiles = [
-        profile for profile in load_capability_manifest() if profile.stability == CapabilityStability.PREVIEW
+        profile
+        for profile in load_capability_manifest()
+        if profile.stability == CapabilityStability.PREVIEW
     ]
     assert preview_profiles
     assert all("preview" in profile.model_id for profile in preview_profiles)

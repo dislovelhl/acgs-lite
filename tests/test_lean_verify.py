@@ -560,8 +560,8 @@ class TestLeanstralVerifierMockedNoKernel:
                 {
                     "prelude": "structure ActionCtx where\n  action : String",
                     "predicates": {
-                        "MACI-1": "def validator_rule (ctx : ActionCtx) : Prop :=\n  ctx.action = \"read\"",
-                        "MACI-2": "abbrev judiciary_gate (ctx : ActionCtx) : Prop :=\n  ctx.action = \"read\"",
+                        "MACI-1": 'def validator_rule (ctx : ActionCtx) : Prop :=\n  ctx.action = "read"',
+                        "MACI-2": 'abbrev judiciary_gate (ctx : ActionCtx) : Prop :=\n  ctx.action = "read"',
                     },
                 }
             ),

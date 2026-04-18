@@ -78,9 +78,7 @@ def test_clean_session_produces_zero_violations() -> None:
     session = TrajectorySession(session_id="s3", agent_id="agent-1")
     session.add(_decision(action_type="read", timestamp=base, amount=10))
     session.add(_decision(action_type="write", timestamp=base + timedelta(minutes=2), amount=20))
-    session.add(
-        _decision(action_type="approve", timestamp=base + timedelta(minutes=4), amount=30)
-    )
+    session.add(_decision(action_type="approve", timestamp=base + timedelta(minutes=4), amount=30))
 
     monitor = TrajectoryMonitor(
         rules=[

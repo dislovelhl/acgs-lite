@@ -200,9 +200,7 @@ async def test_gs03_scope_id_filter() -> None:
     await asyncio.sleep(0)
 
     # This event targets scope-b — should NOT reach the scope-a subscriber
-    bus.publish(
-        GovernanceEvent(event_type="audit", system_id="s", payload={}, scope_id="scope-b")
-    )
+    bus.publish(GovernanceEvent(event_type="audit", system_id="s", payload={}, scope_id="scope-b"))
     # This event targets scope-a — SHOULD reach the subscriber
     bus.publish(
         GovernanceEvent(event_type="policy_applied", system_id="s", payload={}, scope_id="scope-a")

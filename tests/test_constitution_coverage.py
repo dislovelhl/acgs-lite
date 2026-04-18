@@ -116,7 +116,12 @@ class TestFromDict:
             {
                 "rules": [
                     {"id": "M-1", "text": "Warn only", "severity": "medium", "keywords": ["warn"]},
-                    {"id": "C-1", "text": "Block hard", "severity": "critical", "keywords": ["block"]},
+                    {
+                        "id": "C-1",
+                        "text": "Block hard",
+                        "severity": "critical",
+                        "keywords": ["block"],
+                    },
                 ]
             }
         )

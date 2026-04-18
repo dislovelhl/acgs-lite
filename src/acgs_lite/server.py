@@ -435,9 +435,7 @@ def create_governance_app(
 
         @app.get("/v1/events/stream")
         async def stream_events() -> StreamingResponse:
-            subscription = cast(
-                AsyncGenerator[GovernanceEvent, None], get_event_bus().subscribe()
-            )
+            subscription = cast(AsyncGenerator[GovernanceEvent, None], get_event_bus().subscribe())
 
             async def event_stream() -> AsyncGenerator[str, None]:
                 pending_event: asyncio.Task[Any] | None = None

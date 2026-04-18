@@ -186,7 +186,9 @@ class TestGovernedGenAI:
             from acgs_lite.integrations.google_genai import GovernedGenAI
 
             client = GovernedGenAI(api_key="test-key")
-            response = client.generate_content(model="gemini-3-flash-preview", contents="What is AI?")
+            response = client.generate_content(
+                model="gemini-3-flash-preview", contents="What is AI?"
+            )
             assert response.text == "Hello from Gemini!"
 
     def test_violation_blocked(self):
@@ -240,7 +242,9 @@ class TestGovernedGenAI:
 
             client = GovernedGenAI(api_key="test-key")
             chunks = list(
-                client.models.generate_content_stream(model="gemini-3-flash-preview", contents="hello")
+                client.models.generate_content_stream(
+                    model="gemini-3-flash-preview", contents="hello"
+                )
             )
             assert chunks == ["c1", "c2"]
 

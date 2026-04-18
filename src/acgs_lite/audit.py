@@ -362,9 +362,7 @@ class AuditLog:
                     try:
                         self._backend.rollback_to(checkpoint)  # type: ignore[union-attr]
                     except Exception as rb_exc:
-                        logger.error(
-                            "audit backend rollback failed: %s", rb_exc, exc_info=True
-                        )
+                        logger.error("audit backend rollback failed: %s", rb_exc, exc_info=True)
                 raise
 
             return chain_hash

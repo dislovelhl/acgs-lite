@@ -45,9 +45,13 @@ def _engine(rules: list[Rule], *, strict: bool = True) -> GovernanceEngine:
     return GovernanceEngine(Constitution.from_rules(rules), strict=strict)
 
 
-def _engine_with_audit(rules: list[Rule], *, strict: bool = True) -> tuple[GovernanceEngine, AuditLog]:
+def _engine_with_audit(
+    rules: list[Rule], *, strict: bool = True
+) -> tuple[GovernanceEngine, AuditLog]:
     audit_log = AuditLog()
-    return GovernanceEngine(Constitution.from_rules(rules), strict=strict, audit_log=audit_log), audit_log
+    return GovernanceEngine(
+        Constitution.from_rules(rules), strict=strict, audit_log=audit_log
+    ), audit_log
 
 
 # ---------------------------------------------------------------------------
@@ -446,7 +450,14 @@ class TestConstitutionalViolationErrorAction:
 
     def test_halt_records_incident_artifact_before_raise(self) -> None:
         engine, audit_log = _engine_with_audit(
-            [_rule("H1", ["plaintext"], severity=Severity.HIGH, workflow_action=ViolationAction.HALT)],
+            [
+                _rule(
+                    "H1",
+                    ["plaintext"],
+                    severity=Severity.HIGH,
+                    workflow_action=ViolationAction.HALT,
+                )
+            ],
         )
         with pytest.raises(ConstitutionalViolationError) as exc:
             engine.validate("send data in plaintext format")

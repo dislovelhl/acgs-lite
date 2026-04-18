@@ -23,7 +23,7 @@ async def main() -> None:
 
     # 2. Move through the review/eval/approve/stage states
     await lc.submit_for_review(draft.bundle_id, "proposer-alice")
-    await lc.approve_review(draft.bundle_id, "reviewer-bob")         # distinct from proposer
+    await lc.approve_review(draft.bundle_id, "reviewer-bob")  # distinct from proposer
     await lc.run_evaluation(
         draft.bundle_id,
         scenarios=[

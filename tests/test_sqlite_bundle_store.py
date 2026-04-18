@@ -161,11 +161,10 @@ class TestSQLiteBundleStoreRoundTrip:
 
 # ── atomic_transition ────────────────────────────────────────────────────
 
+
 class TestAtomicTransition:
     @pytest.mark.asyncio
-    async def test_atomic_transition_saves_bundle_and_activation(
-        self, tmp_path: Path
-    ) -> None:
+    async def test_atomic_transition_saves_bundle_and_activation(self, tmp_path: Path) -> None:
         from acgs_lite.constitution.activation import ActivationRecord
         from acgs_lite.constitution.bundle import BundleStatus
 
@@ -292,9 +291,7 @@ class TestOperationalErrorWrapping:
         assert len(offset_bundles) == 2
         assert all_bundles[1].bundle_id == offset_bundles[0].bundle_id
 
-    def test_save_bundle_raises_lifecycle_error_on_operational_error(
-        self, tmp_path: Path
-    ) -> None:
+    def test_save_bundle_raises_lifecycle_error_on_operational_error(self, tmp_path: Path) -> None:
         """save_bundle's except clause converts OperationalError to LifecycleError."""
         import sqlite3
         from unittest.mock import MagicMock, patch
@@ -310,18 +307,14 @@ class TestOperationalErrorWrapping:
 
         with patch.object(store, "_connect") as mock_connect:
             mock_ctx = MagicMock()
-            mock_ctx.__enter__ = MagicMock(
-                side_effect=sqlite3.OperationalError("disk full")
-            )
+            mock_ctx.__enter__ = MagicMock(side_effect=sqlite3.OperationalError("disk full"))
             mock_ctx.__exit__ = MagicMock(return_value=False)
             mock_connect.return_value = mock_ctx
 
             with pytest.raises(LifecycleError, match="disk full"):
                 store.save_bundle(bundle)
 
-    def test_get_bundle_raises_lifecycle_error_on_operational_error(
-        self, tmp_path: Path
-    ) -> None:
+    def test_get_bundle_raises_lifecycle_error_on_operational_error(self, tmp_path: Path) -> None:
         """get_bundle's except clause converts OperationalError to LifecycleError."""
         import sqlite3
         from unittest.mock import MagicMock, patch

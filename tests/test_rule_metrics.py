@@ -253,7 +253,9 @@ class TestComputeEvalReport:
             results=[
                 self._make_result("c1", GovernanceTestOutcome.PASS, "deny", ["R1"]),
                 self._make_result("c2", GovernanceTestOutcome.PASS, "allow", []),
-                self._make_result("c3", GovernanceTestOutcome.FAIL, "allow", []),  # R1 should have fired
+                self._make_result(
+                    "c3", GovernanceTestOutcome.FAIL, "allow", []
+                ),  # R1 should have fired
             ],
         )
         eval_report = compute_eval_report(

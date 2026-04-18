@@ -73,25 +73,19 @@ class TestEvaluateConditionVerdict:
 
     def test_verdict_in_matches_deny(self) -> None:
         assert (
-            evaluate_condition(
-                {"verdict_in": ["deny", "conditional"]}, _cdp(verdict="deny")
-            )
+            evaluate_condition({"verdict_in": ["deny", "conditional"]}, _cdp(verdict="deny"))
             is True
         )
 
     def test_verdict_in_matches_conditional(self) -> None:
         assert (
-            evaluate_condition(
-                {"verdict_in": ["deny", "conditional"]}, _cdp(verdict="conditional")
-            )
+            evaluate_condition({"verdict_in": ["deny", "conditional"]}, _cdp(verdict="conditional"))
             is True
         )
 
     def test_verdict_in_no_match(self) -> None:
         assert (
-            evaluate_condition(
-                {"verdict_in": ["deny", "conditional"]}, _cdp(verdict="allow")
-            )
+            evaluate_condition({"verdict_in": ["deny", "conditional"]}, _cdp(verdict="allow"))
             is False
         )
 
@@ -137,43 +131,33 @@ class TestEvaluateConditionObligations:
         )
 
     def test_has_obligation_type_empty(self) -> None:
-        assert (
-            evaluate_condition({"has_obligation_type": "phi_guard"}, _cdp()) is False
-        )
+        assert evaluate_condition({"has_obligation_type": "phi_guard"}, _cdp()) is False
 
     def test_has_blocking_unsatisfied_true(self) -> None:
         obs = [{"obligation_type": "foo", "severity": "blocking", "satisfied": False}]
         assert (
-            evaluate_condition(
-                {"has_blocking_unsatisfied": True}, _cdp(runtime_obligations=obs)
-            )
+            evaluate_condition({"has_blocking_unsatisfied": True}, _cdp(runtime_obligations=obs))
             is True
         )
 
     def test_has_blocking_unsatisfied_all_satisfied(self) -> None:
         obs = [{"obligation_type": "foo", "severity": "blocking", "satisfied": True}]
         assert (
-            evaluate_condition(
-                {"has_blocking_unsatisfied": True}, _cdp(runtime_obligations=obs)
-            )
+            evaluate_condition({"has_blocking_unsatisfied": True}, _cdp(runtime_obligations=obs))
             is False
         )
 
     def test_has_blocking_unsatisfied_not_blocking(self) -> None:
         obs = [{"obligation_type": "foo", "severity": "soft", "satisfied": False}]
         assert (
-            evaluate_condition(
-                {"has_blocking_unsatisfied": True}, _cdp(runtime_obligations=obs)
-            )
+            evaluate_condition({"has_blocking_unsatisfied": True}, _cdp(runtime_obligations=obs))
             is False
         )
 
     def test_has_blocking_unsatisfied_false_condition(self) -> None:
         obs = [{"obligation_type": "foo", "severity": "blocking", "satisfied": False}]
         assert (
-            evaluate_condition(
-                {"has_blocking_unsatisfied": False}, _cdp(runtime_obligations=obs)
-            )
+            evaluate_condition({"has_blocking_unsatisfied": False}, _cdp(runtime_obligations=obs))
             is False
         )
 

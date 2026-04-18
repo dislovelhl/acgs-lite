@@ -790,16 +790,12 @@ class TestExplainViolation:
         self, default_constitution: Constitution
     ) -> None:
         server = create_mcp_server(default_constitution)
-        result = await _call_tool(
-            server, "explain_violation", {"action": "some safe action"}
-        )
+        result = await _call_tool(server, "explain_violation", {"action": "some safe action"})
 
         assert result["action"] == "some safe action"
 
     @pytest.mark.asyncio
-    async def test_error_path_returns_error_dict(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_error_path_returns_error_dict(self, default_constitution: Constitution) -> None:
         from unittest.mock import patch
 
         server = create_mcp_server(default_constitution)
@@ -865,9 +861,7 @@ class TestCheckCapabilityTier:
     @pytest.mark.asyncio
     async def test_no_domain_returns_none(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
-        result = await _call_tool(
-            server, "check_capability_tier", {"action_text": "destroy data"}
-        )
+        result = await _call_tool(server, "check_capability_tier", {"action_text": "destroy data"})
 
         assert result["domain"] is None
 
@@ -876,9 +870,7 @@ class TestCheckCapabilityTier:
         self, default_constitution: Constitution
     ) -> None:
         server = create_mcp_server(default_constitution)
-        result = await _call_tool(
-            server, "check_capability_tier", {"action_text": ""}
-        )
+        result = await _call_tool(server, "check_capability_tier", {"action_text": ""})
 
         assert result["tier"] == "SUPERVISED"
 
@@ -903,9 +895,7 @@ class TestVerifyAuditChain:
         assert result["constitutional_hash"] == "608508a9bd224290"
 
     @pytest.mark.asyncio
-    async def test_chain_valid_after_validations(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_chain_valid_after_validations(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
 
         for i in range(5):
@@ -931,9 +921,7 @@ class TestVerifyAuditChain:
         assert result["entries_checked"] == 3
 
     @pytest.mark.asyncio
-    async def test_error_path_returns_error_dict(
-        self, default_constitution: Constitution
-    ) -> None:
+    async def test_error_path_returns_error_dict(self, default_constitution: Constitution) -> None:
         from unittest.mock import patch
 
         server = create_mcp_server(default_constitution)
@@ -992,7 +980,9 @@ class TestCompileWorkflow:
         assert len(result["nodes"]) == 2
 
     @pytest.mark.asyncio
-    async def test_compile_nodes_have_required_fields(self, default_constitution: Constitution) -> None:
+    async def test_compile_nodes_have_required_fields(
+        self, default_constitution: Constitution
+    ) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "compile_workflow", {"workflow": _SIMPLE_WORKFLOW})
         for node in result["nodes"]:
@@ -1007,20 +997,30 @@ class TestCompileWorkflow:
         assert len(result["nodes"]) == 3
 
     @pytest.mark.asyncio
-    async def test_compile_unknown_domain_returns_error(self, default_constitution: Constitution) -> None:
+    async def test_compile_unknown_domain_returns_error(
+        self, default_constitution: Constitution
+    ) -> None:
         server = create_mcp_server(default_constitution)
-        bad = {"goal": "Bad", "domains": ["nonexistent"], "steps": [{"title": "s", "domain": "nonexistent", "depends_on": []}]}
+        bad = {
+            "goal": "Bad",
+            "domains": ["nonexistent"],
+            "steps": [{"title": "s", "domain": "nonexistent", "depends_on": []}],
+        }
         result = await _call_tool(server, "compile_workflow", {"workflow": bad})
         assert "error" in result
 
     @pytest.mark.asyncio
-    async def test_compile_missing_workflow_key_returns_error(self, default_constitution: Constitution) -> None:
+    async def test_compile_missing_workflow_key_returns_error(
+        self, default_constitution: Constitution
+    ) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "compile_workflow", {})
         assert "error" in result
 
     @pytest.mark.asyncio
-    async def test_compile_includes_constitutional_hash(self, default_constitution: Constitution) -> None:
+    async def test_compile_includes_constitutional_hash(
+        self, default_constitution: Constitution
+    ) -> None:
         server = create_mcp_server(default_constitution)
         result = await _call_tool(server, "compile_workflow", {"workflow": _SIMPLE_WORKFLOW})
         assert result.get("constitutional_hash") == "608508a9bd224290"
@@ -1031,14 +1031,22 @@ class TestExecuteWorkflow:
     @pytest.mark.asyncio
     async def test_execute_returns_step_results(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
-        result = await _call_tool(server, "execute_workflow", {"workflow": _SIMPLE_WORKFLOW, "inputs": {"action": "read data", "text": "read data"}})
+        result = await _call_tool(
+            server,
+            "execute_workflow",
+            {"workflow": _SIMPLE_WORKFLOW, "inputs": {"action": "read data", "text": "read data"}},
+        )
         assert "steps" in result
         assert len(result["steps"]) == 2
 
     @pytest.mark.asyncio
     async def test_execute_step_fields(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
-        result = await _call_tool(server, "execute_workflow", {"workflow": _SIMPLE_WORKFLOW, "inputs": {"action": "read data"}})
+        result = await _call_tool(
+            server,
+            "execute_workflow",
+            {"workflow": _SIMPLE_WORKFLOW, "inputs": {"action": "read data"}},
+        )
         for step in result["steps"]:
             assert "node_id" in step
             assert "title" in step
@@ -1048,13 +1056,23 @@ class TestExecuteWorkflow:
     @pytest.mark.asyncio
     async def test_execute_parallel_all_steps(self, default_constitution: Constitution) -> None:
         server = create_mcp_server(default_constitution)
-        result = await _call_tool(server, "execute_workflow", {"workflow": _PARALLEL_WORKFLOW, "inputs": {"text": "safe content", "action": "get"}})
+        result = await _call_tool(
+            server,
+            "execute_workflow",
+            {"workflow": _PARALLEL_WORKFLOW, "inputs": {"text": "safe content", "action": "get"}},
+        )
         assert len(result["steps"]) == 3
 
     @pytest.mark.asyncio
-    async def test_execute_unknown_domain_returns_error(self, default_constitution: Constitution) -> None:
+    async def test_execute_unknown_domain_returns_error(
+        self, default_constitution: Constitution
+    ) -> None:
         server = create_mcp_server(default_constitution)
-        bad = {"goal": "Bad", "domains": ["nonexistent"], "steps": [{"title": "s", "domain": "nonexistent", "depends_on": []}]}
+        bad = {
+            "goal": "Bad",
+            "domains": ["nonexistent"],
+            "steps": [{"title": "s", "domain": "nonexistent", "depends_on": []}],
+        }
         result = await _call_tool(server, "execute_workflow", {"workflow": bad, "inputs": {}})
         assert "error" in result
 

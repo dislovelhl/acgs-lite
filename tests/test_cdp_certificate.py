@@ -15,6 +15,7 @@ import pytest
 # Minimal fixture record
 # ---------------------------------------------------------------------------
 
+
 def _minimal_record() -> dict[str, Any]:
     return {
         "cdp_id": "cdp-test-0001-abcd1234",
@@ -110,6 +111,7 @@ def _full_record() -> dict[str, Any]:
 
 try:
     import fpdf  # noqa: F401
+
     HAS_FPDF = True
 except ImportError:
     HAS_FPDF = False
@@ -121,6 +123,7 @@ skip_no_fpdf = pytest.mark.skipif(not HAS_FPDF, reason="fpdf2 not installed")
 # Tests: ImportError path
 # ---------------------------------------------------------------------------
 
+
 class TestImportError:
     def test_raises_import_error_when_fpdf_missing(self) -> None:
         """If fpdf2 is not installed, generate_certificate must raise ImportError."""
@@ -131,6 +134,7 @@ class TestImportError:
             # Force re-import so the try/except block inside generate_certificate runs
             import importlib
             import acgs_lite.cdp.certificate as cert_mod
+
             importlib.reload(cert_mod)
             with pytest.raises(ImportError, match="fpdf2 is required"):
                 cert_mod.generate_certificate(_minimal_record())
@@ -144,6 +148,7 @@ class TestImportError:
 # ---------------------------------------------------------------------------
 # Tests: PDF output
 # ---------------------------------------------------------------------------
+
 
 @skip_no_fpdf
 class TestGenerateCertificate:
@@ -234,6 +239,7 @@ class TestGenerateCertificate:
 # Tests: Integrity hash
 # ---------------------------------------------------------------------------
 
+
 class TestIntegrityHash:
     def test_deterministic(self) -> None:
         from acgs_lite.cdp.certificate import _integrity_hash
@@ -274,6 +280,7 @@ class TestIntegrityHash:
 # Tests: Timestamp formatter
 # ---------------------------------------------------------------------------
 
+
 class TestFormatTs:
     def test_iso_z_format(self) -> None:
         from acgs_lite.cdp.certificate import _format_ts
@@ -305,6 +312,7 @@ class TestFormatTs:
 # ---------------------------------------------------------------------------
 # Tests: Public API via __init__
 # ---------------------------------------------------------------------------
+
 
 @skip_no_fpdf
 class TestPublicExport:

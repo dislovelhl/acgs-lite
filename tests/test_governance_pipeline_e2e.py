@@ -530,7 +530,14 @@ class TestGovernancePipelineE2E:
 
         # Diverse pool
         diverse_pool = ValidatorPool()
-        models = ["gpt-5.4", "claude-sonnet-4-6", "gemini-2.5-flash", "llama-3", "mistral-2", "qwen-2"]
+        models = [
+            "gpt-5.4",
+            "claude-sonnet-4-6",
+            "gemini-2.5-flash",
+            "llama-3",
+            "mistral-2",
+            "qwen-2",
+        ]
         for i, m in enumerate(models):
             diverse_pool.register(f"v{i}", trust_score=0.9, domains=["fin"], model=m)
 
