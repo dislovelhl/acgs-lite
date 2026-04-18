@@ -4,16 +4,16 @@ MACI (Multi-Agent Constitutional Intelligence) enforces that no agent validates 
 
 ## Role Reference
 
-::: acgs_lite.maci.roles.Role
+::: acgs_lite.maci.roles.MACIRole
 
-::: acgs_lite.maci.roles.MACIConfig
-
-::: acgs_lite.maci.enforcement.MACIEnforcer
+::: acgs_lite.maci.enforcer.MACIEnforcer
     options:
       members:
         - assign_role
-        - validate_separation
-        - enforce
+        - get_role
+        - check
+        - check_no_self_validation
+        - summary
 
 ## Design Constraints
 
@@ -29,17 +29,17 @@ MACI (Multi-Agent Constitutional Intelligence) enforces that no agent validates 
 ### Assign roles
 
 ```python
-from acgs_lite.maci import MACIEnforcer, Role
+from acgs_lite.maci import MACIEnforcer, MACIRole
 
 enforcer = MACIEnforcer()
-enforcer.assign_role(agent_a, Role.LEGISLATIVE)   # Proposes
-enforcer.assign_role(agent_b, Role.JUDICIAL)       # Validates
-enforcer.assign_role(agent_c, Role.EXECUTIVE)      # Executes
+enforcer.assign_role(agent_a, MACIRole.PROPOSER)   # Proposes
+enforcer.assign_role(agent_b, MACIRole.VALIDATOR)  # Validates
+enforcer.assign_role(agent_c, MACIRole.EXECUTOR)   # Executes
 ```
 
 ### Validate separation
 
 ```python
-# Raises MACIViolationError if same agent holds conflicting roles
-enforcer.validate_separation()
+# Raises MACIViolationError if the same agent proposes and validates
+enforcer.check_no_self_validation(agent_a, agent_b)
 ```

@@ -91,6 +91,14 @@ nav:
       - Compliance: api/compliance.md
   - Changelog: changelog.md
   - Security: security.md
+  - Additional Resources:
+      - MCP Notes: mcp.md
+      - External Distribution Submissions: external-distribution-submissions.md
+      - Launch Copy Drafts: launch-copy-drafts.md
+      - Final Launch Copy: final-launch-copy.md
+      - Hero Demo Capture Plan: hero-demo-capture-plan.md
+      - Next Milestones: next-milestones.md
+      - OSS Growth Playbook: oss-growth-playbook.md
 
 markdown_extensions:
   - pymdownx.highlight:

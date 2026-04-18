@@ -1,7 +1,7 @@
 # Quickstart
 
 Get ACGS running in a few minutes with the same API surface exercised by
-[`examples/quickstart.py`](../examples/quickstart.py).
+[`examples/quickstart.py`](https://github.com/dislovelhl/acgs-lite/blob/main/examples/quickstart.py).
 
 ## 1. Install
 
@@ -106,4 +106,5 @@ python -m acgs_lite.integrations.mcp_server --constitution constitution.yaml
 - Read the [MCP Governance Guide](mcp-guide.md).
 - Review [MACI Architecture](maci.md).
 - Run an [EU AI Act assessment](compliance-2026.md).
-- Explore more runnable examples in [`examples/README.md`](../examples/README.md).
+- Explore more runnable examples in
+  [`examples/README.md`](https://github.com/dislovelhl/acgs-lite/blob/main/examples/README.md).

@@ -4,18 +4,16 @@ The audit trail records every governance decision in a SHA-256 chained log. Any 
 
 ## Class Reference
 
-::: acgs_lite.audit.AuditTrail
+::: acgs_lite.audit.AuditLog
     options:
       members:
         - record
         - verify_chain
-        - export
-        - export_pdf
+        - export_json
+        - export_dicts
       show_source: true
 
-::: acgs_lite.audit.AuditRecord
-
-::: acgs_lite.audit.ChainVerificationResult
+::: acgs_lite.audit.AuditEntry
 
 ## Examples
 
@@ -23,36 +21,31 @@ The audit trail records every governance decision in a SHA-256 chained log. Any 
 
 ```python
 from acgs_lite import GovernedAgent, Constitution
-from acgs_lite.audit import AuditTrail
+from acgs_lite.audit import AuditLog
 
 agent = GovernedAgent(my_agent, constitution=Constitution.from_template("general"))
 result = agent.run("some request")
 
 # The trail is automatically populated
-trail: AuditTrail = agent.audit_trail
+trail: AuditLog = agent.audit_trail
 ```
 
 ### Verify chain integrity
 
 ```python
 result = trail.verify_chain()
-if not result.valid:
-    print(f"Tamper detected at record {result.first_invalid_index}")
+print(f"Chain valid: {result}")
 ```
 
 ### Export records
 
 ```python
-# JSON export
-records = trail.export(format="json")
-
-# PDF compliance report
-trail.export_pdf("audit_report.pdf")
+trail.export_json("audit_report.json")
 ```
 
 ### Query records
 
 ```python
-violations = [r for r in trail.records if r.action == "BLOCK"]
+violations = [r for r in trail.entries if r.action == "BLOCK"]
 print(f"{len(violations)} blocked actions in this session")
 ```

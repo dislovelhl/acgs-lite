@@ -33,4 +33,5 @@ make test-cov      # with coverage report
 
 ## License
 
-ACGS is licensed under Apache-2.0. See [LICENSE](../LICENSE) for details.
+ACGS is licensed under Apache-2.0. See the
+[LICENSE](https://github.com/dislovelhl/acgs-lite/blob/main/LICENSE) for details.

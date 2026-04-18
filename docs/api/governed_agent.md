@@ -4,13 +4,12 @@
 
 ## Class Reference
 
-::: acgs_lite.agent.GovernedAgent
+::: acgs_lite.governed.GovernedAgent
     options:
       members:
         - __init__
         - run
-        - validate_input
-        - validate_output
+        - arun
       show_source: true
 
 ## Examples
@@ -26,17 +25,19 @@ agent = GovernedAgent(my_llm_agent, constitution=constitution)
 result = agent.run("summarise this document")
 ```
 
-### With custom MACI roles
+### With MACI role enforcement
 
 ```python
-from acgs_lite.maci import MACIConfig, Role
+from acgs_lite import MACIRole
 
-config = MACIConfig(
-    proposer=Role.LEGISLATIVE,
-    validator=Role.JUDICIAL,
-    executor=Role.EXECUTIVE,
+agent = GovernedAgent(
+    my_agent,
+    constitution=constitution,
+    maci_role=MACIRole.PROPOSER,
+    enforce_maci=True,
 )
-agent = GovernedAgent(my_agent, constitution=constitution, maci=config)
+
+result = agent.run("approve this policy change", governance_action="propose_rule")
 ```
 
 ### Async usage
