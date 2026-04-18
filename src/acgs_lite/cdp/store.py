@@ -8,6 +8,7 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import builtins
 from collections import OrderedDict
 from typing import Protocol, runtime_checkable
 
@@ -35,7 +36,7 @@ class CDPBackend(Protocol):
         """Return a paginated list of records, newest first."""
         ...
 
-    def chain_hashes(self, tenant_id: str | None = None) -> list[str]:
+    def chain_hashes(self, tenant_id: str | None = None) -> builtins.list[str]:
         """Return ordered list of cdp_hash values for chain verification."""
         ...
 
@@ -81,7 +82,7 @@ class InMemoryCDPBackend:
         records.reverse()  # newest first
         return records[offset : offset + limit]
 
-    def chain_hashes(self, tenant_id: str | None = None) -> list[str]:
+    def chain_hashes(self, tenant_id: str | None = None) -> builtins.list[str]:
         records = list(self._records.values())
         if tenant_id is not None:
             records = [r for r in records if r.tenant_id == tenant_id]
@@ -92,7 +93,7 @@ class InMemoryCDPBackend:
             return len(self._records)
         return sum(1 for r in self._records.values() if r.tenant_id == tenant_id)
 
-    def verify_chain(self, tenant_id: str | None = None) -> tuple[bool, list[str]]:
+    def verify_chain(self, tenant_id: str | None = None) -> tuple[bool, builtins.list[str]]:
         """Verify hash chain integrity. Returns (is_valid, list_of_broken_ids)."""
         records = list(self._records.values())
         if tenant_id is not None:

@@ -30,7 +30,7 @@ except ImportError:
     DilithiumSigner = None
 else:
 
-    class DilithiumSigner:
+    class DilithiumSigner:  # type: ignore[no-redef]
         """oqs-backed ML-DSA-44 signer."""
 
         def __init__(self) -> None:

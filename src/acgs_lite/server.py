@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from collections.abc import AsyncGenerator
 from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Protocol, cast
@@ -18,7 +19,7 @@ from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.cdp.store import InMemoryCDPBackend
 from acgs_lite.constitution import Constitution
 from acgs_lite.engine import GovernanceEngine
-from acgs_lite.events import get_event_bus
+from acgs_lite.events import GovernanceEvent, get_event_bus
 from acgs_lite.federation import federation_router
 from acgs_lite.integrations.openshell_governance import (
     GovernanceStateBackend,
@@ -434,9 +435,11 @@ def create_governance_app(
 
         @app.get("/v1/events/stream")
         async def stream_events() -> StreamingResponse:
-            subscription = get_event_bus().subscribe()
+            subscription = cast(
+                AsyncGenerator[GovernanceEvent, None], get_event_bus().subscribe()
+            )
 
-            async def event_stream():
+            async def event_stream() -> AsyncGenerator[str, None]:
                 pending_event: asyncio.Task[Any] | None = None
                 try:
                     while True:
