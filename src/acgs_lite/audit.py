@@ -235,21 +235,20 @@ class AuditLog:
         """
         self._prepare_entry(entry, proof_certificate, provenance)
 
-        # Chain hash computation + append must be atomic to prevent
-        # racing writers from corrupting the chain under multi-agent load.
+        # Chain hash computation + append + backend write must all be serialized.
+        # Previously the backend write happened outside the lock as an I/O
+        # optimization, but that let a record() from thread B race past a
+        # concurrent record_atomic() from thread A: if B's write landed
+        # between A's checkpoint and A's persist, A's rollback_to() would
+        # truncate the backend past B's committed entry. Correctness
+        # requires the backend write to be ordered against the state lock.
         with self._lock:
             chain_hash = self._append_locked(entry)
-
-        # Persist to backend outside the lock; backends may block on I/O
-        # and we don't want to serialize all recorders on disk latency.
-        # Note: record_atomic() writes the backend INSIDE the lock so that
-        # rollback can cover it — this non-atomic fast path is for callers
-        # that don't need rollback semantics.
-        if self._backend is not None:
-            try:
-                self._backend.write(entry.to_dict(), chain_hash)
-            except Exception as exc:
-                logger.warning("audit backend write failed: %s", exc, exc_info=True)
+            if self._backend is not None:
+                try:
+                    self._backend.write(entry.to_dict(), chain_hash)
+                except Exception as exc:
+                    logger.warning("audit backend write failed: %s", exc, exc_info=True)
 
         return chain_hash
 

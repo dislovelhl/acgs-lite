@@ -456,6 +456,67 @@ class TestAuditLog:
         assert log.entries[0].id == "retry-me"
         assert log.verify_chain()
 
+    def test_record_atomic_rollback_preserves_concurrent_writer(self, tmp_path):
+        """Codex finding: a rollback from record_atomic must not erase an
+        entry that a concurrent record() caller committed between checkpoint
+        and persist. Regression test for the backend-write-outside-lock race."""
+        import threading
+        import time
+
+        from acgs_lite.audit import JSONLAuditBackend
+
+        backend_path = tmp_path / "audit.jsonl"
+        backend = JSONLAuditBackend(backend_path)
+        log = AuditLog(backend=backend)
+
+        # Atomic writer's persist blocks until the concurrent writer has landed,
+        # then fails — forcing rollback to happen *after* the other write.
+        concurrent_done = threading.Event()
+
+        def slow_failing_persist(_log):
+            # Give the other thread a window to sneak a record() in.
+            concurrent_done.wait(timeout=2.0)
+            raise OSError("persist failed — triggers rollback")
+
+        errors: list[BaseException] = []
+
+        def atomic_writer():
+            try:
+                log.record_atomic(
+                    AuditEntry(id="atomic-rolled-back", type="test", valid=True),
+                    persist=slow_failing_persist,
+                )
+            except OSError:
+                pass
+            except BaseException as e:
+                errors.append(e)
+
+        def concurrent_writer():
+            # Small delay so the atomic writer has acquired the lock first.
+            time.sleep(0.05)
+            log.record(AuditEntry(id="concurrent-committed", type="test", valid=True))
+            concurrent_done.set()
+
+        t1 = threading.Thread(target=atomic_writer)
+        t2 = threading.Thread(target=concurrent_writer)
+        t1.start()
+        t2.start()
+        t1.join(timeout=5.0)
+        t2.join(timeout=5.0)
+
+        assert not errors, f"unexpected errors: {errors}"
+
+        # In-memory: exactly the committed entry survives.
+        ids = [e.id for e in log.entries]
+        assert ids == ["concurrent-committed"], f"unexpected entries: {ids}"
+
+        # Durable backend: same — rollback did not erase the concurrent write.
+        backend.flush()
+        reconstructed = AuditLog.from_backend(JSONLAuditBackend(backend_path))
+        rec_ids = [e.id for e in reconstructed.entries]
+        assert rec_ids == ["concurrent-committed"], f"backend has: {rec_ids}"
+        assert reconstructed.verify_chain()
+
     def test_record_atomic_rolls_back_durable_backend_on_persist_failure(self, tmp_path):
         """Codex finding: durable backends must roll back too, otherwise
         from_backend() replays a phantom entry after a failed atomic write."""
