@@ -24,7 +24,6 @@ import pytest
 from acgs_lite.compliance import (
     AustraliaAIEthicsFramework,
     BrazilLGPDFramework,
-    CanadaAIDAFramework,
     CCPACPRAFramework,
     ChecklistStatus,
     ChinaAIFramework,

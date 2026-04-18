@@ -17,7 +17,6 @@ from acgs_lite.engine.core import (
     _FastAuditLog,
     _NoopRecorder,
 )
-from acgs_lite.engine.rust import _HAS_RUST
 from acgs_lite.errors import ConstitutionalViolationError
 
 # ---------------------------------------------------------------------------

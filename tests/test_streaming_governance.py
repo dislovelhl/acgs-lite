@@ -807,7 +807,7 @@ class TestEdgeCases:
             flush_interval_chars=0,
         )
         # Should not crash; interval clamped to 1
-        result = sv.feed("a")
+        sv.feed("a")
         assert sv.stats.validations_performed == 1
 
 

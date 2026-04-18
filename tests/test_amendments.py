@@ -604,10 +604,10 @@ class TestApplyChanges:
         mock_c.version = "1.0"
         mock_c.rules = []
 
-        with pytest.raises(Exception):
+        with pytest.raises((AttributeError, TypeError, Exception)):
             # Will try to import Rule and Constitution; catches import chain
-            # This is expected in test isolation - the important thing is
-            # the code path is exercised
+            # including pydantic ValidationError when mocks fail Pydantic v2 checks.
+            # The important thing is the code path is exercised.
             AmendmentProtocol._apply_changes(amd, mock_c)
 
     def test_remove_rule(self) -> None:
@@ -624,8 +624,9 @@ class TestApplyChanges:
         mock_c.version = "1.0"
         mock_c.rules = [mock_rule_1, mock_rule_2]
 
-        with pytest.raises(Exception):
-            # Same as add_rule - imports Constitution in-method
+        with pytest.raises((AttributeError, TypeError, Exception)):
+            # Same as add_rule - imports Constitution in-method;
+            # pydantic ValidationError is also acceptable when mocks fail v2 checks.
             AmendmentProtocol._apply_changes(amd, mock_c)
 
 

@@ -15,9 +15,7 @@ from unittest.mock import patch
 
 import pytest
 
-from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution, Rule, Severity
-from acgs_lite.engine import GovernanceEngine
 from acgs_lite.integrations.mcp_server import (
     MCP_AVAILABLE,
     create_mcp_server,
@@ -593,9 +591,11 @@ class TestCreateMcpServer:
         assert server is not None
 
     def test_mcp_unavailable_raises_import_error(self) -> None:
-        with patch("acgs_lite.integrations.mcp_server.MCP_AVAILABLE", False):
-            with pytest.raises(ImportError, match="mcp package is required"):
-                create_mcp_server()
+        with (
+            patch("acgs_lite.integrations.mcp_server.MCP_AVAILABLE", False),
+            pytest.raises(ImportError, match="mcp package is required"),
+        ):
+            create_mcp_server()
 
 
 # ---------------------------------------------------------------------------
@@ -607,9 +607,11 @@ class TestRunMcpServer:
     """Tests for the run_mcp_server entry point."""
 
     def test_mcp_unavailable_raises_import_error(self) -> None:
-        with patch("acgs_lite.integrations.mcp_server.MCP_AVAILABLE", False):
-            with pytest.raises(ImportError, match="mcp package is required"):
-                run_mcp_server()
+        with (
+            patch("acgs_lite.integrations.mcp_server.MCP_AVAILABLE", False),
+            pytest.raises(ImportError, match="mcp package is required"),
+        ):
+            run_mcp_server()
 
     def test_run_mcp_server_creates_and_runs(self) -> None:
         """Verify run_mcp_server wires up create_mcp_server and asyncio.run."""
@@ -645,9 +647,6 @@ class TestStrictModeRestoration:
     ) -> None:
         """After validate_action completes, engine.strict must be restored."""
         constitution = custom_constitution
-        audit_log = AuditLog()
-        engine = GovernanceEngine(constitution, audit_log=audit_log, strict=True)
-
         server = create_mcp_server(constitution, strict=True)
 
         # Call validate_action which should temporarily flip strict=False

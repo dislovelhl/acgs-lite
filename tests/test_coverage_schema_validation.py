@@ -121,7 +121,7 @@ class TestValidateRules:
 
         r1 = Rule(id="DUP", text="first", severity=Severity.HIGH, keywords=["a"])
         r2 = Rule(id="DUP", text="second", severity=Severity.HIGH, keywords=["b"])
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             Constitution(rules=[r1, r2])
 
     def test_no_keywords_accepted_by_constitution(self) -> None:

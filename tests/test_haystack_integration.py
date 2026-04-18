@@ -781,8 +781,8 @@ class TestHaystackImportGuard:
 class TestExtractTextsFromDict:
     def test_empty_dict(self):
         from acgs_lite.integrations.haystack import (
-            _extract_texts_from_dict,
             _INPUT_TEXT_KEYS,
+            _extract_texts_from_dict,
         )
 
         result = _extract_texts_from_dict(
@@ -793,8 +793,8 @@ class TestExtractTextsFromDict:
 
     def test_string_values_extracted(self):
         from acgs_lite.integrations.haystack import (
-            _extract_texts_from_dict,
             _INPUT_TEXT_KEYS,
+            _extract_texts_from_dict,
         )
 
         result = _extract_texts_from_dict(
@@ -806,8 +806,8 @@ class TestExtractTextsFromDict:
 
     def test_list_of_strings_extracted(self):
         from acgs_lite.integrations.haystack import (
-            _extract_texts_from_dict,
             _INPUT_TEXT_KEYS,
+            _extract_texts_from_dict,
         )
 
         result = _extract_texts_from_dict(
@@ -819,8 +819,8 @@ class TestExtractTextsFromDict:
 
     def test_document_objects_extracted(self):
         from acgs_lite.integrations.haystack import (
-            _extract_texts_from_dict,
             _INPUT_TEXT_KEYS,
+            _extract_texts_from_dict,
         )
 
         result = _extract_texts_from_dict(
