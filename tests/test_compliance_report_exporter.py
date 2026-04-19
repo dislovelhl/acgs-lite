@@ -17,14 +17,13 @@ from pathlib import Path
 import pytest
 
 from acgs_lite.compliance import (
-    MultiFrameworkAssessor,
     ComplianceReportExporter,
     EUAIActFramework,
     GDPRFramework,
+    MultiFrameworkAssessor,
     NISTAIRMFFramework,
 )
 from acgs_lite.compliance.report_exporter import ComplianceReportExporter
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

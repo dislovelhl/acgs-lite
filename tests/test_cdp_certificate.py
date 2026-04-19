@@ -6,10 +6,8 @@ import hashlib
 import json
 import sys
 from typing import Any
-from unittest.mock import MagicMock, patch
 
 import pytest
-
 
 # ---------------------------------------------------------------------------
 # Minimal fixture record
@@ -133,6 +131,7 @@ class TestImportError:
         try:
             # Force re-import so the try/except block inside generate_certificate runs
             import importlib
+
             import acgs_lite.cdp.certificate as cert_mod
 
             importlib.reload(cert_mod)
@@ -224,13 +223,10 @@ class TestGenerateCertificate:
 
     def test_multiple_pages_generated(self) -> None:
         """A full record should produce at least 2 pages."""
+
         from acgs_lite.cdp.certificate import generate_certificate
-        from fpdf import FPDF
 
         result = generate_certificate(_full_record())
-        # Re-parse the PDF bytes to count pages
-        # Simplest proxy: count /Page dictionary markers
-        page_markers = result.count(b"/Type /Page\n") + result.count(b"/Type /Page ")
         # fpdf2 may use different whitespace — just check we got a multi-KB PDF
         assert len(result) > 4_000
 

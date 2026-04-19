@@ -1,0 +1,45 @@
+name: verify-citations
+
+on:
+  pull_request:
+    paths:
+      - 'papers/**'
+      - 'paper/**'
+      - 'docs/**'
+      - 'src/**/*.py'
+      - 'README.md'
+      - 'CHANGELOG.md'
+  push:
+    branches: [main]
+  schedule:
+    # Weekly drift check — arXiv occasionally withdraws papers
+    - cron: '0 7 * * 1'
+
+concurrency:
+  group: cite-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Scan only (fast fail on parse errors)
+        run: python scripts/verify_citations.py --root . --skip-network
+      - name: Full network verification
+        run: python scripts/verify_citations.py --root . --timeout 15 --workers 8
+        # Allow one retry for transient arXiv rate limits
+        continue-on-error: false
+      - name: Upload JSON results
+        if: always()
+        run: |
+          python scripts/verify_citations.py --root . --json > cites.json || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: citation-results
+          path: cites.json

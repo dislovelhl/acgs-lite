@@ -8,6 +8,7 @@ from acgs_lite.trajectory import (
     CumulativeValueRule,
     FrequencyThresholdRule,
     InMemoryTrajectoryStore,
+    SensitiveToolSequenceRule,
     TrajectoryMonitor,
     TrajectorySession,
 )
@@ -19,12 +20,16 @@ def _decision(
     timestamp: datetime,
     amount: int = 0,
     agent_id: str = "agent-1",
+    metadata: dict[str, object] | None = None,
 ) -> dict[str, object]:
+    merged_metadata = {"amount": amount}
+    if metadata:
+        merged_metadata.update(metadata)
     return {
         "action_type": action_type,
         "agent_id": agent_id,
         "timestamp": timestamp.isoformat(),
-        "metadata": {"amount": amount},
+        "metadata": merged_metadata,
     }
 
 
@@ -100,3 +105,66 @@ def test_trajectory_session_add_is_append_only() -> None:
     session.add(second)
 
     assert session.decisions == [first, second]
+
+
+def test_checkpoint_detects_sensitive_tool_sequence_after_untrusted_input() -> None:
+    base = datetime(2026, 4, 7, tzinfo=timezone.utc)
+    store = InMemoryTrajectoryStore()
+    monitor = TrajectoryMonitor(
+        rules=[SensitiveToolSequenceRule(sensitive_tools={"shell", "terminal"})],
+        store=store,
+    )
+
+    precursor_violations = monitor.check_checkpoint(
+        session_id="s5",
+        agent_id="agent-1",
+        decision=_decision(
+            action_type="ingest-untrusted-content",
+            timestamp=base,
+            metadata={
+                "checkpoint_kind": "input_analysis",
+                "prompt_injection_suspected": True,
+            },
+        ),
+    )
+    assert precursor_violations == []
+
+    tool_violations = monitor.check_checkpoint(
+        session_id="s5",
+        agent_id="agent-1",
+        decision=_decision(
+            action_type="tool-call",
+            timestamp=base + timedelta(seconds=1),
+            metadata={
+                "checkpoint_kind": "tool_invocation",
+                "tool_name": "shell",
+            },
+        ),
+    )
+
+    assert len(tool_violations) == 1
+    assert tool_violations[0].rule_id == "TRAJ-TOOLSEQ-001"
+    assert "shell" in tool_violations[0].evidence
+
+
+def test_checkpoint_allows_safe_tool_sequence_without_precursor_flags() -> None:
+    base = datetime(2026, 4, 7, tzinfo=timezone.utc)
+    monitor = TrajectoryMonitor(
+        rules=[SensitiveToolSequenceRule(sensitive_tools={"shell", "terminal"})],
+        store=InMemoryTrajectoryStore(),
+    )
+
+    violations = monitor.check_checkpoint(
+        session_id="s6",
+        agent_id="agent-1",
+        decision=_decision(
+            action_type="tool-call",
+            timestamp=base,
+            metadata={
+                "checkpoint_kind": "tool_invocation",
+                "tool_name": "filesystem-read",
+            },
+        ),
+    )
+
+    assert violations == []

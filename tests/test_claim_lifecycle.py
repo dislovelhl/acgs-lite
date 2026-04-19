@@ -13,7 +13,6 @@ import pytest
 from acgs_lite.constitution.claim_lifecycle import (
     CaseConfig,
     CaseManager,
-    CaseRecord,
     CaseState,
 )
 

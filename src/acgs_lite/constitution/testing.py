@@ -77,6 +77,118 @@ class TestSuiteResult:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class BehavioralConsistencyCase:
+    """SNCA-inspired rule-level behavioral consistency check."""
+
+    rule_id: str
+    should_block: tuple[str, ...] = ()
+    should_allow: tuple[str, ...] = ()
+    context: dict[str, Any] = field(default_factory=dict)
+    description: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class BehavioralConsistencyFinding:
+    """One mismatch between stated rule expectation and observed behavior."""
+
+    rule_id: str
+    action: str
+    expected: str
+    actual: str
+    details: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class BehavioralConsistencyReport:
+    total_cases: int
+    passed_cases: int
+    failed_cases: int
+    findings: tuple[BehavioralConsistencyFinding, ...]
+    pass_rate: float
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "total_cases": self.total_cases,
+            "passed_cases": self.passed_cases,
+            "failed_cases": self.failed_cases,
+            "findings": [
+                {
+                    "rule_id": finding.rule_id,
+                    "action": finding.action,
+                    "expected": finding.expected,
+                    "actual": finding.actual,
+                    "details": finding.details,
+                }
+                for finding in self.findings
+            ],
+            "pass_rate": self.pass_rate,
+        }
+
+
+class BehavioralConsistencyAuditor:
+    """Run rule-level behavioral consistency checks against GovernanceEngine behavior."""
+
+    __slots__ = ("_cases",)
+
+    def __init__(self, cases: Sequence[BehavioralConsistencyCase]) -> None:
+        self._cases = list(cases)
+
+    def audit(self, engine: Any) -> BehavioralConsistencyReport:
+        findings: list[BehavioralConsistencyFinding] = []
+        total = len(self._cases)
+
+        for case in self._cases:
+            for action in case.should_block:
+                matched, decision = self._evaluate(engine, action, case.context, case.rule_id)
+                if not matched:
+                    findings.append(
+                        BehavioralConsistencyFinding(
+                            rule_id=case.rule_id,
+                            action=action,
+                            expected="block",
+                            actual=decision,
+                            details="Expected rule to trigger for blocked example.",
+                        )
+                    )
+            for action in case.should_allow:
+                matched, decision = self._evaluate(engine, action, case.context, case.rule_id)
+                if matched or decision != "allow":
+                    findings.append(
+                        BehavioralConsistencyFinding(
+                            rule_id=case.rule_id,
+                            action=action,
+                            expected="allow",
+                            actual=decision,
+                            details="Expected clean allow path without matching target rule.",
+                        )
+                    )
+
+        failed = len({(f.rule_id, f.action, f.expected) for f in findings})
+        passed = total - failed
+        pass_rate = (passed / total) if total else 1.0
+        return BehavioralConsistencyReport(
+            total_cases=total,
+            passed_cases=passed,
+            failed_cases=failed,
+            findings=tuple(findings),
+            pass_rate=pass_rate,
+        )
+
+    @staticmethod
+    def _evaluate(
+        engine: Any,
+        action: str,
+        context: dict[str, Any],
+        rule_id: str,
+    ) -> tuple[bool, str]:
+        result = engine.validate(action, context=context or None)
+        matched = any(v.rule_id == rule_id for v in (result.violations + result.warnings))
+        if result.valid:
+            return matched, "allow"
+        return matched, "block"
+
+
 class GovernanceTestSuite:
     """exp129: Bounded in-memory test suite for constitution validation behavior."""
 

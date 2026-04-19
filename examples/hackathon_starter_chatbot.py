@@ -10,9 +10,7 @@ Usage:
 No API keys required. Runs entirely offline.
 """
 
-from acgs_lite import Constitution, GovernedAgent, GovernanceEngine
-from acgs_lite.audit import AuditLog
-
+from acgs_lite import Constitution, GovernedAgent
 
 # --- Step 1: Define your rules ---
 CONSTITUTION_YAML = """

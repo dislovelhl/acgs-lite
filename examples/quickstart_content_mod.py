@@ -64,7 +64,7 @@ def main() -> None:
         strict=False,
     )
     print(f"\nConstitution: {constitution.name} ({len(constitution.rules)} rules)")
-    print(f"Mode: non-strict (flag, do not block)")
+    print("Mode: non-strict (flag, do not block)")
 
     # -- Clean content passes --
     print("\n-- Safe Content --")

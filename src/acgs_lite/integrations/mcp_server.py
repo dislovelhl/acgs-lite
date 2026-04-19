@@ -20,18 +20,33 @@ from __future__ import annotations
 
 import asyncio
 import json
+from dataclasses import asdict
+from datetime import datetime, timezone
 from typing import Any
 
 import structlog
 
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
+from acgs_lite.constitution.experience_library import GovernanceExperienceLibrary
+from acgs_lite.constitution.governance_memory import GovernanceMemoryRetriever
+from acgs_lite.constitution.semantic_search import EmbeddingProvider
 from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations._runtime_governance import (
+    build_runtime_governance_observability,
+    record_validation_precedent,
+)
 from acgs_lite.integrations.workflow import (
     WORKFLOW_AVAILABLE,
     GovernanceWorkflowCompiler,
     GovernanceWorkflowExecutor,
     list_workflow_templates,
+)
+from acgs_lite.scoring import ConstitutionalImpactScorer
+from acgs_lite.trajectory import (
+    InMemoryTrajectoryStore,
+    SensitiveToolSequenceRule,
+    TrajectoryMonitor,
 )
 
 logger = structlog.get_logger(__name__)
@@ -57,6 +72,8 @@ def create_mcp_server(
     *,
     server_name: str = "acgs-governance",
     strict: bool = False,
+    embedding_provider: EmbeddingProvider | None = None,
+    experience_library: GovernanceExperienceLibrary | None = None,
 ) -> Any:
     """Create an MCP server exposing governance tools.
 
@@ -64,6 +81,8 @@ def create_mcp_server(
         constitution: Rules to enforce. Defaults to built-in rules.
         server_name: Name of the MCP server.
         strict: If True, raise on violations in validate_action.
+        embedding_provider: Optional embedding provider for governance-memory retrieval.
+        experience_library: Optional precedent library for governance-memory retrieval.
 
     Returns:
         MCP Server instance.
@@ -74,6 +93,16 @@ def create_mcp_server(
     constitution = constitution if constitution is not None else Constitution.default()
     audit_log = AuditLog()
     engine = GovernanceEngine(constitution, audit_log=audit_log, strict=strict, audit_mode="full")
+    impact_scorer = ConstitutionalImpactScorer()
+    trajectory_monitor = TrajectoryMonitor(
+        rules=[SensitiveToolSequenceRule(sensitive_tools={"shell", "terminal", "bash", "exec"})],
+        store=InMemoryTrajectoryStore(),
+    )
+    governance_memory = GovernanceMemoryRetriever(
+        constitution,
+        experience_library=experience_library,
+        embedding_provider=embedding_provider,
+    )
 
     server = Server(server_name)
 
@@ -98,6 +127,29 @@ def create_mcp_server(
                             "type": "string",
                             "description": "ID of the agent performing the action",
                             "default": "mcp-client",
+                        },
+                        "session_id": {
+                            "type": "string",
+                            "description": "Optional session identifier for mid-trajectory checkpoint tracking",
+                        },
+                        "checkpoint_kind": {
+                            "type": "string",
+                            "description": "Optional checkpoint kind such as input_analysis or tool_invocation",
+                        },
+                        "tool_name": {
+                            "type": "string",
+                            "description": "Optional tool name when validating a tool invocation",
+                        },
+                        "runtime_context": {
+                            "type": "object",
+                            "description": "Optional runtime risk signals (e.g. untrusted_input, prompt_injection_suspected)",
+                            "default": {},
+                        },
+                        "capability_tags": {
+                            "type": "array",
+                            "items": {"type": "string"},
+                            "description": "Optional capability tags used for static tool prior scoring",
+                            "default": [],
                         },
                     },
                     "required": ["action"],
@@ -283,17 +335,113 @@ def create_mcp_server(
         if name == "validate_action":
             action = arguments.get("action", "")
             agent_id = arguments.get("agent_id", "mcp-client")
+            session_id = arguments.get("session_id")
+            checkpoint_kind = arguments.get("checkpoint_kind")
+            tool_name = arguments.get("tool_name")
+            runtime_context = arguments.get("runtime_context", {})
+            capability_tags = arguments.get("capability_tags", [])
+            if not isinstance(runtime_context, dict):
+                runtime_context = {}
+            if not isinstance(capability_tags, list):
+                capability_tags = []
+
+            engine_context = dict(runtime_context)
+            if checkpoint_kind:
+                engine_context["checkpoint_kind"] = checkpoint_kind
+            if tool_name:
+                engine_context["tool_name"] = tool_name
+            if capability_tags:
+                engine_context["capability_tags"] = capability_tags
+
+            governance_memory_report = governance_memory.retrieve(action)
+            tool_risk = (
+                impact_scorer.score_tool_invocation(
+                    tool_name=tool_name,
+                    request=action,
+                    runtime_context=runtime_context,
+                    capability_tags=capability_tags,
+                )
+                if tool_name
+                else None
+            )
+            trajectory_violations = (
+                trajectory_monitor.check_checkpoint(
+                    session_id=session_id,
+                    agent_id=agent_id,
+                    decision={
+                        "action_type": checkpoint_kind,
+                        "agent_id": agent_id,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "metadata": {
+                            **engine_context,
+                            "tool_name": tool_name,
+                        },
+                    },
+                )
+                if session_id and checkpoint_kind
+                else []
+            )
+            audit_metadata = build_runtime_governance_observability(
+                governance_memory_report=governance_memory_report,
+                tool_risk=tool_risk,
+                trajectory_violations=trajectory_violations,
+                tool_name=tool_name,
+                session_id=session_id,
+                checkpoint_kind=checkpoint_kind,
+            )
 
             # Use non-strict for MCP (return result, don't raise)
             old_strict = engine.strict
             engine.strict = False
-            result = engine.validate(action, agent_id=agent_id)
+            result = engine.validate(
+                action,
+                agent_id=agent_id,
+                context=engine_context or None,
+                audit_metadata=audit_metadata or None,
+            )
             engine.strict = old_strict
+
+            response = result.to_dict()
+            response["retrieved_rules"] = [
+                asdict(hit) for hit in governance_memory_report.rule_hits
+            ]
+            response["retrieved_precedents"] = [
+                asdict(hit) for hit in governance_memory_report.precedent_hits
+            ]
+            response["governance_memory_summary"] = asdict(governance_memory_report.summary)
+
+            if tool_name:
+                response["tool_risk"] = tool_risk
+
+            if session_id and checkpoint_kind:
+                response["trajectory_violations"] = [
+                    {
+                        "rule_id": v.rule_id,
+                        "evidence": v.evidence,
+                        "severity": v.severity,
+                        "agent_id": v.agent_id,
+                        "timestamp": v.timestamp,
+                    }
+                    for v in trajectory_violations
+                ]
+            else:
+                response["trajectory_violations"] = []
+
+            try:
+                record_validation_precedent(
+                    experience_library=experience_library,
+                    embedding_provider=embedding_provider,
+                    action=action,
+                    result=result,
+                    context=engine_context,
+                )
+            except Exception as exc:  # pragma: no cover - defensive logging
+                logger.warning("validate_action_precedent_record_failed", error=str(exc))
 
             return [
                 types.TextContent(
                     type="text",
-                    text=json.dumps(result.to_dict(), indent=2),
+                    text=json.dumps(response, indent=2),
                 )
             ]
 

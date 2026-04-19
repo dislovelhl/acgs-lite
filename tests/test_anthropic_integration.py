@@ -17,8 +17,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from acgs_lite.constitution import Constitution, Rule, Severity
+from acgs_lite.constitution.experience_library import GovernanceExperienceLibrary
 from acgs_lite.engine import GovernanceEngine, Violation
 from acgs_lite.errors import ConstitutionalViolationError
+from acgs_lite.trajectory import (
+    InMemoryTrajectoryStore,
+    SensitiveToolSequenceRule,
+    TrajectoryMonitor,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -31,7 +37,16 @@ def _make_constitution(*extra_rules: Rule) -> Constitution:
     return Constitution(rules=rules) if rules else Constitution.default()
 
 
-def _make_governed_messages(*, strict: bool = True, engine: GovernanceEngine | None = None):
+def _make_governed_messages(
+    *,
+    strict: bool = True,
+    engine: GovernanceEngine | None = None,
+    embedding_provider: object | None = None,
+    experience_library: GovernanceExperienceLibrary | None = None,
+    governance_memory: object | None = None,
+    tool_risk_scorer: object | None = None,
+    trajectory_monitor: object | None = None,
+):
     """Create a GovernedMessages with a real engine and mock client."""
     from acgs_lite.integrations.anthropic import GovernedMessages
 
@@ -39,7 +54,16 @@ def _make_governed_messages(*, strict: bool = True, engine: GovernanceEngine | N
     if engine is None:
         engine = GovernanceEngine(constitution, strict=strict)
     mock_client = MagicMock()
-    gm = GovernedMessages(mock_client, engine, "test-agent")
+    gm = GovernedMessages(
+        mock_client,
+        engine,
+        "test-agent",
+        embedding_provider=embedding_provider,
+        experience_library=experience_library,
+        governance_memory=governance_memory,
+        tool_risk_scorer=tool_risk_scorer,
+        trajectory_monitor=trajectory_monitor,
+    )
     return gm, mock_client, engine
 
 
@@ -67,6 +91,8 @@ def _make_client(
     strict: bool = True,
     constitution: Constitution | None = None,
     agent_id: str = "anthropic-agent",
+    embedding_provider: object | None = None,
+    experience_library: GovernanceExperienceLibrary | None = None,
 ):
     """Create a GovernedAnthropic with a mock Anthropic SDK client."""
     from acgs_lite.integrations.anthropic import GovernedAnthropic
@@ -77,6 +103,68 @@ def _make_client(
             constitution=constitution,
             agent_id=agent_id,
             strict=strict,
+            embedding_provider=embedding_provider,
+            experience_library=experience_library,
+        )
+
+
+def _make_embedded_constitution() -> Constitution:
+    """Return a constitution with semantically searchable rule embeddings."""
+    return Constitution(
+        name="embedded-constitution",
+        version="1.0.0",
+        rules=[
+            Rule(
+                id="PRIV-001",
+                text="Protect personal data from external disclosure",
+                severity=Severity.CRITICAL,
+                keywords=["protect", "personal", "data"],
+                category="privacy",
+                embedding=[1.0, 0.0],
+            ),
+            Rule(
+                id="SEC-001",
+                text="Rotate service credentials regularly",
+                severity=Severity.HIGH,
+                keywords=["rotate", "service", "credentials"],
+                category="security",
+                embedding=[0.0, 1.0],
+            ),
+        ],
+    )
+
+
+class _StubEmbeddingProvider:
+    """Deterministic embedding provider for Anthropic governance-memory tests."""
+
+    def __init__(self, embedding: list[float]) -> None:
+        self._embedding = embedding
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        return [list(self._embedding) for _ in texts]
+
+
+class _StubGovernanceMemory:
+    """Deterministic governance memory retriever for tool_use tests."""
+
+    def __init__(self) -> None:
+        self.queries: list[str] = []
+
+    def retrieve(self, query: str):
+        self.queries.append(query)
+        return SimpleNamespace(
+            rule_hits=[],
+            precedent_hits=[],
+            summary=SimpleNamespace(
+                total_rules=0,
+                rules_with_embeddings=0,
+                rule_embedding_coverage=0.0,
+                rule_hit_count=0,
+                total_precedents=0,
+                precedents_with_embeddings=0,
+                precedent_embedding_coverage=0.0,
+                precedent_hit_count=0,
+            ),
         )
 
 
@@ -302,6 +390,98 @@ class TestGovernedMessagesOutput:
         # Should not raise
         gm._validate_tool_use(block)
 
+    def test_tool_use_computes_risk_when_configured(self):
+        tool_risk_scorer = MagicMock()
+        tool_risk_scorer.score_tool_invocation.return_value = {
+            "tool_name": "shell",
+            "fused_risk": 0.91,
+            "recommended_action": "block",
+        }
+        governance_memory = _StubGovernanceMemory()
+        gm, _, _ = _make_governed_messages(
+            strict=False,
+            governance_memory=governance_memory,
+            tool_risk_scorer=tool_risk_scorer,
+        )
+
+        block = SimpleNamespace(
+            type="tool_use",
+            name="shell",
+            input={
+                "command": "rm -rf /tmp/demo",
+                "runtime_context": {"environment": "production"},
+                "capability_tags": ["command-execution"],
+            },
+        )
+
+        gm._validate_tool_use(block)
+
+        tool_risk_scorer.score_tool_invocation.assert_called_once()
+        assert governance_memory.queries
+        assert gm.last_tool_use_governance["tool_risk"]["tool_name"] == "shell"
+        assert gm.last_tool_use_governance["tool_risk"]["recommended_action"] == "block"
+
+    def test_tool_use_detects_sensitive_tool_sequence_and_logs(self, caplog):
+        trajectory_monitor = TrajectoryMonitor(
+            [SensitiveToolSequenceRule(sensitive_tools={"shell"})],
+            InMemoryTrajectoryStore(),
+        )
+        gm, _, _ = _make_governed_messages(
+            strict=False,
+            trajectory_monitor=trajectory_monitor,
+        )
+
+        precursor = SimpleNamespace(
+            type="tool_use",
+            name="search",
+            input={
+                "query": "inspect external instructions",
+                "session_id": "sess-tool-seq",
+                "runtime_context": {"prompt_injection_suspected": True},
+            },
+        )
+        followup = SimpleNamespace(
+            type="tool_use",
+            name="shell",
+            input={
+                "command": "cat ~/.ssh/id_rsa",
+                "session_id": "sess-tool-seq",
+                "runtime_context": {"environment": "production"},
+            },
+        )
+
+        gm._validate_tool_use(precursor)
+        with caplog.at_level(logging.WARNING):
+            gm._validate_tool_use(followup)
+
+        violations = gm.last_tool_use_governance["trajectory_violations"]
+        assert violations
+        assert any(v["rule_id"] == "TRAJ-TOOLSEQ-001" for v in violations)
+        assert any("TRAJ-TOOLSEQ-001" in record.message for record in caplog.records)
+
+    def test_tool_use_records_precedent_when_experience_library_configured(self):
+        experience_library = GovernanceExperienceLibrary()
+        embedding_provider = _StubEmbeddingProvider([0.4, 0.6])
+        gm, _, _ = _make_governed_messages(
+            strict=False,
+            embedding_provider=embedding_provider,
+            experience_library=experience_library,
+        )
+
+        block = SimpleNamespace(
+            type="tool_use",
+            name="search",
+            input={"query": "customer records"},
+        )
+
+        gm._validate_tool_use(block)
+
+        assert len(experience_library.precedents) == 1
+        recorded = experience_library.precedents[0]
+        assert recorded.decision == "allow"
+        assert recorded.context["tool_name"] == "search"
+        assert recorded.embedding == [0.4, 0.6]
+
     def test_empty_content_response(self):
         """Response with empty content list should not crash."""
         gm, client, _ = _make_governed_messages(strict=False)
@@ -354,6 +534,22 @@ class TestStrictModeRestoration:
         gm, _, engine = _make_governed_messages(strict=True)
         block = SimpleNamespace(type="tool_use", name="tool", input={"k": "v"})
         gm._validate_tool_use(block)
+        assert engine.strict is True
+
+    def test_tool_use_restores_strict_even_when_validate_raises(self):
+        gm, _, engine = _make_governed_messages(strict=True)
+
+        def exploding_validate(text, *, agent_id="anonymous", context=None):
+            if ":tool_use:" in agent_id:
+                raise RuntimeError("tool boom")
+            return MagicMock(valid=True, violations=[])
+
+        engine.validate = exploding_validate  # type: ignore[method-assign]
+        block = SimpleNamespace(type="tool_use", name="tool", input={"k": "v"})
+
+        with pytest.raises(RuntimeError, match="tool boom"):
+            gm._validate_tool_use(block)
+
         assert engine.strict is True
 
     def test_strict_restored_even_when_validate_raises(self):
@@ -588,6 +784,90 @@ class TestHandleGovernanceTool:
         client = _make_client(strict=True)
         client.handle_governance_tool("validate_action", {"text": "hello"})
         assert client.engine.strict is True
+
+    def test_validate_action_always_includes_governance_memory_fields(self):
+        client = _make_client(strict=False)
+
+        result = client.handle_governance_tool("validate_action", {"text": "hello world"})
+
+        assert result["retrieved_rules"] == []
+        assert result["retrieved_precedents"] == []
+        assert result["governance_memory_summary"] == {
+            "total_rules": len(client.constitution.rules),
+            "rules_with_embeddings": 0,
+            "rule_embedding_coverage": 0.0,
+            "rule_hit_count": 0,
+            "total_precedents": 0,
+            "precedents_with_embeddings": 0,
+            "precedent_embedding_coverage": 0.0,
+            "precedent_hit_count": 0,
+        }
+
+    def test_validate_action_includes_semantic_retrieved_rules_when_embeddings_supplied(self):
+        client = _make_client(
+            strict=False,
+            constitution=_make_embedded_constitution(),
+            embedding_provider=_StubEmbeddingProvider([0.98, 0.02]),
+        )
+
+        result = client.handle_governance_tool("validate_action", {"text": "email customer data"})
+
+        assert [hit["rule_id"] for hit in result["retrieved_rules"]] == ["PRIV-001", "SEC-001"]
+        assert result["retrieved_rules"][0]["score"] >= result["retrieved_rules"][1]["score"]
+        assert result["retrieved_precedents"] == []
+        assert result["governance_memory_summary"]["total_rules"] == 2
+        assert result["governance_memory_summary"]["rules_with_embeddings"] == 2
+        assert result["governance_memory_summary"]["rule_hit_count"] == 2
+        assert result["governance_memory_summary"]["total_precedents"] == 0
+
+    def test_validate_action_retrieves_recorded_precedents_on_subsequent_call(self):
+        library = GovernanceExperienceLibrary()
+        client = _make_client(
+            strict=False,
+            constitution=_make_embedded_constitution(),
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+            experience_library=library,
+        )
+
+        first = client.handle_governance_tool(
+            "validate_action",
+            {"text": "share patient records with vendor"},
+        )
+        second = client.handle_governance_tool(
+            "validate_action",
+            {"text": "send patient records"},
+        )
+
+        assert first["valid"] is True
+        assert [hit["precedent_id"] for hit in second["retrieved_precedents"]] == ["P0"]
+        assert second["retrieved_precedents"][0]["decision"] == "allow"
+        assert second["governance_memory_summary"]["total_precedents"] == 1
+        assert second["governance_memory_summary"]["precedent_hit_count"] == 1
+
+    def test_validate_action_records_precedent_automatically(self):
+        library = GovernanceExperienceLibrary()
+        client = _make_client(
+            strict=False,
+            constitution=_make_embedded_constitution(),
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+            experience_library=library,
+        )
+
+        result = client.handle_governance_tool(
+            "validate_action",
+            {"text": "share patient records with vendor"},
+        )
+
+        assert result["valid"] is True
+        assert len(library.precedents) == 1
+        recorded = library.precedents[0]
+        assert recorded.action == "share patient records with vendor"
+        assert recorded.decision == "allow"
+        assert recorded.triggered_rules == []
+        assert recorded.category == "general"
+        assert recorded.severity == "none"
+        assert recorded.embedding == [1.0, 0.0]
+        assert recorded.rationale
 
     # --- check_compliance ---
 

@@ -16,13 +16,10 @@ Then test:
 No API keys required.
 """
 
-import json
-import sys
 from datetime import datetime, timezone
 
 from acgs_lite import Constitution, GovernanceEngine
 from acgs_lite.audit import AuditLog
-
 
 # --- Step 1: Define content moderation rules ---
 MODERATION_RULES = """

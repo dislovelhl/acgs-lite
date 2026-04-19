@@ -6,10 +6,11 @@ import time
 
 import pytest
 
-from .conftest_red_team import default_engine  # noqa: F401
 from acgs_lite.constitution import ConstitutionBuilder
 from acgs_lite.engine import GovernanceEngine
 from acgs_lite.engine import core as engine_core
+
+from .conftest_red_team import default_engine  # noqa: F401
 
 
 def _large_constitution_engine(rule_count: int = 1000) -> GovernanceEngine:

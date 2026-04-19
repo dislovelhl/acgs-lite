@@ -53,6 +53,13 @@ from acgs_lite.constitution import (
     Severity,
     StatusTransition,
 )
+from acgs_lite.constitution.claim_lifecycle import (
+    CaseConfig,
+    CaseManager,
+    CaseRecord,
+    CaseState,
+    TransitionRecord,
+)
 from acgs_lite.constitution.rule import ViolationAction
 from acgs_lite.constitution.spot_check import (
     AuditPolicy,
@@ -62,13 +69,6 @@ from acgs_lite.constitution.spot_check import (
     TrustAdjustment,
     ValidatorAssessment,
     ValidatorProfile,
-)
-from acgs_lite.constitution.claim_lifecycle import (
-    CaseConfig,
-    CaseManager,
-    CaseRecord,
-    CaseState,
-    TransitionRecord,
 )
 from acgs_lite.constitution.trust_score import (
     TrustConfig,

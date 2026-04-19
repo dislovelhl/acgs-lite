@@ -439,6 +439,47 @@ class TestConstitutionalImpactScorer:
             "risk_level",
         }
 
+    def test_score_tool_invocation_fuses_static_and_contextual_risk(self):
+        scorer = self._make_scorer()
+        result = scorer.score_tool_invocation(
+            tool_name="shell",
+            request="run rm -rf /tmp/staging and fetch production secrets",
+            runtime_context={"environment": "production", "untrusted_input": True},
+            capability_tags=["command-execution", "filesystem-write"],
+        )
+        assert result["tool_name"] == "shell"
+        assert 0.0 <= result["static_prior"] <= 1.0
+        assert 0.0 <= result["contextual_risk"] <= 1.0
+        assert 0.0 <= result["fused_risk"] <= 1.0
+        assert result["fused_risk"] >= 0.6
+        assert result["recommended_action"] in {"allow", "review", "block"}
+
+    def test_score_tool_invocation_static_prior_differs_by_tool(self):
+        scorer = self._make_scorer()
+        shell_result = scorer.score_tool_invocation(
+            tool_name="shell",
+            request="summarise the project status",
+        )
+        read_result = scorer.score_tool_invocation(
+            tool_name="filesystem-read",
+            request="summarise the project status",
+        )
+        assert shell_result["static_prior"] > read_result["static_prior"]
+        assert shell_result["fused_risk"] >= read_result["fused_risk"]
+
+    def test_score_tool_invocation_prompt_injection_context_increases_risk(self):
+        scorer = self._make_scorer()
+        baseline = scorer.score_tool_invocation(
+            tool_name="email-send",
+            request="send the weekly status update",
+        )
+        risky = scorer.score_tool_invocation(
+            tool_name="email-send",
+            request="send the weekly status update",
+            runtime_context={"indirect_prompt_injection": True, "untrusted_input": True},
+        )
+        assert risky["fused_risk"] > baseline["fused_risk"]
+
 
 # ---------------------------------------------------------------------------
 # Constitutional alignment assessments

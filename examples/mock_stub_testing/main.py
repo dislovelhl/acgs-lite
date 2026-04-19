@@ -24,7 +24,6 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. DEFINE: Protocol (interface contract)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -161,7 +160,7 @@ def demo_with_stub() -> None:
     r2 = recorder.record(
         "dec-002", "deploy_to_prod", allowed=False, reason="Validator rejected: missing audit trail"
     )
-    r3 = recorder.record("dec-003", "rollback_v2", allowed=True)
+    _ = recorder.record("dec-003", "rollback_v2", allowed=True)
 
     print(f"  Decisions recorded : {recorder.total_decisions}")
     print(f"  Receipt dec-001    : {r1}")
@@ -183,9 +182,8 @@ def demo_swap_to_production() -> None:
     """Production swap: replace InMemory stub with FileAuditStorage."""
     print("\n── 2. Production Swap (FileAuditStorage) ─────────────────────")
 
-    import os
-    import tempfile
     import shutil
+    import tempfile
 
     tmp_dir = tempfile.mkdtemp(prefix="acgs_demo_")
     try:
@@ -212,7 +210,7 @@ def demo_failing_stub() -> None:
         """Stub that always raises — tests error-handling paths."""
 
         def save(self, entry_id: str, payload: dict[str, Any]) -> str:
-            raise IOError("Simulated storage failure")
+            raise OSError("Simulated storage failure")
 
         def load(self, entry_id: str) -> dict[str, Any] | None:
             return None
@@ -221,7 +219,7 @@ def demo_failing_stub() -> None:
     try:
         recorder.record("fail-001", "some_action", allowed=True)
         print("  ❌ Should have raised IOError")
-    except IOError as exc:
+    except OSError as exc:
         print(f"  ✅ Caught expected failure: {exc}")
         print("  — Error handling paths verified without touching real storage")
 

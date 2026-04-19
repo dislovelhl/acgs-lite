@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pytest
 
-from acgs_lite.constitution import Constitution
 from acgs_lite.constitution.bundle_store import InMemoryBundleStore
 from acgs_lite.constitution.evidence import InMemoryLifecycleAuditSink
 from acgs_lite.constitution.lifecycle_service import ConstitutionLifecycle
@@ -75,7 +74,7 @@ class TestBundleAwareGovernanceEngine:
 
         await _drive_to_active(lc, "tenant-a")
 
-        engine1 = binding.for_active_bundle("tenant-a")
+        _engine1 = binding.for_active_bundle("tenant-a")
         binding.invalidate("tenant-a")
         engine2 = binding.for_active_bundle("tenant-a")
 

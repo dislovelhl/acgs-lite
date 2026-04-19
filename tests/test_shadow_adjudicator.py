@@ -2,14 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
-
 import pytest
 
 from acgs_lite.engine.shadow_adjudicator import (
     InMemoryShadowJudge,
     ShadowAdjudicator,
-    ShadowResult,
 )
 
 

@@ -12,7 +12,6 @@ import pytest
 
 from acgs_lite.constitution.trust_score import (
     TrustConfig,
-    TrustEvent,
     TrustScoreManager,
     TrustTier,
 )

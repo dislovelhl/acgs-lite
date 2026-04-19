@@ -18,7 +18,6 @@ from acgs_lite.constitution.editor import (
     merge_constitutions,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────
 
 
