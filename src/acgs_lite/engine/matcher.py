@@ -55,6 +55,7 @@ class GovernanceMatcherMixin:
         data: int,
         rule_excs: list[Any],
         fast_records: Any,
+        strict: bool,
     ) -> ValidationResult | None:
         if decision == _RUST_ALLOW:
             fast_records.append(None)
@@ -62,20 +63,32 @@ class GovernanceMatcherMixin:
         elif decision == _RUST_DENY_CRITICAL:
             if not (0 <= data < len(rule_excs)):
                 fast_records.append(None)
-                raise ConstitutionalViolationError(
-                    "Critical rule violation (index out of range)",
-                    rule_id="UNKNOWN",
-                    severity="critical",
-                    action=action[:200],
+                if strict:
+                    raise ConstitutionalViolationError(
+                        "Critical rule violation (index out of range)",
+                        rule_id="UNKNOWN",
+                        severity="critical",
+                        action=action[:200],
+                    )
+                # strict=False: return a blocking result with unknown rule
+                return self._new_fast_result(
+                    valid=False,
+                    violations=[Violation("UNKNOWN", "Critical rule violation", Severity.CRITICAL, action[:200], "")],
+                    action=action,
                 )
             _e_src = rule_excs[data]
             fast_records.append(None)
-            raise ConstitutionalViolationError(
-                str(_e_src),
-                rule_id=_e_src.rule_id,
-                severity=_e_src.severity,
-                action=action[:200],
-            )
+            if strict:
+                raise ConstitutionalViolationError(
+                    str(_e_src),
+                    rule_id=_e_src.rule_id,
+                    severity=_e_src.severity,
+                    action=action[:200],
+                )
+            # strict=False: build Violation from rule_data and return result
+            _rd = self._rule_data[data]
+            _v = Violation(_rd[0], _rd[1], _rd[2], action[:200], _rd[4])
+            return self._new_fast_result(valid=False, violations=[_v], action=action)
         elif decision == _RUST_DENY:
             _bm = data
             _a200 = action[:200]
@@ -98,15 +111,16 @@ class GovernanceMatcherMixin:
                 ):
                     _bv = _v
             fast_records.append(None)
-            # strict=True is guaranteed at this call site (outer validate() guard).
-            if _bv is not None:
+            # Only raise in strict mode; otherwise return a result with valid=False if blocking.
+            if _bv is not None and strict:
                 raise ConstitutionalViolationError(
                     f"Action blocked by rule {_bv.rule_id}: {_bv.rule_text}",
                     rule_id=_bv.rule_id,
                     severity=_bv.severity.value,
                     action=_a200,
                 )
-            return self._new_fast_result(valid=True, violations=_vlist, action=action)
+            _has_blocking = _bv is not None
+            return self._new_fast_result(valid=not _has_blocking, violations=_vlist, action=action)
         return None
 
     def _validate_rust_gov_context(

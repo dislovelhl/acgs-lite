@@ -544,14 +544,11 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         timestamp: str,
         rule_evaluations: list[dict[str, Any]],
         enforcement: EnforcementResolution | None = None,
-        audit_metadata: dict[str, Any] | None = None,
     ) -> None:
         """Record a validation audit entry including enforcement metadata."""
         metadata: dict[str, Any] = {"rule_evaluations": rule_evaluations}
         if enforcement is not None:
             metadata["enforcement"] = enforcement.audit_metadata()
-        if audit_metadata:
-            metadata["runtime_governance"] = audit_metadata
         self.audit_log.record(
             AuditEntry(
                 id=str(request_id),
@@ -623,7 +620,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         *,
         agent_id: str,
         context: dict[str, Any] | None,
-        audit_metadata: dict[str, Any] | None = None,
     ) -> ValidationResult:
         """Validate using per-call rule activation semantics.
 
@@ -734,7 +730,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     applicable_rule_ids={rule.id for rule in applicable_rules},
                 ),
                 enforcement=enforcement,
-                audit_metadata=audit_metadata,
             )
 
         self._raise_for_enforcement(
@@ -886,7 +881,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         *,
         agent_id: str = "anonymous",
         context: dict[str, Any] | None = None,
-        audit_metadata: dict[str, Any] | None = None,
     ) -> ValidationResult:
         """Validate an action against the constitution."""
         if self._requires_runtime_rule_filtering:
@@ -894,7 +888,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 action,
                 agent_id=agent_id,
                 context=context,
-                audit_metadata=audit_metadata,
             )
         strict = self.strict
         (
@@ -934,9 +927,25 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _data,
                     _rule_excs,
                     _fast_records,
+                    strict=True,
                 )
                 if _result is not None:
                     return self._post_dispatch_result(_result, action)
+        elif _rv is not None and _fast_records is not None and context is None and not self.custom_validators:
+            # strict=False Rust fast path: return violations instead of raising
+            # Only used when no context is provided and no custom validators (benchmark mode)
+            _action_lower = action if action.islower() else action.lower()
+            _decision, _data = _rv.validate_hot(_action_lower)
+            _result = self._validate_rust_no_context(
+                action,
+                _decision,
+                _data,
+                _rule_excs,
+                _fast_records,
+                strict=False,
+            )
+            if _result is not None:
+                return self._post_dispatch_result(_result, action)
         elif _rv is not None and context and strict:
             _ctx_pairs = [
                 (k, v)
@@ -1081,7 +1090,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     self.constitution.rules,
                     matched_rule_ids=set(),
                 ),
-                audit_metadata=audit_metadata,
             )
             return result
 
@@ -1142,7 +1150,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 matched_rule_ids={v.rule_id for v in all_matched},
             ),
             enforcement=enforcement,
-            audit_metadata=audit_metadata,
         )
         self._raise_for_enforcement(
             enforcement,
