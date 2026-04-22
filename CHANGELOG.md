@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-04-22
+
+### Added
+
+- **ARC-Kit bridge** (`acgs_lite.arckit`): parse architecture diagrams, generate and export
+  constitution bundles, emit CLI commands, and map to compliance frameworks — full pipeline from
+  project structure to governed rules.
+- **Governance memory** (`constitution.governance_memory`): unified retrieval layer over rules and
+  precedents; MCP `validate_action` tool now returns matched rules and precedents in the response.
+- **Policy linter** (`constitution.policy_linter`): static quality analysis of YAML constitution
+  files with structured findings and a CI-friendly exit code.
+- **`GovernanceStream`**, **`PolicyStorage`**, and DI-scoped service interfaces for framework
+  integration (AFFiNE-style architecture patterns).
+- **Batch audit writes**: `AuditLogger.record_atomic_many()` writes multiple entries atomically to
+  durable backends, reducing round-trips for bulk governance events.
+- 21 previously internal governance symbols exported from the public API.
+
+### Changed
+
+- PyPI development-status classifier changed from `5 - Production/Stable` to `4 - Beta`; package
+  description rewritten for accuracy.
+- README: added "Safety Defaults" section and "Component Stability" table.
+- Rust fast path enabled for `strict=False` validation mode (+374% allow-ops throughput).
+
+### Fixed
+
+- **Telegram webhook** (`integrations.telegram_webhook`): handler changed from `async def` to
+  `def` so FastAPI runs it in a thread pool and the event loop is not blocked by the synchronous
+  `validate()` call.
+- **MCP server strict-mode safety** (`integrations.mcp_server`): `engine.strict` is now restored
+  inside a `try/finally` block at all three call sites so an exception during `validate()` cannot
+  leave strict mode permanently disabled.
+- `engine_getter` pattern in `create_telegram_webhook_router` prevents stale engine closure after
+  `_rebuild_engine` replaces the module-level engine.
+- CDP report generation: `fpdf2` API call updated (`ln=True` → `new_x`/`new_y`) for fpdf2 ≥ 2.8.
+- PQC module now catches `SystemExit` and `RuntimeError` from broken oqs/liboqs installations
+  instead of propagating them.
+- `__init__.py` duplicate-import warnings (F811) removed.
+- `AuditLogger.record()` backend write serialized under state lock (thread-safety regression fix).
+- `record_atomic` is now truly atomic for durable backends.
+
 ## [2.8.1] - 2026-04-16
 
 ### Changed (fail-closed hardening, non-breaking)
