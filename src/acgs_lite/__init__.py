@@ -67,33 +67,18 @@ from acgs_lite.constitution import (
     ValidatorSelector,
 )
 from acgs_lite.constitution.claim_lifecycle import (
-    CaseConfig,
-    CaseManager,
-    CaseRecord,
     CaseState,
     TransitionRecord,
 )
 from acgs_lite.constitution.rule import ViolationAction
 from acgs_lite.constitution.spot_check import (
-    AuditPolicy,
     CompletedCase,
-    SpotCheckAuditor,
-    SpotCheckResult,
-    TrustAdjustment,
     ValidatorAssessment,
     ValidatorProfile,
 )
 from acgs_lite.constitution.trust_score import (
-    TrustConfig,
     TrustEvent,
-    TrustScoreManager,
     TrustTier,
-)
-from acgs_lite.constitution.validator_selection import (
-    SelectionPolicy,
-    SelectionResult,
-    ValidatorPool,
-    ValidatorSelector,
 )
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
 from acgs_lite.errors import (
