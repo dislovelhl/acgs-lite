@@ -938,9 +938,15 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 )
                 if _result is not None:
                     return self._post_dispatch_result(_result, action)
-        elif _rv is not None and _fast_records is not None and context is None and not self.custom_validators:
+        elif (
+            _rv is not None
+            and _fast_records is not None
+            and context is None
+            and audit_metadata is None
+            and not self.custom_validators
+        ):
             # strict=False Rust fast path: return violations instead of raising
-            # Only used when no context is provided and no custom validators (benchmark mode)
+            # Only used when no context/audit_metadata provided and no custom validators (benchmark mode)
             _action_lower = action if action.islower() else action.lower()
             _decision, _data = _rv.validate_hot(_action_lower)
             _result = self._validate_rust_no_context(
