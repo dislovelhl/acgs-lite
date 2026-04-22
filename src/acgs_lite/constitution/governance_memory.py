@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from .experience_library import GovernanceExperienceLibrary, GovernancePrecedent
 from .semantic_search import EmbeddingProvider, SearchResult, SemanticRuleSearch
@@ -52,7 +53,7 @@ class GovernanceMemoryRetriever:
 
     def __init__(
         self,
-        constitution,
+        constitution: Any,
         *,
         experience_library: GovernanceExperienceLibrary | None = None,
         embedding_provider: EmbeddingProvider | None = None,

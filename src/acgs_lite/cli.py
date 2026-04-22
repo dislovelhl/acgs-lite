@@ -22,6 +22,7 @@ Commands:
     acgs resume --system-id X   Resume governed agents after halt
     acgs breaker-status --id X  Check circuit breaker status
     acgs evidence               Collect compliance evidence from runtime + filesystem
+    acgs arckit                 Bridge arc-kit artifacts into ACGS governance
     acgs lean-smoke             Validate Lean runtime/toolchain configuration
     acgs activate <key>         Store license key
     acgs status                 Show current license tier and features
@@ -35,6 +36,7 @@ import sys
 from typing import Any
 
 from acgs_lite.commands import (
+    arckit,
     assess,
     capabilities,
     eu_ai_act,
@@ -70,6 +72,7 @@ from acgs_lite.licensing import (
 # ---------------------------------------------------------------------------
 
 cmd_init = init.handler
+cmd_arckit = arckit.handler
 cmd_assess = assess.handler
 cmd_capabilities = capabilities.handler
 cmd_eval = eval_cmd.handler
@@ -237,6 +240,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     init.add_parser(sub)
+    arckit.add_parser(sub)
     assess.add_parser(sub)
     capabilities.add_parser(sub)
     eval_cmd.add_parser(sub)
@@ -262,6 +266,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 _COMMAND_MAP: dict[str, str] = {
     "init": "cmd_init",
+    "arckit": "cmd_arckit",
     "assess": "cmd_assess",
     "capabilities": "cmd_capabilities",
     "eval": "cmd_eval",
