@@ -393,13 +393,15 @@ def create_mcp_server(
             # Use non-strict for MCP (return result, don't raise)
             old_strict = engine.strict
             engine.strict = False
-            result = engine.validate(
-                action,
-                agent_id=agent_id,
-                context=engine_context or None,
-                audit_metadata=audit_metadata or None,
-            )
-            engine.strict = old_strict
+            try:
+                result = engine.validate(
+                    action,
+                    agent_id=agent_id,
+                    context=engine_context or None,
+                    audit_metadata=audit_metadata or None,
+                )
+            finally:
+                engine.strict = old_strict
 
             response = result.to_dict()
             response["retrieved_rules"] = [
@@ -489,8 +491,10 @@ def create_mcp_server(
             text = arguments.get("text", "")
             old_strict = engine.strict
             engine.strict = False
-            result = engine.validate(text, agent_id="compliance-check")
-            engine.strict = old_strict
+            try:
+                result = engine.validate(text, agent_id="compliance-check")
+            finally:
+                engine.strict = old_strict
 
             data = {
                 "compliant": result.valid,
@@ -526,8 +530,10 @@ def create_mcp_server(
             try:
                 old_strict = engine.strict
                 engine.strict = False
-                result = engine.validate(action, agent_id="explain-tool")
-                engine.strict = old_strict
+                try:
+                    result = engine.validate(action, agent_id="explain-tool")
+                finally:
+                    engine.strict = old_strict
 
                 violations = result.violations
                 if rule_id_filter:

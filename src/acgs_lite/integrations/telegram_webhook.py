@@ -64,7 +64,7 @@ def create_telegram_webhook_router(
     router = APIRouter(prefix=f"/telegram/webhook/{resolved_path_secret}", tags=["telegram"])
 
     @router.post("")
-    async def telegram_webhook(
+    def telegram_webhook(
         request: Request,
         payload: Annotated[dict[str, Any], Body(...)],
     ) -> dict[str, Any]:
