@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hmac
+from collections.abc import Callable
 from typing import Annotated, Any
 
 from acgs_lite.engine import GovernanceEngine
@@ -45,11 +46,19 @@ def _telegram_reply(chat_id: int, text: str) -> dict[str, Any]:
 
 def create_telegram_webhook_router(
     *,
-    engine: GovernanceEngine,
+    engine_getter: Callable[[], GovernanceEngine],
     webhook_path_secret: str,
     secret_token: str | None = None,
 ) -> APIRouter:
-    """Create a Telegram webhook router with path-secret and optional header verification."""
+    """Create a Telegram webhook router with path-secret and optional header verification.
+
+    Args:
+        engine_getter: Callable that returns the current GovernanceEngine. Called at
+            request time so the handler always uses the latest engine (e.g. after
+            a rule change triggers a rebuild).
+        webhook_path_secret: Secret path component for the webhook URL.
+        secret_token: Optional Telegram Bot API secret token for header verification.
+    """
     resolved_path_secret = _validate_path_secret(webhook_path_secret)
     resolved_secret_token = _validate_secret_token(secret_token)
     router = APIRouter(prefix=f"/telegram/webhook/{resolved_path_secret}", tags=["telegram"])
@@ -74,7 +83,7 @@ def create_telegram_webhook_router(
             return {"ok": True}
 
         chat_id = chat["id"]
-        result = engine.validate(
+        result = engine_getter().validate(
             text,
             agent_id=f"telegram:{chat_id}",
             context={

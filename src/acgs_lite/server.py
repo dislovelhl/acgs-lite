@@ -435,7 +435,7 @@ def create_governance_app(
             )
         app.include_router(
             create_telegram_webhook_router(
-                engine=engine,
+                engine_getter=lambda: engine,
                 webhook_path_secret=telegram_webhook_path_secret,
                 secret_token=telegram_secret_token,
             )

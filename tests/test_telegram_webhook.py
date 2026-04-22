@@ -45,7 +45,7 @@ def test_telegram_webhook_allows_safe_message() -> None:
     app = FastAPI()
     app.include_router(
         create_telegram_webhook_router(
-            engine=_make_engine(),
+            engine_getter=lambda: _make_engine(),
             webhook_path_secret="path-secret",
         )
     )
@@ -66,7 +66,7 @@ def test_telegram_webhook_blocks_disallowed_message() -> None:
     app = FastAPI()
     app.include_router(
         create_telegram_webhook_router(
-            engine=_make_engine(),
+            engine_getter=lambda: _make_engine(),
             webhook_path_secret="path-secret",
         )
     )
@@ -90,7 +90,7 @@ def test_telegram_webhook_enforces_secret_token() -> None:
     app = FastAPI()
     app.include_router(
         create_telegram_webhook_router(
-            engine=_make_engine(),
+            engine_getter=lambda: _make_engine(),
             webhook_path_secret="path-secret",
             secret_token="expected-secret-token",
         )
