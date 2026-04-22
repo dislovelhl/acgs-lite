@@ -56,3 +56,8 @@ site/
 # Misc
 *.log
 output/
+
+# OMC / OMX agent state (never commit runtime agent data)
+.omc/
+.omx/
+.codex
