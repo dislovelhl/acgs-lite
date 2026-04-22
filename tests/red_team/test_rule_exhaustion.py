@@ -10,7 +10,7 @@ from acgs_lite.constitution import ConstitutionBuilder
 from acgs_lite.engine import GovernanceEngine
 from acgs_lite.engine import core as engine_core
 
-from .conftest_red_team import default_engine  # noqa: F401
+from .conftest_red_team import default_engine  # noqa: F401, F811
 
 
 def _large_constitution_engine(rule_count: int = 1000) -> GovernanceEngine:
@@ -41,7 +41,7 @@ def test_large_constitution_validate_latency(monkeypatch: pytest.MonkeyPatch) ->
 
 
 @pytest.mark.red_team
-def test_repeated_validate_no_memory_leak(default_engine: GovernanceEngine) -> None:
+def test_repeated_validate_no_memory_leak(default_engine: GovernanceEngine) -> None:  # noqa: F811
     last_result = None
     for _ in range(10_000):
         last_result = default_engine.validate("safe payload", agent_id="red-team")

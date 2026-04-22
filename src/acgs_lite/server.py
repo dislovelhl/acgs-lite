@@ -459,12 +459,15 @@ def create_governance_app(
         async def stream_events() -> StreamingResponse:
             subscription = cast(AsyncGenerator[GovernanceEvent, None], get_event_bus().subscribe())
 
+            async def next_event() -> GovernanceEvent:
+                return await subscription.__anext__()
+
             async def event_stream() -> AsyncGenerator[str, None]:
                 pending_event: asyncio.Task[Any] | None = None
                 try:
                     while True:
                         if pending_event is None:
-                            pending_event = asyncio.create_task(subscription.__anext__())
+                            pending_event = asyncio.create_task(next_event())
                         try:
                             event = await asyncio.wait_for(
                                 asyncio.shield(pending_event), timeout=30.0

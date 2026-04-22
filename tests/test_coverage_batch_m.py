@@ -86,11 +86,11 @@ class TestValidateTemporalFieldsInvalid:
     """Lines 237-238: invalid ISO-8601 strings raise ValueError."""
 
     def test_invalid_date(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             Rule(id="R1", text="test", valid_from="not-a-date")
 
     def test_invalid_datetime(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             Rule(id="R1", text="test", valid_until="2025-13-99")
 
 
@@ -273,7 +273,7 @@ class TestValidatePatterns:
     """Line 217 area (covered partially): invalid regex pattern validation."""
 
     def test_invalid_regex_raises(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):
             Rule(id="R1", text="test", patterns=["[invalid"])
 
 

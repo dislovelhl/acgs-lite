@@ -227,6 +227,9 @@ class TestGenerateCertificate:
         from acgs_lite.cdp.certificate import generate_certificate
 
         result = generate_certificate(_full_record())
+        # Re-parse the PDF bytes to count pages
+        # Simplest proxy: count /Page dictionary markers
+        _ = result.count(b"/Type /Page\n") + result.count(b"/Type /Page ")
         # fpdf2 may use different whitespace — just check we got a multi-KB PDF
         assert len(result) > 4_000
 

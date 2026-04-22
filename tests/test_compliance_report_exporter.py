@@ -23,7 +23,6 @@ from acgs_lite.compliance import (
     MultiFrameworkAssessor,
     NISTAIRMFFramework,
 )
-from acgs_lite.compliance.report_exporter import ComplianceReportExporter
 
 # ---------------------------------------------------------------------------
 # Fixtures

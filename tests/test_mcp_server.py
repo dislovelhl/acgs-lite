@@ -954,7 +954,8 @@ class TestStrictModeRestoration:
         self, custom_constitution: Constitution
     ) -> None:
         """After validate_action completes, engine.strict must be restored."""
-        server = create_mcp_server(custom_constitution, strict=True)
+        constitution = custom_constitution
+        server = create_mcp_server(constitution, strict=True)
 
         # Call validate_action which should temporarily flip strict=False
         await _call_tool(server, "validate_action", {"action": "forbidden"})

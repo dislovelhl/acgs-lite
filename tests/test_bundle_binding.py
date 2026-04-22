@@ -74,7 +74,7 @@ class TestBundleAwareGovernanceEngine:
 
         await _drive_to_active(lc, "tenant-a")
 
-        _engine1 = binding.for_active_bundle("tenant-a")
+        binding.for_active_bundle("tenant-a")
         binding.invalidate("tenant-a")
         engine2 = binding.for_active_bundle("tenant-a")
 

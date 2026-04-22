@@ -333,3 +333,169 @@ class TestOperationalErrorWrapping:
 
             with pytest.raises(LifecycleError, match="read error"):
                 store.get_bundle("some-id")
+
+    def test_get_active_bundle_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_conn = MagicMock()
+            mock_conn.execute.side_effect = sqlite3.OperationalError("io error")
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(return_value=mock_conn)
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="io error"):
+                store.get_active_bundle("tenant-x")
+
+    def test_list_bundles_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_conn = MagicMock()
+            mock_conn.execute.side_effect = sqlite3.OperationalError("table locked")
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(return_value=mock_conn)
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="table locked"):
+                store.list_bundles("tenant-x")
+
+    def test_save_activation_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.activation import ActivationRecord
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+        activation = ActivationRecord(
+            bundle_id="b1",
+            version=1,
+            tenant_id="tenant-x",
+            constitutional_hash="abc",
+            activated_by="exec-1",
+            rollback_to_bundle_id=None,
+            signature="sig",
+        )
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(side_effect=sqlite3.OperationalError("disk full"))
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="disk full"):
+                store.save_activation(activation)
+
+    def test_get_activation_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_conn = MagicMock()
+            mock_conn.execute.side_effect = sqlite3.OperationalError("read error")
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(return_value=mock_conn)
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="read error"):
+                store.get_activation("tenant-x")
+
+    def test_save_bundle_transactional_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+        bundle = ConstitutionBundle(
+            tenant_id="t1",
+            constitution=_make_constitution(),
+            proposed_by="p1",
+        )
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(side_effect=sqlite3.OperationalError("busy"))
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="busy"):
+                store.save_bundle_transactional(bundles=[bundle])
+
+    def test_get_tenant_version_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_conn = MagicMock()
+            mock_conn.execute.side_effect = sqlite3.OperationalError("no such table")
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(return_value=mock_conn)
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="no such table"):
+                store.get_tenant_version("tenant-x")
+
+    def test_cas_tenant_version_raises_conflict_on_version_mismatch(
+        self, tmp_path: Path
+    ) -> None:
+        from acgs_lite.constitution.bundle_store import CASVersionConflict
+
+        store = _make_store(tmp_path)
+        # Version starts at 0; expecting 99 causes a conflict.
+        with pytest.raises(CASVersionConflict, match="version conflict"):
+            store.cas_tenant_version("tenant-cas", expected=99)
+
+    def test_cas_tenant_version_raises_lifecycle_error_on_operational_error(
+        self, tmp_path: Path
+    ) -> None:
+        import sqlite3
+        from unittest.mock import MagicMock, patch
+
+        from acgs_lite.constitution.lifecycle_service import LifecycleError
+
+        store = _make_store(tmp_path)
+
+        with patch.object(store, "_connect") as mock_connect:
+            mock_ctx = MagicMock()
+            mock_ctx.__enter__ = MagicMock(side_effect=sqlite3.OperationalError("locked"))
+            mock_ctx.__exit__ = MagicMock(return_value=False)
+            mock_connect.return_value = mock_ctx
+
+            with pytest.raises(LifecycleError, match="locked"):
+                store.cas_tenant_version("tenant-x", expected=0)

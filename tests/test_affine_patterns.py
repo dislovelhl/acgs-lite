@@ -12,7 +12,6 @@ import asyncio
 import contextlib
 
 import pytest
-from src.core.shared.di_container import AgentScope, DIContainer
 
 from acgs_lite.events import EventBus, GovernanceEvent, GovernanceStream
 from acgs_lite.integrations.policy_storage import (
@@ -21,6 +20,7 @@ from acgs_lite.integrations.policy_storage import (
     PolicyNotFoundError,
     PolicyStorage,
 )
+from src.core.shared.di_container import AgentScope, DIContainer
 
 # ---------------------------------------------------------------------------
 # Helpers
