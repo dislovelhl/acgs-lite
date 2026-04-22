@@ -1,0 +1,30 @@
+{
+  "id": "research-20260416-203910-cswarm",
+  "goal": "Comprehensive research analysis of the constitutional_swarm package at /home/martin/Downloads/ACGS/packages/constitutional_swarm",
+  "status": "complete",
+  "mode": "standard",
+  "iteration": 1,
+  "maxIterations": 10,
+  "targetDir": "/home/martin/Downloads/ACGS/packages/constitutional_swarm",
+  "stages": [
+    {"id": 1, "name": "Package structure & public API inventory", "tier": "LOW", "status": "complete", "findingsFile": "stages/stage-1.md"},
+    {"id": 2, "name": "Architecture of the 5 governance patterns", "tier": "MEDIUM", "status": "complete", "findingsFile": "stages/stage-2.md"},
+    {"id": 3, "name": "Test coverage, lint debt & quality signals", "tier": "MEDIUM", "status": "complete", "findingsFile": "stages/stage-3.md"},
+    {"id": 4, "name": "Research novelty: MCFS stack, latent DNA, paper claims", "tier": "HIGH", "status": "complete", "findingsFile": "stages/stage-4.md"},
+    {"id": 5, "name": "Integration surface: acgs-lite, transport, examples, ecosystem", "tier": "MEDIUM", "status": "complete", "findingsFile": "stages/stage-5.md"}
+  ],
+  "verification": {
+    "status": "passed_with_corrections",
+    "conflicts_found": 3,
+    "conflicts": [
+      {"topic": "test_file_count", "resolution": "40 (Stage 3 correct; Stage 1 wrote 41)"},
+      {"topic": "SpectralSphere_production_vs_research", "resolution": "production; mesh.py:52 unconditional import. Stage 4 overgeneralized."},
+      {"topic": "arXiv:2603.20896_future_dated_claim", "resolution": "reframed: March 2026 is in the past. ID is temporally plausible but unverified."}
+    ],
+    "report": "findings/verified/cross-validation.md",
+    "completedAt": "2026-04-16T20:45:00-04:00"
+  },
+  "reportFile": "report.md",
+  "createdAt": "2026-04-16T20:39:10-04:00",
+  "updatedAt": "2026-04-16T20:46:00-04:00"
+}

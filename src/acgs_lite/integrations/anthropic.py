@@ -21,11 +21,27 @@ import copy
 import json
 import logging
 import re
+from dataclasses import asdict, is_dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from acgs_lite.audit import AuditLog
 from acgs_lite.constitution import Constitution
+from acgs_lite.constitution.experience_library import GovernanceExperienceLibrary
+from acgs_lite.constitution.governance_memory import GovernanceMemoryRetriever
+from acgs_lite.constitution.semantic_search import EmbeddingProvider
 from acgs_lite.engine import GovernanceEngine
+from acgs_lite.integrations._runtime_governance import (
+    build_runtime_governance_observability,
+    record_validation_precedent,
+)
+from acgs_lite.scoring import ConstitutionalImpactScorer
+from acgs_lite.trajectory import (
+    InMemoryTrajectoryStore,
+    SensitiveToolSequenceRule,
+    TrajectoryMonitor,
+    TrajectoryViolation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +144,45 @@ _GOVERNANCE_TOOLS: list[dict[str, Any]] = [
 
 _GOVERNANCE_TOOL_NAMES: frozenset[str] = frozenset(t["name"] for t in _GOVERNANCE_TOOLS)
 _AGENT_ID_PATTERN = re.compile(r"^[a-zA-Z0-9_\-]{1,128}$")
+_TOOL_GOVERNANCE_META_KEYS = frozenset(
+    {"runtime_context", "capability_tags", "session_id", "checkpoint_kind"}
+)
+
+
+def _struct_to_dict(value: Any) -> dict[str, Any]:
+    """Convert dataclass-like or object-like values into plain dictionaries."""
+    if isinstance(value, dict):
+        return dict(value)
+    if is_dataclass(value):
+        return asdict(value)
+    if hasattr(value, "__dict__"):
+        return dict(vars(value))
+    return {}
+
+
+def _serialize_tool_request(tool_input: Any) -> tuple[str, str]:
+    """Serialize full tool input and a request-only payload for auxiliary analysis."""
+    serialized = json.dumps(tool_input, sort_keys=True)
+    if isinstance(tool_input, dict):
+        request_payload = {
+            key: value for key, value in tool_input.items() if key not in _TOOL_GOVERNANCE_META_KEYS
+        }
+        request_serialized = json.dumps(request_payload, sort_keys=True)
+        return serialized, request_serialized
+    return serialized, serialized
+
+
+def _trajectory_violation_to_dict(violation: TrajectoryViolation | Any) -> dict[str, Any]:
+    """Normalize a trajectory violation into a serializable dict."""
+    if isinstance(violation, dict):
+        return dict(violation)
+    return {
+        "rule_id": getattr(violation, "rule_id", ""),
+        "evidence": getattr(violation, "evidence", ""),
+        "severity": getattr(violation, "severity", ""),
+        "agent_id": getattr(violation, "agent_id", ""),
+        "timestamp": getattr(violation, "timestamp", ""),
+    }
 
 
 class GovernedMessages:
@@ -138,10 +193,22 @@ class GovernedMessages:
         client: Any,
         engine: GovernanceEngine,
         agent_id: str,
+        *,
+        embedding_provider: EmbeddingProvider | None = None,
+        experience_library: GovernanceExperienceLibrary | None = None,
+        governance_memory: GovernanceMemoryRetriever | Any | None = None,
+        tool_risk_scorer: ConstitutionalImpactScorer | Any | None = None,
+        trajectory_monitor: TrajectoryMonitor | Any | None = None,
     ) -> None:
         self._client = client
         self._engine = engine
         self._agent_id = agent_id
+        self._embedding_provider = embedding_provider
+        self._experience_library = experience_library
+        self._governance_memory = governance_memory
+        self._tool_risk_scorer = tool_risk_scorer
+        self._trajectory_monitor = trajectory_monitor
+        self.last_tool_use_governance: dict[str, Any] = {}
 
     def create(self, **kwargs: Any) -> Any:
         """Create a message with governance."""
@@ -166,10 +233,7 @@ class GovernedMessages:
         # Also validate system prompt if present
         system = kwargs.get("system", "")
         if isinstance(system, str) and system:
-            old_strict = self._engine.strict
-            self._engine.strict = False
-            self._engine.validate(system, agent_id=f"{self._agent_id}:system")
-            self._engine.strict = old_strict
+            self._validate_non_strict(system, agent_id=f"{self._agent_id}:system")
 
         # Call Anthropic
         response = self._client.messages.create(**kwargs)
@@ -188,16 +252,41 @@ class GovernedMessages:
 
     def _validate_output_text(self, text: str) -> None:
         """Validate a text output block against the constitution."""
-        old_strict = self._engine.strict
-        self._engine.strict = False
-        result = self._engine.validate(text, agent_id=f"{self._agent_id}:output")
-        self._engine.strict = old_strict
+        result = self._validate_non_strict(text, agent_id=f"{self._agent_id}:output")
 
         if not result.valid:
             logger.warning(
                 "Anthropic response violations: %s",
                 [v.rule_id for v in result.violations],
             )
+
+    def _validate_non_strict(
+        self,
+        text: str,
+        *,
+        agent_id: str,
+        context: dict[str, Any] | None = None,
+        audit_metadata: dict[str, Any] | None = None,
+    ) -> Any:
+        """Run engine validation with strict mode temporarily disabled."""
+        old_strict = self._engine.strict
+        self._engine.strict = False
+        try:
+            validate_kwargs: dict[str, Any] = {
+                "agent_id": agent_id,
+                "context": context,
+            }
+            if audit_metadata:
+                validate_kwargs["audit_metadata"] = audit_metadata
+            try:
+                return self._engine.validate(text, **validate_kwargs)
+            except TypeError as exc:
+                if "audit_metadata" not in str(exc):
+                    raise
+                validate_kwargs.pop("audit_metadata", None)
+                return self._engine.validate(text, **validate_kwargs)
+        finally:
+            self._engine.strict = old_strict
 
     def _validate_tool_use(self, block: Any) -> None:
         """Validate a tool_use output block.
@@ -211,22 +300,148 @@ class GovernedMessages:
         if tool_input is None:
             return
 
-        serialized = json.dumps(tool_input, sort_keys=True)
         tool_name = getattr(block, "name", "unknown_tool")
+        serialized, request_serialized = _serialize_tool_request(tool_input)
+        runtime_context = (
+            dict(tool_input.get("runtime_context", {}))
+            if isinstance(tool_input, dict) and isinstance(tool_input.get("runtime_context"), dict)
+            else {}
+        )
+        capability_tags = (
+            list(tool_input.get("capability_tags", []))
+            if isinstance(tool_input, dict) and isinstance(tool_input.get("capability_tags"), list)
+            else []
+        )
+        checkpoint_kind = (
+            str(tool_input.get("checkpoint_kind", "")).strip()
+            if isinstance(tool_input, dict) and tool_input.get("checkpoint_kind")
+            else "tool_invocation"
+        )
+        session_id = (
+            str(tool_input.get("session_id", "")).strip()
+            if isinstance(tool_input, dict) and tool_input.get("session_id")
+            else self._agent_id
+        )
+        engine_context = dict(runtime_context)
+        engine_context["tool_name"] = tool_name
+        if capability_tags:
+            engine_context["capability_tags"] = capability_tags
+        if checkpoint_kind:
+            engine_context["checkpoint_kind"] = checkpoint_kind
 
-        old_strict = self._engine.strict
-        self._engine.strict = False
-        result = self._engine.validate(
+        governance_memory_report = None
+        if self._governance_memory is not None:
+            try:
+                governance_memory_report = self._governance_memory.retrieve(request_serialized)
+            except Exception as exc:  # pragma: no cover - defensive logging
+                logger.warning("anthropic_tool_use_governance_memory_failed: %s", exc)
+
+        tool_risk = None
+        if self._tool_risk_scorer is not None:
+            try:
+                tool_risk = self._tool_risk_scorer.score_tool_invocation(
+                    tool_name=tool_name,
+                    request=request_serialized,
+                    runtime_context=runtime_context,
+                    capability_tags=capability_tags,
+                )
+            except Exception as exc:  # pragma: no cover - defensive logging
+                logger.warning("anthropic_tool_use_risk_scoring_failed: %s", exc)
+
+        trajectory_violations: list[dict[str, Any]] = []
+        if self._trajectory_monitor is not None:
+            try:
+                raw_violations = self._trajectory_monitor.check_checkpoint(
+                    session_id=session_id,
+                    agent_id=self._agent_id,
+                    decision={
+                        "action_type": checkpoint_kind,
+                        "agent_id": self._agent_id,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "metadata": engine_context,
+                    },
+                )
+                trajectory_violations = [
+                    _trajectory_violation_to_dict(violation) for violation in raw_violations
+                ]
+            except Exception as exc:  # pragma: no cover - defensive logging
+                logger.warning("anthropic_tool_use_trajectory_failed: %s", exc)
+
+        audit_metadata = build_runtime_governance_observability(
+            governance_memory_report=governance_memory_report,
+            tool_risk=tool_risk,
+            trajectory_violations=trajectory_violations,
+            tool_name=tool_name,
+            session_id=session_id,
+            checkpoint_kind=checkpoint_kind,
+        )
+        result = self._validate_non_strict(
             serialized,
             agent_id=f"{self._agent_id}:tool_use:{tool_name}",
+            context=engine_context,
+            audit_metadata=audit_metadata or None,
         )
-        self._engine.strict = old_strict
+
+        governance_context: dict[str, Any] = {
+            "tool_name": tool_name,
+            "request": request_serialized,
+            "runtime_context": runtime_context,
+            "capability_tags": capability_tags,
+            "session_id": session_id,
+            "checkpoint_kind": checkpoint_kind,
+            "validation": {
+                "valid": bool(getattr(result, "valid", False)),
+                "violation_rule_ids": [
+                    violation.rule_id for violation in getattr(result, "violations", [])
+                ],
+            },
+            "tool_risk": None,
+            "retrieved_rules": [],
+            "retrieved_precedents": [],
+            "governance_memory_summary": {},
+            "trajectory_violations": [],
+        }
+
+        if governance_memory_report is not None:
+            governance_context["retrieved_rules"] = [
+                _struct_to_dict(hit) for hit in getattr(governance_memory_report, "rule_hits", [])
+            ]
+            governance_context["retrieved_precedents"] = [
+                _struct_to_dict(hit)
+                for hit in getattr(governance_memory_report, "precedent_hits", [])
+            ]
+            governance_context["governance_memory_summary"] = _struct_to_dict(
+                getattr(governance_memory_report, "summary", {})
+            )
+
+        governance_context["tool_risk"] = tool_risk
+        governance_context["trajectory_violations"] = trajectory_violations
+
+        if self._experience_library is not None:
+            try:
+                record_validation_precedent(
+                    experience_library=self._experience_library,
+                    embedding_provider=self._embedding_provider,
+                    action=request_serialized,
+                    result=result,
+                    context=engine_context,
+                )
+            except Exception as exc:  # pragma: no cover - defensive logging
+                logger.warning("anthropic_tool_use_precedent_record_failed: %s", exc)
+
+        self.last_tool_use_governance = governance_context
 
         if not result.valid:
             logger.warning(
                 "Tool use '%s' violations: %s",
                 tool_name,
                 [v.rule_id for v in result.violations],
+            )
+        if governance_context["trajectory_violations"]:
+            logger.warning(
+                "Tool use '%s' trajectory violations: %s",
+                tool_name,
+                [violation["rule_id"] for violation in governance_context["trajectory_violations"]],
             )
 
 
@@ -270,6 +485,11 @@ class GovernedAnthropic:
         constitution: Constitution | None = None,
         agent_id: str = "anthropic-agent",
         strict: bool = True,
+        embedding_provider: EmbeddingProvider | None = None,
+        experience_library: GovernanceExperienceLibrary | None = None,
+        governance_memory: GovernanceMemoryRetriever | None = None,
+        tool_risk_scorer: ConstitutionalImpactScorer | None = None,
+        trajectory_monitor: TrajectoryMonitor | None = None,
         **anthropic_kwargs: Any,
     ) -> None:
         if not ANTHROPIC_AVAILABLE:
@@ -287,7 +507,30 @@ class GovernedAnthropic:
             audit_mode="full",
         )
         self.agent_id = agent_id
-        self.messages = GovernedMessages(self._client, self.engine, agent_id)
+        self.embedding_provider = embedding_provider
+        self.experience_library = experience_library
+        self.governance_memory = governance_memory or GovernanceMemoryRetriever(
+            self.constitution,
+            experience_library=self.experience_library,
+            embedding_provider=self.embedding_provider,
+        )
+        self.tool_risk_scorer = tool_risk_scorer or ConstitutionalImpactScorer()
+        self.trajectory_monitor = trajectory_monitor or TrajectoryMonitor(
+            rules=[
+                SensitiveToolSequenceRule(sensitive_tools={"shell", "terminal", "bash", "exec"})
+            ],
+            store=InMemoryTrajectoryStore(),
+        )
+        self.messages = GovernedMessages(
+            self._client,
+            self.engine,
+            agent_id,
+            embedding_provider=self.embedding_provider,
+            experience_library=self.experience_library,
+            governance_memory=self.governance_memory,
+            tool_risk_scorer=self.tool_risk_scorer,
+            trajectory_monitor=self.trajectory_monitor,
+        )
 
     @classmethod
     def governance_tools(cls) -> list[dict[str, Any]]:
@@ -356,12 +599,26 @@ class GovernedAnthropic:
         if not isinstance(agent_id, str) or not _AGENT_ID_PATTERN.match(agent_id):
             return {"error": f"Invalid agent_id format: {agent_id!r}"}
 
+        governance_memory_report = self.governance_memory.retrieve(text)
+        audit_metadata = build_runtime_governance_observability(
+            governance_memory_report=governance_memory_report,
+        )
         old_strict = self.engine.strict
         self.engine.strict = False
-        result = self.engine.validate(text, agent_id=f"{self.agent_id}:{agent_id}")
+        validate_kwargs: dict[str, Any] = {
+            "agent_id": f"{self.agent_id}:{agent_id}",
+        }
+        if audit_metadata:
+            validate_kwargs["audit_metadata"] = audit_metadata
+        try:
+            result = self.engine.validate(text, **validate_kwargs)
+        except TypeError as exc:
+            if "audit_metadata" not in str(exc):
+                raise
+            validate_kwargs.pop("audit_metadata", None)
+            result = self.engine.validate(text, **validate_kwargs)
         self.engine.strict = old_strict
-
-        return {
+        response = {
             "valid": result.valid,
             "violations": [
                 {
@@ -375,7 +632,25 @@ class GovernedAnthropic:
             ],
             "rules_checked": result.rules_checked,
             "constitutional_hash": result.constitutional_hash,
+            "retrieved_rules": [asdict(hit) for hit in governance_memory_report.rule_hits],
+            "retrieved_precedents": [
+                asdict(hit) for hit in governance_memory_report.precedent_hits
+            ],
+            "governance_memory_summary": asdict(governance_memory_report.summary),
         }
+
+        try:
+            record_validation_precedent(
+                experience_library=self.experience_library,
+                embedding_provider=self.embedding_provider,
+                action=text,
+                result=result,
+                context={},
+            )
+        except Exception as exc:  # pragma: no cover - defensive logging
+            logger.warning("anthropic_validate_action_precedent_record_failed: %s", exc)
+
+        return response
 
     def _handle_check_compliance(self, tool_input: dict[str, Any]) -> dict[str, Any]:
         """Handle the check_compliance governance tool."""

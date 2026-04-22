@@ -8,7 +8,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, cast, runtime_checkable
 
 
 def _coerce_timestamp(raw: Any) -> datetime:
@@ -19,6 +19,13 @@ def _coerce_timestamp(raw: Any) -> datetime:
         parsed = datetime.fromisoformat(normalized)
         return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=timezone.utc)
     return datetime.now(timezone.utc)
+
+
+def _decision_metadata(decision: dict[str, Any]) -> dict[str, Any]:
+    metadata = decision.get("metadata", {})
+    if isinstance(metadata, dict):
+        return cast(dict[str, Any], metadata)
+    return {}
 
 
 @dataclass(slots=True)
@@ -91,9 +98,7 @@ class CumulativeValueRule:
         last_timestamp = datetime.now(timezone.utc).isoformat()
         agent_id = ""
         for decision in decisions:
-            metadata = decision.get("metadata", {})
-            if not isinstance(metadata, dict):
-                continue
+            metadata = _decision_metadata(decision)
             amount = metadata.get("amount")
             if isinstance(amount, (int, float)):
                 total += float(amount)
@@ -107,6 +112,57 @@ class CumulativeValueRule:
                 severity=self.severity,
                 agent_id=agent_id,
                 timestamp=last_timestamp,
+            )
+        return None
+
+
+@dataclass(slots=True)
+class SensitiveToolSequenceRule:
+    sensitive_tools: set[str]
+    precursor_flags: tuple[str, ...] = (
+        "prompt_injection_suspected",
+        "indirect_prompt_injection",
+        "untrusted_input",
+    )
+    lookback: int = 3
+    severity: str = "critical"
+
+    def check(self, decisions: Sequence[dict[str, Any]]) -> TrajectoryViolation | None:
+        recent_precursors: list[tuple[int, str]] = []
+        normalized_sensitive_tools = {tool.lower() for tool in self.sensitive_tools}
+
+        for index, decision in enumerate(decisions):
+            metadata = _decision_metadata(decision)
+            tool_name = str(metadata.get("tool_name", "")).strip().lower()
+            precursor_match = next(
+                (flag for flag in self.precursor_flags if bool(metadata.get(flag))),
+                None,
+            )
+            if precursor_match is not None:
+                recent_precursors.append((index, precursor_match))
+                continue
+
+            if not tool_name or tool_name not in normalized_sensitive_tools:
+                continue
+
+            window_precursors = [
+                (precursor_index, flag)
+                for precursor_index, flag in recent_precursors
+                if index - precursor_index <= self.lookback
+            ]
+            if not window_precursors:
+                continue
+
+            _, matched_flag = window_precursors[-1]
+            return TrajectoryViolation(
+                rule_id="TRAJ-TOOLSEQ-001",
+                evidence=(
+                    f"Sensitive tool '{tool_name}' invoked after precursor flag '{matched_flag}' "
+                    f"within {self.lookback} checkpoint(s)"
+                ),
+                severity=self.severity,
+                agent_id=str(decision.get("agent_id", "")),
+                timestamp=_coerce_timestamp(decision.get("timestamp")).isoformat(),
             )
         return None
 
@@ -143,3 +199,16 @@ class TrajectoryMonitor:
             if violation is not None:
                 violations.append(violation)
         return violations
+
+    def check_checkpoint(
+        self,
+        *,
+        session_id: str,
+        agent_id: str,
+        decision: dict[str, Any],
+    ) -> list[TrajectoryViolation]:
+        session = self._store.get(session_id)
+        if session is None:
+            session = TrajectorySession(session_id=session_id, agent_id=agent_id)
+        session.add(decision)
+        return self.check_trajectory(session)

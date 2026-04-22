@@ -334,6 +334,10 @@ _LAZY_REGISTRY: dict[str, tuple[str, str]] = {
     "GovernanceTestCase": ("testing", "analysis"),
     "TestCaseFailure": ("testing", "analysis"),
     "TestSuiteResult": ("testing", "analysis"),
+    "BehavioralConsistencyCase": ("testing", "analysis"),
+    "BehavioralConsistencyFinding": ("testing", "analysis"),
+    "BehavioralConsistencyReport": ("testing", "analysis"),
+    "BehavioralConsistencyAuditor": ("testing", "analysis"),
     "GovernanceTestSuite": ("testing", "analysis"),
     "GovernanceEngineFn": ("test_suite", "analysis"),
     "AssertionResult": ("test_suite", "analysis"),
@@ -409,6 +413,10 @@ _LAZY_REGISTRY: dict[str, tuple[str, str]] = {
     "RefusalReason": ("refusal_reasoning", "analysis"),
     "RefusalSuggestion": ("refusal_reasoning", "analysis"),
     "SemanticRuleSearch": ("semantic_search", "analysis"),
+    "GovernanceMemoryPrecedentHit": ("governance_memory", "analysis"),
+    "GovernanceMemorySummary": ("governance_memory", "analysis"),
+    "GovernanceMemoryReport": ("governance_memory", "analysis"),
+    "GovernanceMemoryRetriever": ("governance_memory", "analysis"),
 }
 
 # Module cache to avoid repeated importlib calls

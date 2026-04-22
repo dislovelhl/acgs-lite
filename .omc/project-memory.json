@@ -1,0 +1,296 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776513477159,
+  "projectRoot": "/home/martin/Downloads/ACGS/packages/acgs-lite",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Python",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      {
+        "name": "C/C++",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Makefile"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "fastapi",
+        "version": null,
+        "category": "backend"
+      },
+      {
+        "name": "pytest",
+        "version": null,
+        "category": "testing"
+      }
+    ],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "make build",
+    "testCommand": "make test",
+    "lintCommand": "ruff check",
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "examples",
+      "scripts",
+      "src",
+      "tests"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "build": {
+      "path": "build",
+      "purpose": "Build output",
+      "fileCount": 0,
+      "lastAccessed": 1776513477154,
+      "keyFiles": []
+    },
+    "design": {
+      "path": "design",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1776513477155,
+      "keyFiles": [
+        "README.md",
+        "acgs-openshell-integration.md",
+        "kill-criteria.md"
+      ]
+    },
+    "dist": {
+      "path": "dist",
+      "purpose": "Distribution/build output",
+      "fileCount": 2,
+      "lastAccessed": 1776513477156,
+      "keyFiles": [
+        "acgs_lite-2.8.0-py3-none-any.whl",
+        "acgs_lite-2.8.0.tar.gz"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 27,
+      "lastAccessed": 1776513477156,
+      "keyFiles": [
+        "architecture.md",
+        "changelog.md",
+        "cli.md",
+        "compliance-2026.md",
+        "compliance.md"
+      ]
+    },
+    "examples": {
+      "path": "examples",
+      "purpose": "Example code",
+      "fileCount": 17,
+      "lastAccessed": 1776513477157,
+      "keyFiles": [
+        "README.md",
+        "constitution.yaml",
+        "demo_cli_sidecars.sh",
+        "eu_ai_act_quickstart.py",
+        "gitlab-ci-governance.yml"
+      ]
+    },
+    "hackathon": {
+      "path": "hackathon",
+      "purpose": null,
+      "fileCount": 8,
+      "lastAccessed": 1776513477157,
+      "keyFiles": [
+        "AGENTS.md",
+        "README.md",
+        "cloud-run-deploy.sh",
+        "constitution.yaml",
+        "demo-video-script.md"
+      ]
+    },
+    "integrations": {
+      "path": "integrations",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1776513477157,
+      "keyFiles": []
+    },
+    "rust": {
+      "path": "rust",
+      "purpose": null,
+      "fileCount": 3,
+      "lastAccessed": 1776513477157,
+      "keyFiles": [
+        "Cargo.lock",
+        "Cargo.toml",
+        "README.md"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1776513477157,
+      "keyFiles": [
+        "visualizer.py"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1776513477157,
+      "keyFiles": [
+        "fix_imports.py",
+        "split_engine.py"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 137,
+      "lastAccessed": 1776513477158,
+      "keyFiles": [
+        "conftest.py",
+        "test_acgs_namespace.py",
+        "test_adversarial_inputs.py",
+        "test_affine_patterns.py",
+        "test_amendments.py"
+      ]
+    },
+    "build/lib": {
+      "path": "build/lib",
+      "purpose": "Library code",
+      "fileCount": 0,
+      "lastAccessed": 1776513477158,
+      "keyFiles": []
+    },
+    "docs/api": {
+      "path": "docs/api",
+      "purpose": "API routes",
+      "fileCount": 6,
+      "lastAccessed": 1776513477158,
+      "keyFiles": [
+        "audit.md",
+        "compliance.md",
+        "constitution.md"
+      ]
+    },
+    "rust/src": {
+      "path": "rust/src",
+      "purpose": "Source code",
+      "fileCount": 8,
+      "lastAccessed": 1776513477159,
+      "keyFiles": [
+        "context.rs",
+        "hash.rs",
+        "impact_scorer.rs"
+      ]
+    },
+    "tests/fixtures": {
+      "path": "tests/fixtures",
+      "purpose": "Test fixtures",
+      "fileCount": 3,
+      "lastAccessed": 1776513477159,
+      "keyFiles": [
+        "drift_clean.jsonl",
+        "drift_probing.jsonl",
+        "real_use_case_datasets.json"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src/acgs_lite/server.py",
+      "accessCount": 9,
+      "lastAccessed": 1776517111998,
+      "type": "file"
+    },
+    {
+      "path": "src/acgs_lite/cdp/store.py",
+      "accessCount": 5,
+      "lastAccessed": 1776516991824,
+      "type": "file"
+    },
+    {
+      "path": "src/acgs_lite/pqc.py",
+      "accessCount": 4,
+      "lastAccessed": 1776519782925,
+      "type": "file"
+    },
+    {
+      "path": "src/acgs_lite/cdp/certificate.py",
+      "accessCount": 3,
+      "lastAccessed": 1776528521158,
+      "type": "file"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "accessCount": 2,
+      "lastAccessed": 1776513815005,
+      "type": "file"
+    },
+    {
+      "path": "src/acgs_lite/integrations/mcp_server.py",
+      "accessCount": 2,
+      "lastAccessed": 1776517002472,
+      "type": "file"
+    },
+    {
+      "path": "src/acgs_lite/audit_ct.py",
+      "accessCount": 1,
+      "lastAccessed": 1776513585945,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_audit_ct.py",
+      "accessCount": 1,
+      "lastAccessed": 1776513591353,
+      "type": "file"
+    },
+    {
+      "path": "src/acgs_lite/interventions/engine.py",
+      "accessCount": 1,
+      "lastAccessed": 1776513732475,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_streaming_governance.py",
+      "accessCount": 1,
+      "lastAccessed": 1776513752844,
+      "type": "file"
+    },
+    {
+      "path": "tests/test_affine_patterns.py",
+      "accessCount": 1,
+      "lastAccessed": 1776516511759,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

@@ -1,0 +1,50 @@
+name: security-regression
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/security/**'
+      - 'scripts/generate_security_report.py'
+      - 'security-audit-report.md'
+  push:
+    branches: [main]
+
+jobs:
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: |
+          pip install -e ".[dev,transport]"
+          pip install pytest-json-report
+      - name: Run security tests
+        run: |
+          mkdir -p .artifacts
+          python -m pytest tests/security/ -m security \
+            --json-report --json-report-file=.artifacts/security.json \
+            -v --tb=short
+      - name: Regenerate report
+        run: |
+          python scripts/generate_security_report.py .artifacts/security.json \
+            > .artifacts/security-audit-report.md
+      - name: Diff against checked-in report
+        run: |
+          if ! diff -u security-audit-report.md .artifacts/security-audit-report.md; then
+            echo ""
+            echo "::error::security-audit-report.md is out of sync with test outcomes."
+            echo "Regenerate locally:"
+            echo "  python -m pytest tests/security/ -m security --json-report --json-report-file=.security.json"
+            echo "  python scripts/generate_security_report.py .security.json > security-audit-report.md"
+            exit 1
+          fi
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: .artifacts/

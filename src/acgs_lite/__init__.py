@@ -41,6 +41,10 @@ from acgs_lite.constitution import (
     ConstitutionBuilder,
     ConstitutionBundle,
     ConstitutionLifecycle,
+    GovernanceMemoryPrecedentHit,
+    GovernanceMemoryReport,
+    GovernanceMemoryRetriever,
+    GovernanceMemorySummary,
     InMemoryBundleStore,
     InMemoryLifecycleAuditSink,
     LifecycleAuditSink,
@@ -62,7 +66,20 @@ from acgs_lite.constitution import (
     ValidatorPool,
     ValidatorSelector,
 )
+from acgs_lite.constitution.claim_lifecycle import (
+    CaseState,
+    TransitionRecord,
+)
 from acgs_lite.constitution.rule import ViolationAction
+from acgs_lite.constitution.spot_check import (
+    CompletedCase,
+    ValidatorAssessment,
+    ValidatorProfile,
+)
+from acgs_lite.constitution.trust_score import (
+    TrustEvent,
+    TrustTier,
+)
 from acgs_lite.engine import BatchValidationResult, GovernanceEngine, ValidationResult
 from acgs_lite.errors import (
     ConstitutionalViolationError,
@@ -124,6 +141,7 @@ from acgs_lite.trajectory import (
     CumulativeValueRule,
     FrequencyThresholdRule,
     InMemoryTrajectoryStore,
+    SensitiveToolSequenceRule,
     TrajectoryMonitor,
     TrajectorySession,
     TrajectoryViolation,
@@ -166,6 +184,10 @@ __all__ = [
     "RuleSynthesisProvider",
     "AcknowledgedTension",
     "ActivationRecord",
+    "GovernanceMemoryPrecedentHit",
+    "GovernanceMemoryReport",
+    "GovernanceMemoryRetriever",
+    "GovernanceMemorySummary",
     "BundleStatus",
     "BundleStore",
     "InMemoryBundleStore",
@@ -173,25 +195,32 @@ __all__ = [
     "Severity",
     "StatusTransition",
     "ViolationAction",
-    # Constitution lifecycle enforcement (Week-3 — promoted for constitutional_swarm)
+    # Spot-check audit / governance lifecycle (Week-3)
     "AuditPolicy",
     "CaseConfig",
     "CaseManager",
     "CaseRecord",
-    "ConstitutionLifecycle",
+    "CaseState",
+    "CompletedCase",
     "ConcurrentLifecycleError",
+    "ConstitutionLifecycle",
+    "InMemoryLifecycleAuditSink",
     "LifecycleAuditSink",
     "LifecycleError",
     "LifecycleEvidenceError",
     "LifecycleEvidenceRecord",
-    "InMemoryLifecycleAuditSink",
     "SelectionPolicy",
     "SelectionResult",
     "SpotCheckAuditor",
     "SpotCheckResult",
+    "TransitionRecord",
     "TrustAdjustment",
     "TrustConfig",
+    "TrustEvent",
     "TrustScoreManager",
+    "TrustTier",
+    "ValidatorAssessment",
+    "ValidatorProfile",
     "ValidatorPool",
     "ValidatorSelector",
     # Engine
@@ -232,6 +261,7 @@ __all__ = [
     "InMemoryTrajectoryStore",
     "FrequencyThresholdRule",
     "CumulativeValueRule",
+    "SensitiveToolSequenceRule",
     # Z3 formal verification
     "Z3ConstraintVerifier",
     "Z3VerifyResult",

@@ -59,7 +59,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "GL-004",
-                "text": "Destructive production operations require human review",
+                "text": "Block destructive production operations without human review",
                 "severity": "high",
                 "keywords": [
                     "drop table",
@@ -88,7 +88,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "GL-006",
-                "text": "Agent actions must produce an audit trail entry",
+                "text": "Warn when agent actions omit an audit trail entry",
                 "severity": "medium",
                 "keywords": ["no-audit", "skip audit", "disable logging"],
                 "category": "audit",
@@ -162,7 +162,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             {
                 "id": "HC-004",
                 "text": (
-                    "Patient consent must be obtained before processing sensitive health data"
+                    "Block processing sensitive health data without recorded patient consent"
                 ),
                 "severity": "high",
                 "keywords": ["without consent", "no consent check", "skip consent"],
@@ -172,7 +172,9 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "HC-005",
-                "text": ("All clinical AI decisions must be logged with patient ID and timestamp"),
+                "text": (
+                    "Block clinical AI decisions that omit patient ID or timestamp in the audit log"
+                ),
                 "severity": "high",
                 "keywords": ["no audit", "skip log", "disable audit"],
                 "category": "audit",
@@ -224,7 +226,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "FIN-003",
-                "text": "Credit decisions must provide adverse action reasons (FCRA)",
+                "text": "Block credit decisions that omit adverse action reasons (FCRA)",
                 "severity": "high",
                 "keywords": ["no reason", "deny without explanation", "reject silently"],
                 "category": "compliance",
@@ -233,7 +235,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "FIN-004",
-                "text": "High-value transactions require multi-party authorisation",
+                "text": "Block high-value transactions without multi-party authorisation",
                 "severity": "critical",
                 "keywords": [
                     "transfer funds",
@@ -330,7 +332,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "SEC-004",
-                "text": "Network scanning and enumeration require explicit authorisation",
+                "text": "Block network scanning and enumeration without explicit authorisation",
                 "severity": "high",
                 "keywords": [
                     "port scan",

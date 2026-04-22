@@ -2042,6 +2042,44 @@ class TestPolicyLinter:
         codes = {i.code for i in report.issues}
         assert LintCode.WEAK_REGEX_PATTERN not in codes
 
+    def test_lint_positive_directive_risk(self) -> None:
+        from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
+
+        linter = PolicyLinter()
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Ensure all outputs follow company style guide",
+                    "severity": "medium",
+                    "keywords": ["style", "guide"],
+                    "category": "quality",
+                    "workflow_action": "warn",
+                }
+            ]
+        )
+        codes = {i.code for i in report.issues}
+        assert LintCode.POSITIVE_DIRECTIVE_RISK in codes
+
+    def test_lint_negative_constraint_not_flagged_as_positive_directive(self) -> None:
+        from acgs_lite.constitution.policy_linter import LintCode, PolicyLinter
+
+        linter = PolicyLinter()
+        report = linter.lint_rules(
+            [
+                {
+                    "id": "r1",
+                    "description": "Block requests that exfiltrate sensitive data",
+                    "severity": "critical",
+                    "keywords": ["exfiltrate", "sensitive data"],
+                    "category": "security",
+                    "workflow_action": "block",
+                }
+            ]
+        )
+        codes = {i.code for i in report.issues}
+        assert LintCode.POSITIVE_DIRECTIVE_RISK not in codes
+
 
 # ===========================================================================
 # circuit_breaker.py

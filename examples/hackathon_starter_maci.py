@@ -11,9 +11,7 @@ Usage:
 No API keys required.
 """
 
-from acgs_lite import Constitution, GovernanceEngine, GovernedAgent
-from acgs_lite.audit import AuditLog
-
+from acgs_lite import Constitution, GovernedAgent
 
 # --- Step 1: Define rules for a code deployment pipeline ---
 DEPLOYMENT_RULES = """
@@ -99,7 +97,7 @@ def main() -> None:
             print(f"  Proposer:  {proposal}")
         except Exception as e:
             print(f"  Proposer:  [BLOCKED] {type(e).__name__}")
-            print(f"             Rule violated at proposal stage")
+            print("             Rule violated at proposal stage")
             print()
             continue
 
@@ -109,7 +107,7 @@ def main() -> None:
             print(f"  Validator: {validated}")
         except Exception as e:
             print(f"  Validator: [BLOCKED] {type(e).__name__}")
-            print(f"             Constitutional violation detected")
+            print("             Constitutional violation detected")
             print()
             continue
 

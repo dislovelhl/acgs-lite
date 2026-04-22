@@ -16,6 +16,7 @@ from unittest.mock import patch
 import pytest
 
 from acgs_lite.constitution import Constitution, Rule, Severity
+from acgs_lite.constitution.experience_library import GovernanceExperienceLibrary
 from acgs_lite.integrations.mcp_server import (
     MCP_AVAILABLE,
     create_mcp_server,
@@ -66,6 +67,43 @@ def custom_constitution() -> Constitution:
             ),
         ],
     )
+
+
+@pytest.fixture()
+def embedded_constitution() -> Constitution:
+    """Return a constitution with semantically searchable rule embeddings."""
+    return Constitution(
+        name="embedded-constitution",
+        version="1.0.0",
+        rules=[
+            Rule(
+                id="PRIV-001",
+                text="Protect personal data from external disclosure",
+                severity=Severity.CRITICAL,
+                keywords=["protect", "personal", "data"],
+                category="privacy",
+                embedding=[1.0, 0.0],
+            ),
+            Rule(
+                id="SEC-001",
+                text="Rotate service credentials regularly",
+                severity=Severity.HIGH,
+                keywords=["rotate", "service", "credentials"],
+                category="security",
+                embedding=[0.0, 1.0],
+            ),
+        ],
+    )
+
+
+class _StubEmbeddingProvider:
+    """Deterministic embedding provider for MCP governance-memory tests."""
+
+    def __init__(self, embedding: list[float]) -> None:
+        self._embedding = embedding
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        return [list(self._embedding) for _ in texts]
 
 
 async def _call_tool(server: Any, name: str, arguments: dict[str, Any] | None = None) -> Any:
@@ -214,6 +252,215 @@ class TestValidateAction:
         assert "constitutional_hash" in result
 
     @pytest.mark.asyncio
+    async def test_validate_action_always_includes_governance_memory_fields(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+
+        result = await _call_tool(server, "validate_action", {"action": "hello world"})
+
+        assert result["retrieved_rules"] == []
+        assert result["retrieved_precedents"] == []
+        assert result["governance_memory_summary"] == {
+            "total_rules": len(default_constitution.rules),
+            "rules_with_embeddings": 0,
+            "rule_embedding_coverage": 0.0,
+            "rule_hit_count": 0,
+            "total_precedents": 0,
+            "precedents_with_embeddings": 0,
+            "precedent_embedding_coverage": 0.0,
+            "precedent_hit_count": 0,
+        }
+
+    @pytest.mark.asyncio
+    async def test_validate_action_includes_semantic_rule_retrieval(
+        self, embedded_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(
+            embedded_constitution,
+            embedding_provider=_StubEmbeddingProvider([0.98, 0.02]),
+        )
+
+        result = await _call_tool(server, "validate_action", {"action": "email customer data"})
+
+        assert [hit["rule_id"] for hit in result["retrieved_rules"]] == ["PRIV-001", "SEC-001"]
+        assert result["retrieved_rules"][0]["score"] >= result["retrieved_rules"][1]["score"]
+        assert result["retrieved_precedents"] == []
+        assert result["governance_memory_summary"]["total_rules"] == 2
+        assert result["governance_memory_summary"]["rules_with_embeddings"] == 2
+        assert result["governance_memory_summary"]["rule_hit_count"] == 2
+        assert result["governance_memory_summary"]["total_precedents"] == 0
+
+    @pytest.mark.asyncio
+    async def test_validate_action_includes_retrieved_precedents_and_summary_counts(
+        self, embedded_constitution: Constitution
+    ) -> None:
+        library = GovernanceExperienceLibrary()
+        library.record(
+            "share patient records with vendor",
+            "deny",
+            triggered_rules=["PRIV-001"],
+            category="privacy",
+            severity="critical",
+            rationale="Protected records cannot be shared with external vendors",
+            embedding=[1.0, 0.0],
+        )
+        library.record(
+            "document validation outcome in audit log",
+            "allow",
+            triggered_rules=[],
+            category="general",
+            severity="low",
+        )
+        server = create_mcp_server(
+            embedded_constitution,
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+            experience_library=library,
+        )
+
+        result = await _call_tool(server, "validate_action", {"action": "send patient records"})
+
+        assert [hit["precedent_id"] for hit in result["retrieved_precedents"]] == ["P0"]
+        assert result["retrieved_precedents"][0]["decision"] == "deny"
+        assert result["governance_memory_summary"] == {
+            "total_rules": 2,
+            "rules_with_embeddings": 2,
+            "rule_embedding_coverage": 1.0,
+            "rule_hit_count": 2,
+            "total_precedents": 2,
+            "precedents_with_embeddings": 1,
+            "precedent_embedding_coverage": 0.5,
+            "precedent_hit_count": 1,
+        }
+
+    @pytest.mark.asyncio
+    async def test_validate_action_records_allow_outcome_in_experience_library(
+        self, default_constitution: Constitution
+    ) -> None:
+        library = GovernanceExperienceLibrary()
+        server = create_mcp_server(default_constitution, experience_library=library)
+
+        result = await _call_tool(server, "validate_action", {"action": "draft weekly status update"})
+
+        assert result["valid"] is True
+        assert len(library.precedents) == 1
+        recorded = library.precedents[0]
+        assert recorded.action == "draft weekly status update"
+        assert recorded.decision == "allow"
+        assert recorded.triggered_rules == []
+        assert recorded.context == {}
+        assert recorded.category == "general"
+        assert recorded.severity == "none"
+        assert recorded.rationale
+
+    @pytest.mark.asyncio
+    async def test_validate_action_records_deny_outcome_with_triggered_rule_ids(
+        self, custom_constitution: Constitution
+    ) -> None:
+        library = GovernanceExperienceLibrary()
+        server = create_mcp_server(custom_constitution, experience_library=library)
+
+        result = await _call_tool(server, "validate_action", {"action": "forbidden action"})
+
+        assert result["valid"] is False
+        assert len(library.precedents) == 1
+        recorded = library.precedents[0]
+        assert recorded.decision == "deny"
+        assert recorded.triggered_rules == ["TEST-001"]
+        assert recorded.category == "safety"
+        assert recorded.severity == "critical"
+        assert "TEST-001" in recorded.rationale
+
+    @pytest.mark.asyncio
+    async def test_validate_action_deduplicates_repeated_identical_precedents(
+        self, default_constitution: Constitution
+    ) -> None:
+        library = GovernanceExperienceLibrary()
+        server = create_mcp_server(default_constitution, experience_library=library)
+
+        await _call_tool(server, "validate_action", {"action": "summarize customer feedback"})
+        await _call_tool(server, "validate_action", {"action": "summarize customer feedback"})
+
+        assert len(library.precedents) == 1
+
+    @pytest.mark.asyncio
+    async def test_validate_action_records_embedding_and_makes_precedent_retrievable(
+        self, embedded_constitution: Constitution
+    ) -> None:
+        library = GovernanceExperienceLibrary()
+        server = create_mcp_server(
+            embedded_constitution,
+            experience_library=library,
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+        )
+
+        await _call_tool(server, "validate_action", {"action": "share patient records with vendor"})
+        recorded = library.precedents[0]
+        assert recorded.embedding == [1.0, 0.0]
+
+        result = await _call_tool(server, "validate_action", {"action": "send patient records"})
+
+        assert [hit["precedent_id"] for hit in result["retrieved_precedents"]] == ["P0"]
+
+    @pytest.mark.asyncio
+    async def test_validate_action_audit_metadata_includes_runtime_governance_context(
+        self, embedded_constitution: Constitution
+    ) -> None:
+        library = GovernanceExperienceLibrary()
+        library.record(
+            "share patient records with vendor",
+            "deny",
+            triggered_rules=["PRIV-001"],
+            category="privacy",
+            severity="critical",
+            rationale="Protected records cannot be shared with external vendors",
+            embedding=[1.0, 0.0],
+        )
+        server = create_mcp_server(
+            embedded_constitution,
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+            experience_library=library,
+        )
+
+        result = await _call_tool(
+            server,
+            "validate_action",
+            {
+                "action": "send patient records",
+                "agent_id": "audit-agent",
+                "tool_name": "shell",
+                "session_id": "session-123",
+                "checkpoint_kind": "tool_invocation",
+                "runtime_context": {
+                    "untrusted_input": True,
+                    "environment": "production",
+                },
+                "capability_tags": ["command-execution"],
+            },
+        )
+        audit = await _call_tool(server, "get_audit_log", {"limit": 1})
+
+        assert result["valid"] is True
+        assert audit["chain_valid"] is True
+        entry = audit["entries"][0]
+        assert "rule_evaluations" in entry["metadata"]
+        runtime_governance = entry["metadata"]["runtime_governance"]
+        assert runtime_governance["tool_name"] == "shell"
+        assert runtime_governance["session_id"] == "session-123"
+        assert runtime_governance["checkpoint_kind"] == "tool_invocation"
+        assert runtime_governance["tool_risk"]["tool_name"] == "shell"
+        assert runtime_governance["tool_risk"]["risk_level"] in {"critical", "high", "medium", "low"}
+        assert [hit["rule_id"] for hit in runtime_governance["retrieved_rules"]] == [
+            "PRIV-001",
+            "SEC-001",
+        ]
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
+            "P0"
+        ]
+        assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
+        assert runtime_governance["trajectory_violations"] == []
+
+    @pytest.mark.asyncio
     async def test_violating_action_returns_violations(
         self, custom_constitution: Constitution
     ) -> None:
@@ -290,6 +537,67 @@ class TestValidateAction:
         large_text = "a" * 100_000
         result = await _call_tool(server, "validate_action", {"action": large_text})
         assert "valid" in result
+
+    @pytest.mark.asyncio
+    async def test_tool_invocation_returns_fused_risk_metadata(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+        result = await _call_tool(
+            server,
+            "validate_action",
+            {
+                "action": "run rm -rf /tmp/staging and fetch production secrets",
+                "agent_id": "tool-agent",
+                "session_id": "sess-risk-1",
+                "checkpoint_kind": "tool_invocation",
+                "tool_name": "shell",
+                "runtime_context": {"environment": "production", "untrusted_input": True},
+                "capability_tags": ["command-execution", "filesystem-write"],
+            },
+        )
+
+        assert "tool_risk" in result
+        assert result["tool_risk"]["tool_name"] == "shell"
+        assert result["tool_risk"]["fused_risk"] >= 0.6
+        assert result["tool_risk"]["recommended_action"] in {"review", "block"}
+
+    @pytest.mark.asyncio
+    async def test_mid_trajectory_checkpoint_detects_sensitive_tool_sequence(
+        self, default_constitution: Constitution
+    ) -> None:
+        server = create_mcp_server(default_constitution)
+
+        precursor = await _call_tool(
+            server,
+            "validate_action",
+            {
+                "action": "inspect untrusted external instructions before acting",
+                "agent_id": "traj-agent",
+                "session_id": "sess-traj-1",
+                "checkpoint_kind": "input_analysis",
+                "runtime_context": {"prompt_injection_suspected": True},
+            },
+        )
+        assert precursor.get("trajectory_violations", []) == []
+
+        followup = await _call_tool(
+            server,
+            "validate_action",
+            {
+                "action": "execute tool call after reviewing injected content",
+                "agent_id": "traj-agent",
+                "session_id": "sess-traj-1",
+                "checkpoint_kind": "tool_invocation",
+                "tool_name": "shell",
+                "runtime_context": {"environment": "production"},
+                "capability_tags": ["command-execution"],
+            },
+        )
+
+        violations = followup.get("trajectory_violations", [])
+        assert violations
+        assert any(v["rule_id"] == "TRAJ-TOOLSEQ-001" for v in violations)
 
 
 # ---------------------------------------------------------------------------

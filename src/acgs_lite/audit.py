@@ -367,6 +367,74 @@ class AuditLog:
 
             return chain_hash
 
+    def record_atomic_many(
+        self,
+        entries: list[AuditEntry],
+        *,
+        persist: Callable[[AuditLog], None] | None = None,
+        proof_certificate: Any | None = None,
+        provenance: Any | None = None,
+    ) -> list[str]:
+        """Record multiple *entries* atomically, invoking *persist* once after all appends.
+
+        Semantics mirror :meth:`record_atomic` for a batch: snapshot + appends +
+        backend writes + persist all run under a single held lock, and if *any*
+        step raises, the log is rolled back to its pre-batch state (in-memory +
+        durable backend via ``rollback_to`` when supported). Callers therefore
+        never observe a partial batch after a failure, and a retry will not
+        duplicate audit history with different IDs.
+
+        Each entry is prepared (metadata/signature) lock-free, then the whole
+        batch is committed under ``_lock``. Returns the list of chain hashes in
+        the same order as *entries*. If *entries* is empty, no lock is acquired
+        and an empty list is returned.
+        """
+        if not entries:
+            return []
+
+        for entry in entries:
+            self._prepare_entry(entry, proof_certificate, provenance)
+
+        with self._lock:
+            pre_entries = list(self._entries)
+            pre_chain_hashes = list(self._chain_hashes)
+
+            checkpoint: Any = None
+            can_checkpoint = self._backend is not None and hasattr(
+                self._backend, "begin_checkpoint"
+            )
+            if can_checkpoint:
+                checkpoint = self._backend.begin_checkpoint()  # type: ignore[union-attr]
+            elif self._backend is not None:
+                logger.warning(
+                    "audit backend %s does not implement begin_checkpoint; "
+                    "record_atomic_many rollback cannot cover durable state",
+                    type(self._backend).__name__,
+                )
+
+            chain_hashes: list[str] = []
+            try:
+                for entry in entries:
+                    chain_hash = self._append_locked(entry)
+                    chain_hashes.append(chain_hash)
+                    if self._backend is not None:
+                        self._backend.write(entry.to_dict(), chain_hash)
+                if persist is not None:
+                    persist(self)
+            except Exception:
+                self._entries = pre_entries
+                self._chain_hashes = pre_chain_hashes
+                if can_checkpoint:
+                    try:
+                        self._backend.rollback_to(checkpoint)  # type: ignore[union-attr]
+                    except Exception as rb_exc:
+                        logger.error(
+                            "audit backend rollback failed: %s", rb_exc, exc_info=True
+                        )
+                raise
+
+            return chain_hashes
+
     def flush(self) -> None:
         """Flush pending writes to the backend. No-op if no backend."""
         if self._backend is not None:

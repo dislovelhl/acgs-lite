@@ -12,6 +12,16 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 
+class _StubEmbeddingProvider:
+    """Deterministic embedding provider for anthropic runtime-governance tests."""
+
+    def __init__(self, embedding: list[float]) -> None:
+        self._embedding = embedding
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        return [list(self._embedding) for _ in texts]
+
+
 class TestIntegrationsPackageSurface:
     """Smoke tests for the integrations package surface."""
 
@@ -78,14 +88,17 @@ class TestAnthropicStrictKwargFix:
 class TestGovernedAnthropicToolHandlers:
     """Verify governance tool handlers use strict toggle correctly."""
 
-    def _make_client(self):
+    def _make_client(
+        self,
+        **kwargs,
+    ):
         from acgs_lite.integrations.anthropic import ANTHROPIC_AVAILABLE, GovernedAnthropic
 
         if not ANTHROPIC_AVAILABLE:
             pytest.skip("anthropic not installed")
 
         with patch("acgs_lite.integrations.anthropic.Anthropic"):
-            return GovernedAnthropic(api_key="test")
+            return GovernedAnthropic(api_key="test", **kwargs)
 
     def test_handle_validate_action_restores_strict(self):
         """_handle_validate_action should restore engine.strict after call."""
@@ -104,6 +117,122 @@ class TestGovernedAnthropicToolHandlers:
         client._handle_check_compliance({"text": "hello"})
 
         assert client.engine.strict is True
+
+    def test_handle_validate_action_records_runtime_governance_in_audit_metadata(self):
+        from acgs_lite.constitution import Constitution, Rule, Severity
+        from acgs_lite.constitution.experience_library import GovernanceExperienceLibrary
+
+        constitution = Constitution(
+            name="embedded-constitution",
+            version="1.0.0",
+            rules=[
+                Rule(
+                    id="PRIV-001",
+                    text="Protect personal data from external disclosure",
+                    severity=Severity.CRITICAL,
+                    keywords=["protect", "personal", "data"],
+                    category="privacy",
+                    embedding=[1.0, 0.0],
+                ),
+                Rule(
+                    id="SEC-001",
+                    text="Rotate service credentials regularly",
+                    severity=Severity.HIGH,
+                    keywords=["rotate", "service", "credentials"],
+                    category="security",
+                    embedding=[0.0, 1.0],
+                ),
+            ],
+        )
+        library = GovernanceExperienceLibrary()
+        library.record(
+            "share patient records with vendor",
+            "deny",
+            triggered_rules=["PRIV-001"],
+            category="privacy",
+            severity="critical",
+            rationale="Protected records cannot be shared with external vendors",
+            embedding=[1.0, 0.0],
+        )
+        client = self._make_client(
+            constitution=constitution,
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+            experience_library=library,
+        )
+
+        result = client._handle_validate_action({"text": "send patient records", "agent_id": "test"})
+
+        assert result["valid"] is True
+        entry = client.audit_log.query(limit=1)[0]
+        assert "rule_evaluations" in entry.metadata
+        runtime_governance = entry.metadata["runtime_governance"]
+        assert [hit["rule_id"] for hit in runtime_governance["retrieved_rules"]] == [
+            "PRIV-001",
+            "SEC-001",
+        ]
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
+            "P0"
+        ]
+        assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
+
+    def test_tool_use_records_runtime_governance_in_audit_metadata(self):
+        from acgs_lite.constitution import Constitution, Rule, Severity
+        from acgs_lite.constitution.experience_library import GovernanceExperienceLibrary
+
+        constitution = Constitution(
+            name="embedded-constitution",
+            version="1.0.0",
+            rules=[
+                Rule(
+                    id="PRIV-001",
+                    text="Protect personal data from external disclosure",
+                    severity=Severity.CRITICAL,
+                    keywords=["protect", "personal", "data"],
+                    category="privacy",
+                    embedding=[1.0, 0.0],
+                )
+            ],
+        )
+        library = GovernanceExperienceLibrary()
+        library.record(
+            '{"query": "send patient records"}',
+            "deny",
+            triggered_rules=["PRIV-001"],
+            category="privacy",
+            severity="critical",
+            rationale="Protected records cannot be shared with external vendors",
+            embedding=[1.0, 0.0],
+        )
+        client = self._make_client(
+            constitution=constitution,
+            embedding_provider=_StubEmbeddingProvider([1.0, 0.0]),
+            experience_library=library,
+        )
+
+        block = MagicMock()
+        block.name = "shell"
+        block.input = {
+            "query": "send patient records",
+            "session_id": "session-456",
+            "checkpoint_kind": "tool_invocation",
+            "runtime_context": {"untrusted_input": True, "environment": "production"},
+            "capability_tags": ["command-execution"],
+        }
+
+        client.messages._validate_tool_use(block)
+
+        entry = client.audit_log.query(limit=1)[0]
+        assert "rule_evaluations" in entry.metadata
+        runtime_governance = entry.metadata["runtime_governance"]
+        assert runtime_governance["tool_name"] == "shell"
+        assert runtime_governance["session_id"] == "session-456"
+        assert runtime_governance["checkpoint_kind"] == "tool_invocation"
+        assert runtime_governance["tool_risk"]["tool_name"] == "shell"
+        assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
+            "P0"
+        ]
+        assert runtime_governance["trajectory_violations"] == []
 
 
 class TestA2AAppCreation:

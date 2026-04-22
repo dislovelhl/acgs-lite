@@ -53,6 +53,7 @@ Explore the architecture and setup guides to integrate ACGS into your agentic wo
 - [Testing Governance](testing-governance.md) -- Verifying your Agentic Firewall
 - [Quickstart](quickstart.md) -- Install and govern your first agent
 - [Integrations](integrations.md) -- Guides for Anthropic, OpenAI, LangChain, AutoGen, CrewAI, and more
+- [Telegram Webhook Integration](telegram-webhook.md) -- Safe Telegram bot intake with path-secret + header-token verification
 - [Compliance](compliance.md) -- Deep dive into multi-framework assessment
 - [MACI Architecture](maci.md) -- Implementing separation of powers for AI
 - [Architecture Overview](architecture.md) -- Internal engine and validation lifecycle

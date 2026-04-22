@@ -27,6 +27,7 @@ from acgs_lite.integrations.openshell_governance import (
     JsonFileGovernanceStateBackend,
     create_openshell_governance_router,
 )
+from acgs_lite.integrations.telegram_webhook import create_telegram_webhook_router
 
 # Module-level CDP backend (shared across requests, replaceable for testing)
 _cdp_backend: InMemoryCDPBackend = InMemoryCDPBackend()
@@ -107,6 +108,9 @@ def create_governance_app(
     autonoma_scenarios_path: str | Path | None = None,
     include_lifecycle: bool | None = None,
     lifecycle_api_key: str | None = None,
+    include_telegram: bool = False,
+    telegram_webhook_path_secret: str | None = None,
+    telegram_secret_token: str | None = None,
 ) -> FastAPI:
     """Create a FastAPI app exposing governance validation endpoints.
 
@@ -127,6 +131,11 @@ def create_governance_app(
     ``/constitution/lifecycle/*``.  Use ``lifecycle_api_key`` (or
     ``ACGS_LIFECYCLE_API_KEY``) to require API-key authentication on mutation
     endpoints.
+
+    Set ``include_telegram=True`` to mount a Telegram webhook endpoint at
+    ``/telegram/webhook/{telegram_webhook_path_secret}``. Use
+    ``telegram_secret_token`` to additionally enforce Telegram's
+    ``X-Telegram-Bot-Api-Secret-Token`` header.
     """
     from fastapi import FastAPI, HTTPException, Query
 
@@ -418,6 +427,19 @@ def create_governance_app(
 
         scenarios_path_resolved = Path(autonoma_scenarios_path) if autonoma_scenarios_path else None
         app.include_router(create_autonoma_router(scenarios_path=scenarios_path_resolved))
+
+    if include_telegram:
+        if telegram_webhook_path_secret is None:
+            raise ValueError(
+                "telegram_webhook_path_secret is required when include_telegram=True"
+            )
+        app.include_router(
+            create_telegram_webhook_router(
+                engine_getter=lambda: engine,
+                webhook_path_secret=telegram_webhook_path_secret,
+                secret_token=telegram_secret_token,
+            )
+        )
 
     _include_lifecycle = (
         include_lifecycle if include_lifecycle is not None else _env_flag("ACGS_LIFECYCLE_ENABLED")

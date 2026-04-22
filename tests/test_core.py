@@ -550,6 +550,93 @@ class TestAuditLog:
         assert reconstructed.entries[0].id == "committed"
         assert reconstructed.verify_chain()
 
+    def test_record_atomic_many_commits_batch(self):
+        log = AuditLog()
+        committed: list[bool] = []
+
+        def ok_persist(_log):
+            committed.append(True)
+
+        entries = [
+            AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)
+        ]
+        hashes = log.record_atomic_many(entries, persist=ok_persist)
+
+        assert committed == [True]
+        assert len(hashes) == 3
+        assert [e.id for e in log.entries] == ["batch-0", "batch-1", "batch-2"]
+        assert log.verify_chain()
+
+    def test_record_atomic_many_rolls_back_on_persist_failure(self):
+        """All batch entries must be rolled back if persist fails — no partial state."""
+        log = AuditLog()
+        log.record(AuditEntry(id="pre", type="test", valid=True))
+        pre_ids = [e.id for e in log.entries]
+
+        def failing_persist(_log):
+            raise OSError("disk full")
+
+        batch = [
+            AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)
+        ]
+        with pytest.raises(OSError):
+            log.record_atomic_many(batch, persist=failing_persist)
+
+        # No partial batch remains; chain still valid.
+        assert [e.id for e in log.entries] == pre_ids
+        assert log.verify_chain()
+
+    def test_record_atomic_many_retry_does_not_duplicate(self):
+        """Retry after persist failure must not leave stale partial history."""
+        log = AuditLog()
+        fail_count = [0]
+
+        def flaky_persist(_log):
+            fail_count[0] += 1
+            if fail_count[0] == 1:
+                raise OSError("transient")
+
+        batch = [
+            AuditEntry(id=f"retry-{i}", type="test", valid=True) for i in range(2)
+        ]
+
+        with pytest.raises(OSError):
+            log.record_atomic_many(batch, persist=flaky_persist)
+        assert len(log) == 0
+
+        log.record_atomic_many(batch, persist=flaky_persist)
+        assert [e.id for e in log.entries] == ["retry-0", "retry-1"]
+        assert log.verify_chain()
+
+    def test_record_atomic_many_empty_is_noop(self):
+        log = AuditLog()
+        assert log.record_atomic_many([]) == []
+        assert len(log) == 0
+
+    def test_record_atomic_many_rolls_back_durable_backend(self, tmp_path):
+        """Batch rollback must also truncate the durable backend."""
+        from acgs_lite.audit import JSONLAuditBackend
+
+        backend_path = tmp_path / "audit.jsonl"
+        backend = JSONLAuditBackend(backend_path)
+        log = AuditLog(backend=backend)
+
+        log.record_atomic(AuditEntry(id="pre", type="test", valid=True))
+
+        def failing_persist(_log):
+            raise OSError("persist boom")
+
+        batch = [
+            AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)
+        ]
+        with pytest.raises(OSError):
+            log.record_atomic_many(batch, persist=failing_persist)
+
+        backend.flush()
+        reconstructed = AuditLog.from_backend(JSONLAuditBackend(backend_path))
+        assert [e.id for e in reconstructed.entries] == ["pre"]
+        assert reconstructed.verify_chain()
+
 
 # ─── MACI Tests ────────────────────────────────────────────────────────────
 

@@ -322,6 +322,97 @@ class ConstitutionalImpactScorer:
             "risk_level": _risk_level(adjusted_score),
         }
 
+    def score_tool_invocation(
+        self,
+        *,
+        tool_name: str,
+        request: str,
+        runtime_context: dict[str, Any] | None = None,
+        capability_tags: list[str] | tuple[str, ...] | None = None,
+        static_risk: float | None = None,
+    ) -> dict[str, Any]:
+        """STARS-style tool invocation risk fusion.
+
+        Combines:
+        - static capability prior (tool name + capability tags)
+        - request-conditioned contextual risk (existing impact scorer)
+        - runtime escalation flags (e.g. untrusted input, indirect prompt injection)
+        """
+        static_prior = (
+            max(0.0, min(static_risk, 1.0))
+            if isinstance(static_risk, (int, float))
+            else self._get_tool_static_prior(tool_name, capability_tags)
+        )
+        contextual = float(self.score(request, context=runtime_context).get("score", 0.0))
+        runtime_multiplier = self._get_tool_runtime_multiplier(runtime_context or {})
+        contextual_risk = min(contextual * runtime_multiplier, 1.0)
+
+        fused = min(static_prior * 0.45 + contextual_risk * 0.55, 1.0)
+        if static_prior >= 0.7 and contextual_risk >= 0.7:
+            fused = min(fused + 0.1, 1.0)
+
+        if fused >= 0.8:
+            recommended_action = "block"
+        elif fused >= 0.5:
+            recommended_action = "review"
+        else:
+            recommended_action = "allow"
+
+        return {
+            "tool_name": tool_name,
+            "static_prior": static_prior,
+            "contextual_risk": contextual_risk,
+            "fused_risk": fused,
+            "risk_level": _risk_level(fused),
+            "recommended_action": recommended_action,
+            "fusion_policy": "static:0.45 + contextual:0.55 + high-high boost",
+        }
+
+    def _get_tool_static_prior(
+        self,
+        tool_name: str,
+        capability_tags: list[str] | tuple[str, ...] | None = None,
+    ) -> float:
+        tool = tool_name.strip().lower()
+        tags = {tag.strip().lower() for tag in (capability_tags or [])}
+
+        prior = 0.1
+        if any(token in tool for token in ("shell", "terminal", "bash", "exec", "command")):
+            prior = max(prior, 0.75)
+        if any(token in tool for token in ("write", "delete", "rm", "filesystem-write")):
+            prior = max(prior, 0.6)
+        if any(token in tool for token in ("database", "sql", "migration")):
+            prior = max(prior, 0.7)
+        if any(token in tool for token in ("email", "send", "webhook", "post")):
+            prior = max(prior, 0.45)
+        if any(token in tool for token in ("read", "search", "view", "list")):
+            prior = max(prior, 0.15)
+
+        if {"command-execution", "filesystem-write"} & tags:
+            prior = max(prior, 0.75)
+        if {"credential-access", "secrets", "database-write"} & tags:
+            prior = max(prior, 0.8)
+        if {"network-egress", "external-send", "email-send"} & tags:
+            prior = max(prior, 0.5)
+        if {"read-only", "filesystem-read"} & tags:
+            prior = max(prior, 0.15)
+
+        return min(prior, 1.0)
+
+    def _get_tool_runtime_multiplier(self, runtime_context: dict[str, Any]) -> float:
+        multiplier = 1.0
+        if runtime_context.get("untrusted_input"):
+            multiplier += 0.2
+        if runtime_context.get("indirect_prompt_injection"):
+            multiplier += 0.25
+        if runtime_context.get("prompt_injection_suspected"):
+            multiplier += 0.25
+        if runtime_context.get("touches_sensitive_data"):
+            multiplier += 0.15
+        if runtime_context.get("environment") == "production":
+            multiplier += 0.15
+        return multiplier
+
     def _get_agent_modifier(self, agent_type: str | None) -> float:
         modifiers = {
             "supervisor": 0.8,
