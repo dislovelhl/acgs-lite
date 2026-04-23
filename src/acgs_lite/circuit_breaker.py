@@ -44,6 +44,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +91,9 @@ class WebhookNotificationChannel:
 
     def notify(self, event: HaltEvent) -> None:
         try:
+            parsed = urlparse(self._url)
+            if parsed.scheme not in ("http", "https"):
+                raise ValueError("Webhook URL must use http or https scheme")
             body = json.dumps(event.to_dict()).encode()
             headers = {"Content-Type": "application/json"}
             if self._secret:
@@ -101,7 +105,7 @@ class WebhookNotificationChannel:
                 headers=headers,
                 method="POST",
             )
-            with urllib.request.urlopen(request, timeout=5):
+            with urllib.request.urlopen(request, timeout=5):  # nosec B310 — scheme validated above
                 return
         except Exception as exc:
             self._logger.warning("halt webhook notification failed: %s", exc, exc_info=True)

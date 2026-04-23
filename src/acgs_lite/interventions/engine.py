@@ -13,6 +13,7 @@ import logging
 import time
 import urllib.request
 from typing import Any
+from urllib.parse import urlparse
 
 from acgs_lite.cdp.record import InterventionOutcome
 from acgs_lite.interventions.actions import InterventionAction, InterventionRule
@@ -163,6 +164,15 @@ class InterventionEngine:
             return InterventionOutcome(
                 action="notify", triggered=False, reason="no_webhook_url", metadata={}
             )
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            logger.warning("Webhook URL rejected: invalid scheme (not http/https)")
+            return InterventionOutcome(
+                action="notify",
+                triggered=False,
+                reason="invalid_webhook_scheme",
+                metadata={},
+            )
         payload = json.dumps(
             {
                 "rule_id": rule.rule_id,
@@ -176,7 +186,7 @@ class InterventionEngine:
             headers={"Content-Type": "application/json"},
             method="POST",
         )
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=5) as resp:  # nosec B310 — scheme validated above
             status = resp.status
         return InterventionOutcome(
             action="notify",
