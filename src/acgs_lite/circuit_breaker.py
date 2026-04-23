@@ -93,9 +93,7 @@ class WebhookNotificationChannel:
         try:
             parsed = urlparse(self._url)
             if parsed.scheme not in ("http", "https"):
-                raise ValueError(
-                    f"Webhook URL must use http or https scheme, got: {parsed.scheme!r}"
-                )
+                raise ValueError("Webhook URL must use http or https scheme")
             body = json.dumps(event.to_dict()).encode()
             headers = {"Content-Type": "application/json"}
             if self._secret:

@@ -166,10 +166,11 @@ class InterventionEngine:
             )
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https"):
+            logger.warning("Webhook URL rejected: invalid scheme (not http/https)")
             return InterventionOutcome(
                 action="notify",
                 triggered=False,
-                reason=f"invalid_webhook_scheme:{parsed.scheme!r}",
+                reason="invalid_webhook_scheme",
                 metadata={},
             )
         payload = json.dumps(
