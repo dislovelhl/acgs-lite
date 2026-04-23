@@ -58,6 +58,7 @@ google-cloud = ["google-cloud-logging>=3.0"]
 mistral = ["mistralai>=2.0"]
 pdf = ["fpdf2>=2.7"]
 otel = ["opentelemetry-api>=1.0,<2.0", "opentelemetry-sdk>=1.0,<2.0"]
+postgres = ["psycopg[binary]>=3.1", "psycopg-pool>=3.2"]
 all = ["acgs-lite[a2a,openai,anthropic,agno,langchain,litellm,google,llamaindex,autogen,mcp,crewai,autonoma,gitlab,google-cloud,pdf,mistral,otel]"]
 docs = [
     "mkdocs-material>=9.5",
