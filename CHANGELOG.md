@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.0] - 2026-04-22
 
+### Upgrading from 2.8.1
+
+No API changes. The `GovernanceEngine` core is stable. 
+
+**One behavioral change to be aware of:** If you pass `audit_metadata` to `engine.validate()` in non-strict mode, audit entries are now written (previously, the Rust fast path silently dropped them). This is the correct behavior; if your benchmarks are sensitive to audit write overhead, see the `audit_metadata` parameter docs.
+
+**PyPI stability classifier:** The package classifier changed from `5 - Production/Stable` to `4 - Beta`. This reflects the lifecycle API and newer integrations being Beta, not the core engine. See the Component Stability table in README.md — GovernanceEngine, MACI, AuditLog, and GovernedAgent remain Stable.
+
+---
+
 ### Added
 
 - **ARC-Kit bridge** (`acgs_lite.arckit`): parse architecture diagrams, generate and export
@@ -23,21 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Batch audit writes**: `AuditLog.record_atomic_many()` writes multiple entries atomically to
   durable backends, reducing round-trips for bulk governance events.
 - 21 previously internal governance symbols exported from the public API.
-
-### Upgrading from 2.8.1
-
-No API changes. All existing code runs without modification. Two behavior changes worth noting:
-
-- **`audit_metadata` is now written on non-strict fast paths** — callers that pass `audit_metadata`
-  to `validate()` in non-strict mode previously had the metadata silently discarded on the Rust
-  fast path. It is now written. If you rely on the fast-path throughput benefit, remove
-  `audit_metadata` from non-strict calls or accept the ~10% throughput reduction.
-- **`check_checkpoint()` is now serialized** — concurrent calls to the same `TrajectoryMonitor`
-  instance are now queued. If you have highly concurrent checkpoint calls per monitor, benchmark
-  the new behavior under load.
-
-`GovernanceEngine`, `AuditLog`, and all stable-tier components are unaffected. See the Component
-Stability table in the README for the stability tier of each subsystem.
 
 ### Changed
 

@@ -15,7 +15,9 @@
 
 # **The missing safety layer between your LLM and production.**
 
-'acgs-lite' is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes, violations are blocked, not just logged.
+**acgs-lite** is the production-ready runtime governance engine for AI agents. It sits **between your agent and execution** — every action is validated against a YAML constitution **before** it runs. Violations are blocked by default (fail-closed). Every decision is recorded in a tamper-evident audit chain. Human operators can intervene at any time.
+
+**Current status:** Stable core (v2.9.0) • 4,641 tests passing • Used in regulated pilots.
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
 
@@ -258,6 +260,21 @@ Not all layers are equally hardened. Use this table to calibrate trust in each a
 | Z3 constraint verifier | 🧪 **Experimental** | Useful for high-risk scenarios; requires separate Z3 install |
 | Lean 4 / Leanstral proof certificates | 🧪 **Experimental** | Requires `mistralai` extra and external Lean kernel |
 | Newer framework adapters (Agno, A2A, LiteLLM, Mistral) | 🧪 **Experimental** | Community-contributed; test coverage varies |
+
+---
+
+## ✅ What is production-hardened today (v2.9.0)
+
+| Layer | Status | What you get |
+|-------|--------|--------------|
+| `GovernanceEngine` | Stable | YAML rules, deterministic validation, fail-closed enforcement |
+| MACI role separation | Stable | Proposer / Validator / Executor enforced at runtime |
+| Audit Trail | Stable | SHA-256 chained, SQLite-backed, queryable, exportable |
+| `GovernedAgent` wrapper | Stable | Drop-in decorator for OpenAI, Anthropic, LangChain, MCP, etc. |
+| Intervention & Quarantine | Stable | `require_human_review`, `halt_and_alert`, `quarantine` actions |
+| CLI (`acgs validate`, `audit`, `halt`) | Stable | Full local & CI usage |
+
+**Everything else** (constitution lifecycle API, formal verification with Z3/Lean, 18-framework compliance mapping) is **Beta / Experimental** and clearly marked in the Component Stability table above.
 
 ---
 

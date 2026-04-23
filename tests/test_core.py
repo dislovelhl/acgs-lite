@@ -1294,3 +1294,37 @@ class TestGovernedAgentRetryEdgeCases:
         retry_entries = [e for e in agent.audit_log.entries if e.type == "output_retry"]
         ids = [e.id for e in retry_entries]
         assert len(ids) == len(set(ids)), f"Duplicate audit IDs: {ids}"
+
+
+@pytest.mark.unit
+class TestFailClosedStreamingExceptions:
+    """Regression tests: non_strict() must restore strict mode in all exit paths."""
+
+    def _make_engine(self, strict: bool = True) -> GovernanceEngine:
+        c = Constitution.from_rules([Rule(id="R1", text="block all", keywords=["block"])])
+        return GovernanceEngine(c, strict=strict)
+
+    def test_non_strict_restores_after_normal_exit(self):
+        """strict is True after non_strict() exits normally."""
+        engine = self._make_engine(strict=True)
+        with engine.non_strict():
+            assert engine.strict is False
+        assert engine.strict is True
+
+    def test_non_strict_restores_after_exception(self):
+        """strict is restored even when an exception is raised inside non_strict()."""
+        engine = self._make_engine(strict=True)
+        try:
+            with engine.non_strict():
+                assert engine.strict is False
+                raise RuntimeError("simulated streaming error")
+        except RuntimeError:
+            pass
+        assert engine.strict is True, "strict must be restored after exception inside non_strict()"
+
+    def test_non_strict_preserves_false_when_engine_starts_non_strict(self):
+        """If engine starts with strict=False, non_strict() leaves it False after exit."""
+        engine = self._make_engine(strict=False)
+        with engine.non_strict():
+            assert engine.strict is False
+        assert engine.strict is False
