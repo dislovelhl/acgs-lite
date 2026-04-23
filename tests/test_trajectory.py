@@ -85,19 +85,28 @@ def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_typ
     where ``right`` is an index into the per-action-type sorted timestamp list — a completely
     different sequence.  The fix tracks (timestamp, decision) pairs so the correct decision is
     always used.
+
+    Concrete counter-example (max_count=1):
+        decisions[0] = approve / agent-A  (global index 0, per-type approve index 0)
+        decisions[1] = read   / agent-B   (global index 1)
+        decisions[2] = approve / agent-A  (global index 2, per-type approve index 1)
+
+    When the 2nd approve triggers the frequency rule, per-type right=1.
+    Old bug: ``decisions[right]`` → ``decisions[1]`` → read/agent-B (WRONG).
+    Fixed:  ``ordered[right][1]``  → approve/agent-A (CORRECT).
     """
     base = datetime(2026, 4, 7, tzinfo=timezone.utc)
     session = TrajectorySession(session_id="s-agent-id", agent_id="agent-A")
 
-    # One "read" decision from a different agent interrupts the sequence of "approve" decisions.
-    # decisions list: [approve/agent-A @t0, read/agent-B @t1, approve/agent-A @t2, approve/agent-A @t3]
+    # Interleave a read from agent-B so that global index 1 ≠ per-type approve index 1.
     session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base))
     session.add(_decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1)))
     session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2)))
-    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=3)))
 
+    # max_count=1 → violation fires at per-type right=1 (the 2nd approve).
+    # Old code: decisions[1] = read/agent-B.  Fixed code: approve/agent-A.
     monitor = TrajectoryMonitor(
-        rules=[FrequencyThresholdRule(max_count=2, window_seconds=60)],
+        rules=[FrequencyThresholdRule(max_count=1, window_seconds=60)],
         store=InMemoryTrajectoryStore(),
     )
 
@@ -105,9 +114,9 @@ def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_typ
 
     assert len(violations) == 1
     assert violations[0].rule_id == "TRAJ-FREQ-001"
-    # The triggering decision is the 3rd "approve" (right=2 in sorted approve pairs).
-    # With the bug, decisions[2] would have been read/agent-B.  The fix returns agent-A.
-    assert violations[0].agent_id == "agent-A"
+    assert violations[0].agent_id == "agent-A", (
+        "agent_id must be from the triggering 'approve' decision, not the interleaved 'read'"
+    )
 
 
 def test_clean_session_produces_zero_violations() -> None:

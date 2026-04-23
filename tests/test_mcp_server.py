@@ -1000,12 +1000,20 @@ class TestStrictModeRestoration:
         engine = captured[0]
         assert engine.strict is True
 
-        with patch.object(engine, "validate", side_effect=RuntimeError("boom")):
+        strict_at_call: list[bool] = []
+
+        def _boom(*args: object, **kwargs: object) -> None:
+            strict_at_call.append(engine.strict)  # capture strict INSIDE non_strict()
+            raise RuntimeError("boom")
+
+        with patch.object(engine, "validate", side_effect=_boom):
             try:
                 await _call_tool(server, "validate_action", {"action": "x"})
             except (json.JSONDecodeError, Exception):
                 pass  # tool call may propagate or return non-JSON error
 
+        assert strict_at_call, "validate must have been called — non_strict() was never entered"
+        assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
         assert engine.strict is True, "strict must be restored after exception"
 
     @pytest.mark.asyncio
@@ -1030,12 +1038,20 @@ class TestStrictModeRestoration:
         engine = captured[0]
         assert engine.strict is True
 
-        with patch.object(engine, "validate", side_effect=RuntimeError("boom")):
+        strict_at_call: list[bool] = []
+
+        def _boom(*args: object, **kwargs: object) -> None:
+            strict_at_call.append(engine.strict)
+            raise RuntimeError("boom")
+
+        with patch.object(engine, "validate", side_effect=_boom):
             try:
                 await _call_tool(server, "check_compliance", {"text": "x"})
             except (json.JSONDecodeError, Exception):
                 pass
 
+        assert strict_at_call, "validate must have been called — non_strict() was never entered"
+        assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
         assert engine.strict is True, "strict must be restored after exception"
 
     @pytest.mark.asyncio
@@ -1060,12 +1076,20 @@ class TestStrictModeRestoration:
         engine = captured[0]
         assert engine.strict is True
 
-        with patch.object(engine, "validate", side_effect=RuntimeError("boom")):
+        strict_at_call: list[bool] = []
+
+        def _boom(*args: object, **kwargs: object) -> None:
+            strict_at_call.append(engine.strict)
+            raise RuntimeError("boom")
+
+        with patch.object(engine, "validate", side_effect=_boom):
             try:
                 await _call_tool(server, "explain_violation", {"action": "x"})
             except (json.JSONDecodeError, Exception):
                 pass
 
+        assert strict_at_call, "validate must have been called — non_strict() was never entered"
+        assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
         assert engine.strict is True, "strict must be restored after exception"
 
 
