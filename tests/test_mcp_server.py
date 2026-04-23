@@ -1038,6 +1038,36 @@ class TestStrictModeRestoration:
 
         assert engine.strict is True, "strict must be restored after exception"
 
+    @pytest.mark.asyncio
+    async def test_explain_violation_restores_strict_mode_on_exception(
+        self, custom_constitution: Constitution
+    ) -> None:
+        """engine.strict must be True after explain_violation raises."""
+        import json
+
+        from acgs_lite.engine import GovernanceEngine as _RealEngine
+
+        captured: list[_RealEngine] = []
+
+        class _TrackingEngine(_RealEngine):
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+                captured.append(self)
+
+        with patch("acgs_lite.integrations.mcp_server.GovernanceEngine", _TrackingEngine):
+            server = create_mcp_server(custom_constitution, strict=True)
+
+        engine = captured[0]
+        assert engine.strict is True
+
+        with patch.object(engine, "validate", side_effect=RuntimeError("boom")):
+            try:
+                await _call_tool(server, "explain_violation", {"action": "x"})
+            except (json.JSONDecodeError, Exception):
+                pass
+
+        assert engine.strict is True, "strict must be restored after exception"
+
 
 # ---------------------------------------------------------------------------
 # Integration: cross-tool interactions
