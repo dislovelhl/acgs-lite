@@ -977,6 +977,67 @@ class TestStrictModeRestoration:
         result = await _call_tool(server, "check_compliance", {"text": "forbidden"})
         assert result["compliant"] is False
 
+    @pytest.mark.asyncio
+    async def test_validate_action_restores_strict_mode_on_exception(
+        self, custom_constitution: Constitution
+    ) -> None:
+        """engine.strict must be True even when validate() raises mid-call."""
+        import json
+
+        from acgs_lite.engine import GovernanceEngine as _RealEngine
+
+        captured: list[_RealEngine] = []
+
+        class _TrackingEngine(_RealEngine):
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+                captured.append(self)
+
+        with patch("acgs_lite.integrations.mcp_server.GovernanceEngine", _TrackingEngine):
+            server = create_mcp_server(custom_constitution, strict=True)
+
+        assert captured, "engine was not created"
+        engine = captured[0]
+        assert engine.strict is True
+
+        with patch.object(engine, "validate", side_effect=RuntimeError("boom")):
+            try:
+                await _call_tool(server, "validate_action", {"action": "x"})
+            except (json.JSONDecodeError, Exception):
+                pass  # tool call may propagate or return non-JSON error
+
+        assert engine.strict is True, "strict must be restored after exception"
+
+    @pytest.mark.asyncio
+    async def test_check_compliance_restores_strict_mode_on_exception(
+        self, custom_constitution: Constitution
+    ) -> None:
+        """engine.strict must be True after check_compliance raises."""
+        import json
+
+        from acgs_lite.engine import GovernanceEngine as _RealEngine
+
+        captured: list[_RealEngine] = []
+
+        class _TrackingEngine(_RealEngine):
+            def __init__(self, *args: object, **kwargs: object) -> None:
+                super().__init__(*args, **kwargs)  # type: ignore[arg-type]
+                captured.append(self)
+
+        with patch("acgs_lite.integrations.mcp_server.GovernanceEngine", _TrackingEngine):
+            server = create_mcp_server(custom_constitution, strict=True)
+
+        engine = captured[0]
+        assert engine.strict is True
+
+        with patch.object(engine, "validate", side_effect=RuntimeError("boom")):
+            try:
+                await _call_tool(server, "check_compliance", {"text": "x"})
+            except (json.JSONDecodeError, Exception):
+                pass
+
+        assert engine.strict is True, "strict must be restored after exception"
+
 
 # ---------------------------------------------------------------------------
 # Integration: cross-tool interactions

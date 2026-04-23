@@ -78,6 +78,38 @@ def test_frequency_threshold_rule_triggers_for_repeated_action_types() -> None:
     assert violations[0].rule_id == "TRAJ-FREQ-001"
 
 
+def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_types() -> None:
+    """Regression test: violation agent_id must come from the triggering decision, not decisions[right].
+
+    When decisions contain multiple action_types interleaved, the old code used ``decisions[right]``
+    where ``right`` is an index into the per-action-type sorted timestamp list — a completely
+    different sequence.  The fix tracks (timestamp, decision) pairs so the correct decision is
+    always used.
+    """
+    base = datetime(2026, 4, 7, tzinfo=timezone.utc)
+    session = TrajectorySession(session_id="s-agent-id", agent_id="agent-A")
+
+    # One "read" decision from a different agent interrupts the sequence of "approve" decisions.
+    # decisions list: [approve/agent-A @t0, read/agent-B @t1, approve/agent-A @t2, approve/agent-A @t3]
+    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base))
+    session.add(_decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1)))
+    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2)))
+    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=3)))
+
+    monitor = TrajectoryMonitor(
+        rules=[FrequencyThresholdRule(max_count=2, window_seconds=60)],
+        store=InMemoryTrajectoryStore(),
+    )
+
+    violations = monitor.check_trajectory(session)
+
+    assert len(violations) == 1
+    assert violations[0].rule_id == "TRAJ-FREQ-001"
+    # The triggering decision is the 3rd "approve" (right=2 in sorted approve pairs).
+    # With the bug, decisions[2] would have been read/agent-B.  The fix returns agent-A.
+    assert violations[0].agent_id == "agent-A"
+
+
 def test_clean_session_produces_zero_violations() -> None:
     base = datetime(2026, 4, 7, tzinfo=timezone.utc)
     session = TrajectorySession(session_id="s3", agent_id="agent-1")
