@@ -78,6 +78,47 @@ def test_frequency_threshold_rule_triggers_for_repeated_action_types() -> None:
     assert violations[0].rule_id == "TRAJ-FREQ-001"
 
 
+def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_types() -> None:
+    """Regression test: violation agent_id must come from the triggering decision, not decisions[right].
+
+    When decisions contain multiple action_types interleaved, the old code used ``decisions[right]``
+    where ``right`` is an index into the per-action-type sorted timestamp list — a completely
+    different sequence.  The fix tracks (timestamp, decision) pairs so the correct decision is
+    always used.
+
+    Concrete counter-example (max_count=1):
+        decisions[0] = approve / agent-A  (global index 0, per-type approve index 0)
+        decisions[1] = read   / agent-B   (global index 1)
+        decisions[2] = approve / agent-A  (global index 2, per-type approve index 1)
+
+    When the 2nd approve triggers the frequency rule, per-type right=1.
+    Old bug: ``decisions[right]`` → ``decisions[1]`` → read/agent-B (WRONG).
+    Fixed:  ``ordered[right][1]``  → approve/agent-A (CORRECT).
+    """
+    base = datetime(2026, 4, 7, tzinfo=timezone.utc)
+    session = TrajectorySession(session_id="s-agent-id", agent_id="agent-A")
+
+    # Interleave a read from agent-B so that global index 1 ≠ per-type approve index 1.
+    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base))
+    session.add(_decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1)))
+    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2)))
+
+    # max_count=1 → violation fires at per-type right=1 (the 2nd approve).
+    # Old code: decisions[1] = read/agent-B.  Fixed code: approve/agent-A.
+    monitor = TrajectoryMonitor(
+        rules=[FrequencyThresholdRule(max_count=1, window_seconds=60)],
+        store=InMemoryTrajectoryStore(),
+    )
+
+    violations = monitor.check_trajectory(session)
+
+    assert len(violations) == 1
+    assert violations[0].rule_id == "TRAJ-FREQ-001"
+    assert violations[0].agent_id == "agent-A", (
+        "agent_id must be from the triggering 'approve' decision, not the interleaved 'read'"
+    )
+
+
 def test_clean_session_produces_zero_violations() -> None:
     base = datetime(2026, 4, 7, tzinfo=timezone.utc)
     session = TrajectorySession(session_id="s3", agent_id="agent-1")

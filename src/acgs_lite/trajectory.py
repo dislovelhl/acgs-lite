@@ -60,19 +60,21 @@ class FrequencyThresholdRule:
     severity: str = "high"
 
     def check(self, decisions: Sequence[dict[str, Any]]) -> TrajectoryViolation | None:
-        grouped: dict[str, list[datetime]] = {}
+        grouped: dict[str, list[tuple[datetime, dict[str, Any]]]] = {}
         for decision in decisions:
             action_type = str(decision.get("action_type", "")).strip()
             if not action_type:
                 continue
-            grouped.setdefault(action_type, []).append(_coerce_timestamp(decision.get("timestamp")))
+            grouped.setdefault(action_type, []).append(
+                (_coerce_timestamp(decision.get("timestamp")), decision)
+            )
 
-        for action_type, timestamps in grouped.items():
-            ordered = sorted(timestamps)
+        for action_type, pairs in grouped.items():
+            ordered = sorted(pairs, key=lambda p: p[0])
             left = 0
-            for right, current in enumerate(ordered):
+            for right, (current, decision) in enumerate(ordered):
                 window_start = current - timedelta(seconds=self.window_seconds)
-                while left <= right and ordered[left] < window_start:
+                while left <= right and ordered[left][0] < window_start:
                     left += 1
                 count = right - left + 1
                 if count > self.max_count:
@@ -83,7 +85,7 @@ class FrequencyThresholdRule:
                             f"{self.window_seconds} seconds"
                         ),
                         severity=self.severity,
-                        agent_id=str(decisions[right].get("agent_id", "")),
+                        agent_id=str(decision.get("agent_id", "")),
                         timestamp=current.isoformat(),
                     )
         return None
