@@ -195,8 +195,16 @@ class TrajectoryMonitor:
         self._lock = threading.Lock()
 
     def check_trajectory(self, session: TrajectorySession) -> list[TrajectoryViolation]:
-        self._store.put(session)
-        decisions = tuple(session.decisions)
+        """Persist *session* and evaluate all trajectory rules.
+
+        Thread-safe: the store mutation and decisions snapshot are taken
+        under ``self._lock``. Rule evaluation happens *without* the lock
+        held so that an O(N log N) rule (e.g. ``FrequencyThresholdRule``)
+        does not serialise concurrent callers.
+        """
+        with self._lock:
+            self._store.put(session)
+            decisions = tuple(session.decisions)
         violations: list[TrajectoryViolation] = []
         for rule in self._rules:
             violation = rule.check(decisions)
@@ -216,4 +224,11 @@ class TrajectoryMonitor:
             if session is None:
                 session = TrajectorySession(session_id=session_id, agent_id=agent_id)
             session.add(decision)
-            return self.check_trajectory(session)
+            self._store.put(session)
+            decisions = tuple(session.decisions)
+        violations: list[TrajectoryViolation] = []
+        for rule in self._rules:
+            violation = rule.check(decisions)
+            if violation is not None:
+                violations.append(violation)
+        return violations
