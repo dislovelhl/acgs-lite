@@ -1,6 +1,8 @@
 # ACGS-Lite
 
-For repo-wide rules, see `/CLAUDE.md` and `.claude/rules/` (Claude Code auto-loads these). AGENTS.md serves Codex/OMX.
+For repo-wide rules, see the parent repo guide at `../../CLAUDE.md` and `.claude/rules/`.
+Claude Code auto-loads parent `CLAUDE.md` files; this file should stay package-specific.
+AGENTS.md serves Codex/OMX.
 
 ## Project Overview
 
@@ -58,6 +60,13 @@ python -m mkdocs build
 
 ---
 
+## Repo Boundary
+
+- `packages/acgs-lite` is a nested git repo inside the parent ACGS monorepo.
+- Before staging, committing, or pushing, check git state both here and in the parent repo.
+
+---
+
 ## Autonomous Verification (Mandatory)
 
 Do not assume code changes are correct. Always verify before handing work back.
@@ -81,6 +90,9 @@ If any step fails, fix the issue and rerun the full sequence from the top. Do no
 
 - Keep integrations optional through extras and lazy imports.
 - Keep Python fallbacks when optional Rust or third-party acceleration exists.
+- CLI command wiring lives in `src/acgs_lite/commands/`; `acgs arckit` is routed through that surface.
+- Arckit bridge code and templates live in `src/acgs_lite/arckit/`.
+- Observation and reporting helpers live in `src/acgs_lite/observability/`.
 - Constitution lifecycle code lives in `src/acgs_lite/constitution/`.
 - HTTP surfaces live in `src/acgs_lite/server.py` and `src/acgs_lite/constitution/lifecycle_router.py`.
 - Docs for API surfaces live under `docs/api/`.
@@ -180,7 +192,7 @@ If any step fails, fix the issue and rerun the full sequence from the top. Do no
 ## Git Workflow
 
 - Branch naming: `feature/`, `fix/`, `refactor/`, `docs/`, `test/`, `chore/`.
-- Commits: `type(scope): description` (conventional commits).
+- Commits must follow the repo Lore commit protocol from the parent `AGENTS.md`.
 - Keep commits atomic and bisectable.
 - Never force push to shared branches.
 
@@ -200,18 +212,5 @@ Update this section whenever a mistake is made so it never happens again.
 
 ## Skill Routing
 
-When the user's request matches an available skill, ALWAYS invoke it using the Skill tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
-
-Key routing rules:
-- Product ideas, "is this worth building", brainstorming -> invoke office-hours
-- Bugs, errors, "why is this broken", 500 errors -> invoke investigate
-- Ship, deploy, push, create PR -> invoke ship
-- QA, test the site, find bugs -> invoke qa
-- Code review, check my diff -> invoke review
-- Update docs after shipping -> invoke document-release
-- Weekly retro -> invoke retro
-- Design system, brand -> invoke design-consultation
-- Visual audit, design polish -> invoke design-review
-- Architecture review -> invoke plan-eng-review
-- Save progress, checkpoint, resume -> invoke checkpoint
-- Code quality, health check -> invoke health
+Package-local workflow routing should stay minimal here.
+Prefer the parent repo `CLAUDE.md` and `.claude/rules/` as the authoritative routing source so package guidance does not drift from installed skills.

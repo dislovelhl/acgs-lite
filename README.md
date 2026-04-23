@@ -25,6 +25,7 @@
 
 If you found ACGS-Lite through [Awesome LLM Security](https://github.com/beyefendi/awesome-llm-security), these are the most shared starting points:
 
+- **AI-agent install verify** — [`examples/agent_quickstart/`](./examples/agent_quickstart/) runs a self-verifying suite: `GovernedCallable` + MACI + AuditLog in one script, exits 0 on success
 - **Fastest proof** — [`examples/basic_governance/`](./examples/basic_governance/) shows safe requests passing and unsafe ones blocked before execution
 - **Best audit demo** — [`examples/audit_trail/`](./examples/audit_trail/) shows the tamper-evident decision chain
 - **Favorite infrastructure path** — [`examples/mcp_agent_client.py`](./examples/mcp_agent_client.py) runs governance as shared MCP-compatible infrastructure
