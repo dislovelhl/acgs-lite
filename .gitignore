@@ -61,3 +61,6 @@ output/
 .omc/
 .omx/
 .codex
+
+# Generated compliance reports
+examples/compliance_reports/reports/
