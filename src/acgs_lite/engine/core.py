@@ -77,6 +77,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         strict: bool = True,
         disable_gc: bool = False,
         audit_mode: Literal["fast", "full"] | None = None,
+        warmup: bool = True,
+        freeze_gc: bool = True,
     ) -> None:
         self.constitution = constitution
         effective_audit_mode = audit_mode or ("full" if audit_log is not None else "fast")
@@ -301,7 +303,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 _h[9],
                 self._rust_validator,
             )
-        if self._rust_validator is not None:
+        if warmup and self._rust_validator is not None:
             _real_hot = self._hot
             _real_audit = self.audit_log
             try:
@@ -400,7 +402,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         import gc as _gc  # noqa: PLC0415
 
         _gc.collect()
-        _gc.freeze()
+        if freeze_gc:
+            _gc.freeze()
         if disable_gc:
             _gc.disable()
 
