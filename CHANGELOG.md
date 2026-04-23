@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-04-23
+
+### Breaking Changes
+
+- **`create_governance_app(require_auth=...)` default flipped from `None` to `True`** (`server-secure-by-default` phase 2). The HTTP server now fails closed by default: calling `create_governance_app()` without an `api_key` / `ACGS_API_KEY` raises `ValueError`. To preserve the v2.9.x fail-open behaviour explicitly, pass `require_auth=None` (warns at startup) or `require_auth=False` (silent). Production deployments should set `api_key=...` or the `ACGS_API_KEY` environment variable.
+
 ### Added
 
 - **`examples/agent_quickstart/`**: Self-verifying AI-agent quickstart. Run `python examples/agent_quickstart/run.py` to confirm `GovernedCallable`, MACI role gates, and tamper-evident audit all work in a single script that exits 0. Designed as a copy-paste install-verification prompt for AI coding agents (Codex, Claude Code, and similar tools).

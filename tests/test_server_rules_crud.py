@@ -8,7 +8,7 @@ from acgs_lite.server import create_governance_app
 
 @pytest.fixture
 def client(tmp_path):
-    app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+    app = create_governance_app(audit_db_path=tmp_path / "audit.db", require_auth=False)
     return TestClient(app)
 
 

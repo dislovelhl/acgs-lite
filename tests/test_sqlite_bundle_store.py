@@ -355,9 +355,7 @@ class TestOperationalErrorWrapping:
             with pytest.raises(LifecycleError, match="io error"):
                 store.get_active_bundle("tenant-x")
 
-    def test_list_bundles_raises_lifecycle_error_on_operational_error(
-        self, tmp_path: Path
-    ) -> None:
+    def test_list_bundles_raises_lifecycle_error_on_operational_error(self, tmp_path: Path) -> None:
         import sqlite3
         from unittest.mock import MagicMock, patch
 
@@ -471,9 +469,7 @@ class TestOperationalErrorWrapping:
             with pytest.raises(LifecycleError, match="no such table"):
                 store.get_tenant_version("tenant-x")
 
-    def test_cas_tenant_version_raises_conflict_on_version_mismatch(
-        self, tmp_path: Path
-    ) -> None:
+    def test_cas_tenant_version_raises_conflict_on_version_mismatch(self, tmp_path: Path) -> None:
         from acgs_lite.constitution.bundle_store import CASVersionConflict
 
         store = _make_store(tmp_path)

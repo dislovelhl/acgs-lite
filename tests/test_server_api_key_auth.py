@@ -16,7 +16,8 @@ from acgs_lite.server import create_governance_app
 class TestApiKeyEnforcement:
     def test_no_key_allows_requests_but_warns(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level(logging.WARNING, logger="acgs_lite.server")
-        app = create_governance_app()
+        # Explicit require_auth=None restores v2.9.x fail-open behaviour.
+        app = create_governance_app(require_auth=None)
         client = TestClient(app)
         # /health is always public
         assert client.get("/health").status_code == 200
@@ -64,22 +65,23 @@ class TestApiKeyEnforcement:
         assert client.get("/audit/chain").status_code == 401
         assert client.get("/audit/count").status_code == 401
 
+    def test_require_auth_true_without_key_raises(self) -> None:
+        with pytest.raises(ValueError, match="require_auth=True"):
+            create_governance_app(require_auth=True)
+
+    def test_default_fails_closed_without_key(self) -> None:
+        # v2.10.0: require_auth defaults to True, so calling without a key raises.
+        with pytest.raises(ValueError, match="require_auth=True"):
+            create_governance_app()
+
     def test_env_var_is_used_when_param_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("ACGS_API_KEY", "env-secret")
         app = create_governance_app()
         client = TestClient(app)
         assert client.get("/rules").status_code == 401
-        assert (
-            client.get("/rules", headers={"X-API-Key": "env-secret"}).status_code == 200
-        )
+        assert client.get("/rules", headers={"X-API-Key": "env-secret"}).status_code == 200
 
-    def test_require_auth_true_without_key_raises(self) -> None:
-        with pytest.raises(ValueError, match="require_auth=True"):
-            create_governance_app(require_auth=True)
-
-    def test_require_auth_false_silences_warning(
-        self, caplog: pytest.LogCaptureFixture
-    ) -> None:
+    def test_require_auth_false_silences_warning(self, caplog: pytest.LogCaptureFixture) -> None:
         caplog.set_level(logging.WARNING, logger="acgs_lite.server")
         create_governance_app(require_auth=False)
         assert not any("WITHOUT API-key authentication" in r.message for r in caplog.records)

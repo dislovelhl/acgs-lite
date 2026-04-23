@@ -116,7 +116,7 @@ def create_governance_app(
     telegram_webhook_path_secret: str | None = None,
     telegram_secret_token: str | None = None,
     api_key: str | None = None,
-    require_auth: bool | None = None,
+    require_auth: bool | None = True,
 ) -> FastAPI:
     """Create a FastAPI app exposing governance validation endpoints.
 
@@ -129,11 +129,11 @@ def create_governance_app(
 
     ``require_auth`` controls behaviour when no key is configured:
 
-    * ``None`` (default): log a loud startup warning but leave the app open.
-      This is the current backward-compatible behaviour; it will flip to
-      ``True`` in a future major release.
-    * ``True``: refuse to start without ``api_key`` / ``ACGS_API_KEY``.  Use
-      this in production to fail closed.
+    * ``True`` (default, since v2.10.0): refuse to start without ``api_key``
+      / ``ACGS_API_KEY``.  Fail closed is the default to protect production
+      deployments.
+    * ``None``: log a loud startup warning but leave the app open.  This was
+      the v2.9.x default; kept for explicit opt-in back-compat.
     * ``False``: silently allow unauthenticated access (opt-in insecure mode
       for local development).
 
@@ -175,8 +175,7 @@ def create_governance_app(
             "All endpoints are publicly reachable. Set api_key=... or "
             "ACGS_API_KEY=... to protect /validate, /rules/*, /audit/*, /cdp/*. "
             "Pass require_auth=False to silence this warning, or require_auth=True "
-            "to fail closed. Default will flip to require_auth=True in a future "
-            "major release."
+            "to fail closed (default since v2.10.0)."
         )
 
     def _require_api_key(x_api_key: str | None = Header(default=None)) -> None:
@@ -478,9 +477,7 @@ def create_governance_app(
 
     if include_telegram:
         if telegram_webhook_path_secret is None:
-            raise ValueError(
-                "telegram_webhook_path_secret is required when include_telegram=True"
-            )
+            raise ValueError("telegram_webhook_path_secret is required when include_telegram=True")
         app.include_router(
             create_telegram_webhook_router(
                 engine_getter=lambda: engine,

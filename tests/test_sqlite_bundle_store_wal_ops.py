@@ -72,9 +72,7 @@ class TestVersionWarning:
             ((4, 0, 0), False),
         ],
     )
-    def test_version_classification(
-        self, version: tuple[int, int, int], vulnerable: bool
-    ) -> None:
+    def test_version_classification(self, version: tuple[int, int, int], vulnerable: bool) -> None:
         assert _is_vulnerable_to_wal_reset_bug(version) is vulnerable
 
     def test_warning_emitted_at_most_once(

@@ -59,8 +59,7 @@ class TestApiStability:
         unclassified = [
             name
             for name in acgs_lite.__all__
-            if name not in acgs_lite.API_STABILITY
-            and name not in {"API_STABILITY", "stability"}
+            if name not in acgs_lite.API_STABILITY and name not in {"API_STABILITY", "stability"}
         ]
         assert unclassified == [], (
             f"These public exports lack a stability classification: {unclassified}"

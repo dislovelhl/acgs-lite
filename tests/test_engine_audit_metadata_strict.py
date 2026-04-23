@@ -72,6 +72,4 @@ class TestAuditMetadataWithStrictTrue:
             )
         entries = audit.entries
         assert len(entries) >= 1
-        assert any(
-            e.metadata.get("runtime_governance") == {"approver": "alice"} for e in entries
-        )
+        assert any(e.metadata.get("runtime_governance") == {"approver": "alice"} for e in entries)

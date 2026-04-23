@@ -340,7 +340,9 @@ class TestValidateAction:
         library = GovernanceExperienceLibrary()
         server = create_mcp_server(default_constitution, experience_library=library)
 
-        result = await _call_tool(server, "validate_action", {"action": "draft weekly status update"})
+        result = await _call_tool(
+            server, "validate_action", {"action": "draft weekly status update"}
+        )
 
         assert result["valid"] is True
         assert len(library.precedents) == 1
@@ -449,14 +451,17 @@ class TestValidateAction:
         assert runtime_governance["session_id"] == "session-123"
         assert runtime_governance["checkpoint_kind"] == "tool_invocation"
         assert runtime_governance["tool_risk"]["tool_name"] == "shell"
-        assert runtime_governance["tool_risk"]["risk_level"] in {"critical", "high", "medium", "low"}
+        assert runtime_governance["tool_risk"]["risk_level"] in {
+            "critical",
+            "high",
+            "medium",
+            "low",
+        }
         assert [hit["rule_id"] for hit in runtime_governance["retrieved_rules"]] == [
             "PRIV-001",
             "SEC-001",
         ]
-        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
-            "P0"
-        ]
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == ["P0"]
         assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
         assert runtime_governance["trajectory_violations"] == []
 

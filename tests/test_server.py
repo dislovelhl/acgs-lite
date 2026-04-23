@@ -58,6 +58,7 @@ class TestGovernanceServer:
         return create_governance_app(
             constitution if constitution is not None else Constitution.default(),
             audit_db_path=tmp_path / "audit.db",
+            require_auth=False,
         )
 
     @staticmethod
@@ -132,7 +133,7 @@ class TestGovernanceServer:
         assert entries[0]["action"] == "draft note"
 
     def test_custom_audit_store_is_used_when_provided(self) -> None:
-        app = create_governance_app(audit_store=_DummyAuditStore())
+        app = create_governance_app(audit_store=_DummyAuditStore(), require_auth=False)
         client = TestClient(app)
 
         client.post("/validate", json={"action": "approve change", "agent_id": "store-agent"})
@@ -147,7 +148,7 @@ class TestGovernanceServer:
 
     def test_external_acgs_audit_store_is_opt_in(self, tmp_path: Any) -> None:
         with patch("acgs_lite.server.import_module") as import_module_mock:
-            app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+            app = create_governance_app(audit_db_path=tmp_path / "audit.db", require_auth=False)
             client = TestClient(app)
             response = client.get("/audit/count")
 
@@ -160,6 +161,7 @@ class TestGovernanceServer:
             app = create_governance_app(
                 audit_db_path=tmp_path / "audit.db",
                 enable_external_acgs_audit_store=True,
+                require_auth=False,
             )
             client = TestClient(app)
             response = client.get("/audit/count")
@@ -174,14 +176,14 @@ class TestGovernanceServer:
 
     def test_lifecycle_env_flag_parses_false_values(self, tmp_path: Any) -> None:
         with patch.dict("os.environ", {"ACGS_LIFECYCLE_ENABLED": "false"}, clear=False):
-            app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+            app = create_governance_app(audit_db_path=tmp_path / "audit.db", require_auth=False)
 
         with pytest.raises(AssertionError):
             self._route_endpoint(app, "/constitution/lifecycle/draft")
 
     def test_lifecycle_env_flag_parses_true_values(self, tmp_path: Any) -> None:
         with patch.dict("os.environ", {"ACGS_LIFECYCLE_ENABLED": "yes"}, clear=False):
-            app = create_governance_app(audit_db_path=tmp_path / "audit.db")
+            app = create_governance_app(audit_db_path=tmp_path / "audit.db", require_auth=False)
 
         draft = self._route_endpoint(app, "/constitution/lifecycle/draft")
         assert callable(draft)
