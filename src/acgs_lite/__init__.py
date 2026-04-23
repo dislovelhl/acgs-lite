@@ -317,4 +317,203 @@ __all__ = [
     "LicenseInfo",
     "LicenseManager",
     "Tier",
+    # API stability metadata
+    "API_STABILITY",
+    "stability",
 ]
+
+
+# ── API stability layers ────────────────────────────────────────────────
+# Public-API stability classification. Useful for downstream tooling that
+# needs to know which exports are safe to depend on across minor versions.
+#
+# Layers:
+#   "stable"       — semver-protected. Breaking changes only on major bumps.
+#   "beta"         — feature-complete, but signature/behavior may shift in
+#                    minor releases. Lifecycle, governance memory, spot-check.
+#   "experimental" — may change or be removed without a deprecation cycle.
+#                    Verification gates, formal-verification adapters, OpenShell.
+#
+# Anything not present in this map should be treated as "experimental" by
+# downstream consumers until explicitly classified here.
+
+_STABILITY_STABLE: frozenset[str] = frozenset(
+    {
+        # Constitutional model
+        "Constitution",
+        "ConstitutionBuilder",
+        "Rule",
+        "RuleSnapshot",
+        "Severity",
+        "ViolationAction",
+        "AcknowledgedTension",
+        # Engine surface
+        "GovernanceEngine",
+        "ValidationResult",
+        "BatchValidationResult",
+        # Governed wrappers
+        "GovernedAgent",
+        "GovernedCallable",
+        # Audit
+        "AuditLog",
+        "AuditEntry",
+        "AuditBackend",
+        "InMemoryAuditBackend",
+        "JSONLAuditBackend",
+        # MACI separation of powers
+        "MACIRole",
+        "MACIEnforcer",
+        # Errors
+        "ConstitutionalViolationError",
+        "GovernanceError",
+        "MACIViolationError",
+        # Circuit breaker (Article 14 kill-switch)
+        "GovernanceCircuitBreaker",
+        "GovernanceHaltError",
+        # Trajectory monitoring (core rule types are stable)
+        "TrajectoryMonitor",
+        "TrajectorySession",
+        "TrajectoryViolation",
+        "InMemoryTrajectoryStore",
+        "FrequencyThresholdRule",
+        "CumulativeValueRule",
+        "SensitiveToolSequenceRule",
+        # Constants / metadata
+        "CONSTITUTIONAL_HASH",
+        "VERSION",
+    }
+)
+
+_STABILITY_BETA: frozenset[str] = frozenset(
+    {
+        # Bundle lifecycle (week-3 spot-check / lifecycle)
+        "ConstitutionBundle",
+        "BundleStatus",
+        "BundleStore",
+        "InMemoryBundleStore",
+        "ActivationRecord",
+        "ConstitutionLifecycle",
+        "ConcurrentLifecycleError",
+        "LifecycleError",
+        "LifecycleEvidenceError",
+        "LifecycleEvidenceRecord",
+        "LifecycleAuditSink",
+        "InMemoryLifecycleAuditSink",
+        "TransitionRecord",
+        "StatusTransition",
+        # Spot-check + trust scoring
+        "AuditPolicy",
+        "CaseConfig",
+        "CaseManager",
+        "CaseRecord",
+        "CaseState",
+        "CompletedCase",
+        "SelectionPolicy",
+        "SelectionResult",
+        "SpotCheckAuditor",
+        "SpotCheckResult",
+        "TrustAdjustment",
+        "TrustConfig",
+        "TrustEvent",
+        "TrustScoreManager",
+        "TrustTier",
+        "ValidatorAssessment",
+        "ValidatorProfile",
+        "ValidatorPool",
+        "ValidatorSelector",
+        # Governance memory
+        "GovernanceMemoryPrecedentHit",
+        "GovernanceMemoryReport",
+        "GovernanceMemoryRetriever",
+        "GovernanceMemorySummary",
+        # Provenance + event bus
+        "ProvenanceRecord",
+        "ProvenanceNode",
+        "EventBus",
+        "GovernanceEvent",
+        "get_event_bus",
+        # Scoring
+        "ConstitutionalImpactScorer",
+        "RuleBasedScorer",
+        "score_impact",
+        # Licensing
+        "set_license",
+        "LicenseInfo",
+        "LicenseManager",
+        "Tier",
+    }
+)
+
+_STABILITY_EXPERIMENTAL: frozenset[str] = frozenset(
+    {
+        # Verification gates
+        "VerificationResult",
+        "Z3VerificationGate",
+        "NullVerificationGate",
+        # Z3 formal verification
+        "Z3ConstraintVerifier",
+        "Z3VerifyResult",
+        "Z3_AVAILABLE",
+        "Z3_RISK_THRESHOLD",
+        # Leanstral / Lean 4 proof certificates
+        "LeanstralVerifier",
+        "LeanVerifyResult",
+        "ProofCertificate",
+        "MISTRAL_AVAILABLE",
+        "LEAN_AVAILABLE",
+        # OpenShell governance integration (entire surface)
+        "ActionContext",
+        "ActionEnvelope",
+        "ActionPayloadSummary",
+        "ActionRequirements",
+        "ActionType",
+        "ActorRef",
+        "ActorRole",
+        "ApprovalReviewRequest",
+        "ApprovalReviewResponse",
+        "ApprovalSubmission",
+        "AuditEvent",
+        "AuditEventType",
+        "ComplianceResult",
+        "ComplianceStatus",
+        "DecisionType",
+        "ExecutionOutcome",
+        "ExternalRef",
+        "GovernanceStateChecksumError",
+        "GovernanceDecision",
+        "GovernanceStateBackend",
+        "GovernanceStateError",
+        "GovernanceStateMigrationError",
+        "GovernanceStateObservabilityHook",
+        "GovernanceStateVersionError",
+        "InMemoryGovernanceStateBackend",
+        "JsonFileGovernanceStateBackend",
+        "OperationType",
+        "OutcomeStatus",
+        "RedisGovernanceStateBackend",
+        "ResourceRef",
+        "RiskLevel",
+        "SQLiteGovernanceStateBackend",
+        "create_openshell_governance_app",
+        "create_openshell_governance_router",
+        # RuleSynthesisProvider (still maturing)
+        "RuleSynthesisProvider",
+    }
+)
+
+API_STABILITY: dict[str, str] = {
+    **{name: "stable" for name in _STABILITY_STABLE},
+    **{name: "beta" for name in _STABILITY_BETA},
+    **{name: "experimental" for name in _STABILITY_EXPERIMENTAL},
+}
+
+
+def stability(name: str) -> str:
+    """Return the stability layer for a public export.
+
+    :param name: A symbol name from ``acgs_lite.__all__``.
+    :returns: ``"stable"``, ``"beta"``, or ``"experimental"``. Unclassified
+        symbols default to ``"experimental"`` so downstream callers err on
+        the side of caution.
+    """
+    return API_STABILITY.get(name, "experimental")
