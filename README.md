@@ -135,6 +135,104 @@ pip install "acgs-lite[all]"          # All integrations
 
 ---
 
+## 🤖 For AI Agents (Claude Code / Codex CLI)
+
+Copy the prompt below directly into Claude Code, Codex CLI, or any AI coding agent.
+It installs acgs-lite, runs the self-verifying quickstart, and reports pass/fail — no API keys required.
+
+### One-shot install + verify prompt
+
+```
+TASK: Install and verify ACGS-Lite constitutional AI governance.
+
+STEPS:
+1. Install the package:
+   pip install acgs-lite
+
+2. Run the self-verifying quickstart:
+   python examples/agent_quickstart/run.py
+
+3. Expected outcome — every line should show ✅:
+   ✅  safe request passes through
+   ✅  PII blocked by rule 'no-pii'
+   ✅  destructive op blocked by 'no-destructive'
+   ✅  YAML loads 3 rules
+   ✅  Proposer can propose
+   ✅  Golden Rule: proposer cannot validate own output
+   ✅  Audit log: 3 entries recorded
+   ✅  Chain integrity: verified
+   ✅  All assertions passed — ACGS-Lite is correctly installed.
+   Exit code: 0
+
+4. If any ❌ appears, report the failing assertion and the full traceback.
+   Do NOT set strict=False to work around failures — diagnose root cause.
+
+CONSTRAINTS:
+- No OpenAI or Anthropic API key is required for this verification step.
+- Constitutional hash 608508a9bd224290 must appear in validation output.
+- Run from the repo root (packages/acgs-lite/) if cloned from source.
+```
+
+### Implement governance in 5 lines (follow-up prompt)
+
+```
+TASK: Add ACGS-Lite governance to this codebase.
+
+STEPS:
+1. pip install acgs-lite
+
+2. Create constitution.yaml at the project root:
+
+constitutional_hash: "608508a9bd224290"
+rules:
+  - id: no-pii
+    pattern: "SSN|social security|passport number"
+    severity: CRITICAL
+    description: Block PII exposure
+  - id: no-destructive
+    pattern: "delete|drop table|rm -rf"
+    severity: HIGH
+    description: Block destructive operations
+  - id: require-approval
+    pattern: "transfer|payment|wire"
+    severity: HIGH
+    description: Financial actions require human approval
+
+3. Wrap the agent/LLM call with GovernedAgent:
+
+from acgs_lite import Constitution, GovernanceEngine, AuditLog
+from acgs_lite.governed import GovernedCallable
+
+constitution = Constitution.from_yaml("constitution.yaml")
+audit_log    = AuditLog()
+engine       = GovernanceEngine(constitution, audit_log=audit_log)
+
+@GovernedCallable(engine=engine, agent_id="my-agent")
+def run_agent(prompt: str) -> str:
+    return your_llm_call(prompt)   # replace with your LLM call
+
+4. Verify the audit chain after every session:
+   assert audit_log.verify_chain()
+
+CONSTRAINTS:
+- Engine is fail-closed by default — unsafe actions raise ConstitutionalViolationError.
+- Never set strict=False in production.
+- Run examples/agent_quickstart/run.py to confirm the installation is healthy.
+```
+
+### Source installation (from this repo)
+
+```bash
+git clone https://github.com/dislovelhl/acgs-lite
+cd acgs-lite/packages/acgs-lite
+pip install -e ".[dev]"
+python examples/agent_quickstart/run.py   # exit 0 = all clear
+```
+
+See [`examples/agent_quickstart/`](./examples/agent_quickstart/) for the full self-verifying suite.
+
+---
+
 ## 🛡️ Core Concepts
 
 ### Governance Engine
