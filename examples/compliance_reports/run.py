@@ -40,6 +40,7 @@ from acgs_lite.compliance import (
     ComplianceReportExporter,
     MultiFrameworkAssessor,
 )
+from acgs_lite.compliance.base import MultiFrameworkReport
 from acgs_lite.compliance.multi_framework import _FRAMEWORK_REGISTRY  # type: ignore[attr-defined]
 
 # ---------------------------------------------------------------------------
@@ -174,7 +175,7 @@ def _write(path: Path, content: str) -> None:
 # ---------------------------------------------------------------------------
 
 def _write_framework_files(
-    report,
+    report: MultiFrameworkReport,
     out_dir: Path,
 ) -> list[dict]:
     """Write one .md and one .json file per framework. Returns index rows."""
