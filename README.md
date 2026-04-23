@@ -219,6 +219,12 @@ result = summarize("Q4 revenue was $4.2M")
 | **Rule match** | Action is blocked unless the rule explicitly sets `workflow_action: warn` |
 | **Audit write failure** | Logged at warning level; does not unblock the action |
 | **MACI misconfiguration** | Warning raised at startup; enforcement is advisory unless `enforce_maci=True` |
+| **MCP server strict-mode** | `engine.strict` is restored in `try/finally` at every call site — an exception during `validate()` cannot leave strict mode permanently disabled (as of 2.9.0) |
+
+> **Note:** The strict-mode restoration guarantee above is scoped to the MCP server integration.
+> Other integrations that mutate `engine.strict` directly (e.g., custom adapters) are responsible
+> for their own restoration. Use `engine.non_strict()` (a context manager at `acgs_lite.engine.core`)
+> for safe per-call non-strict validation that always restores strict mode.
 
 To opt into fail-open (e.g., for testing), you must set it explicitly:
 

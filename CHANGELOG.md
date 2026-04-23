@@ -24,10 +24,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   durable backends, reducing round-trips for bulk governance events.
 - 21 previously internal governance symbols exported from the public API.
 
+### Upgrading from 2.8.1
+
+No API changes. All existing code runs without modification. Two behavior changes worth noting:
+
+- **`audit_metadata` is now written on non-strict fast paths** — callers that pass `audit_metadata`
+  to `validate()` in non-strict mode previously had the metadata silently discarded on the Rust
+  fast path. It is now written. If you rely on the fast-path throughput benefit, remove
+  `audit_metadata` from non-strict calls or accept the ~10% throughput reduction.
+- **`check_checkpoint()` is now serialized** — concurrent calls to the same `TrajectoryMonitor`
+  instance are now queued. If you have highly concurrent checkpoint calls per monitor, benchmark
+  the new behavior under load.
+
+`GovernanceEngine`, `AuditLog`, and all stable-tier components are unaffected. See the Component
+Stability table in the README for the stability tier of each subsystem.
+
 ### Changed
 
-- PyPI development-status classifier changed from `5 - Production/Stable` to `4 - Beta`; package
-  description rewritten for accuracy.
+- PyPI development-status classifier changed from `5 - Production/Stable` to `4 - Beta`.
+  This reflects the new subsystems added in 2.9.0 (ARC-Kit, GovernanceStream, lifecycle API,
+  MCP server) which are still stabilizing. **Core rule validation, constitution loading, MACI
+  enforcement, and audit logging remain `Stable`** — see the Component Stability table in README.
+  Package description also rewritten for accuracy.
 - README: added "Safety Defaults" section and "Component Stability" table.
 - Rust fast path enabled for `strict=False` validation mode (+374% allow-ops throughput).
 
@@ -45,6 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PQC module now catches `SystemExit` and `RuntimeError` from broken oqs/liboqs installations
   instead of propagating them.
 - `__init__.py` duplicate-import warnings (F811) removed.
+- **Rust fast-path audit guard** (`engine/core.py`): the `strict=False` Rust fast path no longer
+  fires when `audit_metadata` is provided. Previously, a caller that passed `audit_metadata` in
+  non-strict mode would hit the fast path and have the metadata silently discarded — no audit
+  entry written. The fast path is now bypassed when `audit_metadata` is present.
+- **`TrajectoryMonitor` thread safety** (`trajectory.py`): `check_checkpoint()` is now
+  serialized with a `threading.Lock`. Previously, concurrent calls from different agents sharing
+  a `TrajectoryMonitor` instance had a read-modify-write race on the session store. Concurrent
+  access is now safe.
 - `AuditLog.record()` backend write serialized under state lock (thread-safety regression fix).
 - `record_atomic` is now truly atomic for durable backends.
 
