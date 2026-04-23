@@ -942,7 +942,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             _rv is not None
             and _fast_records is not None
             and context is None
-            and audit_metadata is None
+            and not audit_metadata
             and not self.custom_validators
         ):
             # strict=False Rust fast path: return violations instead of raising

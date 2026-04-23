@@ -216,14 +216,14 @@ result = summarize("Q4 revenue was $4.2M")
 |-----------|----------|
 | **Engine exception** | Validation raises `ConstitutionalViolationError`; the action is blocked, not silently passed |
 | **Missing constitution** | Engine refuses to initialize; no degraded-mode passthrough |
-| **Rule match** | Action is blocked unless the rule explicitly sets `action: warn` |
-| **Audit write failure** | Logged as error; does not unblock the action |
-| **MACI misconfiguration** | Warning raised at startup; enforcement is advisory unless `strict=True` |
+| **Rule match** | Action is blocked unless the rule explicitly sets `workflow_action: warn` |
+| **Audit write failure** | Logged at warning level; does not unblock the action |
+| **MACI misconfiguration** | Warning raised at startup; enforcement is advisory unless `enforce_maci=True` |
 
 To opt into fail-open (e.g., for testing), you must set it explicitly:
 
 ```python
-engine = GovernanceEngine(constitution, fail_open=True)  # explicit; off by default
+engine = GovernanceEngine(constitution, strict=False)  # explicit; off by default
 ```
 
 Enforcement actions progress from least to most restrictive:
@@ -240,7 +240,7 @@ Not all layers are equally hardened. Use this table to calibrate trust in each a
 | `GovernanceEngine` — rule validation | ✅ **Stable** | Core hot path; Aho-Corasick matcher, fail-closed exceptions |
 | `Constitution` — YAML loading, rule parsing | ✅ **Stable** | Hash-pinned; schema-validated |
 | `Rule`, `Severity`, `ValidationResult` | ✅ **Stable** | Stable data model; additive changes only |
-| `MACIEnforcer` — role separation | ✅ **Stable** | Role checks are enforced; pass `strict=True` for hard failures |
+| `MACIEnforcer` — role separation | ✅ **Stable** | Role checks are enforced; pass `enforce_maci=True` for hard failures |
 | `AuditLog` — SHA-256 chained trail | ✅ **Stable** | Thread-safe append-only; chain verification tested |
 | `GovernedAgent` — drop-in wrapper | ✅ **Stable** | Synchronous and async paths covered |
 | OpenAI / Anthropic / LangChain adapters | ✅ **Stable** | Thin validated wrappers; covers completions and streaming |

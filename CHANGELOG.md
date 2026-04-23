@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   files with structured findings and a CI-friendly exit code.
 - **`GovernanceStream`**, **`PolicyStorage`**, and DI-scoped service interfaces for framework
   integration (AFFiNE-style architecture patterns).
-- **Batch audit writes**: `AuditLogger.record_atomic_many()` writes multiple entries atomically to
+- **Batch audit writes**: `AuditLog.record_atomic_many()` writes multiple entries atomically to
   durable backends, reducing round-trips for bulk governance events.
 - 21 previously internal governance symbols exported from the public API.
 
@@ -45,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PQC module now catches `SystemExit` and `RuntimeError` from broken oqs/liboqs installations
   instead of propagating them.
 - `__init__.py` duplicate-import warnings (F811) removed.
-- `AuditLogger.record()` backend write serialized under state lock (thread-safety regression fix).
+- `AuditLog.record()` backend write serialized under state lock (thread-safety regression fix).
 - `record_atomic` is now truly atomic for durable backends.
 
 ## [2.8.1] - 2026-04-16
