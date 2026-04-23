@@ -268,25 +268,29 @@ class GovernedMessages:
         context: dict[str, Any] | None = None,
         audit_metadata: dict[str, Any] | None = None,
     ) -> Any:
-        """Run engine validation with strict mode temporarily disabled."""
-        old_strict = self._engine.strict
-        self._engine.strict = False
-        try:
-            validate_kwargs: dict[str, Any] = {
-                "agent_id": agent_id,
-                "context": context,
-            }
-            if audit_metadata:
-                validate_kwargs["audit_metadata"] = audit_metadata
+        """Run engine validation with per-call strict=False (no instance mutation)."""
+        validate_kwargs: dict[str, Any] = {
+            "agent_id": agent_id,
+            "context": context,
+            "strict": False,
+        }
+        if audit_metadata:
+            validate_kwargs["audit_metadata"] = audit_metadata
+        # Retry with problematic kwargs dropped if the underlying validate() rejects them
+        # (covers older engines / test mocks that pin a narrower signature).
+        for _ in range(3):
             try:
                 return self._engine.validate(text, **validate_kwargs)
             except TypeError as exc:
-                if "audit_metadata" not in str(exc):
+                msg = str(exc)
+                dropped = False
+                for key in ("strict", "audit_metadata"):
+                    if key in msg and key in validate_kwargs:
+                        validate_kwargs.pop(key)
+                        dropped = True
+                if not dropped:
                     raise
-                validate_kwargs.pop("audit_metadata", None)
-                return self._engine.validate(text, **validate_kwargs)
-        finally:
-            self._engine.strict = old_strict
+        return self._engine.validate(text, **validate_kwargs)
 
     def _validate_tool_use(self, block: Any) -> None:
         """Validate a tool_use output block.
@@ -603,21 +607,28 @@ class GovernedAnthropic:
         audit_metadata = build_runtime_governance_observability(
             governance_memory_report=governance_memory_report,
         )
-        old_strict = self.engine.strict
-        self.engine.strict = False
         validate_kwargs: dict[str, Any] = {
             "agent_id": f"{self.agent_id}:{agent_id}",
+            "strict": False,
         }
         if audit_metadata:
             validate_kwargs["audit_metadata"] = audit_metadata
-        try:
+        result = None
+        for _ in range(3):
+            try:
+                result = self.engine.validate(text, **validate_kwargs)
+                break
+            except TypeError as exc:
+                msg = str(exc)
+                dropped = False
+                for key in ("strict", "audit_metadata"):
+                    if key in msg and key in validate_kwargs:
+                        validate_kwargs.pop(key)
+                        dropped = True
+                if not dropped:
+                    raise
+        if result is None:
             result = self.engine.validate(text, **validate_kwargs)
-        except TypeError as exc:
-            if "audit_metadata" not in str(exc):
-                raise
-            validate_kwargs.pop("audit_metadata", None)
-            result = self.engine.validate(text, **validate_kwargs)
-        self.engine.strict = old_strict
         response = {
             "valid": result.valid,
             "violations": [
@@ -658,13 +669,11 @@ class GovernedAnthropic:
         if not text or not text.strip():
             return {"error": "text parameter is required and must not be empty"}
 
-        old_strict = self.engine.strict
-        self.engine.strict = False
         result = self.engine.validate(
             text,
             agent_id=f"{self.agent_id}:compliance_check",
+            strict=False,
         )
-        self.engine.strict = old_strict
 
         return {
             "compliant": result.valid,

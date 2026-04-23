@@ -571,6 +571,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         self,
         result: ValidationResult,
         action_text: str = "",
+        *,
+        strict: bool | None = None,
     ) -> ValidationResult:
         """Re-categorise violations by workflow_action on a result returned by a fast path.
 
@@ -583,7 +585,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         enforcement = self._resolve_enforcement(result.violations, action_text=action_text[:200])
         self._raise_for_enforcement(
             enforcement,
-            strict=self.strict,
+            strict=self.strict if strict is None else strict,
             action_text=action_text,
         )
         result.violations = enforcement.blocking_violations
@@ -624,6 +626,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         agent_id: str,
         context: dict[str, Any] | None,
         audit_metadata: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> ValidationResult:
         """Validate using per-call rule activation semantics.
 
@@ -739,7 +742,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
         self._raise_for_enforcement(
             enforcement,
-            strict=self.strict,
+            strict=self.strict if strict is None else strict,
             action_text=action_200,
         )
         return result
@@ -887,16 +890,27 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         agent_id: str = "anonymous",
         context: dict[str, Any] | None = None,
         audit_metadata: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> ValidationResult:
-        """Validate an action against the constitution."""
+        """Validate an action against the constitution.
+
+        Args:
+            strict: Per-call override for strict mode. When ``None`` (default),
+                the engine's instance-level ``self.strict`` is used. Passing an
+                explicit ``True``/``False`` overrides strictness for this call
+                only, without mutating ``self.strict``. Prefer this over
+                ``engine.strict = …`` or ``with engine.non_strict()`` when the
+                engine is shared across threads or integrations.
+        """
         if self._requires_runtime_rule_filtering:
             return self._validate_with_runtime_rule_filtering(
                 action,
                 agent_id=agent_id,
                 context=context,
                 audit_metadata=audit_metadata,
+                strict=strict,
             )
-        strict = self.strict
+        strict = self.strict if strict is None else strict
         (
             _ac_iter,
             _anchor_dispatch,
@@ -926,7 +940,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _fast_records,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
             else:
                 _result = self._validate_rust_no_context(
                     action,
@@ -937,7 +951,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     strict=True,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
         elif (
             _rv is not None
             and _fast_records is not None
@@ -958,7 +972,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 strict=False,
             )
             if _result is not None:
-                return self._post_dispatch_result(_result, action)
+                return self._post_dispatch_result(_result, action, strict=strict)
         elif _rv is not None and context and strict:
             _ctx_pairs = [
                 (k, v)
@@ -976,7 +990,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _is_noop,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
             else:
                 _result = self._validate_rust_full(
                     action,
@@ -986,7 +1000,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _fast_records,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
         start = time.perf_counter()
         violations = None
         action_trimmed = action[:500]

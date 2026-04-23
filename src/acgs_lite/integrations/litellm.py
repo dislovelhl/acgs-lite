@@ -116,10 +116,7 @@ class GovernedLiteLLM:
         """Validate the response (non-blocking)."""
         text = _extract_response_text(response)
         if text:
-            old_strict = self.engine.strict
-            self.engine.strict = False
-            result = self.engine.validate(text, agent_id=f"{self.agent_id}:output")
-            self.engine.strict = old_strict
+            result = self.engine.validate(text, agent_id=f"{self.agent_id}:output", strict=False)
             if not result.valid:
                 logger.warning(
                     "LiteLLM response governance violations: %s",

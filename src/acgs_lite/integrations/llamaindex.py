@@ -105,10 +105,7 @@ class GovernedQueryEngine:
         # Validate output (non-blocking)
         resp_text = _extract_response_text(response)
         if resp_text:
-            old_strict = self.gov_engine.strict
-            self.gov_engine.strict = False
-            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output")
-            self.gov_engine.strict = old_strict
+            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output", strict=False)
             if not result.valid:
                 logger.warning(
                     "LlamaIndex query response violations: %s",
@@ -124,10 +121,7 @@ class GovernedQueryEngine:
 
         resp_text = _extract_response_text(response)
         if resp_text:
-            old_strict = self.gov_engine.strict
-            self.gov_engine.strict = False
-            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output")
-            self.gov_engine.strict = old_strict
+            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output", strict=False)
             if not result.valid:
                 logger.warning(
                     "LlamaIndex async query response violations: %s",
@@ -189,10 +183,7 @@ class GovernedChatEngine:
 
         resp_text = _extract_response_text(response)
         if resp_text:
-            old_strict = self.gov_engine.strict
-            self.gov_engine.strict = False
-            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output")
-            self.gov_engine.strict = old_strict
+            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output", strict=False)
             if not result.valid:
                 logger.warning(
                     "LlamaIndex chat response violations: %s",
@@ -208,10 +199,7 @@ class GovernedChatEngine:
 
         resp_text = _extract_response_text(response)
         if resp_text:
-            old_strict = self.gov_engine.strict
-            self.gov_engine.strict = False
-            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output")
-            self.gov_engine.strict = old_strict
+            result = self.gov_engine.validate(resp_text, agent_id=f"{self.agent_id}:output", strict=False)
             if not result.valid:
                 logger.warning(
                     "LlamaIndex async chat response violations: %s",

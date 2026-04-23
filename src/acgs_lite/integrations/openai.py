@@ -78,15 +78,11 @@ class GovernedChatCompletions:
             for choice in response.choices:
                 if hasattr(choice, "message") and choice.message.content:
                     # Use non-strict for output (don't block, just log)
-                    old_strict = self._engine.strict
-                    self._engine.strict = False
-                    try:
-                        result = self._engine.validate(
-                            choice.message.content,
-                            agent_id=f"{self._agent_id}:output",
-                        )
-                    finally:
-                        self._engine.strict = old_strict
+                    result = self._engine.validate(
+                        choice.message.content,
+                        agent_id=f"{self._agent_id}:output",
+                        strict=False,
+                    )
 
                     if not result.valid:
                         logger.warning(
@@ -118,15 +114,11 @@ class GovernedChatCompletions:
         if hasattr(response, "choices") and response.choices:
             for choice in response.choices:
                 if hasattr(choice, "message") and choice.message.content:
-                    old_strict = self._engine.strict
-                    self._engine.strict = False
-                    try:
-                        self._engine.validate(
-                            choice.message.content,
-                            agent_id=f"{self._agent_id}:output",
-                        )
-                    finally:
-                        self._engine.strict = old_strict
+                    self._engine.validate(
+                        choice.message.content,
+                        agent_id=f"{self._agent_id}:output",
+                        strict=False,
+                    )
 
         return response
 

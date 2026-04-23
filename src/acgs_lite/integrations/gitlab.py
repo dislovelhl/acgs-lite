@@ -409,11 +409,7 @@ class GitLabGovernanceBot:
 
     def _validate_text(self, text: str, agent_id: str) -> ValidationResult:
         """Validate text using the governance engine in non-strict mode."""
-        old_strict = self.engine.strict
-        self.engine.strict = False
-        result = self.engine.validate(text, agent_id=agent_id)
-        self.engine.strict = old_strict
-        return result
+        return self.engine.validate(text, agent_id=agent_id, strict=False)
 
     @property
     def stats(self) -> dict[str, Any]:
