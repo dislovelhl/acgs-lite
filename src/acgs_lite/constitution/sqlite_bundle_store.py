@@ -23,8 +23,10 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import warnings
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Literal
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
@@ -33,9 +35,68 @@ from acgs_lite.constitution.lifecycle_service import LifecycleError
 
 _SCHEMA_VERSION = 1
 
+# Default auto-checkpoint threshold (pages). SQLite default is 1000; we lower
+# it to 500 so the WAL file is reclaimed more aggressively on bursty writers.
+_DEFAULT_WAL_AUTOCHECKPOINT = 500
+
+# SQLite versions vulnerable to the WAL-reset corruption bug fixed in 3.51.3
+# (and back-ported to 3.44.6 and 3.50.7). See https://sqlite.org/wal.html
+_WAL_RESET_BUG_FIXED_VERSIONS: tuple[tuple[int, int, int], ...] = (
+    (3, 44, 6),
+    (3, 50, 7),
+    (3, 51, 3),
+)
+_WAL_BUG_WARNING_EMITTED = False
+
+CheckpointMode = Literal["PASSIVE", "FULL", "RESTART", "TRUNCATE"]
+
 
 def _utcnow() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _sqlite_version_tuple() -> tuple[int, int, int]:
+    parts = sqlite3.sqlite_version_info
+    return (parts[0], parts[1], parts[2] if len(parts) > 2 else 0)
+
+
+def _is_vulnerable_to_wal_reset_bug(version: tuple[int, int, int]) -> bool:
+    """True if ``version`` predates the WAL-reset corruption fix.
+
+    The fix shipped on three branches: 3.44.6, 3.50.7, and 3.51.3. Any
+    version below the corresponding branch fix is considered vulnerable.
+    """
+    major, minor, patch = version
+    if (major, minor) < (3, 44):
+        return True
+    if (major, minor) == (3, 44):
+        return patch < 6
+    if (major, minor) < (3, 50):
+        return True
+    if (major, minor) == (3, 50):
+        return patch < 7
+    if (major, minor) == (3, 51):
+        return patch < 3
+    return False
+
+
+def _maybe_warn_sqlite_version() -> None:
+    """Emit a one-shot warning when the linked SQLite is at risk of WAL corruption."""
+    global _WAL_BUG_WARNING_EMITTED
+    if _WAL_BUG_WARNING_EMITTED:
+        return
+    version = _sqlite_version_tuple()
+    if _is_vulnerable_to_wal_reset_bug(version):
+        warnings.warn(
+            (
+                f"SQLite {sqlite3.sqlite_version} is vulnerable to the WAL-reset "
+                "corruption bug (fixed in 3.51.3 / 3.50.7 / 3.44.6). "
+                "Upgrade SQLite for production deployments using SQLiteBundleStore."
+            ),
+            RuntimeWarning,
+            stacklevel=3,
+        )
+    _WAL_BUG_WARNING_EMITTED = True
 
 
 class SQLiteBundleStore:
@@ -50,8 +111,15 @@ class SQLiteBundleStore:
     ``status = 'ACTIVE'`` guarantees only one succeeds.
     """
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        wal_autocheckpoint: int = _DEFAULT_WAL_AUTOCHECKPOINT,
+    ) -> None:
         self._path = Path(path)
+        self._wal_autocheckpoint = int(wal_autocheckpoint)
+        _maybe_warn_sqlite_version()
         self._ensure_schema()
 
     # ── internal helpers ─────────────────────────────────────────────────
@@ -60,8 +128,40 @@ class SQLiteBundleStore:
         conn = sqlite3.connect(self._path, check_same_thread=False)
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("PRAGMA busy_timeout=5000")
+        conn.execute(f"PRAGMA wal_autocheckpoint={self._wal_autocheckpoint}")
         conn.row_factory = sqlite3.Row
         return conn
+
+    # ── operational API ──────────────────────────────────────────────────
+
+    def checkpoint(self, mode: CheckpointMode = "PASSIVE") -> tuple[int, int]:
+        """Run a WAL checkpoint and return ``(busy, log_pages, checkpointed)`` summary.
+
+        :param mode: SQLite checkpoint mode. ``PASSIVE`` (default) never blocks
+            other connections; ``FULL`` waits for readers; ``RESTART`` and
+            ``TRUNCATE`` additionally reset the WAL file.
+        :returns: A 2-tuple ``(log_pages, checkpointed_pages)`` from the
+            ``PRAGMA wal_checkpoint`` result row (the leading ``busy`` flag
+            is folded into a ``LifecycleError`` when nonzero).
+        :raises LifecycleError: if the checkpoint could not run because
+            another connection held a conflicting lock.
+        """
+        valid: tuple[CheckpointMode, ...] = ("PASSIVE", "FULL", "RESTART", "TRUNCATE")
+        if mode not in valid:
+            raise ValueError(f"checkpoint mode must be one of {valid}, got {mode!r}")
+        try:
+            with self._connect() as conn:
+                row = conn.execute(f"PRAGMA wal_checkpoint({mode})").fetchone()
+        except sqlite3.OperationalError as exc:
+            raise self._wrap(exc) from exc
+        # PRAGMA wal_checkpoint returns (busy, log, checkpointed)
+        busy, log_pages, checkpointed = (row[0], row[1], row[2]) if row else (0, 0, 0)
+        if busy:
+            raise LifecycleError(
+                f"SQLiteBundleStore: WAL checkpoint busy (mode={mode}); "
+                "another connection holds a conflicting lock"
+            )
+        return int(log_pages), int(checkpointed)
 
     def _ensure_schema(self) -> None:
         self._path.parent.mkdir(parents=True, exist_ok=True)
