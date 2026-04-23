@@ -129,9 +129,7 @@ class GovernanceWorkflowExecutor:
         text = inputs.get("text", action)
         limit = int(inputs.get("limit", 20))
 
-        old_strict = self._engine.strict
-        self._engine.strict = False
-        try:
+        with self._engine.non_strict():
             if domain == "validation":
                 result = self._engine.validate(action, agent_id="workflow")
                 return result.to_dict()
@@ -193,9 +191,6 @@ class GovernanceWorkflowExecutor:
                 else:
                     tier = "SUPERVISED"
                 return {"tier": tier, "action": action}
-
-        finally:
-            self._engine.strict = old_strict
 
         return {"error": f"Unhandled domain: {domain}"}
 

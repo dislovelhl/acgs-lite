@@ -1191,6 +1191,13 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 # engine.strict is False here
                 result = engine.validate(untrusted_input)
             # engine.strict is automatically restored here
+
+        .. warning::
+            ``non_strict()`` mutates shared state on the engine instance. It is **not**
+            async-safe or thread-safe. Do not use ``await`` inside the ``with`` block when
+            the engine is shared across coroutines, and do not share a single engine
+            instance across threads without external locking — strict mode could bleed
+            between concurrent callers.
         """
         prev = self.strict
         self.strict = False
