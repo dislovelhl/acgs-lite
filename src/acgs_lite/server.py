@@ -8,7 +8,9 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
+import secrets
 from collections.abc import AsyncGenerator
 from importlib import import_module
 from pathlib import Path
@@ -28,6 +30,8 @@ from acgs_lite.integrations.openshell_governance import (
     create_openshell_governance_router,
 )
 from acgs_lite.integrations.telegram_webhook import create_telegram_webhook_router
+
+logger = logging.getLogger(__name__)
 
 # Module-level CDP backend (shared across requests, replaceable for testing)
 _cdp_backend: InMemoryCDPBackend = InMemoryCDPBackend()
@@ -111,8 +115,27 @@ def create_governance_app(
     include_telegram: bool = False,
     telegram_webhook_path_secret: str | None = None,
     telegram_secret_token: str | None = None,
+    api_key: str | None = None,
+    require_auth: bool | None = None,
 ) -> FastAPI:
     """Create a FastAPI app exposing governance validation endpoints.
+
+    Authentication
+    --------------
+    Set ``api_key`` (or the ``ACGS_API_KEY`` environment variable) to require
+    an ``X-API-Key`` header on all mutating endpoints (``POST /validate``,
+    ``POST/PUT/DELETE /rules``) and on audit / CDP read endpoints.  ``/health``
+    is always public.
+
+    ``require_auth`` controls behaviour when no key is configured:
+
+    * ``None`` (default): log a loud startup warning but leave the app open.
+      This is the current backward-compatible behaviour; it will flip to
+      ``True`` in a future major release.
+    * ``True``: refuse to start without ``api_key`` / ``ACGS_API_KEY``.  Use
+      this in production to fail closed.
+    * ``False``: silently allow unauthenticated access (opt-in insecure mode
+      for local development).
 
     When ``include_openshell_governance`` is true, the app also mounts the
     stable OpenShell/OpenClaw governance router under ``/governance``.
@@ -137,7 +160,32 @@ def create_governance_app(
     ``telegram_secret_token`` to additionally enforce Telegram's
     ``X-Telegram-Bot-Api-Secret-Token`` header.
     """
-    from fastapi import FastAPI, HTTPException, Query
+    from fastapi import Depends, FastAPI, Header, HTTPException, Query
+
+    resolved_api_key = api_key if api_key is not None else os.getenv("ACGS_API_KEY")
+    if require_auth is True and not resolved_api_key:
+        raise ValueError(
+            "require_auth=True but no api_key / ACGS_API_KEY configured. "
+            "Set api_key=... or ACGS_API_KEY env var, or pass require_auth=False "
+            "to explicitly run unauthenticated (not recommended for production)."
+        )
+    if not resolved_api_key and require_auth is not False:
+        logger.warning(
+            "acgs-lite governance app is starting WITHOUT API-key authentication. "
+            "All endpoints are publicly reachable. Set api_key=... or "
+            "ACGS_API_KEY=... to protect /validate, /rules/*, /audit/*, /cdp/*. "
+            "Pass require_auth=False to silence this warning, or require_auth=True "
+            "to fail closed. Default will flip to require_auth=True in a future "
+            "major release."
+        )
+
+    def _require_api_key(x_api_key: str | None = Header(default=None)) -> None:
+        if not resolved_api_key:
+            return
+        if x_api_key is None or not secrets.compare_digest(x_api_key, resolved_api_key):
+            raise HTTPException(status_code=401, detail="Invalid or missing X-API-Key")
+
+    auth_deps = [Depends(_require_api_key)] if resolved_api_key else []
 
     gov_constitution = constitution if constitution is not None else Constitution.default()
     resolved_audit_store = audit_store
@@ -180,7 +228,7 @@ def create_governance_app(
             return resolved_audit_store.verify_chain()
         return audit_log.verify_chain()
 
-    @app.post("/validate")
+    @app.post("/validate", dependencies=auth_deps)
     def validate_action(payload: dict[str, Any]) -> dict[str, Any]:
         action = cast(str, payload.get("action", ""))
         if not action.strip():
@@ -203,7 +251,7 @@ def create_governance_app(
 
     # --- Rules CRUD ---
 
-    @app.get("/rules")
+    @app.get("/rules", dependencies=auth_deps)
     def list_rules() -> list[dict[str, Any]]:
         return [
             {
@@ -222,14 +270,14 @@ def create_governance_app(
             for r in gov_constitution.rules
         ]
 
-    @app.get("/rules/{rule_id}")
+    @app.get("/rules/{rule_id}", dependencies=auth_deps)
     def get_rule(rule_id: str) -> dict[str, Any]:
         for r in gov_constitution.rules:
             if r.id == rule_id:
                 return r.model_dump()
         raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
 
-    @app.post("/rules", status_code=201)
+    @app.post("/rules", status_code=201, dependencies=auth_deps)
     def create_rule(payload: dict[str, Any]) -> dict[str, Any]:
         from acgs_lite.constitution import Rule, Severity
 
@@ -260,7 +308,7 @@ def create_governance_app(
         _rebuild_engine()
         return rule.model_dump()
 
-    @app.put("/rules/{rule_id}")
+    @app.put("/rules/{rule_id}", dependencies=auth_deps)
     def update_rule(rule_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         from acgs_lite.constitution import Rule, Severity
 
@@ -293,7 +341,7 @@ def create_governance_app(
         _rebuild_engine()
         return updated.model_dump()
 
-    @app.delete("/rules/{rule_id}", status_code=204)
+    @app.delete("/rules/{rule_id}", status_code=204, dependencies=auth_deps)
     def delete_rule(rule_id: str) -> None:
         if not any(r.id == rule_id for r in gov_constitution.rules):
             raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found")
@@ -312,7 +360,7 @@ def create_governance_app(
 
     # --- Audit Trail ---
 
-    @app.get("/audit/entries")
+    @app.get("/audit/entries", dependencies=auth_deps)
     def list_audit_entries(
         limit: int = Query(default=100, ge=1, le=1000),
         offset: int = Query(default=0, ge=0),
@@ -323,20 +371,20 @@ def create_governance_app(
             for entry in _list_audit_entries(limit=limit, offset=offset, agent_id=agent_id)
         ]
 
-    @app.get("/audit/chain")
+    @app.get("/audit/chain", dependencies=auth_deps)
     def audit_chain_status() -> dict[str, Any]:
         return {
             "valid": _audit_chain_valid(),
             "entry_count": _audit_count(),
         }
 
-    @app.get("/audit/count")
+    @app.get("/audit/count", dependencies=auth_deps)
     def audit_count() -> dict[str, int]:
         return {"count": _audit_count()}
 
     # --- Constitutional Decision Provenance (CDP) ---
 
-    @app.get("/cdp/records")
+    @app.get("/cdp/records", dependencies=auth_deps)
     def list_cdp_records(
         tenant_id: str | None = None,
         limit: int = Query(default=50, ge=1, le=500),
@@ -351,14 +399,14 @@ def create_governance_app(
             "offset": offset,
         }
 
-    @app.get("/cdp/records/{cdp_id}")
+    @app.get("/cdp/records/{cdp_id}", dependencies=auth_deps)
     def get_cdp_record(cdp_id: str) -> dict[str, Any]:
         record = _cdp_backend.get(cdp_id)
         if record is None:
             raise HTTPException(status_code=404, detail=f"CDP record {cdp_id!r} not found")
         return record.to_dict()
 
-    @app.get("/cdp/chain")
+    @app.get("/cdp/chain", dependencies=auth_deps)
     def cdp_chain_status(tenant_id: str | None = None) -> dict[str, Any]:
         is_valid, broken_ids = _cdp_backend.verify_chain(tenant_id=tenant_id)
         return {
@@ -367,7 +415,7 @@ def create_governance_app(
             "broken_ids": broken_ids,
         }
 
-    @app.get("/cdp/records/{cdp_id}/certificate")
+    @app.get("/cdp/records/{cdp_id}/certificate", dependencies=auth_deps)
     def get_cdp_certificate(cdp_id: str, title: str = "AI Compliance Evidence Package") -> Any:
         """Return a PDF certificate for a CDP record.
 
@@ -399,7 +447,7 @@ def create_governance_app(
     def health_check() -> dict[str, str]:
         return {"status": "ok", "engine": "ready"}
 
-    @app.get("/stats")
+    @app.get("/stats", dependencies=auth_deps)
     def get_stats() -> dict[str, Any]:
         return {
             **engine.stats,
