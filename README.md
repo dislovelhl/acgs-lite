@@ -208,6 +208,53 @@ result = summarize("Q4 revenue was $4.2M")
 
 ---
 
+## 🔒 Safety Defaults
+
+`acgs-lite` is **fail-closed by default**. This is a design principle, not a configuration option.
+
+| Guarantee | Behavior |
+|-----------|----------|
+| **Engine exception** | Validation raises `ConstitutionalViolationError`; the action is blocked, not silently passed |
+| **Missing constitution** | Engine refuses to initialize; no degraded-mode passthrough |
+| **Rule match** | Action is blocked unless the rule explicitly sets `workflow_action: warn` |
+| **Audit write failure** | Logged at warning level; does not unblock the action |
+| **MACI misconfiguration** | Warning raised at startup; enforcement is advisory unless `enforce_maci=True` |
+
+To opt into fail-open (e.g., for testing), you must set it explicitly:
+
+```python
+engine = GovernanceEngine(constitution, strict=False)  # explicit; off by default
+```
+
+Enforcement actions progress from least to most restrictive:
+`warn` → `block` → `block_and_notify` → `require_human_review` → `escalate_to_senior` → `halt_and_alert`
+
+---
+
+## 🗺️ Component Stability
+
+Not all layers are equally hardened. Use this table to calibrate trust in each area:
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| `GovernanceEngine` — rule validation | ✅ **Stable** | Core hot path; Aho-Corasick matcher, fail-closed exceptions |
+| `Constitution` — YAML loading, rule parsing | ✅ **Stable** | Hash-pinned; schema-validated |
+| `Rule`, `Severity`, `ValidationResult` | ✅ **Stable** | Stable data model; additive changes only |
+| `MACIEnforcer` — role separation | ✅ **Stable** | Role checks are enforced; pass `enforce_maci=True` for hard failures |
+| `AuditLog` — SHA-256 chained trail | ✅ **Stable** | Thread-safe append-only; chain verification tested |
+| `GovernedAgent` — drop-in wrapper | ✅ **Stable** | Synchronous and async paths covered |
+| OpenAI / Anthropic / LangChain adapters | ✅ **Stable** | Thin validated wrappers; covers completions and streaming |
+| Constitution lifecycle API (HTTP) | 🔶 **Beta** | Draft/review/activate/rollback endpoints are functional; API may evolve |
+| SQLite bundle store, lifecycle persistence | 🔶 **Beta** | WAL-mode; covers single-node; multi-writer not yet hardened |
+| `acgs assess` compliance mapping | 🔶 **Beta** | 18-framework coverage; control mappings improve with each release |
+| MCP server integration | 🔶 **Beta** | Single-node; production use requires your own transport hardening |
+| Intervention / quarantine / halt workflow | 🔶 **Beta** | Full path functional; thread-safety hardened; API may evolve |
+| Z3 constraint verifier | 🧪 **Experimental** | Useful for high-risk scenarios; requires separate Z3 install |
+| Lean 4 / Leanstral proof certificates | 🧪 **Experimental** | Requires `mistralai` extra and external Lean kernel |
+| Newer framework adapters (Agno, A2A, LiteLLM, Mistral) | 🧪 **Experimental** | Community-contributed; test coverage varies |
+
+---
+
 ## 🌐 Integrations
 
 ### OpenAI

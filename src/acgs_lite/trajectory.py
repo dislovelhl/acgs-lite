@@ -5,6 +5,7 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -189,6 +190,7 @@ class TrajectoryMonitor:
     def __init__(self, rules: list[TrajectoryRule], store: TrajectoryStoreBackend) -> None:
         self._rules = list(rules)
         self._store = store
+        self._lock = threading.Lock()
 
     def check_trajectory(self, session: TrajectorySession) -> list[TrajectoryViolation]:
         self._store.put(session)
@@ -207,8 +209,9 @@ class TrajectoryMonitor:
         agent_id: str,
         decision: dict[str, Any],
     ) -> list[TrajectoryViolation]:
-        session = self._store.get(session_id)
-        if session is None:
-            session = TrajectorySession(session_id=session_id, agent_id=agent_id)
-        session.add(decision)
-        return self.check_trajectory(session)
+        with self._lock:
+            session = self._store.get(session_id)
+            if session is None:
+                session = TrajectorySession(session_id=session_id, agent_id=agent_id)
+            session.add(decision)
+            return self.check_trajectory(session)
