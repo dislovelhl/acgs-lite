@@ -78,6 +78,9 @@ class FrequencyThresholdRule:
                     left += 1
                 count = right - left + 1
                 if count > self.max_count:
+                    # `decision` is unpacked from `ordered[right]` (the chronologically
+                    # sorted list), not from the raw `decisions` input — so agent_id
+                    # correctly identifies the decision that pushed past the threshold.
                     return TrajectoryViolation(
                         rule_id="TRAJ-FREQ-001",
                         evidence=(

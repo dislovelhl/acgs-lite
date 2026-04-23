@@ -1179,7 +1179,19 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
     @contextmanager
     def non_strict(self):
-        """Context manager to temporarily disable strict mode."""
+        """Context manager to temporarily disable strict mode.
+
+        Restores the previous strict setting on exit, even if an exception is raised.
+        Use this instead of directly mutating ``engine.strict`` to avoid leaving the
+        engine in a non-strict state after errors.
+
+        Example::
+
+            with engine.non_strict():
+                # engine.strict is False here
+                result = engine.validate(untrusted_input)
+            # engine.strict is automatically restored here
+        """
         prev = self.strict
         self.strict = False
         try:
