@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **`PostgresBundleStore`** (optional `postgres` extra): multi-instance-safe backend for the constitution lifecycle store. Mirrors the `BundleStore` Protocol with a partial unique index on `(tenant_id) WHERE status='active'` enforcing one-active-per-tenant at the database level, and `SELECT ... FOR UPDATE` serializing CAS updates. Install with `pip install 'acgs-lite[postgres]'`. SQLite remains the default single-host backend.
+- **Rust wheel packaging** (`rust/pyo3/pyproject.toml` + `.github/workflows/wheels.yml`): the optional Rust accelerator now builds as a standalone `acgs-lite-rust` companion wheel via maturin. GitHub Actions produces abi3 wheels for manylinux (x86_64, aarch64), macOS (x86_64, arm64), and Windows (x64), plus an sdist, on `rust-v*` tag pushes. Users install with `pip install acgs-lite acgs-lite-rust` to opt into the hot-path speedup; `acgs-lite` itself remains pure-Python.
 - **`examples/agent_quickstart/`**: Self-verifying AI-agent quickstart. Run `python examples/agent_quickstart/run.py` to confirm `GovernedCallable`, MACI role gates, and tamper-evident audit all work in a single script that exits 0. Designed as a copy-paste install-verification prompt for AI coding agents (Codex, Claude Code, and similar tools).
 
 ## [2.9.0] - 2026-04-22
