@@ -24,23 +24,30 @@ pip install "acgs-lite[otel]"       # OpenTelemetry export
 Create `constitution.yaml`:
 
 ```yaml
-constitutional_hash: "608508a9bd224290"
+# constitutional_hash: "608508a9bd224290"  # pin this in production
 rules:
   - id: no-pii
-    pattern: "SSN|social security|passport number"
+    text: "Block PII leakage"
+    patterns:
+      - "\\bSSN\\b|\\bsocial security\\b|\\bpassport number\\b"
     severity: CRITICAL
-    description: Block PII exposure
 
   - id: no-destructive
-    pattern: "delete|drop table|rm -rf"
+    text: "Block destructive operations"
+    patterns:
+      - "\\bdelete\\b|\\bdrop\\s+table\\b|\\brm\\s+-[rRfF]\\b"
     severity: HIGH
-    description: Block destructive operations
 
   - id: require-approval
-    pattern: "transfer|payment|wire"
+    text: "Financial actions require human approval"
+    patterns:
+      - "\\bwire\\s+transfer\\b|\\b(send|initiate)\\s+payment\\b"
     severity: HIGH
-    description: Financial actions require human approval
 ```
+
+> **Schema notes:** Each rule requires `id`, `text`, and `patterns` (a list of regex strings).
+> The `constitutional_hash` is optional but recommended for production — pin it to
+> `"608508a9bd224290"` to detect any constitution drift at runtime.
 
 ## 3. Govern a Callable
 
@@ -70,10 +77,20 @@ except ConstitutionalViolationError as exc:
     print(f"Blocked: {exc}")
 ```
 
-## 5. Run the Example
+## 5. Run the Examples
 
-The repo includes a fuller walkthrough covering default constitutions, custom
-rules, MACI enforcement, audit stats, and the decorator API:
+For a self-verifying install check that covers `GovernedCallable`, MACI role gates,
+and tamper-evident audit in one script:
+
+```bash
+python examples/agent_quickstart/run.py
+```
+
+Expected: all assertions pass, exits 0. This is the recommended starting point for
+AI coding agents (Codex, Claude Code, etc.) verifying a fresh install.
+
+For a broader walkthrough covering default constitutions, custom rules, MACI
+enforcement, audit stats, and the decorator API:
 
 ```bash
 python examples/quickstart.py

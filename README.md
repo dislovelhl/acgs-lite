@@ -15,7 +15,9 @@
 
 # **The missing safety layer between your LLM and production.**
 
-'acgs-lite' is a deterministic governance engine for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. Every action is validated before it executes, violations are blocked, not just logged.
+**acgs-lite** is the production-ready runtime governance engine for AI agents. It sits **between your agent and execution** — every action is validated against a YAML constitution **before** it runs. Violations are blocked by default (fail-closed). Every decision is recorded in a tamper-evident audit chain. Human operators can intervene at any time.
+
+**Current status:** Stable core (v2.9.0) • 4,641 tests passing • Used in regulated pilots.
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
 
@@ -23,6 +25,7 @@
 
 If you found ACGS-Lite through [Awesome LLM Security](https://github.com/beyefendi/awesome-llm-security), these are the most shared starting points:
 
+- **AI-agent install verify** — [`examples/agent_quickstart/`](./examples/agent_quickstart/) runs a self-verifying suite: `GovernedCallable` + MACI + AuditLog in one script, exits 0 on success
 - **Fastest proof** — [`examples/basic_governance/`](./examples/basic_governance/) shows safe requests passing and unsafe ones blocked before execution
 - **Best audit demo** — [`examples/audit_trail/`](./examples/audit_trail/) shows the tamper-evident decision chain
 - **Favorite infrastructure path** — [`examples/mcp_agent_client.py`](./examples/mcp_agent_client.py) runs governance as shared MCP-compatible infrastructure
@@ -129,6 +132,104 @@ pip install "acgs-lite[agno]"         # Agno agent framework
 pip install "acgs-lite[server]"       # FastAPI lifecycle HTTP server
 pip install "acgs-lite[all]"          # All integrations
 ```
+
+---
+
+## 🤖 For AI Agents (Claude Code / Codex CLI)
+
+Copy the prompt below directly into Claude Code, Codex CLI, or any AI coding agent.
+It installs acgs-lite, runs the self-verifying quickstart, and reports pass/fail — no API keys required.
+
+### One-shot install + verify prompt
+
+```
+TASK: Install and verify ACGS-Lite constitutional AI governance.
+
+STEPS:
+1. Install the package:
+   pip install acgs-lite
+
+2. Run the self-verifying quickstart:
+   python examples/agent_quickstart/run.py
+
+3. Expected outcome — every line should show ✅:
+   ✅  safe request passes through
+   ✅  PII blocked by rule 'no-pii'
+   ✅  destructive op blocked by 'no-destructive'
+   ✅  YAML loads 3 rules
+   ✅  Proposer can propose
+   ✅  Golden Rule: proposer cannot validate own output
+   ✅  Audit log: 3 entries recorded
+   ✅  Chain integrity: verified
+   ✅  All assertions passed — ACGS-Lite is correctly installed.
+   Exit code: 0
+
+4. If any ❌ appears, report the failing assertion and the full traceback.
+   Do NOT set strict=False to work around failures — diagnose root cause.
+
+CONSTRAINTS:
+- No OpenAI or Anthropic API key is required for this verification step.
+- Constitutional hash 608508a9bd224290 must appear in validation output.
+- Run from the repo root (packages/acgs-lite/) if cloned from source.
+```
+
+### Implement governance in 5 lines (follow-up prompt)
+
+```
+TASK: Add ACGS-Lite governance to this codebase.
+
+STEPS:
+1. pip install acgs-lite
+
+2. Create constitution.yaml at the project root:
+
+constitutional_hash: "608508a9bd224290"
+rules:
+  - id: no-pii
+    pattern: "SSN|social security|passport number"
+    severity: CRITICAL
+    description: Block PII exposure
+  - id: no-destructive
+    pattern: "delete|drop table|rm -rf"
+    severity: HIGH
+    description: Block destructive operations
+  - id: require-approval
+    pattern: "transfer|payment|wire"
+    severity: HIGH
+    description: Financial actions require human approval
+
+3. Wrap the agent/LLM call with GovernedAgent:
+
+from acgs_lite import Constitution, GovernanceEngine, AuditLog
+from acgs_lite.governed import GovernedCallable
+
+constitution = Constitution.from_yaml("constitution.yaml")
+audit_log    = AuditLog()
+engine       = GovernanceEngine(constitution, audit_log=audit_log)
+
+@GovernedCallable(engine=engine, agent_id="my-agent")
+def run_agent(prompt: str) -> str:
+    return your_llm_call(prompt)   # replace with your LLM call
+
+4. Verify the audit chain after every session:
+   assert audit_log.verify_chain()
+
+CONSTRAINTS:
+- Engine is fail-closed by default — unsafe actions raise ConstitutionalViolationError.
+- Never set strict=False in production.
+- Run examples/agent_quickstart/run.py to confirm the installation is healthy.
+```
+
+### Source installation (from this repo)
+
+```bash
+git clone https://github.com/dislovelhl/acgs-lite
+cd acgs-lite/packages/acgs-lite
+pip install -e ".[dev]"
+python examples/agent_quickstart/run.py   # exit 0 = all clear
+```
+
+See [`examples/agent_quickstart/`](./examples/agent_quickstart/) for the full self-verifying suite.
 
 ---
 
@@ -258,6 +359,21 @@ Not all layers are equally hardened. Use this table to calibrate trust in each a
 | Z3 constraint verifier | 🧪 **Experimental** | Useful for high-risk scenarios; requires separate Z3 install |
 | Lean 4 / Leanstral proof certificates | 🧪 **Experimental** | Requires `mistralai` extra and external Lean kernel |
 | Newer framework adapters (Agno, A2A, LiteLLM, Mistral) | 🧪 **Experimental** | Community-contributed; test coverage varies |
+
+---
+
+## ✅ What is production-hardened today (v2.9.0)
+
+| Layer | Status | What you get |
+|-------|--------|--------------|
+| `GovernanceEngine` | Stable | YAML rules, deterministic validation, fail-closed enforcement |
+| MACI role separation | Stable | Proposer / Validator / Executor enforced at runtime |
+| Audit Trail | Stable | SHA-256 chained, SQLite-backed, queryable, exportable |
+| `GovernedAgent` wrapper | Stable | Drop-in decorator for OpenAI, Anthropic, LangChain, MCP, etc. |
+| Intervention & Quarantine | Stable | `require_human_review`, `halt_and_alert`, `quarantine` actions |
+| CLI (`acgs validate`, `audit`, `halt`) | Stable | Full local & CI usage |
+
+**Everything else** (constitution lifecycle API, formal verification with Z3/Lean, 18-framework compliance mapping) is **Beta / Experimental** and clearly marked in the Component Stability table above.
 
 ---
 

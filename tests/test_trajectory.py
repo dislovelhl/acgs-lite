@@ -145,6 +145,7 @@ def test_frequency_threshold_rule_handles_out_of_order_timestamps() -> None:
     assert violations[0].agent_id == "agent-1"
 
 
+
 def test_clean_session_produces_zero_violations() -> None:
     base = datetime(2026, 4, 7, tzinfo=timezone.utc)
     session = TrajectorySession(session_id="s3", agent_id="agent-1")

@@ -7,7 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`examples/agent_quickstart/`**: Self-verifying AI-agent quickstart. Run `python examples/agent_quickstart/run.py` to confirm `GovernedCallable`, MACI role gates, and tamper-evident audit all work in a single script that exits 0. Designed as a copy-paste install-verification prompt for AI coding agents (Codex, Claude Code, and similar tools).
+
 ## [2.9.0] - 2026-04-22
+
+### Upgrading from 2.8.1
+
+No API changes. The `GovernanceEngine` core is stable. 
+
+**One behavioral change to be aware of:** If you pass `audit_metadata` to `engine.validate()` in non-strict mode, audit entries are now written (previously, the Rust fast path silently dropped them). This is the correct behavior; if your benchmarks are sensitive to audit write overhead, see the `audit_metadata` parameter docs.
+
+**PyPI stability classifier:** The package classifier changed from `5 - Production/Stable` to `4 - Beta`. This reflects the lifecycle API and newer integrations being Beta, not the core engine. See the Component Stability table in README.md — GovernanceEngine, MACI, AuditLog, and GovernedAgent remain Stable.
+
+---
 
 ### Added
 

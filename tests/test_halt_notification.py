@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 import logging
+from unittest.mock import MagicMock, patch
 
 from acgs_lite.circuit_breaker import (
     GovernanceCircuitBreaker,
     HaltEvent,
     StructuredLogNotificationChannel,
+    WebhookNotificationChannel,
 )
 
 
@@ -69,3 +71,31 @@ def test_structured_log_notification_channel_emits_critical_log(caplog) -> None:
         and json.loads(record.getMessage())["system_id"] == "system-3"
         for record in caplog.records
     )
+
+
+def test_webhook_channel_rejects_non_http_scheme() -> None:
+    channel = WebhookNotificationChannel(url="file:///etc/passwd")
+    event = HaltEvent(
+        system_id="system-4",
+        reason="test",
+        timestamp="2026-04-07T12:00:00+00:00",
+        signal_path="/tmp/acgs-halt-system-4",
+    )
+    # Should swallow the ValueError and log a warning (not propagate)
+    channel.notify(event)  # must not raise
+
+
+def test_webhook_channel_posts_to_https_url() -> None:
+    channel = WebhookNotificationChannel(url="https://hooks.example.com/event")
+    event = HaltEvent(
+        system_id="system-5",
+        reason="test",
+        timestamp="2026-04-07T12:00:00+00:00",
+        signal_path="/tmp/acgs-halt-system-5",
+    )
+    mock_resp = MagicMock()
+    mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+    mock_resp.__exit__ = MagicMock(return_value=False)
+    with patch("urllib.request.urlopen", return_value=mock_resp) as mock_open:
+        channel.notify(event)
+    mock_open.assert_called_once()
