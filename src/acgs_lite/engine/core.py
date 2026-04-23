@@ -973,7 +973,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             )
             if _result is not None:
                 return self._post_dispatch_result(_result, action, strict=strict)
-        elif _rv is not None and context and strict:
+        elif _rv is not None and _fast_records is not None and context and strict:
             _ctx_pairs = [
                 (k, v)
                 for k, v in context.items()
