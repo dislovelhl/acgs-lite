@@ -5,7 +5,7 @@ edition = "2021"
 description = "SpacetimeDB governance module for ACGS constitutional enforcement"
 
 [dependencies]
-spacetimedb = "1"
+spacetimedb = "2"
 
 [lib]
 crate-type = ["cdylib"]
