@@ -522,45 +522,6 @@ def create_mcp_server(
             try:
                 with engine.non_strict():
                     result = engine.validate(action, agent_id="explain-tool")
-
-                violations = result.violations
-                if rule_id_filter:
-                    violations = [v for v in violations if v.rule_id == rule_id_filter]
-
-                explanation: dict[str, Any] = {
-                    "action": action,
-                    "compliant": result.valid,
-                    "constitutional_hash": CONSTITUTIONAL_HASH,
-                    "violations": [
-                        {
-                            "rule_id": v.rule_id,
-                            "severity": v.severity.value,
-                            "rule_text": v.rule_text,
-                            "description": getattr(v, "description", v.rule_text),
-                        }
-                        for v in violations
-                    ],
-                    "summary": (
-                        "Action is compliant — no violations found."
-                        if result.valid
-                        else (
-                            f"Action violates {len(violations)} rule(s): "
-                            + ", ".join(v.rule_id for v in violations)
-                        )
-                    ),
-                }
-                logger.info(
-                    "explain_violation",
-                    action_length=len(action),
-                    violations_count=len(violations),
-                    constitutional_hash=CONSTITUTIONAL_HASH,
-                )
-                return [
-                    types.TextContent(
-                        type="text",
-                        text=json.dumps(explanation, indent=2),
-                    )
-                ]
             except Exception as exc:
                 logger.warning(
                     "explain_violation_error",
@@ -573,6 +534,45 @@ def create_mcp_server(
                         text=json.dumps({"error": type(exc).__name__, "action": action}),
                     )
                 ]
+
+            violations = result.violations
+            if rule_id_filter:
+                violations = [v for v in violations if v.rule_id == rule_id_filter]
+
+            explanation: dict[str, Any] = {
+                "action": action,
+                "compliant": result.valid,
+                "constitutional_hash": CONSTITUTIONAL_HASH,
+                "violations": [
+                    {
+                        "rule_id": v.rule_id,
+                        "severity": v.severity.value,
+                        "rule_text": v.rule_text,
+                        "description": getattr(v, "description", v.rule_text),
+                    }
+                    for v in violations
+                ],
+                "summary": (
+                    "Action is compliant — no violations found."
+                    if result.valid
+                    else (
+                        f"Action violates {len(violations)} rule(s): "
+                        + ", ".join(v.rule_id for v in violations)
+                    )
+                ),
+            }
+            logger.info(
+                "explain_violation",
+                action_length=len(action),
+                violations_count=len(violations),
+                constitutional_hash=CONSTITUTIONAL_HASH,
+            )
+            return [
+                types.TextContent(
+                    type="text",
+                    text=json.dumps(explanation, indent=2),
+                )
+            ]
 
         elif name == "check_capability_tier":
             action_text = arguments.get("action_text", "")

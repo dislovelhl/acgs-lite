@@ -1196,7 +1196,17 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
     @contextmanager
     def non_strict(self):
-        """Context manager to temporarily disable strict mode."""
+        """Context manager to temporarily disable strict mode.
+
+        .. warning:: **Not safe for concurrent use on a shared engine instance.**
+            This mutates ``self.strict`` on the shared object. If two concurrent
+            callers both enter ``non_strict()`` on the same engine, one caller
+            can restore ``strict=True`` while the other is still inside the block,
+            causing it to validate with strict mode active. For concurrent
+            deployments (e.g., MCP server + Telegram webhook sharing one engine),
+            use ``validate(strict=False)`` once that per-call parameter lands
+            (tracked as T-04), or give each handler its own engine instance.
+        """
         prev = self.strict
         self.strict = False
         try:

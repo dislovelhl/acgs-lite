@@ -187,8 +187,9 @@ class TestCASVersion:
         from acgs_lite.constitution.postgres_bundle_store import PostgresBundleStore
 
         pool = _FakePool()
-        # First .execute() is SELECT FOR UPDATE; queue one row with version=5.
-        pool.conn.fetch_queue.append([(5,)])
+        # Advisory lock execute consumes one slot; SELECT FOR UPDATE gets version=5.
+        pool.conn.fetch_queue.append([])       # pg_advisory_xact_lock (no rows)
+        pool.conn.fetch_queue.append([(5,)])   # SELECT version FOR UPDATE
         store = PostgresBundleStore(pool=pool, schema_setup=False)
         with pytest.raises(CASVersionConflict):
             store.cas_tenant_version("t1", expected=0)
@@ -199,7 +200,8 @@ class TestCASVersion:
         from acgs_lite.constitution.postgres_bundle_store import PostgresBundleStore
 
         pool = _FakePool()
-        pool.conn.fetch_queue.append([(2,)])
+        pool.conn.fetch_queue.append([])       # pg_advisory_xact_lock (no rows)
+        pool.conn.fetch_queue.append([(2,)])   # SELECT version FOR UPDATE
         store = PostgresBundleStore(pool=pool, schema_setup=False)
         store.cas_tenant_version("t1", expected=2)
         inserts = [sql for sql, _ in pool.conn.executed if "INSERT INTO tenant_versions" in sql]

@@ -100,6 +100,28 @@ jobs:
         with:
           category: "/language:python"
 
+  python-fallback:
+    name: Python fallback (no Rust companion)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install without Rust companion
+        run: pip install -e ".[dev,mcp]" httpx
+      - name: Confirm acgs-lite-rust is not present
+        run: python -c "import importlib.util; assert importlib.util.find_spec('acgs_lite_rust') is None, 'Rust companion unexpectedly installed'"
+      - name: Test Python fallback path
+        env:
+          OPENAI_API_KEY: test-key-for-unit-tests
+          ANTHROPIC_API_KEY: test-key-for-unit-tests
+        run: |
+          python -m pytest tests/ \
+            --import-mode=importlib \
+            -m "not slow and not benchmark and not e2e" \
+            -q --tb=short
+
   package:
     runs-on: ubuntu-latest
     steps:

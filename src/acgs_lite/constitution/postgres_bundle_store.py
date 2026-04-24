@@ -153,7 +153,8 @@ class PostgresBundleStore:
                     )
                     if cur.fetchone() is None:
                         cur.execute(
-                            "INSERT INTO schema_migrations (version, applied_at) VALUES (%s, %s)",
+                            "INSERT INTO schema_migrations (version, applied_at) "
+                            "VALUES (%s, %s) ON CONFLICT DO NOTHING",
                             (_SCHEMA_VERSION, _utcnow()),
                         )
                 conn.commit()
@@ -231,21 +232,32 @@ class PostgresBundleStore:
         order_clause = "ORDER BY (payload->>'version')::int DESC"
         limit_val: int | None = int(limit) if limit is not None else None
         offset_val = int(offset) if offset else 0
+        # LIMIT NULL is a PostgreSQL syntax error; use LIMIT ALL when unbounded.
+        limit_clause = "LIMIT %s" if limit_val is not None else "LIMIT ALL"
         try:
             with self._pool.connection() as conn, conn.cursor() as cur:
                 if status is not None:
                     sql = (
                         f"SELECT payload FROM bundles "
                         f"WHERE tenant_id = %s AND status = %s {order_clause} "
-                        f"LIMIT %s OFFSET %s"
+                        f"{limit_clause} OFFSET %s"
                     )
-                    cur.execute(sql, (tenant_id, status.value, limit_val, offset_val))
+                    params: tuple[Any, ...] = (
+                        (tenant_id, status.value, limit_val, offset_val)
+                        if limit_val is not None
+                        else (tenant_id, status.value, offset_val)
+                    )
                 else:
                     sql = (
                         f"SELECT payload FROM bundles "
-                        f"WHERE tenant_id = %s {order_clause} LIMIT %s OFFSET %s"
+                        f"WHERE tenant_id = %s {order_clause} {limit_clause} OFFSET %s"
                     )
-                    cur.execute(sql, (tenant_id, limit_val, offset_val))
+                    params = (
+                        (tenant_id, limit_val, offset_val)
+                        if limit_val is not None
+                        else (tenant_id, offset_val)
+                    )
+                cur.execute(sql, params)
                 rows = cur.fetchall()
         except self._psycopg.Error as exc:
             raise self._wrap(exc) from exc
@@ -367,6 +379,18 @@ class PostgresBundleStore:
         try:
             with self._pool.connection() as conn:
                 with conn.cursor() as cur:
+                    # Advisory lock serializes concurrent callers per tenant,
+                    # covering the case where the row does not yet exist
+                    # (SELECT FOR UPDATE cannot lock absent rows).
+                    # hashtext() is 32-bit so two distinct tenant IDs with the
+                    # same hash would serialize unnecessarily — correctness is
+                    # preserved (false-positive serialization only), but throughput
+                    # degrades. Collision probability is negligible at typical
+                    # tenant counts.
+                    cur.execute(
+                        "SELECT pg_advisory_xact_lock(hashtext(%s)::bigint)",
+                        (tenant_id,),
+                    )
                     cur.execute(
                         "SELECT version FROM tenant_versions WHERE tenant_id = %s FOR UPDATE",
                         (tenant_id,),
