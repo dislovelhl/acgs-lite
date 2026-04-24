@@ -390,14 +390,13 @@ def create_mcp_server(
                 checkpoint_kind=checkpoint_kind,
             )
 
-            # Use non-strict for MCP (return result, don't raise)
-            with engine.non_strict():
-                result = engine.validate(
-                    action,
-                    agent_id=agent_id,
-                    context=engine_context or None,
-                    audit_metadata=audit_metadata or None,
-                )
+            result = engine.validate(
+                action,
+                agent_id=agent_id,
+                context=engine_context or None,
+                audit_metadata=audit_metadata or None,
+                strict=False,
+            )
 
             response = result.to_dict()
             response["retrieved_rules"] = [
@@ -485,8 +484,7 @@ def create_mcp_server(
 
         elif name == "check_compliance":
             text = arguments.get("text", "")
-            with engine.non_strict():
-                result = engine.validate(text, agent_id="compliance-check")
+            result = engine.validate(text, agent_id="compliance-check", strict=False)
 
             data = {
                 "compliant": result.valid,
@@ -520,47 +518,7 @@ def create_mcp_server(
             rule_id_filter: str | None = arguments.get("rule_id")
 
             try:
-                with engine.non_strict():
-                    result = engine.validate(action, agent_id="explain-tool")
-
-                violations = result.violations
-                if rule_id_filter:
-                    violations = [v for v in violations if v.rule_id == rule_id_filter]
-
-                explanation: dict[str, Any] = {
-                    "action": action,
-                    "compliant": result.valid,
-                    "constitutional_hash": CONSTITUTIONAL_HASH,
-                    "violations": [
-                        {
-                            "rule_id": v.rule_id,
-                            "severity": v.severity.value,
-                            "rule_text": v.rule_text,
-                            "description": getattr(v, "description", v.rule_text),
-                        }
-                        for v in violations
-                    ],
-                    "summary": (
-                        "Action is compliant — no violations found."
-                        if result.valid
-                        else (
-                            f"Action violates {len(violations)} rule(s): "
-                            + ", ".join(v.rule_id for v in violations)
-                        )
-                    ),
-                }
-                logger.info(
-                    "explain_violation",
-                    action_length=len(action),
-                    violations_count=len(violations),
-                    constitutional_hash=CONSTITUTIONAL_HASH,
-                )
-                return [
-                    types.TextContent(
-                        type="text",
-                        text=json.dumps(explanation, indent=2),
-                    )
-                ]
+                result = engine.validate(action, agent_id="explain-tool", strict=False)
             except Exception as exc:
                 logger.warning(
                     "explain_violation_error",
@@ -573,6 +531,45 @@ def create_mcp_server(
                         text=json.dumps({"error": type(exc).__name__, "action": action}),
                     )
                 ]
+
+            violations = result.violations
+            if rule_id_filter:
+                violations = [v for v in violations if v.rule_id == rule_id_filter]
+
+            explanation: dict[str, Any] = {
+                "action": action,
+                "compliant": result.valid,
+                "constitutional_hash": CONSTITUTIONAL_HASH,
+                "violations": [
+                    {
+                        "rule_id": v.rule_id,
+                        "severity": v.severity.value,
+                        "rule_text": v.rule_text,
+                        "description": getattr(v, "description", v.rule_text),
+                    }
+                    for v in violations
+                ],
+                "summary": (
+                    "Action is compliant — no violations found."
+                    if result.valid
+                    else (
+                        f"Action violates {len(violations)} rule(s): "
+                        + ", ".join(v.rule_id for v in violations)
+                    )
+                ),
+            }
+            logger.info(
+                "explain_violation",
+                action_length=len(action),
+                violations_count=len(violations),
+                constitutional_hash=CONSTITUTIONAL_HASH,
+            )
+            return [
+                types.TextContent(
+                    type="text",
+                    text=json.dumps(explanation, indent=2),
+                )
+            ]
 
         elif name == "check_capability_tier":
             action_text = arguments.get("action_text", "")

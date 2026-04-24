@@ -153,7 +153,6 @@ def test_project_skips_oversized_artifact_metadata(tmp_path) -> None:
     assert any("exceeds limit" in warning for warning in project.source.warnings)
 
 
-
 def test_parse_015_project_skips_unrecognized_markdown(tmp_path) -> None:
     for source in fixtures_dir().glob("*.md"):
         (tmp_path / source.name).write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
@@ -181,4 +180,3 @@ def test_parse_017_requirements_mixed_table_and_heading_extracts_both(tmp_path) 
     assert "COMP-TBL-001" in ids, "table requirement must be extracted"
     assert "SEC-HDG-001" in ids, "heading requirement silently dropped (regression)"
     assert len(rules) == 2
-

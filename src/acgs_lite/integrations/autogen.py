@@ -145,10 +145,9 @@ class GovernedModelClient:
         # Validate output (non-blocking)
         resp_text = _extract_result_text(result)
         if resp_text:
-            old_strict = self.engine.strict
-            self.engine.strict = False
-            val_result = self.engine.validate(resp_text, agent_id=f"{self.agent_id}:output")
-            self.engine.strict = old_strict
+            val_result = self.engine.validate(
+                resp_text, agent_id=f"{self.agent_id}:output", strict=False
+            )
             if not val_result.valid:
                 logger.warning(
                     "AG2 response governance violations: %s",

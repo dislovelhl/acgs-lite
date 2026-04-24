@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
@@ -372,7 +372,7 @@ _OPENAPI_RECORD_OUTCOME_EXAMPLES = cast(Any, RECORD_OUTCOME_EXAMPLES)
 
 
 def _utcnow() -> datetime:
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 def _map_actor_role(role: ActorRole | str) -> MACIRole:

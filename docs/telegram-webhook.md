@@ -18,6 +18,7 @@ from acgs_lite.server import create_governance_app
 constitution = Constitution.from_template("general")
 
 app = create_governance_app(
+    api_key="dev-api-key",           # Required in v2.10.0+ (require_auth defaults to True)
     constitution=constitution,
     include_telegram=True,
     telegram_webhook_path_secret="replace-with-random-path-secret",
@@ -45,6 +46,7 @@ Then wire them into your app:
 import os
 
 app = create_governance_app(
+    api_key=os.environ["ACGS_API_KEY"],
     constitution=Constitution.from_template("general"),
     include_telegram=True,
     telegram_webhook_path_secret=os.environ["ACGS_TELEGRAM_WEBHOOK_PATH_SECRET"],

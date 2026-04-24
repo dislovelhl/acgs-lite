@@ -15,7 +15,7 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from acgs_lite.compliance.base import (
@@ -257,5 +257,5 @@ class GDPRFramework:
             gaps=gaps,
             acgs_lite_coverage=round(acgs_covered / total, 4) if total else 0.0,
             recommendations=tuple(recs),
-            assessed_at=datetime.now(UTC).isoformat(),
+            assessed_at=datetime.now(timezone.utc).isoformat(),
         )

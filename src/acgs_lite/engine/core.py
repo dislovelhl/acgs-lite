@@ -77,6 +77,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         strict: bool = True,
         disable_gc: bool = False,
         audit_mode: Literal["fast", "full"] | None = None,
+        warmup: bool = True,
+        freeze_gc: bool = True,
     ) -> None:
         self.constitution = constitution
         effective_audit_mode = audit_mode or ("full" if audit_log is not None else "fast")
@@ -301,7 +303,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 _h[9],
                 self._rust_validator,
             )
-        if self._rust_validator is not None:
+        if warmup and self._rust_validator is not None:
             _real_hot = self._hot
             _real_audit = self.audit_log
             try:
@@ -400,7 +402,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         import gc as _gc  # noqa: PLC0415
 
         _gc.collect()
-        _gc.freeze()
+        if freeze_gc:
+            _gc.freeze()
         if disable_gc:
             _gc.disable()
 
@@ -571,6 +574,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         self,
         result: ValidationResult,
         action_text: str = "",
+        *,
+        strict: bool | None = None,
     ) -> ValidationResult:
         """Re-categorise violations by workflow_action on a result returned by a fast path.
 
@@ -583,7 +588,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         enforcement = self._resolve_enforcement(result.violations, action_text=action_text[:200])
         self._raise_for_enforcement(
             enforcement,
-            strict=self.strict,
+            strict=self.strict if strict is None else strict,
             action_text=action_text,
         )
         result.violations = enforcement.blocking_violations
@@ -624,6 +629,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         agent_id: str,
         context: dict[str, Any] | None,
         audit_metadata: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> ValidationResult:
         """Validate using per-call rule activation semantics.
 
@@ -739,7 +745,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
         self._raise_for_enforcement(
             enforcement,
-            strict=self.strict,
+            strict=self.strict if strict is None else strict,
             action_text=action_200,
         )
         return result
@@ -887,16 +893,27 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         agent_id: str = "anonymous",
         context: dict[str, Any] | None = None,
         audit_metadata: dict[str, Any] | None = None,
+        strict: bool | None = None,
     ) -> ValidationResult:
-        """Validate an action against the constitution."""
+        """Validate an action against the constitution.
+
+        Args:
+            strict: Per-call override for strict mode. When ``None`` (default),
+                the engine's instance-level ``self.strict`` is used. Passing an
+                explicit ``True``/``False`` overrides strictness for this call
+                only, without mutating ``self.strict``. Prefer this over
+                ``engine.strict = …`` or ``with engine.non_strict()`` when the
+                engine is shared across threads or integrations.
+        """
         if self._requires_runtime_rule_filtering:
             return self._validate_with_runtime_rule_filtering(
                 action,
                 agent_id=agent_id,
                 context=context,
                 audit_metadata=audit_metadata,
+                strict=strict,
             )
-        strict = self.strict
+        strict = self.strict if strict is None else strict
         (
             _ac_iter,
             _anchor_dispatch,
@@ -910,7 +927,11 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             _is_noop,
             _rv,
         ) = self._hot
-        if _rv is not None and _fast_records is not None and strict:
+        if _rv is not None and _fast_records is not None and strict and not audit_metadata:
+            # audit_metadata guard: same as strict=False path — when audit_metadata is
+            # present, fall through to the full Python path which calls
+            # _record_validation_audit with the metadata.  Omitting this guard would
+            # silently drop audit_metadata in fast (aggregate-only) mode.
             _action_lower = action if action.islower() else action.lower()
             _decision, _data = _rv.validate_hot(_action_lower)
             _has_gov_ctx = context is not None and (
@@ -926,7 +947,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _fast_records,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
             else:
                 _result = self._validate_rust_no_context(
                     action,
@@ -937,12 +958,12 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     strict=True,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
         elif (
             _rv is not None
             and _fast_records is not None
             and context is None
-            and not audit_metadata
+            and not audit_metadata  # True for both None and {} — empty dict treated as "no metadata"
             and not self.custom_validators
         ):
             # strict=False Rust fast path: return violations instead of raising
@@ -958,8 +979,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 strict=False,
             )
             if _result is not None:
-                return self._post_dispatch_result(_result, action)
-        elif _rv is not None and context and strict:
+                return self._post_dispatch_result(_result, action, strict=strict)
+        elif _rv is not None and _fast_records is not None and context and strict:
             _ctx_pairs = [
                 (k, v)
                 for k, v in context.items()
@@ -976,7 +997,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _is_noop,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
             else:
                 _result = self._validate_rust_full(
                     action,
@@ -986,7 +1007,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                     _fast_records,
                 )
                 if _result is not None:
-                    return self._post_dispatch_result(_result, action)
+                    return self._post_dispatch_result(_result, action, strict=strict)
         start = time.perf_counter()
         violations = None
         action_trimmed = action[:500]
@@ -1179,7 +1200,17 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
 
     @contextmanager
     def non_strict(self):
-        """Context manager to temporarily disable strict mode."""
+        """Context manager to temporarily disable strict mode.
+
+        .. warning:: **Not safe for concurrent use on a shared engine instance.**
+            This mutates ``self.strict`` on the shared object. If two concurrent
+            callers both enter ``non_strict()`` on the same engine, one caller
+            can restore ``strict=True`` while the other is still inside the block,
+            causing it to validate with strict mode active. For concurrent
+            deployments (e.g., MCP server + Telegram webhook sharing one engine),
+            prefer ``validate(strict=False)`` (available since v2.10.0) or give
+            each handler its own engine instance.
+        """
         prev = self.strict
         self.strict = False
         try:

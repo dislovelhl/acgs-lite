@@ -51,19 +51,33 @@ def test_gen_004c_dedupe_handles_non_numeric_suffixes() -> None:
 
 
 def test_gen_005_prin_rules_have_principles_category(manifest) -> None:
-    assert all(rule["category"] == "principles" for rule in manifest.rules if rule["id"].startswith("PRIN-"))
+    assert all(
+        rule["category"] == "principles"
+        for rule in manifest.rules
+        if rule["id"].startswith("PRIN-")
+    )
 
 
 def test_gen_006_risk_rules_have_risk_category(manifest) -> None:
-    assert all(rule["category"] == "risk" for rule in manifest.rules if rule["id"].startswith("RISK-"))
+    assert all(
+        rule["category"] == "risk" for rule in manifest.rules if rule["id"].startswith("RISK-")
+    )
 
 
 def test_gen_007_data_rules_have_data_protection_category(manifest) -> None:
-    assert all(rule["category"] == "data-protection" for rule in manifest.rules if rule["id"].startswith("DATA-"))
+    assert all(
+        rule["category"] == "data-protection"
+        for rule in manifest.rules
+        if rule["id"].startswith("DATA-")
+    )
 
 
 def test_gen_008_comp_rules_have_compliance_category(manifest) -> None:
-    assert all(rule["category"] == "compliance" for rule in manifest.rules if rule["id"].startswith("COMP-"))
+    assert all(
+        rule["category"] == "compliance"
+        for rule in manifest.rules
+        if rule["id"].startswith("COMP-")
+    )
 
 
 def test_gen_009_rules_have_non_empty_text(manifest) -> None:
@@ -113,9 +127,10 @@ def test_gen_015_constitutional_hash_changes_when_input_changes(tmp_path) -> Non
         ),
         encoding="utf-8",
     )
-    assert build_constitution(parse_project(tmp_path)).constitutional_hash != build_constitution(
-        parse_project(fixtures_dir())
-    ).constitutional_hash
+    assert (
+        build_constitution(parse_project(tmp_path)).constitutional_hash
+        != build_constitution(parse_project(fixtures_dir())).constitutional_hash
+    )
 
 
 def test_gen_021_constitutional_hash_matches_runtime_hash(manifest) -> None:

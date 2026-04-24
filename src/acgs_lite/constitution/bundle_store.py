@@ -6,10 +6,22 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 from collections import OrderedDict
+from datetime import datetime, timezone
 from typing import Protocol, runtime_checkable
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
+
+
+def _utcnow_dt() -> datetime:
+    """Return the current UTC datetime with tzinfo set.
+
+    Canonical source shared by both SQLite and Postgres bundle stores so
+    all timestamp values originate from the same code path.  Each store
+    converts to the type its driver expects (``str`` for SQLite TEXT
+    columns, ``datetime`` for psycopg3 TIMESTAMPTZ columns).
+    """
+    return datetime.now(timezone.utc)
 
 
 class CASVersionConflict(Exception):

@@ -14,6 +14,7 @@ Usage::
 
 from __future__ import annotations
 
+import importlib.util
 import logging
 import os
 import re
@@ -21,17 +22,9 @@ from typing import Any, ClassVar, Literal, cast
 
 _log = logging.getLogger(__name__)
 
-try:
-    from transformers import pipeline
-
-    TRANSFORMERS_AVAILABLE = True
-except Exception as exc:
-    _log.debug(
-        "transformers pipeline import failed; falling back to rule-based scoring: %s",
-        exc,
-        exc_info=True,
-    )
-    TRANSFORMERS_AVAILABLE = False
+# Probe without loading: avoids importing torch/sklearn on every `import acgs_lite`.
+# The actual `from transformers import pipeline` is deferred to TransformerScorer.classifier.
+TRANSFORMERS_AVAILABLE: bool = importlib.util.find_spec("transformers") is not None
 
 try:
     from acgs_lite_rust import ImpactScorer as _RustImpactScorer
@@ -140,8 +133,15 @@ class TransformerScorer:
     @property
     def classifier(self) -> Any:
         if self._classifier is None:
+            try:
+                from transformers import pipeline as _pipeline  # lazy: first use only
+            except Exception as exc:
+                raise ImportError(
+                    "transformers and torch are required for TransformerScorer. "
+                    "Install with: pip install transformers torch"
+                ) from exc
             task: Literal["sentiment-analysis"] = "sentiment-analysis"
-            classifier_factory = cast(Any, pipeline)
+            classifier_factory = cast(Any, _pipeline)
             pipeline_kwargs: dict[str, Any] = {"device": -1}
             if self.model_name is not None:
                 pipeline_kwargs["model"] = self.model_name

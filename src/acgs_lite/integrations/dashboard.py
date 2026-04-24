@@ -223,10 +223,8 @@ class GovernanceDashboard:
         try:
             result = self._engine.validate(text, agent_id=agent_id)
         except ConstitutionalViolationError:
-            # In strict mode the engine raises on blocking violations.
-            # Re-validate in non-strict mode to capture the full result.
-            with self._engine.non_strict():
-                result = self._engine.validate(text, agent_id=agent_id)
+            # In strict mode the engine raises; re-validate non-strictly to capture the full result.
+            result = self._engine.validate(text, agent_id=agent_id, strict=False)
         if result.violations:
             self._timeline.record_from_result(result)
         return result

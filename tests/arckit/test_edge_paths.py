@@ -91,12 +91,16 @@ def test_exporter_reads_jsonl_audit_summary(tmp_path) -> None:
 
 def test_parser_warning_paths_and_heading_requirements(tmp_path) -> None:
     principles = tmp_path / "ARC-001-PRIN-v1.0.md"
-    principles.write_text("| Field | Value |\n|---|---|\n| Document ID | ARC-001-PRIN-v1.0 |\n", encoding="utf-8")
+    principles.write_text(
+        "| Field | Value |\n|---|---|\n| Document ID | ARC-001-PRIN-v1.0 |\n", encoding="utf-8"
+    )
     with pytest.warns(RuntimeWarning):
         assert parse_principles(principles) == []
 
     risks = tmp_path / "ARC-001-RISK-v1.0.md"
-    risks.write_text("| Field | Value |\n|---|---|\n| Document ID | ARC-001-RISK-v1.0 |\n", encoding="utf-8")
+    risks.write_text(
+        "| Field | Value |\n|---|---|\n| Document ID | ARC-001-RISK-v1.0 |\n", encoding="utf-8"
+    )
     with pytest.warns(RuntimeWarning):
         assert parse_risk_register(risks) == []
 
@@ -124,9 +128,7 @@ def test_parser_warning_paths_and_heading_requirements(tmp_path) -> None:
 def test_requirement_critical_verbs_map_to_critical(tmp_path, phrase: str) -> None:
     requirements = tmp_path / "ARC-001-REQ-v1.0.md"
     requirements.write_text(
-        "# Requirements\n\n"
-        "#### SEC-9: Secret handling\n\n"
-        f"**Requirement**: The system {phrase}.\n",
+        f"# Requirements\n\n#### SEC-9: Secret handling\n\n**Requirement**: The system {phrase}.\n",
         encoding="utf-8",
     )
 

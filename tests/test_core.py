@@ -557,9 +557,7 @@ class TestAuditLog:
         def ok_persist(_log):
             committed.append(True)
 
-        entries = [
-            AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)
-        ]
+        entries = [AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)]
         hashes = log.record_atomic_many(entries, persist=ok_persist)
 
         assert committed == [True]
@@ -576,9 +574,7 @@ class TestAuditLog:
         def failing_persist(_log):
             raise OSError("disk full")
 
-        batch = [
-            AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)
-        ]
+        batch = [AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)]
         with pytest.raises(OSError):
             log.record_atomic_many(batch, persist=failing_persist)
 
@@ -596,9 +592,7 @@ class TestAuditLog:
             if fail_count[0] == 1:
                 raise OSError("transient")
 
-        batch = [
-            AuditEntry(id=f"retry-{i}", type="test", valid=True) for i in range(2)
-        ]
+        batch = [AuditEntry(id=f"retry-{i}", type="test", valid=True) for i in range(2)]
 
         with pytest.raises(OSError):
             log.record_atomic_many(batch, persist=flaky_persist)
@@ -626,9 +620,7 @@ class TestAuditLog:
         def failing_persist(_log):
             raise OSError("persist boom")
 
-        batch = [
-            AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)
-        ]
+        batch = [AuditEntry(id=f"batch-{i}", type="test", valid=True) for i in range(3)]
         with pytest.raises(OSError):
             log.record_atomic_many(batch, persist=failing_persist)
 

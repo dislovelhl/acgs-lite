@@ -20,7 +20,7 @@ Usage::
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -55,7 +55,7 @@ def generate_markdown_report(report_data: dict[str, Any]) -> str:
         Markdown string.
     """
     lines: list[str] = []
-    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     lines.append("# ACGS Compliance Assessment Report")
     lines.append("")
@@ -254,7 +254,7 @@ def generate_pdf_report(
         )
         raise ImportError(msg) from None
 
-    now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     overall = report_data.get("overall_score", 0.0)
     coverage = report_data.get("acgs_lite_total_coverage", 0.0)
     frameworks = report_data.get("frameworks_assessed", [])

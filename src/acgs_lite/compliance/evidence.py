@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
@@ -800,7 +800,7 @@ class ComplianceEvidenceEngine:
             all_items.extend(collector.collect(system_description))
         return EvidenceBundle(
             system_id=system_id,
-            collected_at=datetime.now(UTC).isoformat(),
+            collected_at=datetime.now(timezone.utc).isoformat(),
             items=tuple(all_items),
         )
 

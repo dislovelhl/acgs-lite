@@ -340,7 +340,9 @@ class TestValidateAction:
         library = GovernanceExperienceLibrary()
         server = create_mcp_server(default_constitution, experience_library=library)
 
-        result = await _call_tool(server, "validate_action", {"action": "draft weekly status update"})
+        result = await _call_tool(
+            server, "validate_action", {"action": "draft weekly status update"}
+        )
 
         assert result["valid"] is True
         assert len(library.precedents) == 1
@@ -449,14 +451,17 @@ class TestValidateAction:
         assert runtime_governance["session_id"] == "session-123"
         assert runtime_governance["checkpoint_kind"] == "tool_invocation"
         assert runtime_governance["tool_risk"]["tool_name"] == "shell"
-        assert runtime_governance["tool_risk"]["risk_level"] in {"critical", "high", "medium", "low"}
+        assert runtime_governance["tool_risk"]["risk_level"] in {
+            "critical",
+            "high",
+            "medium",
+            "low",
+        }
         assert [hit["rule_id"] for hit in runtime_governance["retrieved_rules"]] == [
             "PRIV-001",
             "SEC-001",
         ]
-        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
-            "P0"
-        ]
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == ["P0"]
         assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
         assert runtime_governance["trajectory_violations"] == []
 
@@ -981,7 +986,7 @@ class TestStrictModeRestoration:
     async def test_validate_action_restores_strict_mode_on_exception(
         self, custom_constitution: Constitution
     ) -> None:
-        """engine.strict must be True even when validate() raises mid-call."""
+        """engine.strict must never be mutated — validate uses per-call strict=False."""
         import json
 
         from acgs_lite.engine import GovernanceEngine as _RealEngine
@@ -1000,10 +1005,13 @@ class TestStrictModeRestoration:
         engine = captured[0]
         assert engine.strict is True
 
-        strict_at_call: list[bool] = []
+        # New contract: validate(strict=False) is used — engine.strict stays True throughout.
+        strict_during_call: list[bool] = []
+        kwarg_strict: list[bool | None] = []
 
         def _boom(*args: object, **kwargs: object) -> None:
-            strict_at_call.append(engine.strict)  # capture strict INSIDE non_strict()
+            strict_during_call.append(engine.strict)
+            kwarg_strict.append(kwargs.get("strict"))
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
@@ -1012,15 +1020,16 @@ class TestStrictModeRestoration:
             with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "validate_action", {"action": "x"})
 
-        assert strict_at_call, "validate must have been called — non_strict() was never entered"
-        assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
-        assert engine.strict is True, "strict must be restored after exception"
+        assert strict_during_call, "validate must have been called"
+        assert strict_during_call[0] is True, "engine.strict must never be mutated to False"
+        assert kwarg_strict[0] is False, "validate must be called with strict=False kwarg"
+        assert engine.strict is True, "engine.strict must remain True after exception"
 
     @pytest.mark.asyncio
     async def test_check_compliance_restores_strict_mode_on_exception(
         self, custom_constitution: Constitution
     ) -> None:
-        """engine.strict must be True after check_compliance raises."""
+        """engine.strict must never be mutated — validate uses per-call strict=False."""
         import json
 
         from acgs_lite.engine import GovernanceEngine as _RealEngine
@@ -1038,10 +1047,12 @@ class TestStrictModeRestoration:
         engine = captured[0]
         assert engine.strict is True
 
-        strict_at_call: list[bool] = []
+        strict_during_call: list[bool] = []
+        kwarg_strict: list[bool | None] = []
 
         def _boom(*args: object, **kwargs: object) -> None:
-            strict_at_call.append(engine.strict)
+            strict_during_call.append(engine.strict)
+            kwarg_strict.append(kwargs.get("strict"))
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
@@ -1050,15 +1061,16 @@ class TestStrictModeRestoration:
             with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "check_compliance", {"text": "x"})
 
-        assert strict_at_call, "validate must have been called — non_strict() was never entered"
-        assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
-        assert engine.strict is True, "strict must be restored after exception"
+        assert strict_during_call, "validate must have been called"
+        assert strict_during_call[0] is True, "engine.strict must never be mutated to False"
+        assert kwarg_strict[0] is False, "validate must be called with strict=False kwarg"
+        assert engine.strict is True, "engine.strict must remain True after exception"
 
     @pytest.mark.asyncio
     async def test_explain_violation_restores_strict_mode_on_exception(
         self, custom_constitution: Constitution
     ) -> None:
-        """engine.strict must be True after explain_violation raises."""
+        """engine.strict must never be mutated — validate uses per-call strict=False."""
         import json
 
         from acgs_lite.engine import GovernanceEngine as _RealEngine
@@ -1076,10 +1088,12 @@ class TestStrictModeRestoration:
         engine = captured[0]
         assert engine.strict is True
 
-        strict_at_call: list[bool] = []
+        strict_during_call: list[bool] = []
+        kwarg_strict: list[bool | None] = []
 
         def _boom(*args: object, **kwargs: object) -> None:
-            strict_at_call.append(engine.strict)
+            strict_during_call.append(engine.strict)
+            kwarg_strict.append(kwargs.get("strict"))
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
@@ -1088,9 +1102,10 @@ class TestStrictModeRestoration:
             with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "explain_violation", {"action": "x"})
 
-        assert strict_at_call, "validate must have been called — non_strict() was never entered"
-        assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
-        assert engine.strict is True, "strict must be restored after exception"
+        assert strict_during_call, "validate must have been called"
+        assert strict_during_call[0] is True, "engine.strict must never be mutated to False"
+        assert kwarg_strict[0] is False, "validate must be called with strict=False kwarg"
+        assert engine.strict is True, "engine.strict must remain True after exception"
 
 
 # ---------------------------------------------------------------------------

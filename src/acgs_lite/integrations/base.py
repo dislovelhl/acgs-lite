@@ -89,11 +89,11 @@ class GovernedBase:
         """
         if not text:
             return None
-        with self.engine.non_strict():
-            result = self.engine.validate(
-                text,
-                agent_id=f"{self.agent_id}:{label}",
-            )
+        result = self.engine.validate(
+            text,
+            agent_id=f"{self.agent_id}:{label}",
+            strict=False,
+        )
         if not result.valid:
             logger.warning(
                 "%s governance violations: %s",

@@ -24,7 +24,7 @@ import dataclasses
 import importlib.metadata
 import logging
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -437,7 +437,7 @@ class MultiFrameworkAssessor:
             cross_framework_gaps=cross_gaps,
             acgs_lite_total_coverage=acgs_total,
             recommendations=recommendations,
-            assessed_at=datetime.now(UTC).isoformat(),
+            assessed_at=datetime.now(timezone.utc).isoformat(),
         )
 
     @staticmethod

@@ -10,7 +10,7 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from uuid import uuid4
@@ -24,7 +24,7 @@ from acgs_lite.maci import MACIRole
 
 
 def _utcnow() -> datetime:
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 class BundleStatus(str, Enum):

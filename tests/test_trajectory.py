@@ -100,8 +100,12 @@ def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_typ
 
     # Interleave a read from agent-B so that global index 1 ≠ per-type approve index 1.
     session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base))
-    session.add(_decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1)))
-    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2)))
+    session.add(
+        _decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1))
+    )
+    session.add(
+        _decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2))
+    )
 
     # max_count=1 → violation fires at per-type right=1 (the 2nd approve).
     # Old code: decisions[1] = read/agent-B.  Fixed code: approve/agent-A.

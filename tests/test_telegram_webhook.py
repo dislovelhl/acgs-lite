@@ -123,6 +123,7 @@ def test_create_governance_app_mounts_telegram_router(tmp_path: Any) -> None:
         include_telegram=True,
         telegram_webhook_path_secret="mounted-secret",
         telegram_secret_token="mounted-header-token",
+        require_auth=False,
     )
 
     webhook_paths = {
