@@ -347,6 +347,7 @@ class GovernanceComponent(GovernedBase):
         :class:`~acgs_lite.errors.ConstitutionalViolationError`
         on violation.
         """
+        was_strict = self.engine.strict
         result = self.engine.validate(
             text,
             agent_id=self.agent_id,
@@ -355,7 +356,7 @@ class GovernanceComponent(GovernedBase):
 
         violations = [{"rule_id": v.rule_id, "rule_text": v.rule_text} for v in result.violations]
 
-        if not result.valid and self.engine.strict:
+        if not result.valid and was_strict:
             from acgs_lite.errors import (
                 ConstitutionalViolationError,
             )

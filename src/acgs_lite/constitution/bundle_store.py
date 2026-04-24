@@ -9,6 +9,9 @@ from collections import OrderedDict
 from datetime import datetime, timezone
 from typing import Protocol, runtime_checkable
 
+from acgs_lite.constitution.activation import ActivationRecord
+from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
+
 
 def _utcnow_dt() -> datetime:
     """Return the current UTC datetime with tzinfo set.
@@ -19,9 +22,6 @@ def _utcnow_dt() -> datetime:
     columns, ``datetime`` for psycopg3 TIMESTAMPTZ columns).
     """
     return datetime.now(timezone.utc)
-
-from acgs_lite.constitution.activation import ActivationRecord
-from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
 
 
 class CASVersionConflict(Exception):
@@ -161,4 +161,4 @@ class InMemoryBundleStore:
         self._tenant_versions[tenant_id] = current + 1
 
 
-__all__ = ["BundleStore", "CASVersionConflict", "InMemoryBundleStore", "_utcnow_dt"]
+__all__ = ["BundleStore", "CASVersionConflict", "InMemoryBundleStore"]
