@@ -29,8 +29,10 @@ if _REPO_CONFTEST.is_file():
 # environments (e.g. python-fallback CI job installs only [dev,mcp]).
 _HERE = Path(__file__).parent
 
+collect_ignore: list[str] = []
+
 if importlib.util.find_spec("fastapi") is None:
-    collect_ignore = [
+    collect_ignore += [
         str(_HERE / "test_server.py"),
         str(_HERE / "test_server_rules_crud.py"),
         str(_HERE / "test_lifecycle_router.py"),
@@ -39,4 +41,9 @@ if importlib.util.find_spec("fastapi") is None:
         str(_HERE / "test_openshell_governance_integration.py"),
         str(_HERE / "test_telegram_webhook.py"),
         str(_HERE / "integrations" / "test_litserve.py"),
+    ]
+
+if importlib.util.find_spec("anthropic") is None:
+    collect_ignore += [
+        str(_HERE / "test_anthropic_integration.py"),
     ]
