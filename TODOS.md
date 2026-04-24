@@ -1,27 +1,29 @@
 # TODOS — acgs-lite
 
-Items deferred from `/autoplan` review of v2.9.0 (`ci/fix-fpdf2-types`).
-Generated: 2026-04-22 | Branch: ci/fix-fpdf2-types
+v2.10.0 | merged to main 2026-04-24
 
 ---
 
-## 🔴 HIGH PRIORITY (ship these in the next PR)
+## Open action items
 
-- [ ] PyPI token renewal: `.pypirc` token expired (403 Forbidden). Regenerate at https://pypi.org/manage/account/token/ then run `python -m twine upload dist/acgs_lite-2.9.0*`
+- [ ] PyPI token renewal: `.pypirc` token expired (403 Forbidden). Regenerate at https://pypi.org/manage/account/token/ then run `python -m twine upload dist/acgs_lite-2.10.0*`
+
+## Completed items from v2.9.0 / v2.10.0 sprints
+
 - [x] Add Star History badge to README — added to badge row
 - [x] Add "Used in production at..." placeholder section to README — added before Integrations section
 
 
 ### ✅ T-01: Add exception-path test for strict-mode restoration
-**Status: COMPLETE** — Committed on `ci/fix-fpdf2-types`.
+**Status: COMPLETE**.
 Two new tests in `TestStrictModeRestoration`: `test_validate_action_restores_strict_mode_on_exception` and `test_check_compliance_restores_strict_mode_on_exception`. Uses `_TrackingEngine` pattern to capture the engine instance and verify `engine.strict is True` after `validate()` raises `RuntimeError`.
 
 ### ✅ T-02: Fix FrequencyThresholdRule wrong agent_id index
-**Status: COMPLETE** — Committed on `ci/fix-fpdf2-types`.
+**Status: COMPLETE**.
 `grouped` now stores `(timestamp, decision)` tuples. `ordered` is sorted by `p[0]`. `agent_id` comes from `decision.get("agent_id", "")` at the triggering position. Regression test added: `test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_types`.
 
 ### ✅ T-03: Migrate mcp_server.py to engine.non_strict() context manager
-**Status: COMPLETE** — Committed on `ci/fix-fpdf2-types`.
+**Status: COMPLETE**.
 All 3 raw `try/finally` strict-mode blocks replaced with `with engine.non_strict():` in `validate_action`, `check_compliance`, and `explain_violation`.
 
 ---

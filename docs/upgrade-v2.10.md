@@ -79,3 +79,54 @@ startup rather than silently accepting requests without authentication.
 - Optional extras (`z3-solver`, `redis`, Lean) no longer crash `import acgs_lite`
   when not installed — they raise `ImportError` with an install hint on first use.
 - See [CHANGELOG.md](../CHANGELOG.md) for the full list.
+
+### Additional changes
+
+**Per-call strict override (`validate(strict=False)`)**
+
+`GovernanceEngine.validate()` now accepts a `strict` keyword argument. Pass
+`strict=False` to run a single call in non-strict mode without mutating
+`engine.strict` and without a context manager:
+
+```python
+result = engine.validate(text, agent_id="agent-1", strict=False)
+```
+
+This is the recommended pattern for async and concurrent callers. The
+`non_strict()` context manager remains available for backward compatibility but
+carries a thread-safety caveat documented in its docstring.
+
+**Lazy `transformers`/`torch` import in `scoring.py`**
+
+The `transformers` and `torch` packages are now imported lazily inside
+`scoring.py`. Cold `import acgs_lite` time dropped from ~3.5 s to ~218 ms for
+users who have the heavy ML stack installed but do not use semantic scoring.
+
+**Python 3.10 compatibility**
+
+The package now supports Python 3.10 through 3.13. Specific fixes:
+
+- `datetime.UTC` (added in 3.11) replaced with `timezone.utc` throughout.
+- `StrEnum` (added in 3.11) polyfilled in `_compat.py`.
+- `tomllib` (added in 3.11) falls back to the `tomli` third-party package on
+  3.10 (already a dependency via `pyproject.toml` optional extras).
+
+**`InMemoryTrajectoryStore` thread safety**
+
+All mutating operations on `InMemoryTrajectoryStore` now hold a
+`threading.RLock`. Concurrent agents sharing a single in-memory store no longer
+race on read-modify-write cycles.
+
+**`PostgresBundleStore` correctness fixes**
+
+Several correctness bugs were fixed in the Postgres backend (shipped in this
+same v2.10.0 release):
+
+- `load_bundles(limit=None)` previously generated invalid SQL (`LIMIT NULL`) —
+  now emits `LIMIT ALL`.
+- `_init_schema()` concurrent cold-start race fixed with
+  `ON CONFLICT DO NOTHING` on the schema migrations insert.
+- `save_bundle_transactional()` phantom-row CAS race fixed with
+  `pg_advisory_xact_lock` before `SELECT FOR UPDATE`.
+- Context manager (`with PostgresBundleStore(...) as store:`) is now supported
+  via `__enter__`/`__exit__`.

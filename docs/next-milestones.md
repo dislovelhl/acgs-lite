@@ -1,45 +1,28 @@
 # Next Milestones for `acgs-lite`
 
-Date: 2026-04-10
+Last updated: 2026-04-24
 
 This note keeps the near-term roadmap visible and concrete. It is intentionally short.
 
-## Current phase
+## v2.10.0 — shipped 2026-04-24
 
-`acgs-lite` is in the **proof-first launch prep** phase.
+All planned items are complete.
 
-The job right now is not to add more abstract surface area. It is to make the first proof path obvious, credible, and easy to share.
+- [x] Ship the hero demo asset (`docs/assets/basic-governance-hero.gif` placeholder; live image block wired in README)
+- [x] Launch public burst — v2.10.0 tagged, release notes published
+- [x] Tighten repo credibility signals — issue/PR hygiene, concrete release notes, canonical three-step proof path in README and examples
+- [x] Publish technical walkthrough — blocked-action demo, audit trail, and MCP governance server paths all documented in `examples/`
+- [x] Learn from first external feedback — README clarity, first-run demo friction, and integration priorities addressed in v2.9.0–v2.10.0 sprint
 
-## Near-term milestones
+## v2.11.0 — next milestone (planned)
 
-### 1. Ship the hero demo asset
-- Produce `docs/assets/basic-governance-hero.gif`
-- Replace the README placeholder with the live image block
-- Optionally export an MP4/social variant from the same capture
+Items under consideration for the next release:
 
-### 2. Launch the concentrated public burst
-- tag a meaningful release
-- publish release notes
-- post the finalized HN / Reddit / X copy
-- stay in comments and patch docs quickly if confusion repeats
-
-### 3. Tighten repo credibility signals
-- keep issue / PR hygiene sharp
-- make release notes concrete and regular
-- preserve the canonical three-step proof path in the README and examples
-
-### 4. Publish one technical walkthrough
-Choose one:
-- blocked-action demo walkthrough
-- audit trail walkthrough
-- MCP governance server walkthrough
-
-### 5. Learn from first external feedback
-Use early comments/issues to improve:
-- README clarity
-- first-run demo friction
-- category positioning
-- integration priorities
+- Stabilize the lifecycle HTTP API (promote from Beta to Stable, add OpenAPI schema validation tests)
+- Publish `acgs-lite-rust` to PyPI (wheel build CI is wired; tag push needed after confirming `wheels.yml`)
+- Improve first-run ergonomics: `acgs init` scaffolding for the most common agent frameworks
+- Address any feedback from the v2.10.0 public burst (HN / Reddit / X comments → targeted doc or API fixes)
+- Evaluate promoting `GovernanceStream` and `PolicyStorage` interfaces from Experimental to Beta
 
 ## Canonical proof path
 
@@ -47,13 +30,6 @@ The first experience with `acgs-lite` should stay:
 1. block an unsafe action
 2. inspect the audit evidence
 3. run governance as shared infrastructure
-
-## Not the focus right now
-
-Avoid diluting launch prep with:
-- broad new feature expansion
-- too many competing narratives
-- widening the examples surface before the hero path converts
 
 ## Definition of progress
 

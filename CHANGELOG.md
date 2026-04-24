@@ -18,6 +18,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`PostgresBundleStore`** (optional `postgres` extra): multi-instance-safe backend for the constitution lifecycle store. Mirrors the `BundleStore` Protocol with a partial unique index on `(tenant_id) WHERE status='active'` enforcing one-active-per-tenant at the database level, and `SELECT ... FOR UPDATE` serializing CAS updates. Install with `pip install 'acgs-lite[postgres]'`. SQLite remains the default single-host backend.
 - **Rust wheel packaging** (`rust/pyo3/pyproject.toml` + `.github/workflows/wheels.yml`): the optional Rust accelerator now builds as a standalone `acgs-lite-rust` companion wheel via maturin. GitHub Actions produces abi3 wheels for manylinux (x86_64, aarch64), macOS (x86_64, arm64), and Windows (x64), plus an sdist, on `rust-v*` tag pushes. Users install with `pip install acgs-lite acgs-lite-rust` to opt into the hot-path speedup; `acgs-lite` itself remains pure-Python.
 - **`examples/agent_quickstart/`**: Self-verifying AI-agent quickstart. Run `python examples/agent_quickstart/run.py` to confirm `GovernedCallable`, MACI role gates, and tamper-evident audit all work in a single script that exits 0. Designed as a copy-paste install-verification prompt for AI coding agents (Codex, Claude Code, and similar tools).
+- CI: Python fallback job (`python-fallback`) runs the full test suite without the Rust companion installed — ensures the pure-Python path always works independently of the optional accelerator.
+- CI: test matrix expanded to Python 3.10, 3.11, 3.12, and 3.13.
+
+### Changed
+
+- `validate()` now accepts a `strict` keyword argument for per-call strict override without mutating `engine.strict`. All built-in integrations use this pattern. `non_strict()` context manager remains available but is not recommended for async/concurrent use (thread-safety caveat documented in its docstring).
+- `workflow.py` `GovernanceWorkflowExecutor` migrated to `with engine.non_strict()` context manager.
+- `scoring.py` cold import reduced from ~3.5 s to ~218 ms by making the `transformers`/`torch` import lazy.
+- `InMemoryTrajectoryStore` operations now use a `threading.RLock` — safe for concurrent agent use.
+
+### Fixed
+
+- Python 3.10 compatibility: `datetime.UTC` (3.11+) replaced with `timezone.utc` throughout; `StrEnum` polyfill added in `_compat.py`; `tomllib` falls back to `tomli` on 3.10.
+- `PostgresBundleStore.load_bundles()` used `LIMIT NULL` (PostgreSQL syntax error) — fixed to `LIMIT ALL` when no limit is specified.
+- `PostgresBundleStore._init_schema()` race on concurrent first-connection — fixed with `CREATE TABLE ... ON CONFLICT DO NOTHING` in the schema migrations insert.
+- `PostgresBundleStore.save_bundle_transactional()` phantom-row CAS race — fixed with `pg_advisory_xact_lock(hashtext(%s)::bigint)` before `SELECT FOR UPDATE`.
+- `FrequencyThresholdRule` reported the wrong `agent_id` (used raw list index instead of chronologically-sorted position) — fixed to read `agent_id` from the decision at the correct sorted position.
+- `WebhookNotificationChannel` and `InterventionEngine` webhook callers now validate URL scheme (must be `http` or `https`) before calling `urlopen`, preventing SSRF via non-HTTP schemes.
+- `SQLiteBundleStore.list_bundles()` used f-string interpolation for `LIMIT`/`OFFSET` — fixed to parameterized queries.
 
 ## [2.9.0] - 2026-04-22
 
