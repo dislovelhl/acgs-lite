@@ -6,7 +6,19 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 from collections import OrderedDict
+from datetime import UTC, datetime
 from typing import Protocol, runtime_checkable
+
+
+def _utcnow_dt() -> datetime:
+    """Return the current UTC datetime with tzinfo set.
+
+    Canonical source shared by both SQLite and Postgres bundle stores so
+    all timestamp values originate from the same code path.  Each store
+    converts to the type its driver expects (``str`` for SQLite TEXT
+    columns, ``datetime`` for psycopg3 TIMESTAMPTZ columns).
+    """
+    return datetime.now(UTC)
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
@@ -149,4 +161,4 @@ class InMemoryBundleStore:
         self._tenant_versions[tenant_id] = current + 1
 
 
-__all__ = ["BundleStore", "CASVersionConflict", "InMemoryBundleStore"]
+__all__ = ["BundleStore", "CASVersionConflict", "InMemoryBundleStore", "_utcnow_dt"]

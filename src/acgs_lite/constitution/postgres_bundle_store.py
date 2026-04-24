@@ -27,12 +27,12 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
-from acgs_lite.constitution.bundle_store import CASVersionConflict
+from acgs_lite.constitution.bundle_store import CASVersionConflict, _utcnow_dt
 from acgs_lite.constitution.lifecycle_service import LifecycleError
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS tenant_versions (
 
 
 def _utcnow() -> datetime:
-    return datetime.now(UTC)
+    return _utcnow_dt()
 
 
 def _import_psycopg() -> Any:
@@ -103,6 +103,21 @@ class PostgresBundleStore:
     Thread safety: Postgres serializes writers at the row level via
     ``SELECT ... FOR UPDATE``.  Cross-instance safety is provided by the
     partial unique index on ``status = 'active'``.
+
+    Supports use as a context manager — ``close()`` is called on ``__exit__``::
+
+        with PostgresBundleStore(dsn="postgresql://...") as store:
+            store.save_bundle(bundle)
+
+    **Extension: atomic multi-bundle writes**
+
+    :meth:`save_bundle_transactional` saves multiple bundles (and an optional
+    :class:`~acgs_lite.constitution.activation.ActivationRecord`) in a single
+    transaction.  Use it when you need atomicity guarantees stronger than the
+    individual :meth:`save_bundle` / :meth:`save_activation` pair — for
+    example, to make superseding the old active bundle and promoting the new one
+    a single commit that can never be observed half-applied by a concurrent
+    reader.
     """
 
     def __init__(
@@ -139,6 +154,12 @@ class PostgresBundleStore:
         """Close the underlying connection pool if this store owns it."""
         if self._owns_pool:
             self._pool.close()
+
+    def __enter__(self) -> PostgresBundleStore:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
     # ── internal helpers ─────────────────────────────────────────────────
 

@@ -180,12 +180,15 @@ class TrajectoryStoreBackend(Protocol):
 class InMemoryTrajectoryStore:
     def __init__(self) -> None:
         self._sessions: dict[str, TrajectorySession] = {}
+        self._lock = threading.RLock()
 
     def get(self, session_id: str) -> TrajectorySession | None:
-        return self._sessions.get(session_id)
+        with self._lock:
+            return self._sessions.get(session_id)
 
     def put(self, session: TrajectorySession) -> None:
-        self._sessions[session.session_id] = session
+        with self._lock:
+            self._sessions[session.session_id] = session
 
 
 class TrajectoryMonitor:

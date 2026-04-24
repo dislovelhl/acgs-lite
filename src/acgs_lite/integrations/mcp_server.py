@@ -390,14 +390,13 @@ def create_mcp_server(
                 checkpoint_kind=checkpoint_kind,
             )
 
-            # Use non-strict for MCP (return result, don't raise)
-            with engine.non_strict():
-                result = engine.validate(
-                    action,
-                    agent_id=agent_id,
-                    context=engine_context or None,
-                    audit_metadata=audit_metadata or None,
-                )
+            result = engine.validate(
+                action,
+                agent_id=agent_id,
+                context=engine_context or None,
+                audit_metadata=audit_metadata or None,
+                strict=False,
+            )
 
             response = result.to_dict()
             response["retrieved_rules"] = [
@@ -485,8 +484,7 @@ def create_mcp_server(
 
         elif name == "check_compliance":
             text = arguments.get("text", "")
-            with engine.non_strict():
-                result = engine.validate(text, agent_id="compliance-check")
+            result = engine.validate(text, agent_id="compliance-check", strict=False)
 
             data = {
                 "compliant": result.valid,
@@ -520,8 +518,7 @@ def create_mcp_server(
             rule_id_filter: str | None = arguments.get("rule_id")
 
             try:
-                with engine.non_strict():
-                    result = engine.validate(action, agent_id="explain-tool")
+                result = engine.validate(action, agent_id="explain-tool", strict=False)
             except Exception as exc:
                 logger.warning(
                     "explain_violation_error",

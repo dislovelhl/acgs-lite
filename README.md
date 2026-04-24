@@ -316,6 +316,19 @@ if not result.valid:
         print(f"[{v.severity}] {v.rule_id}: {v.description}")
 ```
 
+### GovernedAgent — Drop-in Wrapper
+
+```python
+from acgs_lite import Constitution, GovernedAgent
+
+@GovernedAgent.decorate(constitution=constitution, agent_id="summarizer")
+def summarize(text: str) -> str:
+    return my_llm.complete(f"Summarize: {text}")
+
+# Raises ConstitutionalViolationError if text contains violations
+result = summarize("Q4 revenue was $4.2M")
+```
+
 ### MACI — Separation of Powers
 
 MACI prevents a single agent from proposing, validating, and executing the same action:
@@ -353,19 +366,6 @@ for entry in log.entries():
 
 # Verify chain integrity
 assert log.verify_chain(), "Audit log tampered!"
-```
-
-### GovernedAgent — Drop-in Wrapper
-
-```python
-from acgs_lite import Constitution, GovernedAgent
-
-@GovernedAgent.decorate(constitution=constitution, agent_id="summarizer")
-def summarize(text: str) -> str:
-    return my_llm.complete(f"Summarize: {text}")
-
-# Raises ConstitutionalViolationError if text contains violations
-result = summarize("Q4 revenue was $4.2M")
 ```
 
 ---

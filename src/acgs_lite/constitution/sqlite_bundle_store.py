@@ -24,13 +24,12 @@ from __future__ import annotations
 import json
 import sqlite3
 import warnings
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
-from acgs_lite.constitution.bundle_store import CASVersionConflict
+from acgs_lite.constitution.bundle_store import CASVersionConflict, _utcnow_dt
 from acgs_lite.constitution.lifecycle_service import LifecycleError
 
 _SCHEMA_VERSION = 1
@@ -52,7 +51,7 @@ CheckpointMode = Literal["PASSIVE", "FULL", "RESTART", "TRUNCATE"]
 
 
 def _utcnow() -> str:
-    return datetime.now(UTC).isoformat()
+    return _utcnow_dt().isoformat()
 
 
 def _sqlite_version_tuple() -> tuple[int, int, int]:

@@ -959,7 +959,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             _rv is not None
             and _fast_records is not None
             and context is None
-            and not audit_metadata
+            and not audit_metadata  # True for both None and {} — empty dict treated as "no metadata"
             and not self.custom_validators
         ):
             # strict=False Rust fast path: return violations instead of raising
@@ -1204,8 +1204,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             can restore ``strict=True`` while the other is still inside the block,
             causing it to validate with strict mode active. For concurrent
             deployments (e.g., MCP server + Telegram webhook sharing one engine),
-            use ``validate(strict=False)`` once that per-call parameter lands
-            (tracked as T-04), or give each handler its own engine instance.
+            prefer ``validate(strict=False)`` (available since v2.10.0) or give
+            each handler its own engine instance.
         """
         prev = self.strict
         self.strict = False
