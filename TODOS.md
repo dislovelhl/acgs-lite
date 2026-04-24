@@ -159,7 +159,8 @@ All 3 raw `try/finally` strict-mode blocks replaced with `with engine.non_strict
 **Content:** Clear migration steps, `require_auth=False` escape hatch, env var setup.
 **Estimated effort:** ~15 min CC
 
-### T-25: Push `rust-v*` tag to trigger Rust wheel build
+### ✅ T-25: Push `rust-v*` tag to trigger Rust wheel build
+**Status: COMPLETE** — Pushed `rust-v0.1.0` tag to origin. cibuildwheel workflow triggered.
 **Why:** `wheels.yml` workflow triggers on `rust-v*` tag pushes but no such tag has been pushed. `acgs-lite-rust` package doesn't exist on PyPI yet.
 **Action:** Push `rust-v0.1.0` tag after confirming `wheels.yml` is correct.
 **Estimated effort:** ~5 min
