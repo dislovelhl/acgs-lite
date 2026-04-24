@@ -176,22 +176,23 @@ class SQLiteBundleStore:
         limit: int | None = None,
         offset: int = 0,
     ) -> list[ConstitutionBundle]:
-        limit_clause = f"LIMIT {int(limit)}" if limit is not None else ""
-        offset_clause = f"OFFSET {int(offset)}" if offset else ""
         order_clause = "ORDER BY json_extract(payload, '$.version') DESC"
+        # Use -1 as SQLite sentinel for "no limit" (LIMIT -1 means unlimited in SQLite)
+        limit_val: int = int(limit) if limit is not None else -1
+        offset_val: int = int(offset) if offset else 0
         try:
             with self._connect() as conn:
                 if status is not None:
                     rows = conn.execute(
                         f"SELECT payload FROM bundles WHERE tenant_id = ? AND status = ?"
-                        f" {order_clause} {limit_clause} {offset_clause}",
-                        (tenant_id, status.value),
+                        f" {order_clause} LIMIT ? OFFSET ?",
+                        (tenant_id, status.value, limit_val, offset_val),
                     ).fetchall()
                 else:
                     rows = conn.execute(
                         f"SELECT payload FROM bundles WHERE tenant_id = ?"
-                        f" {order_clause} {limit_clause} {offset_clause}",
-                        (tenant_id,),
+                        f" {order_clause} LIMIT ? OFFSET ?",
+                        (tenant_id, limit_val, offset_val),
                     ).fetchall()
         except sqlite3.OperationalError as exc:
             raise self._wrap(exc) from exc

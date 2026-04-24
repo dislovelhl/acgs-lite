@@ -51,6 +51,7 @@ python examples/mcp_agent_client.py
 
 | Example | What it teaches | Difficulty |
 |---------|----------------|------------|
+| [`agent_quickstart/`](agent_quickstart/) | **AI-agent install verify**: `GovernedCallable` + MACI + AuditLog in one script; exits 0 on success | ⭐ Beginner |
 | [`mcp_agent_client.py`](mcp_agent_client.py) | **MCP Governance Hub**: Connect an agent to a centralized safety server | ⭐⭐ Intermediate |
 | [`basic_governance/`](basic_governance/) | Wrap any callable with a `Constitution` + `Rule` objects | ⭐ Beginner |
 | [`compliance_eu_ai_act/`](compliance_eu_ai_act/) | EU AI Act risk-tier inference and article-level gap assessment | ⭐⭐ Intermediate |
@@ -71,9 +72,9 @@ python examples/mcp_agent_client.py
 ## Learning path
 
 ```text
-basic_governance  →  audit_trail  →  mcp_agent_client
-        ↓
-maci_separation   →  compliance_eu_ai_act  →  mock_stub_testing
+agent_quickstart  →  basic_governance  →  audit_trail  →  mcp_agent_client
+                              ↓
+                      maci_separation   →  compliance_eu_ai_act  →  mock_stub_testing
 ```
 
 For production deployments, see [`CONTRIBUTING.md`](../CONTRIBUTING.md), the

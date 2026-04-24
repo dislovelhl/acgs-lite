@@ -1007,10 +1007,10 @@ class TestStrictModeRestoration:
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
-            try:
+            import contextlib
+
+            with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "validate_action", {"action": "x"})
-            except (json.JSONDecodeError, Exception):
-                pass  # tool call may propagate or return non-JSON error
 
         assert strict_at_call, "validate must have been called — non_strict() was never entered"
         assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
@@ -1045,10 +1045,10 @@ class TestStrictModeRestoration:
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
-            try:
+            import contextlib
+
+            with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "check_compliance", {"text": "x"})
-            except (json.JSONDecodeError, Exception):
-                pass
 
         assert strict_at_call, "validate must have been called — non_strict() was never entered"
         assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
@@ -1083,10 +1083,10 @@ class TestStrictModeRestoration:
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
-            try:
+            import contextlib
+
+            with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "explain_violation", {"action": "x"})
-            except (json.JSONDecodeError, Exception):
-                pass
 
         assert strict_at_call, "validate must have been called — non_strict() was never entered"
         assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"
@@ -1123,10 +1123,10 @@ class TestStrictModeRestoration:
             raise RuntimeError("boom")
 
         with patch.object(engine, "validate", side_effect=_boom):
-            try:
+            import contextlib
+
+            with contextlib.suppress(json.JSONDecodeError, Exception):
                 await _call_tool(server, "validate_action", {"action": "x"})
-            except (json.JSONDecodeError, Exception):
-                pass
 
         assert strict_at_call, "validate must have been called — non_strict() was never entered"
         assert strict_at_call[0] is False, "engine.strict must be False inside non_strict() context"

@@ -1,0 +1,37 @@
+# Agent Quickstart Constitution
+# --------------------------------
+# This file is the canonical starting-point constitution for the
+# agent_quickstart example suite. Load with:
+#   Constitution.from_yaml(Path(__file__).parent / "constitution.yaml")
+#
+# Pin constitutional_hash in production so CI detects silent changes.
+# Get the value with: acgs status
+# constitutional_hash: "608508a9bd224290"  # uncomment and set in production
+
+name: "agent-quickstart-policy"
+version: "1.0"
+
+rules:
+  - id: no-pii
+    text: "Block requests exposing personally-identifiable information"
+    severity: CRITICAL
+    patterns:
+      - "\\b\\d{3}-\\d{2}-\\d{4}\\b"       # SSN pattern
+      - "(?i)\\bsocial\\s+security\\b"
+      - "(?i)\\bpassport\\s+number\\b"
+
+  - id: no-destructive
+    text: "Block destructive system or database operations"
+    severity: HIGH
+    patterns:
+      - "(?i)\\bdrop\\s+table\\b"
+      - "(?i)\\brm\\s+-[rRfF]{1,2}\\b"
+      - "(?i)\\bdelete\\s+from\\b"
+
+  - id: require-approval
+    text: "Flag explicit financial transactions that require human review"
+    severity: HIGH
+    patterns:
+      - "(?i)\\b(wire|bank)\\s+transfer\\b"
+      - "(?i)\\b(initiate|send|submit|process)\\s+payment\\b"
+      - "(?i)\\bwire\\s+(funds?|money|amount)\\b"

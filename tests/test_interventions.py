@@ -438,6 +438,13 @@ class TestNotifyHandler:
 
         assert outcome.triggered is True
 
+    def test_notify_rejects_non_http_scheme(self) -> None:
+        rule = _rule("notify-4", InterventionAction.NOTIFY, {"verdict": "deny"})
+        engine = InterventionEngine(rules=[rule], webhook_url="file:///etc/passwd")
+        outcome = engine.evaluate(_cdp(verdict="deny"))[0]
+        assert outcome.triggered is False
+        assert "invalid_webhook_scheme" in outcome.reason
+
 
 # ---------------------------------------------------------------------------
 # InterventionEngine — BLOCK

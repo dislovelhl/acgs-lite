@@ -7,6 +7,11 @@ Generated: 2026-04-22 | Branch: ci/fix-fpdf2-types
 
 ## 🔴 HIGH PRIORITY (ship these in the next PR)
 
+- [ ] PyPI token renewal: `.pypirc` token expired (403 Forbidden). Regenerate at https://pypi.org/manage/account/token/ then run `python -m twine upload dist/acgs_lite-2.9.0*`
+- [ ] Add Star History badge to README (https://star-history.com/#dislovelhl/acgs-lite)
+- [ ] Add "Used in production at..." placeholder section to README
+
+
 ### ✅ T-01: Add exception-path test for strict-mode restoration
 **Status: COMPLETE** — Committed on `ci/fix-fpdf2-types`.
 Two new tests in `TestStrictModeRestoration`: `test_validate_action_restores_strict_mode_on_exception` and `test_check_compliance_restores_strict_mode_on_exception`. Uses `_TrackingEngine` pattern to capture the engine instance and verify `engine.strict is True` after `validate()` raises `RuntimeError`.
