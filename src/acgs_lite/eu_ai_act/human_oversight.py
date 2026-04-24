@@ -45,7 +45,7 @@ import uuid
 from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
 
@@ -95,7 +95,7 @@ class OversightDecision:
     reviewer_id: str | None = None
     reviewer_notes: str | None = None
     constitutional_hash: str = CONSTITUTIONAL_HASH
-    submitted_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    submitted_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     reviewed_at: str | None = None
     context: dict[str, Any] = field(default_factory=dict)
 
@@ -244,7 +244,7 @@ class HumanOversightGateway:
                 "outcome": OversightOutcome.APPROVED,
                 "reviewer_id": reviewer_id,
                 "reviewer_notes": notes,
-                "reviewed_at": datetime.now(UTC).isoformat(),
+                "reviewed_at": datetime.now(timezone.utc).isoformat(),
             }
         )
         self._decisions[decision_id] = updated
@@ -280,7 +280,7 @@ class HumanOversightGateway:
                 "outcome": OversightOutcome.REJECTED,
                 "reviewer_id": reviewer_id,
                 "reviewer_notes": notes,
-                "reviewed_at": datetime.now(UTC).isoformat(),
+                "reviewed_at": datetime.now(timezone.utc).isoformat(),
             }
         )
         self._decisions[decision_id] = updated
@@ -306,7 +306,7 @@ class HumanOversightGateway:
                 **decision.to_dict(),
                 "outcome": OversightOutcome.ESCALATED,
                 "reviewer_notes": reason or "Escalated — no reviewer response within SLA",
-                "reviewed_at": datetime.now(UTC).isoformat(),
+                "reviewed_at": datetime.now(timezone.utc).isoformat(),
             }
         )
         self._decisions[decision_id] = updated

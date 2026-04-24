@@ -38,7 +38,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from enum import StrEnum
 from typing import Any
 
@@ -79,19 +79,19 @@ class ChecklistItem:
         """Mark this item as compliant with optional evidence."""
         self.status = ChecklistStatus.COMPLIANT
         self.evidence = evidence
-        self.updated_at = datetime.now(UTC).isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def mark_partial(self, evidence: str | None = None) -> None:
         """Mark this item as partially compliant with optional evidence."""
         self.status = ChecklistStatus.PARTIAL
         self.evidence = evidence
-        self.updated_at = datetime.now(UTC).isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def mark_not_applicable(self, reason: str | None = None) -> None:
         """Mark this item as not applicable with optional reason."""
         self.status = ChecklistStatus.NOT_APPLICABLE
         self.evidence = reason
-        self.updated_at = datetime.now(UTC).isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize the checklist item to a dictionary."""
@@ -240,7 +240,7 @@ class ComplianceChecklist:
         self.system_id = system_id
         self.risk_level = risk_level
         self._items: list[ChecklistItem] = self._build_items(risk_level)
-        self.created_at = datetime.now(UTC).isoformat()
+        self.created_at = datetime.now(timezone.utc).isoformat()
 
     def _build_items(self, risk_level: str) -> list[ChecklistItem]:
         if risk_level == "high_risk":
@@ -363,7 +363,7 @@ class ComplianceChecklist:
         return {
             "system_id": self.system_id,
             "risk_level": self.risk_level,
-            "generated_at": datetime.now(UTC).isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "created_at": self.created_at,
             "compliance_score": self.compliance_score,
             "gate_clear": self.is_gate_clear,

@@ -37,7 +37,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 _REQUIRED_FIELDS: tuple[str, ...] = (
@@ -101,7 +101,7 @@ class TransparencyDisclosure:
         "Its outputs may not be accurate and should be reviewed by a qualified person."
     )
     maintenance_instructions: str = ""
-    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def __post_init__(self) -> None:
         pass
@@ -151,7 +151,7 @@ class TransparencyDisclosure:
             "human_oversight_measures": self.human_oversight_measures,
             "ai_system_disclosure": self.ai_system_disclosure,
             "maintenance_instructions": self.maintenance_instructions,
-            "generated_at": datetime.now(UTC).isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
             "created_at": self.created_at,
             "validation_status": "compliant" if self.is_valid() else "incomplete",
             "missing_fields": self.validate(),
