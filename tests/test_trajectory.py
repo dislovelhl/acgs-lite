@@ -123,6 +123,41 @@ def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_typ
     )
 
 
+def test_frequency_threshold_rule_handles_out_of_order_timestamps() -> None:
+    """FrequencyThresholdRule must detect violations even when decisions arrive out of order.
+
+    The sliding-window logic sorts by timestamp internally, so decisions added out of
+    chronological order should produce the same violation result as sorted input.
+    """
+    base = datetime(2026, 4, 7, tzinfo=timezone.utc)
+    session = TrajectorySession(session_id="s-ooo", agent_id="agent-1")
+
+    # Add 3 approve decisions out of chronological order (t=2, t=0, t=1)
+    session.add(
+        _decision(
+            action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=2)
+        )
+    )
+    session.add(_decision(action_type="approve", agent_id="agent-1", timestamp=base))
+    session.add(
+        _decision(
+            action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=1)
+        )
+    )
+
+    monitor = TrajectoryMonitor(
+        rules=[FrequencyThresholdRule(max_count=2, window_seconds=60)],
+        store=InMemoryTrajectoryStore(),
+    )
+
+    violations = monitor.check_trajectory(session)
+
+    assert len(violations) == 1
+    assert violations[0].rule_id == "TRAJ-FREQ-001"
+    assert violations[0].agent_id == "agent-1"
+
+
+
 def test_clean_session_produces_zero_violations() -> None:
     base = datetime(2026, 4, 7, tzinfo=timezone.utc)
     session = TrajectorySession(session_id="s3", agent_id="agent-1")

@@ -25,6 +25,13 @@ AI governance library for constitutional rule enforcement, lifecycle management,
 
 ---
 
+## Repo Boundary
+
+- `packages/acgs-lite` is a nested git repo inside the parent ACGS monorepo.
+- Before staging, committing, or pushing, check git state both here and in the parent repo.
+
+---
+
 ## CI/Deployment Fix Protocol
 
 - When fixing a CI failure, check **all** job matrices and workflow files for the same pattern — not just the job that surfaced the error
@@ -91,6 +98,26 @@ Before staging, committing, or pushing, check git state both here and in the par
 | `ACGS_LIFECYCLE_API_KEY` | unset | API key required by lifecycle mutation endpoints |
 
 ---
+
+## What NOT to Do
+
+- Never import optional platform SDKs at module import time.
+- Never bypass MACI enforcement in wrappers or integrations.
+- Never change `matcher.py` hot-path behavior without targeted tests.
+- Never rely on raw `cargo test` as the only verification for Python-facing Rust changes.
+- Never skip the verification sequence before marking a task complete.
+
+---
+
+## Git Workflow
+
+- Branch naming: `feature/`, `fix/`, `refactor/`, `docs/`, `test/`, `chore/`.
+- Commits must follow the repo Lore commit protocol from the parent `AGENTS.md`.
+- Keep commits atomic and bisectable.
+- Never force push to shared branches.
+
+---
+
 
 ## Compounding Knowledge
 

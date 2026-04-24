@@ -11,6 +11,7 @@ Generated: 2026-04-22 | Branch: ci/fix-fpdf2-types
 - [x] Add Star History badge to README — added to badge row
 - [x] Add "Used in production at..." placeholder section to README — added before Integrations section
 
+
 ### ✅ T-01: Add exception-path test for strict-mode restoration
 **Status: COMPLETE** — Committed on `ci/fix-fpdf2-types`.
 Two new tests in `TestStrictModeRestoration`: `test_validate_action_restores_strict_mode_on_exception` and `test_check_compliance_restores_strict_mode_on_exception`. Uses `_TrackingEngine` pattern to capture the engine instance and verify `engine.strict is True` after `validate()` raises `RuntimeError`.
@@ -207,4 +208,3 @@ All 3 raw `try/finally` strict-mode blocks replaced with `with engine.non_strict
 
 ### ✅ T-30: Move GovernedAgent.decorate example before MACI/audit sections (P2)
 **Status: COMPLETE** — Reordered Core Concepts in README: GovernedAgent now follows Governance Engine directly, before MACI and Tamper-Evident Audit Trail.
-

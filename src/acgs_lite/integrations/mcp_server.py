@@ -80,7 +80,11 @@ def create_mcp_server(
     Args:
         constitution: Rules to enforce. Defaults to built-in rules.
         server_name: Name of the MCP server.
-        strict: If True, raise on violations in validate_action.
+        strict: Baseline strict mode for the underlying engine. The MCP tools
+            (``validate_action``, ``check_compliance``, ``explain_violation``)
+            always operate non-strictly — they use ``engine.non_strict()``
+            internally and return structured results instead of raising.
+            This parameter therefore affects only direct non-tool engine access.
         embedding_provider: Optional embedding provider for governance-memory retrieval.
         experience_library: Optional precedent library for governance-memory retrieval.
 

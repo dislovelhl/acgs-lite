@@ -130,7 +130,8 @@ class GovernanceWorkflowExecutor:
         limit = int(inputs.get("limit", 20))
 
         if domain == "validation":
-            result = self._engine.validate(action, agent_id="workflow", strict=False)
+            with self._engine.non_strict():
+                result = self._engine.validate(action, agent_id="workflow")
             return result.to_dict()
 
         if domain == "compliance":

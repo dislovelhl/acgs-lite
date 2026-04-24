@@ -46,6 +46,21 @@ No API changes. The `GovernanceEngine` core is stable.
   durable backends, reducing round-trips for bulk governance events.
 - 21 previously internal governance symbols exported from the public API.
 
+### Upgrading from 2.8.1
+
+No API changes. All existing code runs without modification. Two behavior changes worth noting:
+
+- **`audit_metadata` is now written on non-strict fast paths** — callers that pass `audit_metadata`
+  to `validate()` in non-strict mode previously had the metadata silently discarded on the Rust
+  fast path. It is now written. If you rely on the fast-path throughput benefit, remove
+  `audit_metadata` from non-strict calls or accept the ~10% throughput reduction.
+- **`check_checkpoint()` is now serialized** — concurrent calls to the same `TrajectoryMonitor`
+  instance are now queued. If you have highly concurrent checkpoint calls per monitor, benchmark
+  the new behavior under load.
+
+`GovernanceEngine`, `AuditLog`, and all stable-tier components are unaffected. See the Component
+Stability table in the README for the stability tier of each subsystem.
+
 ### Changed
 
 - PyPI development-status classifier changed from `5 - Production/Stable` to `4 - Beta`.
