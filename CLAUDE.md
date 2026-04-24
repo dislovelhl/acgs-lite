@@ -19,70 +19,28 @@ AI governance library for constitutional rule enforcement, lifecycle management,
 
 ## Quick Commands
 
-### Testing
-
 ```bash
-# Full suite
-make test
-python -m pytest tests/ -v --import-mode=importlib --rootdir=.
+# Verify (required before marking complete)
+bash .claude/commands/test-and-verify.sh
+# or step by step:
+make lint && make typecheck && make test && make build
 
-# Single file / single test
+# Single test
 python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib
 python -m pytest tests/test_lifecycle_router.py -k test_create_draft_200 -v --import-mode=importlib
 
-# By category
-python -m pytest -m "not e2e" -v --import-mode=importlib
-python -m pytest -m e2e -v --import-mode=importlib
-```
-
-**Critical test notes:**
-
-- Tests use `InMemory*` stubs and should not import live services.
-- Set placeholder keys when needed: `OPENAI_API_KEY=test-key-for-unit-tests` and `ANTHROPIC_API_KEY=test-key-for-unit-tests`.
-
-### Linting & Formatting
-
-```bash
-make lint
-ruff check .
-ruff format --check .
+# Format
 ruff format .
-make typecheck
-mypy src/acgs_lite
 ```
 
-### Build
-
-```bash
-make build
-python -m mkdocs build
-```
+**Test notes:** Tests use `InMemory*` stubs. Set `OPENAI_API_KEY=test-key-for-unit-tests` and `ANTHROPIC_API_KEY=test-key-for-unit-tests` when needed.
 
 ---
 
 ## Repo Boundary
 
-- `packages/acgs-lite` is a nested git repo inside the parent ACGS monorepo.
-- Before staging, committing, or pushing, check git state both here and in the parent repo.
-
----
-
-## Autonomous Verification (Mandatory)
-
-Do not assume code changes are correct. Always verify before handing work back.
-
-**Required sequence:**
-
-```bash
-make lint
-make typecheck
-make test
-make build
-```
-
-If any step fails, fix the issue and rerun the full sequence from the top. Do not skip steps.
-
-**Shortcut:** `bash .claude/commands/test-and-verify.sh`
+`packages/acgs-lite` is a nested git repo inside the parent ACGS monorepo.
+Before staging, committing, or pushing, check git state both here and in the parent repo.
 
 ---
 
@@ -100,74 +58,6 @@ If any step fails, fix the issue and rerun the full sequence from the top. Do no
 
 ---
 
-## Coding Standards
-
-### Naming Conventions
-
-| Type | Convention | Example |
-| --- | --- | --- |
-| Classes | PascalCase | `ConstitutionLifecycle` |
-| Functions | snake_case | `run_evaluation` |
-| Constants | UPPER_SNAKE_CASE | `MAX_RETRIES` |
-| Files | snake_case | `lifecycle_router.py` |
-
-### Import Order
-
-```python
-# 1. Standard library
-# 2. Third-party packages
-# 3. Local / first-party
-```
-
-### Error Handling
-
-```python
-# Use project-specific error types. No bare except blocks or silent fallthrough.
-```
-
-### Logging
-
-```python
-# Use structured logging where available. Do not add print() for production flow.
-```
-
----
-
-## Testing Standards
-
-### Coverage Requirements
-
-| Scope | Minimum | Target |
-| --- | --- | --- |
-| System-wide | 80% | 90%+ |
-| Critical paths | 90% | 95%+ |
-| PRs | 80% | 90%+ |
-
-### Mock Strategy
-
-- External services: always mock in unit tests.
-- File system: mock in unit tests, real in integration tests.
-- Time and randomness: mock for deterministic assertions.
-- Use `InMemory*` stubs instead of live SDKs in tests.
-
-### Pytest Notes
-
-- Default suite excludes `e2e` via `pytest.ini` / `pyproject.toml`.
-- Run targeted lifecycle tests with `python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib`.
-- When adding a branch, add tests for both the happy path and the failure path.
-
----
-
-## Security
-
-- Never hardcode secrets, API keys, tokens, or passwords.
-- Validate all external input at service boundaries.
-- Keep optional SDK imports out of module import time.
-- Prefer safe placeholders in examples: `dev-*`, `test-*`, `your-*-here`.
-- Do not weaken MACI or lifecycle auth checks to make tests pass.
-
----
-
 ## Environment Variables
 
 | Variable | Default | Description |
@@ -176,25 +66,6 @@ If any step fails, fix the issue and rerun the full sequence from the top. Do no
 | `ANTHROPIC_API_KEY` | `test-key-for-unit-tests` | Placeholder to silence import-time validation |
 | `ACGS_LIFECYCLE_ENABLED` | unset | Enables the lifecycle router in `server.py` |
 | `ACGS_LIFECYCLE_API_KEY` | unset | API key required by lifecycle mutation endpoints |
-
----
-
-## What NOT to Do
-
-- Never import optional platform SDKs at module import time.
-- Never bypass MACI enforcement in wrappers or integrations.
-- Never change `matcher.py` hot-path behavior without targeted tests.
-- Never rely on raw `cargo test` as the only verification for Python-facing Rust changes.
-- Never skip the verification sequence before marking a task complete.
-
----
-
-## Git Workflow
-
-- Branch naming: `feature/`, `fix/`, `refactor/`, `docs/`, `test/`, `chore/`.
-- Commits must follow the repo Lore commit protocol from the parent `AGENTS.md`.
-- Keep commits atomic and bisectable.
-- Never force push to shared branches.
 
 ---
 
