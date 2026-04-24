@@ -17,6 +17,29 @@ AGENTS.md serves Codex/OMX.
 
 AI governance library for constitutional rule enforcement, lifecycle management, and audit-backed validation.
 
+## Pre-Implementation Checks
+
+- Before creating new config/diagram/schema files (`.dsl`, `workspace.*`, `schema.*`, `AGENTS.md`) **search the repo first** with `find . -name <filename>` to avoid duplicates
+- Before calling agent methods or SDK functions, read the actual source to verify the API (method name, signature, return type)
+- Before marking a task complete, verify all gates actually ran — never substitute static or remembered outputs for a fresh run
+
+---
+
+## CI/Deployment Fix Protocol
+
+- When fixing a CI failure, check **all** job matrices and workflow files for the same pattern — not just the job that surfaced the error
+- For gh-pages/docs-deploy failures, verify both remote URL correctness **and** push semantics (fast-forward vs. force push)
+- Before any commit/push operation, confirm `git rev-parse --git-dir` succeeds (repo is initialized)
+
+---
+
+## Skill Invocation
+
+- If a skill or slash-command is invoked without a required task description or scope, **stop and ask** — do not proceed with a guess
+- After any failed skill invocation, run `/oh-my-claudecode:cancel` to clean up session state before retrying
+
+---
+
 ## Quick Commands
 
 ```bash
