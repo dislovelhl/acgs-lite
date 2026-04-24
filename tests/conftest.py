@@ -37,8 +37,10 @@ if importlib.util.find_spec("fastapi") is None:
         str(_HERE / "test_server_rules_crud.py"),
         str(_HERE / "test_lifecycle_router.py"),
         str(_HERE / "test_autonoma.py"),
+        str(_HERE / "test_cdp_record.py"),
         str(_HERE / "test_federation_transport.py"),
         str(_HERE / "test_openshell_governance_integration.py"),
+        str(_HERE / "test_openshell_governance_http.py"),
         str(_HERE / "test_telegram_webhook.py"),
         str(_HERE / "integrations" / "test_litserve.py"),
     ]
@@ -46,4 +48,10 @@ if importlib.util.find_spec("fastapi") is None:
 if importlib.util.find_spec("anthropic") is None:
     collect_ignore += [
         str(_HERE / "test_anthropic_integration.py"),
+        str(_HERE / "test_integrations.py"),
+    ]
+
+if importlib.util.find_spec("opentelemetry") is None:
+    collect_ignore += [
+        str(_HERE / "test_otel_integration.py"),
     ]
