@@ -28,6 +28,4 @@ Source = "https://github.com/dislovelhl/acgs-lite/tree/main/rust/pyo3"
 # Produce abi3 wheels so one artifact works on all Python 3.8+ versions.
 features = ["pyo3/extension-module"]
 module-name = "acgs_lite_rust"
-# The parent pure-Python package stays at the repo root; this crate ships
-# as a standalone companion wheel that acgs-lite imports lazily.
-python-source = "."
+# Pure Rust extension — no Python source directory needed alongside the crate.

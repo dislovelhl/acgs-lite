@@ -6,6 +6,7 @@ copy so verification always exercises the workspace code under test.
 
 from __future__ import annotations
 
+import importlib.util
 import runpy
 import sys
 from pathlib import Path
@@ -23,3 +24,17 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 _REPO_CONFTEST = _REPO_ROOT / "conftest.py"
 if _REPO_CONFTEST.is_file():
     runpy.run_path(str(_REPO_CONFTEST), run_name="acgs_repo_conftest")
+
+# Skip test files whose top-level imports require extras not installed in slim
+# environments (e.g. python-fallback CI job installs only [dev,mcp]).
+_HERE = Path(__file__).parent
+
+if importlib.util.find_spec("fastapi") is None:
+    collect_ignore = [
+        str(_HERE / "test_server.py"),
+        str(_HERE / "test_lifecycle_router.py"),
+        str(_HERE / "test_autonoma.py"),
+        str(_HERE / "test_federation_transport.py"),
+        str(_HERE / "test_openshell_governance_integration.py"),
+        str(_HERE / "integrations" / "test_litserve.py"),
+    ]

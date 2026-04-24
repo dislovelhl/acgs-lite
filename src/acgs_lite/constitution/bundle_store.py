@@ -6,7 +6,7 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 from collections import OrderedDict
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Protocol, runtime_checkable
 
 
@@ -18,7 +18,7 @@ def _utcnow_dt() -> datetime:
     converts to the type its driver expects (``str`` for SQLite TEXT
     columns, ``datetime`` for psycopg3 TIMESTAMPTZ columns).
     """
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 from acgs_lite.constitution.activation import ActivationRecord
 from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
