@@ -32,7 +32,8 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
+
+from acgs_lite._compat import StrEnum
 
 _DISCLAIMER = (
     "Indicative assessment only. Not legal advice. "

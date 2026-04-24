@@ -10,8 +10,9 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Any
+
+from acgs_lite._compat import StrEnum
 
 
 class ObligationType(StrEnum):

@@ -19,8 +19,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import StrEnum
 from typing import Any, Protocol, runtime_checkable
+
+from acgs_lite._compat import StrEnum
 
 
 class ChecklistStatus(StrEnum):

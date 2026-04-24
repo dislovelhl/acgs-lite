@@ -39,8 +39,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from enum import StrEnum
 from typing import Any
+
+from acgs_lite._compat import StrEnum
 
 
 class ChecklistStatus(StrEnum):

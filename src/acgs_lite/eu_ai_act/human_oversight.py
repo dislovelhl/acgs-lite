@@ -46,8 +46,9 @@ from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from enum import StrEnum
 from typing import Any
+
+from acgs_lite._compat import StrEnum
 
 CONSTITUTIONAL_HASH = "608508a9bd224290"
 

@@ -73,6 +73,7 @@ dev = [
     "pytest-cov>=4.1",
     "ruff>=0.8",
     "mypy>=1.13",
+    "tomli>=2.0; python_version < '3.11'",
     "acgs-lite[docs]",
 ]
 
