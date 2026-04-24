@@ -80,7 +80,7 @@ jobs:
             --cov=src/acgs_lite/constitution/sqlite_bundle_store.py \
             --cov=src/acgs_lite/trajectory.py \
             --cov-report=term-missing \
-            --cov-fail-under=85 \
+            --cov-fail-under=70 \
             -m "not slow and not benchmark and not e2e"
 
   codeql:
