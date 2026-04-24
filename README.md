@@ -8,6 +8,7 @@
 [![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
 [![GitHub stars](https://img.shields.io/github/stars/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/network/members)
+[![Star History](https://img.shields.io/badge/star%20history-chart-yellow?style=social)](https://star-history.com/#dislovelhl/acgs-lite)
 [![Featured in Awesome LLM Security](https://awesome.re/badge-flat2.svg)](https://github.com/beyefendi/awesome-llm-security)
 
 
@@ -435,6 +436,17 @@ Not all layers are equally hardened. Use this table to calibrate trust in each a
 | CLI (`acgs validate`, `audit`, `halt`) | Stable | Full local & CI usage |
 
 **Everything else** (constitution lifecycle API, formal verification with Z3/Lean, 18-framework compliance mapping) is **Beta / Experimental** and clearly marked in the Component Stability table above.
+
+---
+
+## 🏭 Used in production at...
+
+> **Are you running acgs-lite in production?** Open a PR or issue to add your organization here.
+> Early adopters shape the roadmap — we prioritize hardening the layers you actually use.
+
+| Organization / Project | Use case | Since |
+|------------------------|----------|-------|
+| *(your org here)* | *(e.g., pre-execution guard for OpenAI function calls)* | *(e.g., v2.9)* |
 
 ---
 

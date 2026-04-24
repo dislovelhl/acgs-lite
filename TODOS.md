@@ -8,8 +8,8 @@ Generated: 2026-04-22 | Branch: ci/fix-fpdf2-types
 ## 🔴 HIGH PRIORITY (ship these in the next PR)
 
 - [ ] PyPI token renewal: `.pypirc` token expired (403 Forbidden). Regenerate at https://pypi.org/manage/account/token/ then run `python -m twine upload dist/acgs_lite-2.9.0*`
-- [ ] Add Star History badge to README (https://star-history.com/#dislovelhl/acgs-lite)
-- [ ] Add "Used in production at..." placeholder section to README
+- [x] Add Star History badge to README — added to badge row
+- [x] Add "Used in production at..." placeholder section to README — added before Integrations section
 
 ### ✅ T-01: Add exception-path test for strict-mode restoration
 **Status: COMPLETE** — Committed on `ci/fix-fpdf2-types`.
@@ -33,11 +33,8 @@ All 3 raw `try/finally` strict-mode blocks replaced with `with engine.non_strict
 ### ✅ T-05: Fix raw engine.strict mutation in all other integrations
 **Status: COMPLETE** — Migrated all `with engine.non_strict()` usages to `validate(strict=False)` across `base.py`, `kubernetes.py`, `dashboard.py`, `github.py`, `haystack.py`, and all three `mcp_server.py` call sites. Updated `TestStrictModeRestoration` tests to verify the stronger new invariant (engine.strict never mutated).
 
-### T-06: Rust strict=True fast path audit_metadata gap
-**File:** `src/acgs_lite/engine/core.py:913, 1076, 1115`
-**Why:** The `not audit_metadata` guard fixes the `strict=False` fast path. But the `strict=True` Rust fast path (line 913) may also return early when `_fast_records is not None`, suppressing durable audit writes at lines 1076 and 1115. "bypass fast path = audit written" is not universally true.
-**Fix:** Audit the strict=True code path end-to-end. Add test: provide audit_metadata with strict=True and assert the audit entry is written.
-**Estimated effort:** ~2 hrs
+### ✅ T-06: Rust strict=True fast path audit_metadata gap
+**Status: COMPLETE** — Added `and not audit_metadata` guard to the strict=True Rust fast path (mirrors the strict=False path). When audit_metadata is present with strict=True, the full Python path now runs and `_record_validation_audit` is called. 3 regression tests in `test_engine_audit_metadata_strict.py` all pass.
 
 ### ✅ T-07: check_trajectory() — make private or add RLock
 **Status: COMPLETE** — Added `threading.RLock` to `InMemoryTrajectoryStore` (`.get()` and `.put()` now hold the lock). `TrajectoryMonitor` already used `threading.Lock`; the lock-release-before-rule-evaluation pattern was already correct. Direct-use safety gap on the store is closed.

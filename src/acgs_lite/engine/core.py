@@ -927,7 +927,11 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             _is_noop,
             _rv,
         ) = self._hot
-        if _rv is not None and _fast_records is not None and strict:
+        if _rv is not None and _fast_records is not None and strict and not audit_metadata:
+            # audit_metadata guard: same as strict=False path — when audit_metadata is
+            # present, fall through to the full Python path which calls
+            # _record_validation_audit with the metadata.  Omitting this guard would
+            # silently drop audit_metadata in fast (aggregate-only) mode.
             _action_lower = action if action.islower() else action.lower()
             _decision, _data = _rv.validate_hot(_action_lower)
             _has_gov_ctx = context is not None and (
