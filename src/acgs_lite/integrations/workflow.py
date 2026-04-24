@@ -129,68 +129,68 @@ class GovernanceWorkflowExecutor:
         text = inputs.get("text", action)
         limit = int(inputs.get("limit", 20))
 
-        with self._engine.non_strict():
-            if domain == "validation":
+        if domain == "validation":
+            with self._engine.non_strict():
                 result = self._engine.validate(action, agent_id="workflow")
-                return result.to_dict()
+            return result.to_dict()
 
-            if domain == "compliance":
-                result = self._engine.validate(text, agent_id="compliance-check")
-                return {
-                    "compliant": result.valid,
-                    "constitutional_hash": self._constitutional_hash,
-                    "violations": [
-                        {"rule_id": v.rule_id, "severity": v.severity.value}
-                        for v in result.violations
-                    ],
-                }
+        if domain == "compliance":
+            result = self._engine.validate(text, agent_id="compliance-check", strict=False)
+            return {
+                "compliant": result.valid,
+                "constitutional_hash": self._constitutional_hash,
+                "violations": [
+                    {"rule_id": v.rule_id, "severity": v.severity.value}
+                    for v in result.violations
+                ],
+            }
 
-            if domain == "constitution":
-                return {
-                    "name": self._constitution.name,
-                    "version": self._constitution.version,
-                    "constitutional_hash": self._constitution.hash,
-                    "rules_count": len(self._constitution.rules),
-                }
+        if domain == "constitution":
+            return {
+                "name": self._constitution.name,
+                "version": self._constitution.version,
+                "constitutional_hash": self._constitution.hash,
+                "rules_count": len(self._constitution.rules),
+            }
 
-            if domain == "audit":
-                entries = self._audit_log.export_dicts()
-                return {
-                    "total_entries": len(self._audit_log),
-                    "chain_valid": self._audit_log.verify_chain(),
-                    "entries": entries[-limit:],
-                }
+        if domain == "audit":
+            entries = self._audit_log.export_dicts()
+            return {
+                "total_entries": len(self._audit_log),
+                "chain_valid": self._audit_log.verify_chain(),
+                "entries": entries[-limit:],
+            }
 
-            if domain == "stats":
-                return {
-                    **self._engine.stats,
-                    "audit_entries": len(self._audit_log),
-                }
+        if domain == "stats":
+            return {
+                **self._engine.stats,
+                "audit_entries": len(self._audit_log),
+            }
 
-            if domain == "explain":
-                result = self._engine.validate(action, agent_id="explain-workflow")
-                return {
-                    "action": action,
-                    "compliant": result.valid,
-                    "violations": [
-                        {
-                            "rule_id": v.rule_id,
-                            "severity": v.severity.value,
-                            "rule_text": v.rule_text,
-                        }
-                        for v in result.violations
-                    ],
-                }
+        if domain == "explain":
+            result = self._engine.validate(action, agent_id="explain-workflow", strict=False)
+            return {
+                "action": action,
+                "compliant": result.valid,
+                "violations": [
+                    {
+                        "rule_id": v.rule_id,
+                        "severity": v.severity.value,
+                        "rule_text": v.rule_text,
+                    }
+                    for v in result.violations
+                ],
+            }
 
-            if domain == "capability":
-                words = set(action.lower().split())
-                if words & self._RESTRICTED_KEYWORDS:
-                    tier = "RESTRICTED"
-                elif words & self._FULL_KEYWORDS:
-                    tier = "FULL"
-                else:
-                    tier = "SUPERVISED"
-                return {"tier": tier, "action": action}
+        if domain == "capability":
+            words = set(action.lower().split())
+            if words & self._RESTRICTED_KEYWORDS:
+                tier = "RESTRICTED"
+            elif words & self._FULL_KEYWORDS:
+                tier = "FULL"
+            else:
+                tier = "SUPERVISED"
+            return {"tier": tier, "action": action}
 
         return {"error": f"Unhandled domain: {domain}"}
 

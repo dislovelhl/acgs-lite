@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 from pathlib import Path
@@ -61,7 +61,7 @@ def export_evidence(
     )
     rules = _load_rules(constitution_path) if constitution_path else []
     audit_summary = _load_audit_summary(audit_log_path) if audit_log_path else None
-    assessed_at = getattr(report, "assessed_at", "") or datetime.now(UTC).isoformat()
+    assessed_at = getattr(report, "assessed_at", "") or datetime.now(timezone.utc).isoformat()
 
     lines = [
         f"> **Template Origin**: ACGS Bridge | **ACGS Version**: {_VERSION} | **Command**: `acgs arckit export`",

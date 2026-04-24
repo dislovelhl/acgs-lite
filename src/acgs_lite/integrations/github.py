@@ -286,9 +286,7 @@ class GitHubGovernanceBot:
 
     def _validate_text(self, text: str, agent_id: str) -> ValidationResult:
         """Validate text using the governance engine in non-strict mode."""
-        with self.engine.non_strict():
-            result = self.engine.validate(text, agent_id=agent_id)
-        return result
+        return self.engine.validate(text, agent_id=agent_id, strict=False)
 
     @property
     def stats(self) -> dict[str, Any]:

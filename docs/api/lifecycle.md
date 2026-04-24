@@ -14,6 +14,7 @@ The lifecycle API is mounted by `acgs_lite.server.create_governance_app()`.
 from acgs_lite.server import create_governance_app
 
 app = create_governance_app(
+    api_key="dev-api-key",           # Required in v2.10.0+ (require_auth defaults to True)
     include_lifecycle=True,
     lifecycle_api_key="dev-lifecycle-key",
 )

@@ -212,27 +212,25 @@ class TestTransformerScorer:
             assert 0.0 <= score <= 1.0
 
     def test_classifier_property_lazy_init(self):
-        """classifier property creates pipeline on first access."""
-        # When transformers IS available, pipeline is at module level
-        with patch("acgs_lite.scoring.TRANSFORMERS_AVAILABLE", True):
-            import acgs_lite.scoring as _scoring_mod
+        """classifier property creates pipeline on first access (lazy import path)."""
+        from unittest.mock import MagicMock, patch
+
+        fake_pipeline = MagicMock(return_value=[{"label": "NEGATIVE", "score": 0.5}])
+        mock_transformers = MagicMock()
+        mock_transformers.pipeline = fake_pipeline
+
+        # Patch TRANSFORMERS_AVAILABLE AND inject a fake transformers module so
+        # the lazy `from transformers import pipeline` inside classifier resolves.
+        with patch("acgs_lite.scoring.TRANSFORMERS_AVAILABLE", True), patch.dict(
+            "sys.modules", {"transformers": mock_transformers}
+        ):
             from acgs_lite.scoring import TransformerScorer
 
-            fake_pipeline = MagicMock(return_value=[{"label": "NEGATIVE", "score": 0.5}])
-            # Inject pipeline into module namespace if not already present
-            _orig = getattr(_scoring_mod, "pipeline", None)
-            _scoring_mod.pipeline = fake_pipeline  # type: ignore[attr-defined]
-            try:
-                ts = TransformerScorer.__new__(TransformerScorer)
-                ts.model_name = "distilbert-base-uncased"
-                ts._classifier = None
-                clf = ts.classifier
-                assert clf is not None
-            finally:
-                if _orig is None:
-                    delattr(_scoring_mod, "pipeline")
-                else:
-                    _scoring_mod.pipeline = _orig  # type: ignore[attr-defined]
+            ts = TransformerScorer.__new__(TransformerScorer)
+            ts.model_name = "distilbert-base-uncased"
+            ts._classifier = None
+            clf = ts.classifier
+            assert clf is not None
 
 
 # ---------------------------------------------------------------------------

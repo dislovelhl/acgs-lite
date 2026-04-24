@@ -5,7 +5,7 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,7 +13,7 @@ from acgs_lite.constitution.bundle import BundleStatus, ConstitutionBundle
 
 
 def _utcnow() -> datetime:
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 class ActivationRecord(BaseModel):

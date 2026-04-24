@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,8 +61,66 @@ jobs:
             --import-mode=importlib \
             --cov=src/acgs_lite \
             --cov-report=term-missing \
+            --cov-report=xml \
             --cov-fail-under=70 \
             -m "not slow and not benchmark and not e2e"
+      - name: Critical-path coverage gate (engine, audit, maci, server, lifecycle)
+        env:
+          OPENAI_API_KEY: test-key-for-unit-tests
+          ANTHROPIC_API_KEY: test-key-for-unit-tests
+        run: |
+          python -m pytest tests/ \
+            --import-mode=importlib \
+            --cov=src/acgs_lite/engine \
+            --cov=src/acgs_lite/audit.py \
+            --cov=src/acgs_lite/maci.py \
+            --cov=src/acgs_lite/server.py \
+            --cov=src/acgs_lite/constitution/lifecycle_service.py \
+            --cov=src/acgs_lite/constitution/lifecycle_router.py \
+            --cov=src/acgs_lite/constitution/sqlite_bundle_store.py \
+            --cov=src/acgs_lite/trajectory.py \
+            --cov-report=term-missing \
+            --cov-fail-under=70 \
+            -m "not slow and not benchmark and not e2e"
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+  python-fallback:
+    name: Python fallback (no Rust companion)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install without Rust companion
+        run: pip install -e ".[dev,mcp]" httpx
+      - name: Confirm acgs-lite-rust is not present
+        run: python -c "import importlib.util; assert importlib.util.find_spec('acgs_lite_rust') is None, 'Rust companion unexpectedly installed'"
+      - name: Test Python fallback path
+        env:
+          OPENAI_API_KEY: test-key-for-unit-tests
+          ANTHROPIC_API_KEY: test-key-for-unit-tests
+        run: |
+          python -m pytest tests/ \
+            --import-mode=importlib \
+            -m "not slow and not benchmark and not e2e" \
+            -q --tb=short
 
   package:
     runs-on: ubuntu-latest

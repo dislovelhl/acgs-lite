@@ -8,7 +8,7 @@ Constitutional Hash: 608508a9bd224290
 
 Usage::
 
-    from acgs import Constitution, GovernedAgent, MACIRole
+    from acgs_lite import Constitution, GovernedAgent, MACIRole
 
     constitution = Constitution.from_yaml("rules.yaml")
     agent = GovernedAgent(my_agent, constitution=constitution)
@@ -88,53 +88,90 @@ from acgs_lite.errors import (
 )
 from acgs_lite.events import EventBus, GovernanceEvent, get_event_bus
 from acgs_lite.fail_closed import fail_closed as fail_closed
-from acgs_lite.formal.smt_gate import NullVerificationGate, VerificationResult, Z3VerificationGate
 from acgs_lite.governed import GovernedAgent, GovernedCallable
-from acgs_lite.lean_verify import (
-    LEAN_AVAILABLE,
-    MISTRAL_AVAILABLE,
-    LeanstralVerifier,
-    LeanVerifyResult,
-    ProofCertificate,
-)
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
-from acgs_lite.openshell import (
-    ActionContext,
-    ActionEnvelope,
-    ActionPayloadSummary,
-    ActionRequirements,
-    ActionType,
-    ActorRef,
-    ActorRole,
-    ApprovalReviewRequest,
-    ApprovalReviewResponse,
-    ApprovalSubmission,
-    AuditEvent,
-    AuditEventType,
-    ComplianceResult,
-    ComplianceStatus,
-    DecisionType,
-    ExecutionOutcome,
-    ExternalRef,
-    GovernanceDecision,
-    GovernanceStateBackend,
-    GovernanceStateChecksumError,
-    GovernanceStateError,
-    GovernanceStateMigrationError,
-    GovernanceStateObservabilityHook,
-    GovernanceStateVersionError,
-    InMemoryGovernanceStateBackend,
-    JsonFileGovernanceStateBackend,
-    OperationType,
-    OutcomeStatus,
-    RedisGovernanceStateBackend,
-    ResourceRef,
-    RiskLevel,
-    SQLiteGovernanceStateBackend,
-    create_openshell_governance_app,
-    create_openshell_governance_router,
-)
+
+# ── Optional dependency tracking ────────────────────────────────────────────
+# Populated when optional extras are not installed. __getattr__ below uses
+# this to raise ImportError with a helpful install hint instead of crashing
+# the entire `import acgs_lite` at startup.
+_MISSING_OPTIONAL: dict[str, str] = {}
+
+try:
+    from acgs_lite.formal.smt_gate import (
+        NullVerificationGate,
+        VerificationResult,
+        Z3VerificationGate,
+    )
+except ImportError:
+    for _s in ("NullVerificationGate", "VerificationResult", "Z3VerificationGate"):
+        _MISSING_OPTIONAL[_s] = "pip install z3-solver"
+
+try:
+    from acgs_lite.lean_verify import (
+        LEAN_AVAILABLE,
+        MISTRAL_AVAILABLE,
+        LeanstralVerifier,
+        LeanVerifyResult,
+        ProofCertificate,
+    )
+except ImportError:
+    for _s in ("LEAN_AVAILABLE", "MISTRAL_AVAILABLE", "LeanstralVerifier", "LeanVerifyResult", "ProofCertificate"):
+        _MISSING_OPTIONAL[_s] = "pip install acgs-lite[lean]"
+
+try:
+    from acgs_lite.openshell import (
+        ActionContext,
+        ActionEnvelope,
+        ActionPayloadSummary,
+        ActionRequirements,
+        ActionType,
+        ActorRef,
+        ActorRole,
+        ApprovalReviewRequest,
+        ApprovalReviewResponse,
+        ApprovalSubmission,
+        AuditEvent,
+        AuditEventType,
+        ComplianceResult,
+        ComplianceStatus,
+        DecisionType,
+        ExecutionOutcome,
+        ExternalRef,
+        GovernanceDecision,
+        GovernanceStateBackend,
+        GovernanceStateChecksumError,
+        GovernanceStateError,
+        GovernanceStateMigrationError,
+        GovernanceStateObservabilityHook,
+        GovernanceStateVersionError,
+        InMemoryGovernanceStateBackend,
+        JsonFileGovernanceStateBackend,
+        OperationType,
+        OutcomeStatus,
+        RedisGovernanceStateBackend,
+        ResourceRef,
+        RiskLevel,
+        SQLiteGovernanceStateBackend,
+        create_openshell_governance_app,
+        create_openshell_governance_router,
+    )
+except ImportError:
+    _openshell_syms = (
+        "ActionContext", "ActionEnvelope", "ActionPayloadSummary", "ActionRequirements",
+        "ActionType", "ActorRef", "ActorRole", "ApprovalReviewRequest", "ApprovalReviewResponse",
+        "ApprovalSubmission", "AuditEvent", "AuditEventType", "ComplianceResult",
+        "ComplianceStatus", "DecisionType", "ExecutionOutcome", "ExternalRef",
+        "GovernanceDecision", "GovernanceStateBackend", "GovernanceStateChecksumError",
+        "GovernanceStateError", "GovernanceStateMigrationError", "GovernanceStateObservabilityHook",
+        "GovernanceStateVersionError", "InMemoryGovernanceStateBackend", "JsonFileGovernanceStateBackend",
+        "OperationType", "OutcomeStatus", "RedisGovernanceStateBackend", "ResourceRef",
+        "RiskLevel", "SQLiteGovernanceStateBackend", "create_openshell_governance_app",
+        "create_openshell_governance_router",
+    )
+    for _s in _openshell_syms:
+        _MISSING_OPTIONAL[_s] = "pip install acgs-lite  # openshell is part of the base package; if missing, check your Python path"
 from acgs_lite.provenance import ProvenanceNode, ProvenanceRecord
 from acgs_lite.scoring import ConstitutionalImpactScorer, RuleBasedScorer, score_impact
 from acgs_lite.trajectory import (
@@ -146,12 +183,22 @@ from acgs_lite.trajectory import (
     TrajectorySession,
     TrajectoryViolation,
 )
-from acgs_lite.z3_verify import (
-    Z3_AVAILABLE,
-    Z3_RISK_THRESHOLD,
-    Z3ConstraintVerifier,
-    Z3VerifyResult,
-)
+
+try:
+    from acgs_lite.z3_verify import (
+        Z3_AVAILABLE,
+        Z3_RISK_THRESHOLD,
+        Z3ConstraintVerifier,
+        Z3VerifyResult,
+    )
+except ImportError:
+    for _s in ("Z3_AVAILABLE", "Z3_RISK_THRESHOLD", "Z3ConstraintVerifier", "Z3VerifyResult"):
+        _MISSING_OPTIONAL[_s] = "pip install z3-solver"
+
+# These eager imports are safe without psycopg/sqlite3: postgres_bundle_store
+# imports psycopg only inside _import_psycopg(), and sqlite3 is stdlib.
+from acgs_lite.constitution.postgres_bundle_store import PostgresBundleStore
+from acgs_lite.constitution.sqlite_bundle_store import SQLiteBundleStore
 
 __version__ = VERSION
 
@@ -317,4 +364,224 @@ __all__ = [
     "LicenseInfo",
     "LicenseManager",
     "Tier",
+    # Bundle stores
+    "PostgresBundleStore",
+    "SQLiteBundleStore",
+    # API stability metadata
+    "API_STABILITY",
+    "stability",
 ]
+
+
+# ── API stability layers ────────────────────────────────────────────────
+# Public-API stability classification. Useful for downstream tooling that
+# needs to know which exports are safe to depend on across minor versions.
+#
+# Layers:
+#   "stable"       — semver-protected. Breaking changes only on major bumps.
+#   "beta"         — feature-complete, but signature/behavior may shift in
+#                    minor releases. Lifecycle, governance memory, spot-check.
+#   "experimental" — may change or be removed without a deprecation cycle.
+#                    Verification gates, formal-verification adapters, OpenShell.
+#
+# Anything not present in this map should be treated as "experimental" by
+# downstream consumers until explicitly classified here.
+
+_STABILITY_STABLE: frozenset[str] = frozenset(
+    {
+        # Constitutional model
+        "Constitution",
+        "ConstitutionBuilder",
+        "Rule",
+        "RuleSnapshot",
+        "Severity",
+        "ViolationAction",
+        "AcknowledgedTension",
+        # Engine surface
+        "GovernanceEngine",
+        "ValidationResult",
+        "BatchValidationResult",
+        # Governed wrappers
+        "GovernedAgent",
+        "GovernedCallable",
+        # Audit
+        "AuditLog",
+        "AuditEntry",
+        "AuditBackend",
+        "InMemoryAuditBackend",
+        "JSONLAuditBackend",
+        # MACI separation of powers
+        "MACIRole",
+        "MACIEnforcer",
+        # Errors
+        "ConstitutionalViolationError",
+        "GovernanceError",
+        "MACIViolationError",
+        # Circuit breaker (Article 14 kill-switch)
+        "GovernanceCircuitBreaker",
+        "GovernanceHaltError",
+        # Trajectory monitoring (core rule types are stable)
+        "TrajectoryMonitor",
+        "TrajectorySession",
+        "TrajectoryViolation",
+        "InMemoryTrajectoryStore",
+        "FrequencyThresholdRule",
+        "CumulativeValueRule",
+        "SensitiveToolSequenceRule",
+        # Constants / metadata
+        "CONSTITUTIONAL_HASH",
+        "VERSION",
+    }
+)
+
+_STABILITY_BETA: frozenset[str] = frozenset(
+    {
+        # Bundle lifecycle (week-3 spot-check / lifecycle)
+        "ConstitutionBundle",
+        "BundleStatus",
+        "BundleStore",
+        "InMemoryBundleStore",
+        "PostgresBundleStore",
+        "SQLiteBundleStore",
+        "ActivationRecord",
+        "ConstitutionLifecycle",
+        "ConcurrentLifecycleError",
+        "LifecycleError",
+        "LifecycleEvidenceError",
+        "LifecycleEvidenceRecord",
+        "LifecycleAuditSink",
+        "InMemoryLifecycleAuditSink",
+        "TransitionRecord",
+        "StatusTransition",
+        # Spot-check + trust scoring
+        "AuditPolicy",
+        "CaseConfig",
+        "CaseManager",
+        "CaseRecord",
+        "CaseState",
+        "CompletedCase",
+        "SelectionPolicy",
+        "SelectionResult",
+        "SpotCheckAuditor",
+        "SpotCheckResult",
+        "TrustAdjustment",
+        "TrustConfig",
+        "TrustEvent",
+        "TrustScoreManager",
+        "TrustTier",
+        "ValidatorAssessment",
+        "ValidatorProfile",
+        "ValidatorPool",
+        "ValidatorSelector",
+        # Governance memory
+        "GovernanceMemoryPrecedentHit",
+        "GovernanceMemoryReport",
+        "GovernanceMemoryRetriever",
+        "GovernanceMemorySummary",
+        # Provenance + event bus
+        "ProvenanceRecord",
+        "ProvenanceNode",
+        "EventBus",
+        "GovernanceEvent",
+        "get_event_bus",
+        # Scoring
+        "ConstitutionalImpactScorer",
+        "RuleBasedScorer",
+        "score_impact",
+        # Licensing
+        "set_license",
+        "LicenseInfo",
+        "LicenseManager",
+        "Tier",
+    }
+)
+
+_STABILITY_EXPERIMENTAL: frozenset[str] = frozenset(
+    {
+        # Verification gates
+        "VerificationResult",
+        "Z3VerificationGate",
+        "NullVerificationGate",
+        # Z3 formal verification
+        "Z3ConstraintVerifier",
+        "Z3VerifyResult",
+        "Z3_AVAILABLE",
+        "Z3_RISK_THRESHOLD",
+        # Leanstral / Lean 4 proof certificates
+        "LeanstralVerifier",
+        "LeanVerifyResult",
+        "ProofCertificate",
+        "MISTRAL_AVAILABLE",
+        "LEAN_AVAILABLE",
+        # OpenShell governance integration (entire surface)
+        "ActionContext",
+        "ActionEnvelope",
+        "ActionPayloadSummary",
+        "ActionRequirements",
+        "ActionType",
+        "ActorRef",
+        "ActorRole",
+        "ApprovalReviewRequest",
+        "ApprovalReviewResponse",
+        "ApprovalSubmission",
+        "AuditEvent",
+        "AuditEventType",
+        "ComplianceResult",
+        "ComplianceStatus",
+        "DecisionType",
+        "ExecutionOutcome",
+        "ExternalRef",
+        "GovernanceStateChecksumError",
+        "GovernanceDecision",
+        "GovernanceStateBackend",
+        "GovernanceStateError",
+        "GovernanceStateMigrationError",
+        "GovernanceStateObservabilityHook",
+        "GovernanceStateVersionError",
+        "InMemoryGovernanceStateBackend",
+        "JsonFileGovernanceStateBackend",
+        "OperationType",
+        "OutcomeStatus",
+        "RedisGovernanceStateBackend",
+        "ResourceRef",
+        "RiskLevel",
+        "SQLiteGovernanceStateBackend",
+        "create_openshell_governance_app",
+        "create_openshell_governance_router",
+        # RuleSynthesisProvider (still maturing)
+        "RuleSynthesisProvider",
+    }
+)
+
+API_STABILITY: dict[str, str] = {
+    **{name: "stable" for name in _STABILITY_STABLE},
+    **{name: "beta" for name in _STABILITY_BETA},
+    **{name: "experimental" for name in _STABILITY_EXPERIMENTAL},
+}
+
+
+def stability(name: str) -> str:
+    """Return the stability layer for a public export.
+
+    :param name: A symbol name from ``acgs_lite.__all__``.
+    :returns: ``"stable"``, ``"beta"``, or ``"experimental"``. Unclassified
+        symbols default to ``"experimental"`` so downstream callers err on
+        the side of caution.
+    """
+    return API_STABILITY.get(name, "experimental")
+
+
+def __getattr__(name: str) -> object:
+    if name in _MISSING_OPTIONAL:
+        raise ImportError(
+            f"acgs_lite.{name!r} requires optional dependencies. "
+            f"Install with: {_MISSING_OPTIONAL[name]}"
+        )
+    raise AttributeError(f"module 'acgs_lite' has no attribute {name!r}")
+
+
+# Filter __all__ so `from acgs_lite import *` only advertises symbols that are
+# actually resolvable in this installation. Optional symbols missing from the
+# install stay accessible via explicit import (with a helpful ImportError hint
+# from __getattr__), but are not emitted by star-import.
+__all__ = [n for n in __all__ if n not in _MISSING_OPTIONAL]

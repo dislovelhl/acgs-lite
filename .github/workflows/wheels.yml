@@ -1,0 +1,104 @@
+name: Build rust wheels
+
+# Build abi3 wheels for the optional `acgs-lite-rust` accelerator companion
+# package. Produces manylinux + macOS (x86_64/arm64) + Windows artifacts
+# and leaves them ready for publishing to PyPI via `publish.yml`.
+
+on:
+  push:
+    tags:
+      - "rust-v*"
+  pull_request:
+    paths:
+      - "rust/**"
+      - ".github/workflows/wheels.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: linux-${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist --find-interpreter
+          working-directory: rust/pyo3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.target }}
+          path: rust/pyo3/dist/*.whl
+
+  macos:
+    name: macos-${{ matrix.target }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist --find-interpreter
+          working-directory: rust/pyo3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.target }}
+          path: rust/pyo3/dist/*.whl
+
+  windows:
+    name: windows-x64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist --find-interpreter
+          working-directory: rust/pyo3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-windows-x64
+          path: rust/pyo3/dist/*.whl
+
+  sdist:
+    name: sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+          working-directory: rust/pyo3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: rust/pyo3/dist/*.tar.gz

@@ -16,7 +16,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-import tomllib
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib  # type: ignore[no-redef]  # Python 3.10 compat
 
 
 @pytest.fixture()

@@ -269,12 +269,11 @@ class GovernanceAdmissionWebhook:
         if not text.strip():
             return _admission_response(uid, allowed=True)
 
-        # Use non-strict mode to get a result instead of raising
-        with self._engine.non_strict():
-            result = self._engine.validate(
-                text,
-                agent_id=self._agent_id,
-            )
+        result = self._engine.validate(
+            text,
+            agent_id=self._agent_id,
+            strict=False,
+        )
 
         enforcement = getattr(self, "_enforcement_mode", "enforce")
 
@@ -572,11 +571,11 @@ class GovernanceHealthCheck:
             otherwise.
         """
         try:
-            with self._engine.non_strict():
-                self._engine.validate(
-                    "health check ping",
-                    agent_id="k8s-healthcheck",
-                )
+            self._engine.validate(
+                "health check ping",
+                agent_id="k8s-healthcheck",
+                strict=False,
+            )
             return {"status": "ok"}
         except Exception as exc:
             return {

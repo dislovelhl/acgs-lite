@@ -25,7 +25,7 @@ def test_audit_push_accepts_valid_body_when_federation_enabled(
     monkeypatch.setenv("ACGS_FEDERATION_ENABLED", "true")
     monkeypatch.delenv("ACGS_FEDERATION_TOKEN", raising=False)
 
-    client = TestClient(create_governance_app())
+    client = TestClient(create_governance_app(require_auth=False))
 
     response = client.post("/v1/federation/audit/push", json=_valid_payload())
 
@@ -39,7 +39,7 @@ def test_audit_push_rejects_wrong_constitutional_hash(monkeypatch) -> None:
     payload = _valid_payload()
     payload["constitutional_hash"] = "wrong-hash"
 
-    client = TestClient(create_governance_app())
+    client = TestClient(create_governance_app(require_auth=False))
     response = client.post("/v1/federation/audit/push", json=payload)
 
     assert response.status_code == 422
@@ -49,7 +49,7 @@ def test_audit_push_rejects_wrong_bearer_token(monkeypatch) -> None:
     monkeypatch.setenv("ACGS_FEDERATION_ENABLED", "true")
     monkeypatch.setenv("ACGS_FEDERATION_TOKEN", "expected-token")
 
-    client = TestClient(create_governance_app())
+    client = TestClient(create_governance_app(require_auth=False))
     response = client.post(
         "/v1/federation/audit/push",
         json=_valid_payload(),
@@ -63,7 +63,7 @@ def test_router_not_mounted_when_federation_disabled(monkeypatch) -> None:
     monkeypatch.delenv("ACGS_FEDERATION_ENABLED", raising=False)
     monkeypatch.delenv("ACGS_FEDERATION_TOKEN", raising=False)
 
-    client = TestClient(create_governance_app())
+    client = TestClient(create_governance_app(require_auth=False))
     response = client.post("/v1/federation/audit/push", json=_valid_payload())
 
     assert response.status_code == 404

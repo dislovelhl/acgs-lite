@@ -100,8 +100,12 @@ def test_frequency_threshold_rule_reports_correct_agent_id_with_mixed_action_typ
 
     # Interleave a read from agent-B so that global index 1 ≠ per-type approve index 1.
     session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base))
-    session.add(_decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1)))
-    session.add(_decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2)))
+    session.add(
+        _decision(action_type="read", agent_id="agent-B", timestamp=base + timedelta(seconds=1))
+    )
+    session.add(
+        _decision(action_type="approve", agent_id="agent-A", timestamp=base + timedelta(seconds=2))
+    )
 
     # max_count=1 → violation fires at per-type right=1 (the 2nd approve).
     # Old code: decisions[1] = read/agent-B.  Fixed code: approve/agent-A.
@@ -129,9 +133,17 @@ def test_frequency_threshold_rule_handles_out_of_order_timestamps() -> None:
     session = TrajectorySession(session_id="s-ooo", agent_id="agent-1")
 
     # Add 3 approve decisions out of chronological order (t=2, t=0, t=1)
-    session.add(_decision(action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=2)))
+    session.add(
+        _decision(
+            action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=2)
+        )
+    )
     session.add(_decision(action_type="approve", agent_id="agent-1", timestamp=base))
-    session.add(_decision(action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=1)))
+    session.add(
+        _decision(
+            action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=1)
+        )
+    )
 
     monitor = TrajectoryMonitor(
         rules=[FrequencyThresholdRule(max_count=2, window_seconds=60)],

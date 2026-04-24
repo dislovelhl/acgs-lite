@@ -15,13 +15,13 @@ import json
 import threading
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from types import MappingProxyType
 from typing import Any, Protocol, runtime_checkable
 
 
 def _utcnow() -> datetime:
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 def _freeze_metadata(value: Any) -> Any:

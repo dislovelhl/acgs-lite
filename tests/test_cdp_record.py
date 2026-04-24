@@ -490,7 +490,7 @@ class TestCDPAPI:
             r.finalize()
             fresh_backend.save(r)
 
-        app = create_governance_app()
+        app = create_governance_app(require_auth=False)
         yield TestClient(app)
 
         # Restore

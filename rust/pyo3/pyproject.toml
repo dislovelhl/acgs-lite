@@ -1,0 +1,31 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "acgs-lite-rust"
+description = "Rust accelerator for acgs-lite governance engine matcher (optional companion wheel)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+keywords = ["ai", "governance", "rust", "accelerator", "acgs-lite"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries",
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/dislovelhl/acgs-lite"
+Source = "https://github.com/dislovelhl/acgs-lite/tree/main/rust/pyo3"
+
+[tool.maturin]
+# Produce abi3 wheels so one artifact works on all Python 3.8+ versions.
+features = ["pyo3/extension-module"]
+module-name = "acgs_lite_rust"
+# Pure Rust extension — no Python source directory needed alongside the crate.

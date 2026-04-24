@@ -94,10 +94,9 @@ class GovernedModels:
 
         resp_text = _extract_response_text(response)
         if resp_text:
-            old_strict = self._engine.strict
-            self._engine.strict = False
-            result = self._engine.validate(resp_text, agent_id=f"{self._agent_id}:output")
-            self._engine.strict = old_strict
+            result = self._engine.validate(
+                resp_text, agent_id=f"{self._agent_id}:output", strict=False
+            )
             if not result.valid:
                 logger.warning(
                     "Gemini response governance violations: %s",
@@ -144,10 +143,9 @@ class GovernedAsyncModels:
 
         resp_text = _extract_response_text(response)
         if resp_text:
-            old_strict = self._engine.strict
-            self._engine.strict = False
-            result = self._engine.validate(resp_text, agent_id=f"{self._agent_id}:output")
-            self._engine.strict = old_strict
+            result = self._engine.validate(
+                resp_text, agent_id=f"{self._agent_id}:output", strict=False
+            )
             if not result.valid:
                 logger.warning(
                     "Gemini async response governance violations: %s",

@@ -348,11 +348,11 @@ class GovernanceComponent(GovernedBase):
         on violation.
         """
         was_strict = self.engine.strict
-        with self.engine.non_strict():
-            result = self.engine.validate(
-                text,
-                agent_id=self.agent_id,
-            )
+        result = self.engine.validate(
+            text,
+            agent_id=self.agent_id,
+            strict=False,
+        )
 
         violations = [{"rule_id": v.rule_id, "rule_text": v.rule_text} for v in result.violations]
 

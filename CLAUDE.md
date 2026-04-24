@@ -17,46 +17,11 @@ AGENTS.md serves Codex/OMX.
 
 AI governance library for constitutional rule enforcement, lifecycle management, and audit-backed validation.
 
-## Quick Commands
+## Pre-Implementation Checks
 
-### Testing
-
-```bash
-# Full suite
-make test
-python -m pytest tests/ -v --import-mode=importlib --rootdir=.
-
-# Single file / single test
-python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib
-python -m pytest tests/test_lifecycle_router.py -k test_create_draft_200 -v --import-mode=importlib
-
-# By category
-python -m pytest -m "not e2e" -v --import-mode=importlib
-python -m pytest -m e2e -v --import-mode=importlib
-```
-
-**Critical test notes:**
-
-- Tests use `InMemory*` stubs and should not import live services.
-- Set placeholder keys when needed: `OPENAI_API_KEY=test-key-for-unit-tests` and `ANTHROPIC_API_KEY=test-key-for-unit-tests`.
-
-### Linting & Formatting
-
-```bash
-make lint
-ruff check .
-ruff format --check .
-ruff format .
-make typecheck
-mypy src/acgs_lite
-```
-
-### Build
-
-```bash
-make build
-python -m mkdocs build
-```
+- Before creating new config/diagram/schema files (`.dsl`, `workspace.*`, `schema.*`, `AGENTS.md`) **search the repo first** with `find . -name <filename>` to avoid duplicates
+- Before calling agent methods or SDK functions, read the actual source to verify the API (method name, signature, return type)
+- Before marking a task complete, verify all gates actually ran — never substitute static or remembered outputs for a fresh run
 
 ---
 
@@ -67,22 +32,45 @@ python -m mkdocs build
 
 ---
 
-## Autonomous Verification (Mandatory)
+## CI/Deployment Fix Protocol
 
-Do not assume code changes are correct. Always verify before handing work back.
+- When fixing a CI failure, check **all** job matrices and workflow files for the same pattern — not just the job that surfaced the error
+- For gh-pages/docs-deploy failures, verify both remote URL correctness **and** push semantics (fast-forward vs. force push)
+- Before any commit/push operation, confirm `git rev-parse --git-dir` succeeds (repo is initialized)
 
-**Required sequence:**
+---
+
+## Skill Invocation
+
+- If a skill or slash-command is invoked without a required task description or scope, **stop and ask** — do not proceed with a guess
+- After any failed skill invocation, run `/oh-my-claudecode:cancel` to clean up session state before retrying
+
+---
+
+## Quick Commands
 
 ```bash
-make lint
-make typecheck
-make test
-make build
+# Verify (required before marking complete)
+bash .claude/commands/test-and-verify.sh
+# or step by step:
+make lint && make typecheck && make test && make build
+
+# Single test
+python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib
+python -m pytest tests/test_lifecycle_router.py -k test_create_draft_200 -v --import-mode=importlib
+
+# Format
+ruff format .
 ```
 
-If any step fails, fix the issue and rerun the full sequence from the top. Do not skip steps.
+**Test notes:** Tests use `InMemory*` stubs. Set `OPENAI_API_KEY=test-key-for-unit-tests` and `ANTHROPIC_API_KEY=test-key-for-unit-tests` when needed.
 
-**Shortcut:** `bash .claude/commands/test-and-verify.sh`
+---
+
+## Repo Boundary
+
+`packages/acgs-lite` is a nested git repo inside the parent ACGS monorepo.
+Before staging, committing, or pushing, check git state both here and in the parent repo.
 
 ---
 
@@ -97,74 +85,6 @@ If any step fails, fix the issue and rerun the full sequence from the top. Do no
 - HTTP surfaces live in `src/acgs_lite/server.py` and `src/acgs_lite/constitution/lifecycle_router.py`.
 - Docs for API surfaces live under `docs/api/`.
 - Use `_make_*` helpers in tests for fixture creation when available.
-
----
-
-## Coding Standards
-
-### Naming Conventions
-
-| Type | Convention | Example |
-| --- | --- | --- |
-| Classes | PascalCase | `ConstitutionLifecycle` |
-| Functions | snake_case | `run_evaluation` |
-| Constants | UPPER_SNAKE_CASE | `MAX_RETRIES` |
-| Files | snake_case | `lifecycle_router.py` |
-
-### Import Order
-
-```python
-# 1. Standard library
-# 2. Third-party packages
-# 3. Local / first-party
-```
-
-### Error Handling
-
-```python
-# Use project-specific error types. No bare except blocks or silent fallthrough.
-```
-
-### Logging
-
-```python
-# Use structured logging where available. Do not add print() for production flow.
-```
-
----
-
-## Testing Standards
-
-### Coverage Requirements
-
-| Scope | Minimum | Target |
-| --- | --- | --- |
-| System-wide | 80% | 90%+ |
-| Critical paths | 90% | 95%+ |
-| PRs | 80% | 90%+ |
-
-### Mock Strategy
-
-- External services: always mock in unit tests.
-- File system: mock in unit tests, real in integration tests.
-- Time and randomness: mock for deterministic assertions.
-- Use `InMemory*` stubs instead of live SDKs in tests.
-
-### Pytest Notes
-
-- Default suite excludes `e2e` via `pytest.ini` / `pyproject.toml`.
-- Run targeted lifecycle tests with `python -m pytest tests/test_lifecycle_router.py -v --import-mode=importlib`.
-- When adding a branch, add tests for both the happy path and the failure path.
-
----
-
-## Security
-
-- Never hardcode secrets, API keys, tokens, or passwords.
-- Validate all external input at service boundaries.
-- Keep optional SDK imports out of module import time.
-- Prefer safe placeholders in examples: `dev-*`, `test-*`, `your-*-here`.
-- Do not weaken MACI or lifecycle auth checks to make tests pass.
 
 ---
 
@@ -197,6 +117,7 @@ If any step fails, fix the issue and rerun the full sequence from the top. Do no
 - Never force push to shared branches.
 
 ---
+
 
 ## Compounding Knowledge
 

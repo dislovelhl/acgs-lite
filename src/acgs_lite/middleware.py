@@ -57,13 +57,8 @@ BODY_METHODS: frozenset[str] = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 
 def _validate_non_strict(engine: GovernanceEngine, text: str, *, agent_id: str) -> Any:
-    """Validate text while always restoring the engine's strict mode."""
-    old_strict = engine.strict
-    engine.strict = False
-    try:
-        return engine.validate(text, agent_id=agent_id)
-    finally:
-        engine.strict = old_strict
+    """Validate text in non-strict mode via per-call override (no instance mutation)."""
+    return engine.validate(text, agent_id=agent_id, strict=False)
 
 
 class GovernanceASGIMiddleware:

@@ -26,7 +26,7 @@ Constitutional Hash: 608508a9bd224290
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from acgs_lite.compliance.base import (
@@ -93,7 +93,7 @@ class ComplianceReportExporter:
     ) -> None:
         self._report = report
         self._title = title
-        self._generated_at = datetime.now(UTC).isoformat()
+        self._generated_at = datetime.now(timezone.utc).isoformat()
 
     # ------------------------------------------------------------------
     # Plain text

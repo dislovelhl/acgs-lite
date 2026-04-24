@@ -160,7 +160,9 @@ class TestGovernedAnthropicToolHandlers:
             experience_library=library,
         )
 
-        result = client._handle_validate_action({"text": "send patient records", "agent_id": "test"})
+        result = client._handle_validate_action(
+            {"text": "send patient records", "agent_id": "test"}
+        )
 
         assert result["valid"] is True
         entry = client.audit_log.query(limit=1)[0]
@@ -170,9 +172,7 @@ class TestGovernedAnthropicToolHandlers:
             "PRIV-001",
             "SEC-001",
         ]
-        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
-            "P0"
-        ]
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == ["P0"]
         assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
 
     def test_tool_use_records_runtime_governance_in_audit_metadata(self):
@@ -229,9 +229,7 @@ class TestGovernedAnthropicToolHandlers:
         assert runtime_governance["checkpoint_kind"] == "tool_invocation"
         assert runtime_governance["tool_risk"]["tool_name"] == "shell"
         assert runtime_governance["governance_memory_summary"]["precedent_hit_count"] == 1
-        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == [
-            "P0"
-        ]
+        assert [hit["precedent_id"] for hit in runtime_governance["retrieved_precedents"]] == ["P0"]
         assert runtime_governance["trajectory_violations"] == []
 
 

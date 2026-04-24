@@ -60,14 +60,18 @@ def test_exp_009_rules_inventory_shows_rule_ids_severity_categories(tmp_path) ->
 
 def test_exp_010_audit_log_adds_audit_summary(tmp_path) -> None:
     audit_log = tmp_path / "audit.json"
-    audit_log.write_text(json.dumps([{"event": "violation", "rule_id": "DATA-001"}]), encoding="utf-8")
+    audit_log.write_text(
+        json.dumps([{"event": "violation", "rule_id": "DATA-001"}]), encoding="utf-8"
+    )
     markdown = export_evidence(project_id="001", system_id="test-agent", audit_log_path=audit_log)
     assert "Audit Trail Summary" in markdown
 
 
 def test_exp_010b_audit_summary_ignores_violation_substrings_in_notes(tmp_path) -> None:
     audit_log = tmp_path / "audit.json"
-    audit_log.write_text(json.dumps([{"event": "allow", "note": "no violation detected"}]), encoding="utf-8")
+    audit_log.write_text(
+        json.dumps([{"event": "allow", "note": "no violation detected"}]), encoding="utf-8"
+    )
     markdown = export_evidence(project_id="001", system_id="test-agent", audit_log_path=audit_log)
     assert "| Violations | 0 |" in markdown
 
@@ -91,7 +95,9 @@ def test_exp_014_gap_analysis_lists_uncovered_control_with_real_assessor() -> No
     markdown = export_evidence(
         project_id="001",
         system_id="test-agent",
-        assessor=MultiFrameworkAssessor(frameworks=["eu_ai_act", "nist_ai_rmf", "iso_42001", "gdpr"]),
+        assessor=MultiFrameworkAssessor(
+            frameworks=["eu_ai_act", "nist_ai_rmf", "iso_42001", "gdpr"]
+        ),
     )
     assert re.search(r"## Gap Analysis\n\n- .+", markdown)
 
@@ -108,6 +114,7 @@ def test_int_004_export_contains_positive_eu_ai_act_score() -> None:
 
 def test_exp_015_framework_name_with_pipe_does_not_corrupt_table() -> None:
     """ADV-2: assessor-derived framework_name containing '|' must be escaped."""
+
     class _FakeAssessment:
         framework_name = "EU | AI Act"
         compliance_score = 0.75
@@ -170,4 +177,3 @@ def test_exp_018_explicit_processes_pii_appears_in_assessor_descriptor() -> None
     )
     assert captured[0]["processes_pii"] is False
     assert captured[0]["autonomy_level"] == "batch_automated"
-

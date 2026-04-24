@@ -38,7 +38,7 @@ import time
 import uuid
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, TypeVar
 
@@ -193,7 +193,7 @@ class Article12Logger:
                     record_id=record_id,
                     system_id=self.system_id,
                     operation=operation,
-                    timestamp=datetime.now(UTC).isoformat(),
+                    timestamp=datetime.now(timezone.utc).isoformat(),
                     outcome=outcome,
                     constitutional_hash=CONSTITUTIONAL_HASH,
                     human_oversight_applied=human_oversight_applied,
@@ -386,7 +386,7 @@ class _OperationContext:
                 record_id=self._record_id,
                 system_id=self._log.system_id,
                 operation=self._operation,
-                timestamp=datetime.now(UTC).isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat(),
                 outcome=outcome,
                 constitutional_hash=CONSTITUTIONAL_HASH,
                 human_oversight_applied=self._human_oversight_applied,

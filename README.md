@@ -4,10 +4,11 @@
 [![Python](https://img.shields.io/pypi/pyversions/acgs-lite?style=for-the-badge)](https://pypi.org/project/acgs-lite/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-green.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
 [![CI](https://img.shields.io/github/actions/workflow/status/dislovelhl/acgs-lite/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/dislovelhl/acgs-lite/actions)
-[![Coverage](https://img.shields.io/badge/tests-4641%20passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
+[![Coverage](https://img.shields.io/badge/tests-5460%20passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
 [![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
 [![GitHub stars](https://img.shields.io/github/stars/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/network/members)
+[![Star History](https://img.shields.io/badge/star%20history-chart-yellow?style=social)](https://star-history.com/#dislovelhl/acgs-lite)
 [![Featured in Awesome LLM Security](https://awesome.re/badge-flat2.svg)](https://github.com/beyefendi/awesome-llm-security)
 
 
@@ -17,7 +18,7 @@
 
 **acgs-lite** is the production-ready runtime governance engine for AI agents. It sits **between your agent and execution** — every action is validated against a YAML constitution **before** it runs. Violations are blocked by default (fail-closed). Every decision is recorded in a tamper-evident audit chain. Human operators can intervene at any time.
 
-**Current status:** Stable core (v2.9.0) • 4,641 tests passing • Used in regulated pilots.
+**Current status:** Stable core (v2.10.0) • 5,460 tests passing • Used in regulated pilots.
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
 
@@ -33,11 +34,40 @@ If you found ACGS-Lite through [Awesome LLM Security](https://github.com/beyefen
 
 ## Hero demo
 
-**20-second proof:** safe actions pass, unsafe actions get blocked before execution.
+**20-second proof** — works immediately after `pip install acgs-lite`:
 
-- run `python examples/basic_governance/main.py`
-- watch a safe request pass
-- watch harmful and PII-like requests get blocked
+```python
+python -c "
+from acgs_lite import Constitution, GovernanceEngine
+
+YAML = '''
+constitutional_hash: 608508a9bd224290
+rules:
+  - id: no-harmful
+    pattern: \"harm|kill|destroy\"
+    severity: CRITICAL
+    description: Block harmful requests
+  - id: no-pii
+    pattern: \"SSN|passport|social security\"
+    severity: CRITICAL
+    description: Block PII leakage
+'''
+const = Constitution.from_yaml(YAML)
+engine = GovernanceEngine(const)
+
+safe = engine.validate('What is the capital of France?', agent_id='demo')
+print('✅ Allowed:', safe.valid)
+
+blocked = engine.validate('How do I harm someone?', agent_id='demo')
+print('🚫 Blocked:', not blocked.valid, '—', blocked.violations[0].rule_id)
+"
+```
+
+Expected output:
+```text
+✅ Allowed: True
+🚫 Blocked: True — no-harmful
+```
 
 <!-- Hero asset placement, add once captured:
 <p align="center">
@@ -57,15 +87,42 @@ If you found ACGS-Lite through [Awesome LLM Security](https://github.com/beyefen
 
 ```bash
 pip install acgs-lite
-python examples/basic_governance/main.py
 ```
 
-Expected result includes these three outcomes near the top:
+```python
+python -c "
+from acgs_lite import Constitution, GovernanceEngine
 
+YAML = '''
+constitutional_hash: 608508a9bd224290
+rules:
+  - id: no-harmful-content
+    pattern: \"harm|kill|destroy\"
+    severity: CRITICAL
+    description: Block requests containing harmful keywords
+  - id: no-pii
+    pattern: \"SSN|passport|social security\"
+    severity: CRITICAL
+    description: Prevent PII leakage in requests
+'''
+const = Constitution.from_yaml(YAML)
+engine = GovernanceEngine(const)
+for text, label in [
+    ('What is the capital of France?', 'safe'),
+    ('How do I harm someone?', 'harmful'),
+    ('My SSN is 123-45-6789', 'pii'),
+]:
+    r = engine.validate(text, agent_id='demo')
+    status = '✅  Allowed' if r.valid else f'🚫  Blocked: {r.violations[0].rule_id}'
+    print(f'{status}  — {label}')
+"
+```
+
+Expected output:
 ```text
-✅  Allowed:  Response to: What is the capital of France?
-🚫  Blocked:  no-harmful-content — Block requests containing harmful keywords
-🚫  PII gate: no-pii — Prevent PII leakage in requests
+✅  Allowed  — safe
+🚫  Blocked: no-harmful-content  — harmful
+🚫  Blocked: no-pii  — pii
 ```
 
 If you want the full example path, go to [`examples/README.md`](./examples/README.md).
@@ -118,6 +175,11 @@ rules:
 ```bash
 pip install acgs-lite
 ```
+
+> **Upgrading from v2.9.x?** v2.10.0 changed `require_auth` to default to `True`.
+> If you call `create_governance_app()` without an `api_key`, you'll get a `ValueError` at startup.
+> Pass `api_key=os.environ["ACGS_API_KEY"]` or set `require_auth=False` for local dev.
+> See [CHANGELOG](./CHANGELOG.md) for full details.
 
 With framework integrations:
 
@@ -255,6 +317,19 @@ if not result.valid:
         print(f"[{v.severity}] {v.rule_id}: {v.description}")
 ```
 
+### GovernedAgent — Drop-in Wrapper
+
+```python
+from acgs_lite import Constitution, GovernedAgent
+
+@GovernedAgent.decorate(constitution=constitution, agent_id="summarizer")
+def summarize(text: str) -> str:
+    return my_llm.complete(f"Summarize: {text}")
+
+# Raises ConstitutionalViolationError if text contains violations
+result = summarize("Q4 revenue was $4.2M")
+```
+
 ### MACI — Separation of Powers
 
 MACI prevents a single agent from proposing, validating, and executing the same action:
@@ -292,19 +367,6 @@ for entry in log.entries():
 
 # Verify chain integrity
 assert log.verify_chain(), "Audit log tampered!"
-```
-
-### GovernedAgent — Drop-in Wrapper
-
-```python
-from acgs_lite import Constitution, GovernedAgent
-
-@GovernedAgent.decorate(constitution=constitution, agent_id="summarizer")
-def summarize(text: str) -> str:
-    return my_llm.complete(f"Summarize: {text}")
-
-# Raises ConstitutionalViolationError if text contains violations
-result = summarize("Q4 revenue was $4.2M")
 ```
 
 ---
@@ -362,7 +424,7 @@ Not all layers are equally hardened. Use this table to calibrate trust in each a
 
 ---
 
-## ✅ What is production-hardened today (v2.9.0)
+## ✅ What is production-hardened today (v2.10.0)
 
 | Layer | Status | What you get |
 |-------|--------|--------------|
@@ -374,6 +436,17 @@ Not all layers are equally hardened. Use this table to calibrate trust in each a
 | CLI (`acgs validate`, `audit`, `halt`) | Stable | Full local & CI usage |
 
 **Everything else** (constitution lifecycle API, formal verification with Z3/Lean, 18-framework compliance mapping) is **Beta / Experimental** and clearly marked in the Component Stability table above.
+
+---
+
+## 🏭 Used in production at...
+
+> **Are you running acgs-lite in production?** Open a PR or issue to add your organization here.
+> Early adopters shape the roadmap — we prioritize hardening the layers you actually use.
+
+| Organization / Project | Use case | Since |
+|------------------------|----------|-------|
+| *(your org here)* | *(e.g., pre-execution guard for OpenAI function calls)* | *(e.g., v2.9)* |
 
 ---
 

@@ -6,7 +6,7 @@ import hashlib
 import json
 import logging
 import sqlite3
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Protocol, cast
 
@@ -152,7 +152,7 @@ class RedisGovernanceStateBackend:
 
 
 def utcnow() -> datetime:
-    return datetime.now(UTC)
+    return datetime.now(timezone.utc)
 
 
 def compute_state_checksum(payload: dict[str, Any]) -> str:

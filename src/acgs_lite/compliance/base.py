@@ -18,9 +18,10 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
-from enum import StrEnum
+from datetime import datetime, timezone
 from typing import Any, Protocol, runtime_checkable
+
+from acgs_lite._compat import StrEnum
 
 
 class ChecklistStatus(StrEnum):
@@ -62,19 +63,19 @@ class ChecklistItem:
         """Set status to COMPLIANT and record evidence."""
         self.status = ChecklistStatus.COMPLIANT
         self.evidence = evidence
-        self.updated_at = datetime.now(UTC).isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def mark_partial(self, evidence: str | None = None) -> None:
         """Set status to PARTIAL and record evidence."""
         self.status = ChecklistStatus.PARTIAL
         self.evidence = evidence
-        self.updated_at = datetime.now(UTC).isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def mark_not_applicable(self, reason: str | None = None) -> None:
         """Set status to NOT_APPLICABLE and record the reason."""
         self.status = ChecklistStatus.NOT_APPLICABLE
         self.evidence = reason
-        self.updated_at = datetime.now(UTC).isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize this checklist item to a plain dictionary."""

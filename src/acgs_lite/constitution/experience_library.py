@@ -55,7 +55,7 @@ import hashlib
 import json
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
 from typing import Any
@@ -214,7 +214,7 @@ class GovernanceExperienceLibrary:
                 triggered_rules=list(triggered_rules or []),
                 context=ctx,
                 rationale=rationale,
-                timestamp=datetime.now(UTC).isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat(),
                 category=category,
                 severity=severity,
                 embedding=list(embedding or []),

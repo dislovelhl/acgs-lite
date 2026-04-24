@@ -127,10 +127,7 @@ class GovernanceRunnable:
         """Validate output without raising (just log warnings)."""
         text = self._extract_text(output)
         if text:
-            old_strict = self.engine.strict
-            self.engine.strict = False
-            result = self.engine.validate(text, agent_id=f"{self.agent_id}:output")
-            self.engine.strict = old_strict
+            result = self.engine.validate(text, agent_id=f"{self.agent_id}:output", strict=False)
             if not result.valid:
                 logger.warning(
                     "LangChain output governance violations: %s",
