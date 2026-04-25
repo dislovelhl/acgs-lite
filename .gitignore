@@ -10,6 +10,7 @@ build/
 .eggs/
 
 # Virtual environments
+.env
 .venv/
 venv/
 env/
@@ -37,6 +38,14 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Agent / orchestrator state (autogen, do not commit)
+.agents/skills/braintrust/
+.bt/config.json
+.bt/skills/
+.omc/
+.codex
+.worktrees/
 
 # Rust build artifacts
 rust/target/
