@@ -2,20 +2,19 @@
 
 ## Overview
 
-This is the high-performance governance validation engine for ACGS-2, implemented in Rust as a PyO3 native extension for IP protection and maximum throughput.
+This is the high-performance governance validation engine for ACGS-2,
+implemented in Rust with a pure core crate and a thin PyO3 companion wheel.
 
 **Constitutional Hash:** `608508a9bd224290`
 
 ## Modules
 
-| Module | Purpose |
+| Path | Purpose |
 |--------|---------|
-| `validator.rs` | Core governance validation engine with hot/full validation paths |
-| `severity.rs` | Severity levels (ALLOW, DENY, DENY_CRITICAL) and classification |
-| `verbs.rs` | Verb-based rule matching and action verification |
-| `result.rs` | Validation result types and response structures |
-| `context.rs` | Constitutional context and scope handling |
-| `hash.rs` | Constitutional hash verification (SHA256) |
+| `core/` | Supported native validator core with hot/full validation paths |
+| `pyo3/` | Supported Python companion wheel, exported as `acgs_lite_rust` |
+| `wasm/` | WASM build of the same validator core |
+| `spacetime_governance/` | Experimental standalone SpacetimeDB module; excluded from the shipping workspace |
 
 ## Build
 
@@ -27,6 +26,10 @@ maturin build --release
 ```
 
 The compiled wheel is placed in `target/wheels/`.
+
+The workspace members are the shipping path: `core`, `pyo3`, and `wasm`.
+`spacetime_governance/` is intentionally standalone so wheel builds do not
+pull SpacetimeDB dependencies.
 
 ## Installation
 
@@ -49,6 +52,7 @@ Run Rust unit tests:
 ```bash
 cd packages/acgs-lite/rust
 cargo test
+cargo test --manifest-path spacetime_governance/Cargo.toml
 ```
 
 Run integration tests from Python:
@@ -58,6 +62,20 @@ python -m pytest tests/core/shared/test_governance_engine.py -v
 ```
 
 ## Python API
+
+### Supported API
+
+The supported `acgs_lite_rust` Python API is intentionally small:
+
+- `GovernanceValidator`
+- `ALLOW`
+- `DENY_CRITICAL`
+- `DENY`
+
+`ImpactScorer` is not exported by the supported companion wheel. Impact
+scoring remains Python-first in `acgs_lite.scoring`; the `RustScorer`
+compatibility wrapper only activates if a future or private native module
+exports `ImpactScorer` explicitly.
 
 ### GovernanceValidator
 
@@ -109,7 +127,6 @@ Typical latency:
 
 ## Development Notes
 
-- **PyO3 version**: 0.23 with abi3 (stable ABI) for Python 3.8+
+- **PyO3 version**: see `pyo3/Cargo.toml`
 - **Optimization level**: 3 (O3) with LTO and single codegen unit
 - **Panic mode**: abort (prevents unwinding into Python)
-- **Note**: Candle ML dependencies currently disabled (exp81 rebuild pending)

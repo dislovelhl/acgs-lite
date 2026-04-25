@@ -28,6 +28,12 @@ pip install acgs-lite acgs-lite-rust
 `acgs-lite` will detect the rust module at import time and switch the
 validator hot-path over automatically.
 
+Supported exports are deliberately limited to the governance validation API:
+`GovernanceValidator`, `ALLOW`, `DENY_CRITICAL`, and `DENY`. This wheel does
+not export `ImpactScorer`; impact scoring remains Python-first in
+`acgs_lite.scoring` unless a future or private native module provides that
+symbol explicitly.
+
 ## Building wheels locally
 
 ```bash

@@ -124,7 +124,7 @@ def classifier(self) -> Any:
 |------|----------|-------|
 | `acgs_lite.__init__` imports ~176 symbols eagerly | Low | Mostly lightweight; main cost was scoring.py (now fixed) |
 | `TransformerScorer.classifier` first-use cost | Low-Medium | ~3.5s on first call (expected — model load) |
-| `from acgs_lite_rust import ...` probe at scoring module level | Negligible | `find_spec` fast path already used |
+| Native `ImpactScorer` probe at scoring module level | Negligible | Import is optional and falls back unless a native module exports `ImpactScorer` |
 | Constitution package (`__init__.py`) imports many submodules | Low | Measured at <50ms total; no heavy deps |
 
 ---
