@@ -37,7 +37,9 @@ def add_parser(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> None
     generate.add_argument("--version", default="1.0")
     generate.add_argument("--dry-run", action="store_true")
 
-    export = arckit_sub.add_parser("export", help="Export ACGS compliance evidence as arc-kit Markdown")
+    export = arckit_sub.add_parser(
+        "export", help="Export ACGS compliance evidence as arc-kit Markdown"
+    )
     export.add_argument("--project-id", required=True)
     export.add_argument("--system-id", required=True)
     export.add_argument("--domain", default="general")

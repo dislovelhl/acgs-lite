@@ -4,6 +4,7 @@ Self-improvement benchmark for acgs-lite GovernanceEngine.
 Measures validate() throughput (OPS) and construction cost.
 Outputs JSON as last stdout line: {"primary": <float>, "sub_scores": {...}}
 """
+
 from __future__ import annotations
 
 import json
@@ -23,12 +24,17 @@ def run_benchmark() -> dict:
         output_path = f.name
 
     cmd = [
-        sys.executable, "-m", "pytest",
+        sys.executable,
+        "-m",
+        "pytest",
         str(BENCHMARK_FILE),
-        "-m", "benchmark",
-        "--benchmark-json", output_path,
+        "-m",
+        "benchmark",
+        "--benchmark-json",
+        output_path,
         "--import-mode=importlib",
-        "-q", "--no-header",
+        "-q",
+        "--no-header",
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(ACGS_LITE))
     if result.returncode != 0:
@@ -47,7 +53,9 @@ def extract_scores(data: dict) -> tuple[float, dict]:
 
     allow_ops = benchmarks.get("test_validate_allow_path_default_constitution", {}).get("ops", 0.0)
     deny_ops = benchmarks.get("test_validate_deny_path_default_constitution", {}).get("ops", 0.0)
-    construct_ops = benchmarks.get("test_engine_construction_default_constitution", {}).get("ops", 0.0)
+    construct_ops = benchmarks.get("test_engine_construction_default_constitution", {}).get(
+        "ops", 0.0
+    )
 
     # Primary: weighted harmonic-style composite of the two hot paths (normalised to k-OPS)
     # Weight: 60% allow (main path), 40% deny (rejection path)

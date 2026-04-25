@@ -24,9 +24,7 @@ def rules_from_risks(rules: list[ExtractedRule]) -> list[ExtractedRule]:
 
 def rules_from_dpia(rules: list[ExtractedRule]) -> list[ExtractedRule]:
     return [
-        rule
-        for rule in rules
-        if rule.source_type == "DPIA" or rule.category == "data-protection"
+        rule for rule in rules if rule.source_type == "DPIA" or rule.category == "data-protection"
     ]
 
 
@@ -64,9 +62,7 @@ def build_constitution(
 
     rule_dicts = [_rule_to_dict(rule) for rule in rules]
     rule_dicts = _dedupe_rules(rule_dicts)
-    compliance_mapping = {
-        rule["id"]: map_rule_to_controls(rule["category"]) for rule in rule_dicts
-    }
+    compliance_mapping = {rule["id"]: map_rule_to_controls(rule["category"]) for rule in rule_dicts}
     constitutional_hash = _runtime_constitutional_hash(rule_dicts)
     arc_kit_source_hash = _artifact_source_hash(rule_dicts, resolved_source)
     metadata = {
