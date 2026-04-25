@@ -14,6 +14,7 @@ Usage::
 
 from __future__ import annotations
 
+import importlib
 import importlib.util
 import logging
 import os
@@ -27,10 +28,11 @@ _log = logging.getLogger(__name__)
 TRANSFORMERS_AVAILABLE: bool = importlib.util.find_spec("transformers") is not None
 
 try:
-    from acgs_lite_rust import ImpactScorer as _RustImpactScorer
-
-    RUST_SCORER_AVAILABLE = True
+    _rust_scoring_mod = importlib.import_module("acgs_lite_rust")
+    _RustImpactScorer = getattr(_rust_scoring_mod, "ImpactScorer", None)
+    RUST_SCORER_AVAILABLE = _RustImpactScorer is not None
 except ImportError:
+    _RustImpactScorer = None
     RUST_SCORER_AVAILABLE = False
 
 # Feature flag: "python" | "rust" | "shadow"
@@ -167,11 +169,11 @@ class TransformerScorer:
 
 
 class RustScorer:
-    """Thin wrapper around the Rust/Candle ImpactScorer PyO3 extension.
+    """Compatibility wrapper for an optional native ``ImpactScorer``.
 
-    Requires:
-      - acgs_lite_rust built: cd packages/acgs-lite/rust && maturin develop --release
-      - IMPACT_SCORER_MODEL_DIR pointing to a fine-tuned DistilBERT model directory
+    The supported ``acgs_lite_rust`` companion wheel accelerates governance
+    validation only. Impact scoring remains Python-first unless a future or
+    private native module exports ``ImpactScorer`` explicitly.
     """
 
     def __init__(
@@ -181,8 +183,10 @@ class RustScorer:
     ) -> None:
         if not RUST_SCORER_AVAILABLE:
             raise ImportError(
-                "acgs_lite_rust not installed. "
-                "Run: cd packages/acgs-lite/rust && maturin develop --release"
+                "acgs_lite_rust.ImpactScorer is unavailable. "
+                "The supported acgs_lite_rust companion wheel exposes governance "
+                "validation only; use Python scoring or provide a native module "
+                "that exports ImpactScorer."
             )
         if not model_dir:
             raise ValueError(
@@ -209,12 +213,12 @@ class ConstitutionalImpactScorer:
     Layered routing:
       python  → RuleBasedScorer (default, no deps)
       ml      → TransformerScorer (requires transformers)
-      rust    → RustScorer (requires acgs_lite_rust + model)
-      shadow  → run both python and rust, log divergence, use python result
+      rust    → RustScorer only when a native module exports ImpactScorer
+      shadow  → run both python and native scoring, log divergence, use python result
 
     Environment variables:
       IMPACT_SCORER_BACKEND   python | rust | shadow  (default: python)
-      IMPACT_SCORER_MODEL_DIR path to fine-tuned DistilBERT model dir
+      IMPACT_SCORER_MODEL_DIR native ImpactScorer model dir, if available
       IMPACT_SCORER_SHADOW_THRESHOLD  divergence threshold (default: 0.02)
     """
 

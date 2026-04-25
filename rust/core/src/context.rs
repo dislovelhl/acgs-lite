@@ -4,7 +4,6 @@
 /// matching them against rules with positive-verb-skip logic.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use crate::result::Violation;
 use crate::severity::Severity;
 use crate::verbs;
@@ -94,7 +93,9 @@ fn matches_with_signals(
         }
     }
 
-    rule.compiled_patterns.iter().any(|pat| pat.is_match(text_lower))
+    rule.compiled_patterns
+        .iter()
+        .any(|pat| pat.is_match(text_lower))
 }
 
 #[cfg(test)]
@@ -108,10 +109,7 @@ mod tests {
             severity: Severity::High,
             category: "test".into(),
             keywords_lower: keywords.iter().map(|s| s.to_string()).collect(),
-            compiled_patterns: patterns
-                .iter()
-                .map(|p| Regex::new(p).unwrap())
-                .collect(),
+            compiled_patterns: patterns.iter().map(|p| Regex::new(p).unwrap()).collect(),
             enabled: true,
         }
     }
@@ -144,7 +142,10 @@ mod tests {
     #[test]
     fn test_negative_keyword_overrides_positive_verb() {
         let rules = vec![make_rule(&["self-approve"], &[])];
-        let pairs = vec![("action_detail".into(), "implement self-approve workflow".into())];
+        let pairs = vec![(
+            "action_detail".into(),
+            "implement self-approve workflow".into(),
+        )];
         let v = process_context(&pairs, &rules);
         // "implement" is positive, but "self-approve" contains negative → flagged
         assert_eq!(v.len(), 1);

@@ -32,7 +32,9 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+from contextlib import suppress
 from typing import Any
 
 from acgs_lite.commands import (
@@ -90,6 +92,21 @@ cmd_resume = halt.cmd_resume
 cmd_breaker_status = halt.cmd_breaker_status
 cmd_evidence = evidence.handler
 cmd_lean_smoke = lean_smoke.handler
+
+
+def _configure_braintrust() -> None:
+    """Enable Braintrust tracing when the API key is available."""
+    if not os.environ.get("BRAINTRUST_API_KEY"):
+        return
+
+    try:
+        import braintrust
+    except ImportError:
+        return
+
+    with suppress(Exception):
+        braintrust.auto_instrument()
+        braintrust.init_logger(project="acgs-lite")
 
 
 # ---------------------------------------------------------------------------
@@ -293,6 +310,8 @@ _COMMAND_MAP: dict[str, str] = {
 def main() -> None:
     """CLI entry point."""
     import acgs_lite.cli as _self
+
+    _configure_braintrust()
 
     parser = build_parser()
     args = parser.parse_args()

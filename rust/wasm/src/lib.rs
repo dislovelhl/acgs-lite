@@ -5,7 +5,6 @@
 /// validate actions, return structured results.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use std::collections::{HashMap, HashSet};
 
 use acgs_validator_core::{

@@ -7,7 +7,6 @@
 /// constitutional hash verification.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 pub mod context;
 pub mod hash;
 pub mod result;

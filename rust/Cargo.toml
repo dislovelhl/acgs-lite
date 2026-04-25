@@ -1,5 +1,7 @@
 [workspace]
-members = ["core", "pyo3", "wasm", "spacetime_governance"]
+members = ["core", "pyo3", "wasm"]
+default-members = ["core", "pyo3", "wasm"]
+exclude = ["spacetime_governance"]
 resolver = "2"
 
 [profile.release]

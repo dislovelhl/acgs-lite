@@ -140,8 +140,7 @@ class GovernanceWorkflowExecutor:
                 "compliant": result.valid,
                 "constitutional_hash": self._constitutional_hash,
                 "violations": [
-                    {"rule_id": v.rule_id, "severity": v.severity.value}
-                    for v in result.violations
+                    {"rule_id": v.rule_id, "severity": v.severity.value} for v in result.violations
                 ],
             }
 

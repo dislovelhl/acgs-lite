@@ -45,10 +45,12 @@ class LintCode(str, Enum):
     EXCESSIVE_KEYWORD_COUNT = "G013"  # Rule has > 50 keywords (maintenance risk)
     INVALID_SEVERITY = "G014"  # Severity value is not a recognised tier
     MISSING_WORKFLOW_ACTION = "G015"  # Rule has no workflow_action
-    POSITIVE_DIRECTIVE_RISK = "G016"  # Description uses positive directive framing ("ensure X", "always Y")
-                                      # instead of negative constraint framing ("block X", "deny Y").
-                                      # Empirically, negative constraints have stronger governance effect
-                                      # (ref: arXiv:2604.11088 — guardrails study on 25,532 agent rules).
+    POSITIVE_DIRECTIVE_RISK = (
+        "G016"  # Description uses positive directive framing ("ensure X", "always Y")
+    )
+    # instead of negative constraint framing ("block X", "deny Y").
+    # Empirically, negative constraints have stronger governance effect
+    # (ref: arXiv:2604.11088 — guardrails study on 25,532 agent rules).
 
 
 _KNOWN_SEVERITIES = frozenset({"critical", "high", "medium", "low", "info"})
@@ -338,19 +340,50 @@ class PolicyLinter:
         # constraints ("block X", "do not Y") were the only individually beneficial rule type.
         # Warn when description leads with imperative-positive phrasing rather than constraint phrasing.
         _POSITIVE_DIRECTIVE_MARKERS = (
-            "ensure ", "always ", "must ", "make sure", "require that", "guarantee ",
-            "enforce that", "confirm ", "verify that", "maintain ", "follow ",
-            "use ", "provide ", "generate ", "produce ", "allow only",
+            "ensure ",
+            "always ",
+            "must ",
+            "make sure",
+            "require that",
+            "guarantee ",
+            "enforce that",
+            "confirm ",
+            "verify that",
+            "maintain ",
+            "follow ",
+            "use ",
+            "provide ",
+            "generate ",
+            "produce ",
+            "allow only",
         )
         _NEGATIVE_CONSTRAINT_MARKERS = (
-            "block", "deny", "prevent", "prohibit", "reject", "refuse",
-            "do not", "don't", "never ", "no ", "stop ", "restrict ",
-            "forbid", "disallow", "ban ", "halt ", "abort ", "exclude ", "must not",
+            "block",
+            "deny",
+            "prevent",
+            "prohibit",
+            "reject",
+            "refuse",
+            "do not",
+            "don't",
+            "never ",
+            "no ",
+            "stop ",
+            "restrict ",
+            "forbid",
+            "disallow",
+            "ban ",
+            "halt ",
+            "abort ",
+            "exclude ",
+            "must not",
         )
         if description:
             desc_lower = description.lower()
-            is_positive = any(desc_lower.startswith(m) or f" {m}" in desc_lower
-                              for m in _POSITIVE_DIRECTIVE_MARKERS)
+            is_positive = any(
+                desc_lower.startswith(m) or f" {m}" in desc_lower
+                for m in _POSITIVE_DIRECTIVE_MARKERS
+            )
             is_negative = any(m in desc_lower for m in _NEGATIVE_CONSTRAINT_MARKERS)
             if is_positive and not is_negative:
                 report.issues.append(

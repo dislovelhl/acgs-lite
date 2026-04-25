@@ -6,7 +6,6 @@
 /// Pure Rust — no FFI dependencies.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use aho_corasick::{AhoCorasick, MatchKind};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
@@ -226,11 +225,9 @@ impl GovernanceValidator {
             Decision::Allow => {
                 if let Some(pairs) = context_pairs {
                     if !pairs.is_empty() && !self.context_rules.is_empty() {
-                        let ctx_violations =
-                            context::process_context(pairs, &self.context_rules);
+                        let ctx_violations = context::process_context(pairs, &self.context_rules);
                         if !ctx_violations.is_empty() {
-                            let has_blocking =
-                                ctx_violations.iter().any(|v| v.severity.blocks());
+                            let has_blocking = ctx_violations.iter().any(|v| v.severity.blocks());
                             let tuples: Vec<_> = ctx_violations
                                 .into_iter()
                                 .map(|v| {
@@ -266,13 +263,11 @@ impl GovernanceValidator {
             } => {
                 if let Some(pairs) = context_pairs {
                     if !pairs.is_empty() && !self.context_rules.is_empty() {
-                        let ctx_violations =
-                            context::process_context(pairs, &self.context_rules);
+                        let ctx_violations = context::process_context(pairs, &self.context_rules);
                         violations.extend(ctx_violations);
                     }
                 }
-                let blocking =
-                    has_blocking || violations.iter().any(|v| v.severity.blocks());
+                let blocking = has_blocking || violations.iter().any(|v| v.severity.blocks());
                 let tuples: Vec<_> = violations
                     .into_iter()
                     .map(|v| {
@@ -291,7 +286,11 @@ impl GovernanceValidator {
     }
 
     /// Structured validation result for external consumers (WASM, HTTP).
-    pub fn validate(&self, text: &str, context_pairs: Option<&[(String, String)]>) -> ValidationResult {
+    pub fn validate(
+        &self,
+        text: &str,
+        context_pairs: Option<&[(String, String)]>,
+    ) -> ValidationResult {
         let text_lower = text.to_lowercase();
         let (decision, violations, blocking) = self.validate_full(&text_lower, context_pairs);
         let records: Vec<ViolationRecord> = violations

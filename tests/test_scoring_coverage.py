@@ -11,6 +11,8 @@ Coverage gaps addressed:
 from __future__ import annotations
 
 import importlib
+import sys
+import types
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -281,6 +283,26 @@ class TestRustScorer:
                     delattr(_mod, "_RustImpactScorer")
                 else:
                     _mod._RustImpactScorer = original  # type: ignore[attr-defined]
+
+    def test_native_module_without_impact_scorer_falls_back(self, monkeypatch):
+        fake_rust = types.ModuleType("acgs_lite_rust")
+        fake_rust.GovernanceValidator = object
+        fake_rust.ALLOW = 0
+        fake_rust.DENY_CRITICAL = 1
+        fake_rust.DENY = 2
+
+        import acgs_lite.scoring as scoring_mod
+
+        with monkeypatch.context() as mp:
+            mp.setitem(sys.modules, "acgs_lite_rust", fake_rust)
+            reloaded = importlib.reload(scoring_mod)
+            assert reloaded.RUST_SCORER_AVAILABLE is False
+            result = reloaded.ConstitutionalImpactScorer().score("delete user records")
+            assert result["scoring_method"] == "rule"
+            with pytest.raises(ImportError, match="ImpactScorer is unavailable"):
+                reloaded.RustScorer(model_dir="/fake/model")
+
+        importlib.reload(scoring_mod)
 
 
 # ---------------------------------------------------------------------------

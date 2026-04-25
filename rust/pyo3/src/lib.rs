@@ -3,7 +3,6 @@
 /// Converts Python types to Rust types and delegates to the core validator.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use std::collections::{HashMap, HashSet};
 
 use acgs_validator_core::{
@@ -39,12 +38,12 @@ impl PyGovernanceValidator {
         // Extract anchor_dispatch
         let mut anchor_dispatch: Vec<(String, Vec<(usize, String)>)> = Vec::new();
         for item in anchor_dispatch_py.iter() {
-            let tuple = item.downcast::<PyTuple>()?;
+            let tuple = item.cast::<PyTuple>()?;
             let anchor: String = tuple.get_item(0)?.extract()?;
-            let pats_py = tuple.get_item(1)?.downcast_into::<PyList>()?;
+            let pats_py = tuple.get_item(1)?.cast_into::<PyList>()?;
             let mut patterns: Vec<(usize, String)> = Vec::with_capacity(pats_py.len());
             for pat_item in pats_py.iter() {
-                let pt = pat_item.downcast::<PyTuple>()?;
+                let pt = pat_item.cast::<PyTuple>()?;
                 let rule_idx: usize = pt.get_item(0)?.extract()?;
                 let pat_str: String = pt.get_item(1)?.extract()?;
                 patterns.push((rule_idx, pat_str));
@@ -56,10 +55,10 @@ impl PyGovernanceValidator {
         let mut kw_map: HashMap<String, Vec<(usize, bool)>> = HashMap::new();
         for (key, val) in kw_to_idxs.iter() {
             let kw: String = key.extract()?;
-            let idxs_py = val.downcast::<PyList>()?;
+            let idxs_py = val.cast::<PyList>()?;
             let mut idxs: Vec<(usize, bool)> = Vec::with_capacity(idxs_py.len());
             for item in idxs_py.iter() {
-                let t = item.downcast::<PyTuple>()?;
+                let t = item.cast::<PyTuple>()?;
                 let rule_idx: usize = t.get_item(0)?.extract()?;
                 let has_neg: bool = t.get_item(1)?.extract()?;
                 idxs.push((rule_idx, has_neg));
@@ -70,7 +69,7 @@ impl PyGovernanceValidator {
         // Extract no-anchor patterns
         let mut no_anchor_pats: Vec<(usize, String)> = Vec::new();
         for item in no_anchor_pats_py.iter() {
-            let t = item.downcast::<PyTuple>()?;
+            let t = item.cast::<PyTuple>()?;
             let rule_idx: usize = t.get_item(0)?.extract()?;
             let pat_str: String = t.get_item(1)?.extract()?;
             no_anchor_pats.push((rule_idx, pat_str));
@@ -80,7 +79,7 @@ impl PyGovernanceValidator {
         let mut rule_data: Vec<(String, String, String, String, bool)> =
             Vec::with_capacity(rule_data_py.len());
         for item in rule_data_py.iter() {
-            let t = item.downcast::<PyTuple>()?;
+            let t = item.cast::<PyTuple>()?;
             rule_data.push((
                 t.get_item(0)?.extract()?,
                 t.get_item(1)?.extract()?,
@@ -100,13 +99,13 @@ impl PyGovernanceValidator {
         let context_rules = if let Some(cr_py) = context_rules_py {
             let mut rules = Vec::with_capacity(cr_py.len());
             for item in cr_py.iter() {
-                let t = item.downcast::<PyTuple>()?;
+                let t = item.cast::<PyTuple>()?;
                 let rule_id: String = t.get_item(0)?.extract()?;
                 let rule_text: String = t.get_item(1)?.extract()?;
                 let sev_str: String = t.get_item(2)?.extract()?;
                 let category: String = t.get_item(3)?.extract()?;
-                let kws_py = t.get_item(4)?.downcast_into::<PyList>()?;
-                let pats_py = t.get_item(5)?.downcast_into::<PyList>()?;
+                let kws_py = t.get_item(4)?.cast_into::<PyList>()?;
+                let pats_py = t.get_item(5)?.cast_into::<PyList>()?;
                 let enabled: bool = t.get_item(6)?.extract()?;
 
                 let keywords_lower: Vec<String> = kws_py
@@ -200,9 +199,7 @@ impl PyGovernanceValidator {
         context_pairs: Option<Vec<(String, String)>>,
     ) -> PyResult<(i32, Vec<(String, String, String, String, String)>, bool)> {
         let lowered = text.to_ascii_lowercase();
-        Ok(self
-            .inner
-            .validate_full(&lowered, context_pairs.as_deref()))
+        Ok(self.inner.validate_full(&lowered, context_pairs.as_deref()))
     }
 
     /// Get the constitutional hash.

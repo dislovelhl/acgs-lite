@@ -149,12 +149,11 @@ class GovernanceMemoryRetriever:
             decision_filter=decision_filter,
         )
         if category:
-            similar = [(precedent, score) for precedent, score in similar if precedent.category == category]
+            similar = [
+                (precedent, score) for precedent, score in similar if precedent.category == category
+            ]
 
-        return [
-            self._make_precedent_hit(precedent, score)
-            for precedent, score in similar[:top_k]
-        ]
+        return [self._make_precedent_hit(precedent, score) for precedent, score in similar[:top_k]]
 
     @staticmethod
     def _make_precedent_hit(

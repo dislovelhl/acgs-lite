@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import pytest
 
+import acgs_lite.engine.core as engine_core
 from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import Constitution, Severity
 from acgs_lite.engine.core import (
@@ -16,6 +17,7 @@ from acgs_lite.engine.core import (
     _dedup_violations,
     _FastAuditLog,
     _NoopRecorder,
+    braintrust_traced,
 )
 from acgs_lite.errors import ConstitutionalViolationError
 
@@ -302,6 +304,45 @@ class TestGovernanceEngineConstruction:
 # ---------------------------------------------------------------------------
 
 
+def test_braintrust_traced_disables_automatic_io_capture(monkeypatch):
+    calls: list[dict] = []
+
+    class FakeBraintrust:
+        @staticmethod
+        def traced(**kwargs):
+            calls.append(kwargs)
+            return lambda func: func
+
+    monkeypatch.setattr(engine_core, "braintrust", FakeBraintrust)
+    monkeypatch.delenv("BRAINTRUST_API_KEY", raising=False)
+
+    @braintrust_traced(name="GovernanceEngine.validate", notrace_io=True)
+    def wrapped():
+        return "ok"
+
+    assert calls == []
+    monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+
+    assert wrapped() == "ok"
+    assert calls == [{"name": "GovernanceEngine.validate", "notrace_io": True}]
+
+
+def test_braintrust_traced_suppresses_sdk_failures(monkeypatch):
+    class FailingBraintrust:
+        @staticmethod
+        def traced(**kwargs):
+            raise RuntimeError("braintrust tracing unavailable")
+
+    monkeypatch.setattr(engine_core, "braintrust", FailingBraintrust)
+    monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+
+    @braintrust_traced(name="GovernanceEngine.validate", notrace_io=True)
+    def wrapped():
+        return "ok"
+
+    assert wrapped() == "ok"
+
+
 class TestGovernanceEngineValidate:
     def test_allow_safe_action(self, engine):
         result = engine.validate("run safety test on model accuracy")
@@ -363,6 +404,155 @@ class TestGovernanceEngineValidate:
     def test_validate_returns_constitutional_hash(self, engine):
         result = engine.validate("run safety test")
         assert result.constitutional_hash == engine._const_hash
+
+    def test_validate_logs_structured_braintrust_metadata_when_key_present(
+        self, monkeypatch, engine_with_audit_log
+    ):
+        logs: list[dict] = []
+
+        class FakeSpan:
+            def log(self, **event):
+                logs.append(event)
+
+        class FakeBraintrust:
+            @staticmethod
+            def current_span():
+                return FakeSpan()
+
+        monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+        monkeypatch.setattr(engine_core, "braintrust", FakeBraintrust)
+
+        result = engine_with_audit_log.validate(
+            "run safety audit",
+            agent_id="agent-42",
+            context={"source": "autopilot"},
+            audit_metadata={"phase": "phase-1"},
+        )
+
+        assert result.valid is True
+        metadata_events = [event["metadata"] for event in logs if "metadata" in event]
+        assert metadata_events
+        assert metadata_events[0]["agent_id"] == "agent-42"
+        assert metadata_events[0]["constitutional_hash"] == engine_with_audit_log._const_hash
+        assert metadata_events[0]["rules_count"] == engine_with_audit_log._rules_count
+        assert metadata_events[0]["strict"] is True
+        assert metadata_events[0]["strict_effective"] is True
+        assert metadata_events[0]["strict_override"] is None
+        assert metadata_events[0]["context_keys"] == ["source"]
+        assert metadata_events[0]["audit_metadata_keys"] == ["phase"]
+        assert metadata_events[-1]["decision"] == "allow"
+        assert metadata_events[-1]["valid"] is True
+        assert metadata_events[-1]["strict"] is True
+
+    def test_validate_logs_explicit_strict_override_metadata(self, monkeypatch, constitution):
+        logs: list[dict] = []
+
+        class FakeSpan:
+            def log(self, **event):
+                logs.append(event)
+
+        class FakeBraintrust:
+            @staticmethod
+            def current_span():
+                return FakeSpan()
+
+        monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+        monkeypatch.setattr(engine_core, "braintrust", FakeBraintrust)
+        engine = GovernanceEngine(constitution, strict=True)
+
+        result = engine.validate("run safety audit", strict=False)
+
+        metadata_events = [event["metadata"] for event in logs if "metadata" in event]
+        override_metadata = [event for event in metadata_events if event.get("strict_override") is False]
+        assert result.valid is True
+        assert override_metadata
+        assert override_metadata[0]["strict"] is False
+        assert override_metadata[0]["strict_effective"] is False
+        assert override_metadata[0]["strict_override"] is False
+        assert metadata_events[-1]["strict"] is False
+
+    def test_validate_logs_braintrust_denial_metadata(self, monkeypatch, constitution):
+        logs: list[dict] = []
+
+        class FakeSpan:
+            def log(self, **event):
+                logs.append(event)
+
+        class FakeBraintrust:
+            @staticmethod
+            def current_span():
+                return FakeSpan()
+
+        monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+        monkeypatch.setattr(engine_core, "braintrust", FakeBraintrust)
+        audit_log = AuditLog()
+        engine = GovernanceEngine(constitution, audit_log=audit_log, strict=False)
+
+        result = engine.validate("deploy model without safety review", agent_id="agent-42")
+
+        metadata_events = [event["metadata"] for event in logs if "metadata" in event]
+        assert result.valid is False
+        assert metadata_events[-1]["decision"] == "deny"
+        assert metadata_events[-1]["valid"] is False
+        assert metadata_events[-1]["violation_rule_ids"] == ["SAFETY-001"]
+        assert metadata_events[-1]["action_taken"] == "block"
+
+    def test_validate_logs_braintrust_denial_metadata_before_strict_raise(
+        self, monkeypatch, engine_with_audit_log
+    ):
+        logs: list[dict] = []
+
+        class FakeSpan:
+            def log(self, **event):
+                logs.append(event)
+
+        class FakeBraintrust:
+            @staticmethod
+            def current_span():
+                return FakeSpan()
+
+        monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+        monkeypatch.setattr(engine_core, "braintrust", FakeBraintrust)
+
+        with pytest.raises(ConstitutionalViolationError):
+            engine_with_audit_log.validate(
+                "deploy model without safety review",
+                agent_id="agent-42",
+                audit_metadata={"phase": "strict-check"},
+            )
+
+        metadata_events = [event["metadata"] for event in logs if "metadata" in event]
+        assert metadata_events[-1]["decision"] == "deny"
+        assert metadata_events[-1]["valid"] is False
+        assert metadata_events[-1]["violation_rule_ids"] == ["SAFETY-001"]
+        assert metadata_events[-1]["action_taken"] == "block"
+
+    def test_validate_does_not_log_braintrust_metadata_without_api_key(
+        self, monkeypatch, engine
+    ):
+        class FailingBraintrust:
+            @staticmethod
+            def current_span():
+                raise AssertionError("Braintrust should not be called without an API key")
+
+        monkeypatch.delenv("BRAINTRUST_API_KEY", raising=False)
+        monkeypatch.setattr(engine_core, "braintrust", FailingBraintrust)
+
+        result = engine.validate("run safety audit")
+
+        assert result.valid is True
+
+    def test_validate_succeeds_when_braintrust_sdk_is_unavailable(self, monkeypatch, engine):
+        monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+        monkeypatch.setattr(engine_core, "braintrust", None)
+
+        result = engine.validate(
+            "run safety audit",
+            agent_id="agent-42",
+            context={"source": "autopilot"},
+        )
+
+        assert result.valid is True
 
 
 # ---------------------------------------------------------------------------

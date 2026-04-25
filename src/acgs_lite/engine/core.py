@@ -9,11 +9,149 @@ Constitutional Hash: 608508a9bd224290
 
 from __future__ import annotations
 
+import os
 import re
 import time
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import contextmanager, suppress
-from typing import Any, Literal
+from functools import wraps
+from typing import Any, Literal, ParamSpec, TypeVar
+
+try:
+    import braintrust
+except ImportError:
+    braintrust = None
+
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _braintrust_enabled() -> bool:
+    return bool(braintrust and os.environ.get("BRAINTRUST_API_KEY"))
+
+
+def braintrust_traced(*args: Any, **kwargs: Any) -> Callable[[Callable[_P, _R]], Callable[_P, _R]]:
+    """Return a trace wrapper that activates at call time when Braintrust is configured."""
+
+    def decorator(func: Callable[_P, _R]) -> Callable[_P, _R]:
+        @wraps(func)
+        def wrapped(*call_args: _P.args, **call_kwargs: _P.kwargs) -> _R:
+            if _braintrust_enabled():
+                assert braintrust is not None
+                traced = getattr(braintrust, "traced", None)
+                if traced is not None:
+                    with suppress(Exception):
+                        return traced(*args, **kwargs)(func)(*call_args, **call_kwargs)
+            return func(*call_args, **call_kwargs)
+
+        return wrapped
+
+    return decorator
+
+
+def _braintrust_log_validation_input(
+    *,
+    action: str,
+    agent_id: str,
+    context: dict[str, Any] | None,
+    audit_metadata: dict[str, Any] | None,
+    effective_strict: bool,
+    strict_override: bool | None,
+    constitutional_hash: str,
+    rules_checked: int,
+) -> None:
+    """Log searchable validation input metadata when Braintrust is active."""
+    if not _braintrust_enabled():
+        return
+    context_keys = sorted(context) if context else []
+    audit_metadata_keys = sorted(audit_metadata) if audit_metadata else []
+    with suppress(Exception):
+        braintrust.current_span().log(
+            metadata={
+                "agent_id": agent_id,
+                "strict": effective_strict,
+                "strict_effective": effective_strict,
+                "strict_override": strict_override,
+                "constitutional_hash": constitutional_hash,
+                "rules_checked": rules_checked,
+                "rules_count": rules_checked,
+                "action_length": len(action),
+                "has_context": bool(context),
+                "context_keys": context_keys,
+                "audit_metadata_keys": audit_metadata_keys,
+            },
+        )
+
+
+def _braintrust_log_validation_result(result: ValidationResult, *, strict: bool | None = None) -> None:
+    """Log searchable validation result metadata when Braintrust is active."""
+    if not _braintrust_enabled():
+        return
+    violation_rule_ids = [violation.rule_id for violation in result.violations]
+    warning_rule_ids = [warning.rule_id for warning in result.warnings]
+    with suppress(Exception):
+        braintrust.current_span().log(
+            output={
+                "valid": result.valid,
+                "decision": "allow" if result.valid else "deny",
+                "action_taken": result.action_taken.value
+                if result.action_taken is not None
+                else None,
+                "violation_rule_ids": violation_rule_ids,
+                "warning_rule_ids": warning_rule_ids,
+            },
+            metadata={
+                "agent_id": result.agent_id,
+                "decision": "allow" if result.valid else "deny",
+                "valid": result.valid,
+                "strict": strict,
+                "constitutional_hash": result.constitutional_hash,
+                "rules_checked": result.rules_checked,
+                "violation_rule_ids": violation_rule_ids,
+                "warning_rule_ids": warning_rule_ids,
+                "action_taken": result.action_taken.value
+                if result.action_taken is not None
+                else None,
+            },
+        )
+
+
+def _braintrust_log_validation_blocked_exception(
+    *,
+    exc: ConstitutionalViolationError,
+    agent_id: str,
+    constitutional_hash: str,
+    rules_checked: int,
+    strict: bool,
+) -> None:
+    """Log denial metadata when strict validation raises before a result exists."""
+    if not _braintrust_enabled():
+        return
+    rule_id = exc.rule_id or "UNKNOWN"
+    action_taken = getattr(exc.enforcement_action, "value", None) or "block"
+    with suppress(Exception):
+        braintrust.current_span().log(
+            output={
+                "valid": False,
+                "decision": "deny",
+                "action_taken": action_taken,
+                "violation_rule_ids": [rule_id],
+                "warning_rule_ids": [],
+            },
+            metadata={
+                "agent_id": agent_id,
+                "decision": "deny",
+                "valid": False,
+                "strict": strict,
+                "constitutional_hash": constitutional_hash,
+                "rules_checked": rules_checked,
+                "violation_rule_ids": [rule_id],
+                "warning_rule_ids": [],
+                "action_taken": action_taken,
+            },
+        )
+
 
 from acgs_lite.audit import AuditEntry, AuditLog
 from acgs_lite.constitution import (
@@ -583,14 +721,11 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         keeps blocking violations in ``result.violations``, and sets ``action_taken``.
         Raises :class:`ConstitutionalViolationError` for HALT violations.
         """
+        effective_strict = self.strict if strict is None else strict
         if not result.violations:
+            _braintrust_log_validation_result(result, strict=effective_strict)
             return result
         enforcement = self._resolve_enforcement(result.violations, action_text=action_text[:200])
-        self._raise_for_enforcement(
-            enforcement,
-            strict=self.strict if strict is None else strict,
-            action_text=action_text,
-        )
         result.violations = enforcement.blocking_violations
         result.warnings = enforcement.warning_violations
         result.action_taken = enforcement.action_taken
@@ -598,6 +733,12 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         result.review_requests = enforcement.review_requests
         result.escalations = enforcement.escalations
         result.incident_alerts = enforcement.incident_alerts
+        _braintrust_log_validation_result(result, strict=effective_strict)
+        self._raise_for_enforcement(
+            enforcement,
+            strict=effective_strict,
+            action_text=action_text,
+        )
         return result
 
     def _runtime_active_rules(self, context: dict[str, Any] | None) -> list[Rule]:
@@ -743,9 +884,11 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 audit_metadata=audit_metadata,
             )
 
+        effective_strict = self.strict if strict is None else strict
+        _braintrust_log_validation_result(result, strict=effective_strict)
         self._raise_for_enforcement(
             enforcement,
-            strict=self.strict if strict is None else strict,
+            strict=effective_strict,
             action_text=action_200,
         )
         return result
@@ -886,6 +1029,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             return violations
         return violations
 
+    @braintrust_traced(name="GovernanceEngine.validate", notrace_io=True)
     def validate(
         self,
         action: str,
@@ -905,6 +1049,18 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 ``engine.strict = …`` or ``with engine.non_strict()`` when the
                 engine is shared across threads or integrations.
         """
+        strict_override = strict
+        strict = self.strict if strict is None else strict
+        _braintrust_log_validation_input(
+            action=action,
+            agent_id=agent_id,
+            context=context,
+            audit_metadata=audit_metadata,
+            effective_strict=strict,
+            strict_override=strict_override,
+            constitutional_hash=self._const_hash,
+            rules_checked=self._rules_count,
+        )
         if self._requires_runtime_rule_filtering:
             return self._validate_with_runtime_rule_filtering(
                 action,
@@ -913,7 +1069,6 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 audit_metadata=audit_metadata,
                 strict=strict,
             )
-        strict = self.strict if strict is None else strict
         (
             _ac_iter,
             _anchor_dispatch,
@@ -1016,38 +1171,52 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         text_lower = action.lower()
         _first_word, _, _ = text_lower.partition(" ")
         _has_neg = bool(_NEGATIVE_VERBS_RE.search(text_lower))
-        if _has_ac and _first_word in _pos_verbs and not _has_neg:
-            violations = self._validate_python_ac(
-                action,
-                strict,
-                text_lower,
-                True,
-                violations,
+        try:
+            if _has_ac and _first_word in _pos_verbs and not _has_neg:
+                violations = self._validate_python_ac(
+                    action,
+                    strict,
+                    text_lower,
+                    True,
+                    violations,
+                )
+            elif _has_ac:
+                violations = self._validate_python_ac(
+                    action,
+                    strict,
+                    text_lower,
+                    False,
+                    violations,
+                )
+            elif (
+                _first_word in _POSITIVE_VERBS_SET
+                and self._neg_findall is not None
+                and not _has_neg
+            ):
+                violations = self._validate_python_regex(
+                    action,
+                    strict,
+                    text_lower,
+                    True,
+                    violations,
+                )
+            elif self._combined_findall is not None:
+                violations = self._validate_python_regex(
+                    action,
+                    strict,
+                    text_lower,
+                    False,
+                    violations,
+                )
+        except ConstitutionalViolationError as exc:
+            _braintrust_log_validation_blocked_exception(
+                exc=exc,
+                agent_id=agent_id,
+                constitutional_hash=self._const_hash,
+                rules_checked=self._rules_count,
+                strict=strict,
             )
-        elif _has_ac:
-            violations = self._validate_python_ac(
-                action,
-                strict,
-                text_lower,
-                False,
-                violations,
-            )
-        elif _first_word in _POSITIVE_VERBS_SET and self._neg_findall is not None and not _has_neg:
-            violations = self._validate_python_regex(
-                action,
-                strict,
-                text_lower,
-                True,
-                violations,
-            )
-        elif self._combined_findall is not None:
-            violations = self._validate_python_regex(
-                action,
-                strict,
-                text_lower,
-                False,
-                violations,
-            )
+            raise
 
         if context and ("action_detail" in context or "action_description" in context):
             for key, value in context.items():
@@ -1097,7 +1266,9 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         if violations is None:
             if _fast_records is not None:
                 _fast_records.append(None)
-                return self._new_fast_allow_result()
+                result = self._new_fast_allow_result()
+                _braintrust_log_validation_result(result, strict=strict)
+                return result
             request_id = str(next(_request_counter))
             latency_ms = (time.perf_counter() - start) * 1000
             now_ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -1126,6 +1297,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 ),
                 audit_metadata=audit_metadata,
             )
+            _braintrust_log_validation_result(result, strict=strict)
             return result
 
         unique_violations = violations if len(violations) == 1 else _dedup_violations(violations)
@@ -1134,13 +1306,8 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
         valid = not bool(enforcement.blocking_violations)
 
         if _fast_records is not None:
-            self._raise_for_enforcement(
-                enforcement,
-                strict=strict,
-                action_text=action_200,
-            )
             _fast_records.append(None)
-            return self._new_fast_result(
+            result = self._new_fast_result(
                 valid=valid,
                 violations=enforcement.blocking_violations,
                 action=action,
@@ -1148,6 +1315,13 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
                 action_taken=enforcement.action_taken,
                 enforcement=enforcement,
             )
+            _braintrust_log_validation_result(result, strict=strict)
+            self._raise_for_enforcement(
+                enforcement,
+                strict=strict,
+                action_text=action_200,
+            )
+            return result
 
         request_id = str(next(_request_counter))
         latency_ms = (time.perf_counter() - start) * 1000
@@ -1187,6 +1361,7 @@ class GovernanceEngine(BatchValidationMixin, GovernanceMatcherMixin):
             enforcement=enforcement,
             audit_metadata=audit_metadata,
         )
+        _braintrust_log_validation_result(result, strict=strict)
         self._raise_for_enforcement(
             enforcement,
             strict=strict,

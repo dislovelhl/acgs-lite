@@ -6,6 +6,7 @@ Covers all four modules at 0% coverage to maximize line coverage gains.
 from __future__ import annotations
 
 import argparse
+import sys
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -319,9 +320,27 @@ class TestBuildParser:
 class TestMain:
     """Tests for main."""
 
+    def test_configure_braintrust_suppresses_sdk_failures(self, monkeypatch):
+        from acgs_lite.cli import _configure_braintrust
+
+        class FailingBraintrust:
+            @staticmethod
+            def auto_instrument():
+                raise RuntimeError("braintrust bootstrap unavailable")
+
+            @staticmethod
+            def init_logger(project: str):
+                raise AssertionError(f"should not reach logger setup for {project}")
+
+        monkeypatch.setenv("BRAINTRUST_API_KEY", "test-key")
+        monkeypatch.setitem(sys.modules, "braintrust", FailingBraintrust)
+
+        _configure_braintrust()
+
+    @patch("acgs_lite.cli._configure_braintrust")
     @patch("acgs_lite.cli.cmd_activate")
     @patch("acgs_lite.cli.build_parser")
-    def test_main_activate(self, mock_parser_fn, mock_activate):
+    def test_main_activate(self, mock_parser_fn, mock_activate, mock_configure_braintrust):
         from acgs_lite.cli import main
 
         mock_parser = MagicMock()
@@ -332,9 +351,11 @@ class TestMain:
         with pytest.raises(SystemExit) as exc_info:
             main()
         assert exc_info.value.code == 0
+        mock_configure_braintrust.assert_called_once_with()
 
+    @patch("acgs_lite.cli._configure_braintrust")
     @patch("acgs_lite.cli.build_parser")
-    def test_main_unknown_command(self, mock_parser_fn):
+    def test_main_unknown_command(self, mock_parser_fn, mock_configure_braintrust):
         from acgs_lite.cli import main
 
         mock_parser = MagicMock()
@@ -344,6 +365,7 @@ class TestMain:
         with pytest.raises(SystemExit) as exc_info:
             main()
         assert exc_info.value.code == 1
+        mock_configure_braintrust.assert_called_once_with()
 
 
 # ---------------------------------------------------------------------------

@@ -77,11 +77,7 @@ def parse_principles(path: str | Path, text: str | None = None) -> list[Extracte
 
     rules: list[ExtractedRule] = []
     for index, (source_id, title, body) in enumerate(blocks, start=1):
-        rule_text = _compact(
-            f"{title}: {body}"
-            if body
-            else title
-        )
+        rule_text = _compact(f"{title}: {body}" if body else title)
         severity = "high" if _contains_any(rule_text, SECURITY_TERMS) else "medium"
         rules.append(
             ExtractedRule(
@@ -257,7 +253,8 @@ def _candidates_from_tables(text: str) -> list[tuple[str, str]]:
         row
         for table in _markdown_tables(text)
         for row in table
-        if ("requirement" in row or "description" in row) and ("id" in row or "requirement id" in row)
+        if ("requirement" in row or "description" in row)
+        and ("id" in row or "requirement id" in row)
     ]
     candidates: list[tuple[str, str]] = []
     for row in candidate_rows:
@@ -403,7 +400,12 @@ def _categories_from_tables(text: str) -> list[str]:
     categories: list[str] = []
     for table in _markdown_tables(text):
         for row in table:
-            for key in ("data categories", "data category", "data type", "personal data categories"):
+            for key in (
+                "data categories",
+                "data category",
+                "data type",
+                "personal data categories",
+            ):
                 if key in row:
                     categories.extend(_split_categories(row[key]))
     return categories
@@ -443,7 +445,9 @@ def _heading_requirements(text: str) -> list[tuple[str, str]]:
         text,
         re.MULTILINE | re.DOTALL | re.IGNORECASE,
     ):
-        body = _labeled_value(match.group("body"), "Requirement") or _first_paragraph(match.group("body"))
+        body = _labeled_value(match.group("body"), "Requirement") or _first_paragraph(
+            match.group("body")
+        )
         results.append((match.group("id"), _compact(f"{match.group('title')} {body}")))
     return results
 
@@ -467,7 +471,11 @@ def _keywords(text: str) -> list[str]:
     for token in re.findall(r"[a-z0-9][a-z0-9\-]{2,}", " ".join(terms)):
         if token not in {"must", "the", "and", "for", "with", "from", "that", "this", "agents"}:
             words.append(token)
-    special = [term for term in ("pii", "data breach", "gdpr", "eu ai act", "security") if term in text.lower()]
+    special = [
+        term
+        for term in ("pii", "data breach", "gdpr", "eu ai act", "security")
+        if term in text.lower()
+    ]
     return list(dict.fromkeys([*special, *words[:8]]))
 
 

@@ -2,7 +2,6 @@
 ///
 /// Mirrors `constitution.Severity` in Python.
 /// Constitutional Hash: 608508a9bd224290
-
 use serde::{Deserialize, Serialize};
 
 /// Decision codes returned by the validator.

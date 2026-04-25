@@ -378,6 +378,17 @@ class TestPackageMetadata:
         assert scripts["acgs"] == "acgs_lite.cli:main"
         assert scripts["acgs-lite"] == "acgs_lite.cli:main"
 
+    def test_braintrust_is_optional_dependency(self) -> None:
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        pyproject_data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+
+        dependencies = pyproject_data["project"]["dependencies"]
+        optional_dependencies = pyproject_data["project"]["optional-dependencies"]
+
+        assert "braintrust==0.16.0" not in dependencies
+        assert optional_dependencies["braintrust"] == ["braintrust==0.16.0"]
+        assert "braintrust" in optional_dependencies["all"][0]
+
 
 # ---------------------------------------------------------------------------
 # CLI integration (subprocess)
