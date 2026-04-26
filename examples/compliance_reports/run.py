@@ -174,6 +174,7 @@ def _write(path: Path, content: str) -> None:
 # Per-framework individual files
 # ---------------------------------------------------------------------------
 
+
 def _write_framework_files(
     report: MultiFrameworkReport,
     out_dir: Path,
@@ -449,6 +450,7 @@ Consult qualified legal counsel for binding compliance opinions.
 # ---------------------------------------------------------------------------
 # Main runner
 # ---------------------------------------------------------------------------
+
 
 def run() -> None:
     generated_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

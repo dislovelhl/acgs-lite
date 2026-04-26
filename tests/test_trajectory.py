@@ -134,15 +134,11 @@ def test_frequency_threshold_rule_handles_out_of_order_timestamps() -> None:
 
     # Add 3 approve decisions out of chronological order (t=2, t=0, t=1)
     session.add(
-        _decision(
-            action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=2)
-        )
+        _decision(action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=2))
     )
     session.add(_decision(action_type="approve", agent_id="agent-1", timestamp=base))
     session.add(
-        _decision(
-            action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=1)
-        )
+        _decision(action_type="approve", agent_id="agent-1", timestamp=base + timedelta(seconds=1))
     )
 
     monitor = TrajectoryMonitor(
@@ -155,7 +151,6 @@ def test_frequency_threshold_rule_handles_out_of_order_timestamps() -> None:
     assert len(violations) == 1
     assert violations[0].rule_id == "TRAJ-FREQ-001"
     assert violations[0].agent_id == "agent-1"
-
 
 
 def test_clean_session_produces_zero_violations() -> None:
