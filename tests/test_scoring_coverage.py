@@ -221,8 +221,9 @@ class TestTransformerScorer:
 
         # Patch TRANSFORMERS_AVAILABLE AND inject a fake transformers module so
         # the lazy `from transformers import pipeline` inside classifier resolves.
-        with patch("acgs_lite.scoring.TRANSFORMERS_AVAILABLE", True), patch.dict(
-            "sys.modules", {"transformers": mock_transformers}
+        with (
+            patch("acgs_lite.scoring.TRANSFORMERS_AVAILABLE", True),
+            patch.dict("sys.modules", {"transformers": mock_transformers}),
         ):
             from acgs_lite.scoring import TransformerScorer
 
