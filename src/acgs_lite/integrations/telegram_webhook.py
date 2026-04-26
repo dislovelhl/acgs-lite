@@ -79,7 +79,11 @@ def create_telegram_webhook_router(
 
         chat = message.get("chat")
         text = message.get("text")
-        if not isinstance(chat, dict) or not isinstance(chat.get("id"), int) or not isinstance(text, str):
+        if (
+            not isinstance(chat, dict)
+            or not isinstance(chat.get("id"), int)
+            or not isinstance(text, str)
+        ):
             return {"ok": True}
 
         chat_id = chat["id"]

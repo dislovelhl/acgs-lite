@@ -161,9 +161,7 @@ TEMPLATES: dict[str, dict[str, Any]] = {
             },
             {
                 "id": "HC-004",
-                "text": (
-                    "Block processing sensitive health data without recorded patient consent"
-                ),
+                "text": ("Block processing sensitive health data without recorded patient consent"),
                 "severity": "high",
                 "keywords": ["without consent", "no consent check", "skip consent"],
                 "category": "compliance",

@@ -117,7 +117,13 @@ try:
         ProofCertificate,
     )
 except ImportError:
-    for _s in ("LEAN_AVAILABLE", "MISTRAL_AVAILABLE", "LeanstralVerifier", "LeanVerifyResult", "ProofCertificate"):
+    for _s in (
+        "LEAN_AVAILABLE",
+        "MISTRAL_AVAILABLE",
+        "LeanstralVerifier",
+        "LeanVerifyResult",
+        "ProofCertificate",
+    ):
         _MISSING_OPTIONAL[_s] = "pip install acgs-lite[lean]"
 
 try:
@@ -159,19 +165,45 @@ try:
     )
 except ImportError:
     _openshell_syms = (
-        "ActionContext", "ActionEnvelope", "ActionPayloadSummary", "ActionRequirements",
-        "ActionType", "ActorRef", "ActorRole", "ApprovalReviewRequest", "ApprovalReviewResponse",
-        "ApprovalSubmission", "AuditEvent", "AuditEventType", "ComplianceResult",
-        "ComplianceStatus", "DecisionType", "ExecutionOutcome", "ExternalRef",
-        "GovernanceDecision", "GovernanceStateBackend", "GovernanceStateChecksumError",
-        "GovernanceStateError", "GovernanceStateMigrationError", "GovernanceStateObservabilityHook",
-        "GovernanceStateVersionError", "InMemoryGovernanceStateBackend", "JsonFileGovernanceStateBackend",
-        "OperationType", "OutcomeStatus", "RedisGovernanceStateBackend", "ResourceRef",
-        "RiskLevel", "SQLiteGovernanceStateBackend", "create_openshell_governance_app",
+        "ActionContext",
+        "ActionEnvelope",
+        "ActionPayloadSummary",
+        "ActionRequirements",
+        "ActionType",
+        "ActorRef",
+        "ActorRole",
+        "ApprovalReviewRequest",
+        "ApprovalReviewResponse",
+        "ApprovalSubmission",
+        "AuditEvent",
+        "AuditEventType",
+        "ComplianceResult",
+        "ComplianceStatus",
+        "DecisionType",
+        "ExecutionOutcome",
+        "ExternalRef",
+        "GovernanceDecision",
+        "GovernanceStateBackend",
+        "GovernanceStateChecksumError",
+        "GovernanceStateError",
+        "GovernanceStateMigrationError",
+        "GovernanceStateObservabilityHook",
+        "GovernanceStateVersionError",
+        "InMemoryGovernanceStateBackend",
+        "JsonFileGovernanceStateBackend",
+        "OperationType",
+        "OutcomeStatus",
+        "RedisGovernanceStateBackend",
+        "ResourceRef",
+        "RiskLevel",
+        "SQLiteGovernanceStateBackend",
+        "create_openshell_governance_app",
         "create_openshell_governance_router",
     )
     for _s in _openshell_syms:
-        _MISSING_OPTIONAL[_s] = "pip install acgs-lite  # openshell is part of the base package; if missing, check your Python path"
+        _MISSING_OPTIONAL[_s] = (
+            "pip install acgs-lite  # openshell is part of the base package; if missing, check your Python path"
+        )
 from acgs_lite.provenance import ProvenanceNode, ProvenanceRecord
 from acgs_lite.scoring import ConstitutionalImpactScorer, RuleBasedScorer, score_impact
 from acgs_lite.trajectory import (

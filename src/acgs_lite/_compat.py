@@ -15,4 +15,5 @@ else:
     class StrEnum(str, Enum):  # type: ignore[no-redef]
         """str + Enum mixin — available natively in Python 3.11+."""
 
+
 __all__ = ["StrEnum"]

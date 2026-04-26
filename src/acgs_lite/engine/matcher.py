@@ -73,7 +73,15 @@ class GovernanceMatcherMixin:
                 # strict=False: return a blocking result with unknown rule
                 return self._new_fast_result(
                     valid=False,
-                    violations=[Violation("UNKNOWN", "Critical rule violation", Severity.CRITICAL, action[:200], "")],
+                    violations=[
+                        Violation(
+                            "UNKNOWN",
+                            "Critical rule violation",
+                            Severity.CRITICAL,
+                            action[:200],
+                            "",
+                        )
+                    ],
                     action=action,
                 )
             _e_src = rule_excs[data]
