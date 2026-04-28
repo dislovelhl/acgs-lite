@@ -91,6 +91,12 @@ from acgs_lite.fail_closed import fail_closed as fail_closed
 from acgs_lite.governed import GovernedAgent, GovernedCallable
 from acgs_lite.licensing import LicenseInfo, LicenseManager, Tier
 from acgs_lite.maci import MACIEnforcer, MACIRole
+from acgs_lite.production import (
+    ProductionProfile,
+    ProductionProfileError,
+    ProductionProfileValidation,
+    validate_production_profile,
+)
 
 # ── Optional dependency tracking ────────────────────────────────────────────
 # Populated when optional extras are not installed. __getattr__ below uses
@@ -329,6 +335,11 @@ __all__ = [
     # MACI
     "MACIRole",
     "MACIEnforcer",
+    # Production profile validation
+    "ProductionProfile",
+    "ProductionProfileError",
+    "ProductionProfileValidation",
+    "validate_production_profile",
     # Scoring
     "ConstitutionalImpactScorer",
     "RuleBasedScorer",
@@ -582,6 +593,11 @@ _STABILITY_EXPERIMENTAL: frozenset[str] = frozenset(
         "create_openshell_governance_router",
         # RuleSynthesisProvider (still maturing)
         "RuleSynthesisProvider",
+        # Production readiness profile validation
+        "ProductionProfile",
+        "ProductionProfileError",
+        "ProductionProfileValidation",
+        "validate_production_profile",
     }
 )
 
