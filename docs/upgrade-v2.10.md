@@ -78,7 +78,7 @@ startup rather than silently accepting requests without authentication.
   `acgs_lite` directly (`from acgs_lite import PostgresBundleStore`).
 - Optional extras (`z3-solver`, `redis`, Lean) no longer crash `import acgs_lite`
   when not installed — they raise `ImportError` with an install hint on first use.
-- See [CHANGELOG.md](../CHANGELOG.md) for the full list.
+- See [CHANGELOG.md](changelog.md) for the full list.
 
 ### Additional changes
 
