@@ -52,7 +52,7 @@ def handler(args: argparse.Namespace) -> int:
     print(f"  Compliance Score:  {report.overall_score:.0%}")
     print(f"  ACGS Coverage:     {report.acgs_lite_total_coverage:.0%}")
     print(f"  Frameworks:        {', '.join(report.frameworks_assessed)}")
-    print("  Enforcement:       August 2, 2026")
+    print("  Main obligations:  August 2, 2026")
     print("  Max Penalty:       7% global revenue / EUR 35M")
     print()
 
@@ -80,7 +80,7 @@ def handler(args: argparse.Namespace) -> int:
     print()
 
     if checklist.blocking_gaps:
-        print("  Blocking Gaps (must resolve before Aug 2, 2026):")
+        print("  Blocking Gaps (must resolve before Aug 2, 2026 main obligations):")
         for gap in checklist.blocking_gaps:
             print(f"    ❌ {gap}")
         print()
