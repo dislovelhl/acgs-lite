@@ -65,13 +65,17 @@ class TestApiKeyEnforcement:
         assert client.get("/audit/chain").status_code == 401
         assert client.get("/audit/count").status_code == 401
 
-    def test_require_auth_true_without_key_raises(self) -> None:
-        with pytest.raises(ValueError, match="require_auth=True"):
+    def test_require_auth_true_without_key_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("ACGS_API_KEY", raising=False)
+        monkeypatch.setenv("ACGS_LIFECYCLE_API_KEY", "lifecycle-only")
+
+        with pytest.raises(ValueError, match="api_key / ACGS_API_KEY"):
             create_governance_app(require_auth=True)
 
-    def test_default_fails_closed_without_key(self) -> None:
+    def test_default_fails_closed_without_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # v2.10.0: require_auth defaults to True, so calling without a key raises.
-        with pytest.raises(ValueError, match="require_auth=True"):
+        monkeypatch.delenv("ACGS_API_KEY", raising=False)
+        with pytest.raises(ValueError, match="ACGS_API_KEY"):
             create_governance_app()
 
     def test_env_var_is_used_when_param_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
