@@ -520,7 +520,7 @@ class TestValidateAction:
     async def test_strict_mode_does_not_raise_via_mcp(
         self, custom_constitution: Constitution
     ) -> None:
-        """MCP call_tool temporarily disables strict mode so violations return data, not exceptions."""
+        """MCP call_tool passes strict=False per request so violations return data, not exceptions."""
         server = create_mcp_server(custom_constitution, strict=True)
         # Should not raise even with strict=True
         result = await _call_tool(server, "validate_action", {"action": "forbidden action"})
@@ -802,7 +802,7 @@ class TestCheckCompliance:
 
     @pytest.mark.asyncio
     async def test_strict_mode_does_not_raise(self, custom_constitution: Constitution) -> None:
-        """check_compliance temporarily disables strict mode."""
+        """check_compliance passes strict=False per request without mutating engine.strict."""
         server = create_mcp_server(custom_constitution, strict=True)
         result = await _call_tool(server, "check_compliance", {"text": "forbidden content here"})
         assert result["compliant"] is False
@@ -962,7 +962,7 @@ class TestStrictModeRestoration:
         constitution = custom_constitution
         server = create_mcp_server(constitution, strict=True)
 
-        # Call validate_action which should temporarily flip strict=False
+        # Call validate_action which passes strict=False per call without flipping engine.strict
         await _call_tool(server, "validate_action", {"action": "forbidden"})
 
         # We can't directly access the engine from outside, but we can verify

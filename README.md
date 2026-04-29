@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/acgs-lite?style=for-the-badge)](https://pypi.org/project/acgs-lite/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-green.svg?style=for-the-badge)](https://www.apache.org/licenses/LICENSE-2.0)
 [![CI](https://img.shields.io/github/actions/workflow/status/dislovelhl/acgs-lite/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/dislovelhl/acgs-lite/actions)
-[![Coverage](https://img.shields.io/badge/tests-5623%20passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
+[![Coverage](https://img.shields.io/badge/tests-passing-brightgreen?style=for-the-badge)](https://github.com/dislovelhl/acgs-lite/actions)
 [![Documentation](https://img.shields.io/badge/docs-acgs.ai-brightgreen?style=for-the-badge)](https://acgs.ai/docs)
 [![GitHub stars](https://img.shields.io/github/stars/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/dislovelhl/acgs-lite?style=social)](https://github.com/dislovelhl/acgs-lite/network/members)
@@ -18,7 +18,7 @@
 
 **acgs-lite** is the production-ready runtime governance engine for AI agents. It sits **between your agent and execution** — every action is validated against a YAML constitution **before** it runs. Violations are blocked by default (fail-closed). Every decision is recorded in a tamper-evident audit chain. Human operators can intervene at any time.
 
-**Current status:** Stable core (v2.10.0) • 5,623 tests passing • Used in regulated pilots.
+**Current status:** Stable core (v2.10.0) • CI-backed test suite.
 
 **Star this repo** if you want more open-source infrastructure for governed, production-safe agents. Early stars materially help discovery.
 
@@ -382,12 +382,13 @@ assert log.verify_chain(), "Audit log tampered!"
 | **Rule match** | Action is blocked unless the rule explicitly sets `workflow_action: warn` |
 | **Audit write failure** | Logged at warning level; does not unblock the action |
 | **MACI misconfiguration** | Warning raised at startup; enforcement is advisory unless `enforce_maci=True` |
-| **MCP server strict-mode** | `engine.strict` is restored in `try/finally` at every call site — an exception during `validate()` cannot leave strict mode permanently disabled (as of 2.9.0) |
+| **MCP server strict-mode** | MCP tools call `validate(strict=False)` per request and do not mutate `engine.strict`; exceptions cannot leave strict mode permanently disabled |
 
-> **Note:** The strict-mode restoration guarantee above is scoped to the MCP server integration.
-> Other integrations that mutate `engine.strict` directly (e.g., custom adapters) are responsible
-> for their own restoration. Use `engine.non_strict()` (a context manager at `acgs_lite.engine.core`)
-> for safe per-call non-strict validation that always restores strict mode.
+> **Note:** The MCP integration above is non-mutating: it passes `validate(strict=False)` per call
+> and never touches `engine.strict`, so concurrent callers and shared engines are unaffected.
+> Other integrations that need per-call non-strict validation should prefer
+> `engine.validate(..., strict=False)` over `engine.non_strict()` for the same reason —
+> `non_strict()` mutates shared state and is unsafe under concurrency.
 
 To opt into fail-open (e.g., for testing), you must set it explicitly:
 
@@ -565,11 +566,11 @@ print(certificate.to_audit_dict())  # attach to AuditEntry
 
 | Operation | Latency | Notes |
 |-----------|---------|-------|
-| Rule validation (Python) | < 1 ms | Aho-Corasick multi-pattern |
-| Rule validation (Rust) | ~560 ns | Optional Rust extension |
-| Engine batch (100 rules) | ~2 ms | Parallel severity evaluation |
-| Audit write (JSONL) | ~50 µs | Append-only, SHA-256 chained |
-| Compliance report | < 500 ms | 18 frameworks, cached |
+| Rule validation (Python) | Measured per workload | Aho-Corasick multi-pattern; depends on rules and text size |
+| Rule validation (Rust) | Measured per workload | Optional Rust extension; benchmark your target hardware |
+| Engine batch (100 rules) | Reference benchmark only | Depends on rule count, severities, and context size |
+| Audit write (JSONL) | Reference benchmark only | Append-only, SHA-256 chained; storage latency matters |
+| Compliance report | Reference benchmark only | Framework count, cache state, and report scope affect latency |
 
 ---
 

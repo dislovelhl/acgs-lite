@@ -60,7 +60,7 @@ Capability Gating ensures that an agent is physically unable to access a tool un
 
 For mathematical and logic-based constraints (e.g., "Never allow a transaction to exceed the account balance"), ACGS-Lite supports the **Z3 SMT Solver**.
 
-This moves governance from "highly likely safe" to "mathematically proven safe."
+This moves governance from "highly likely safe" to a deterministically checked path for the constraints it models.
 
 ```python
 from acgs_lite.verification import Z3ConstraintVerifier

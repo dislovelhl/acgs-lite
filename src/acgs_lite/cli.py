@@ -235,7 +235,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="acgs",
         description="ACGS — Constitutional governance for AI agents",
-        epilog="EU AI Act enforcement: August 2, 2026 | https://acgs.ai",
+        epilog="EU AI Act main high-risk obligations: August 2, 2026 | https://acgs.ai",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

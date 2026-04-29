@@ -21,10 +21,10 @@ Usage::
     c = Constitution.from_yaml("policy.yaml")
     mc = MemoizedConstitution(c, maxsize=512)
 
-    # First call: computes via engine (~5µs)
+    # First call: computes via engine (workload-dependent)
     result = mc.validate("access patient records", {"env": "prod"})
 
-    # Subsequent identical calls: cache hit (~0.1µs)
+    # Subsequent identical calls: cache hit (benchmark on target hardware)
     result = mc.validate("access patient records", {"env": "prod"})
 
     stats = mc.cache_stats()

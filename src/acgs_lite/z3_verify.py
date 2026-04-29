@@ -5,9 +5,9 @@ against agent actions. Designed for critical-risk actions (score >= 0.8)
 where keyword matching and semantic scoring are insufficient.
 
 Architecture position:
-    Layer 1: GovernanceEngine (keyword rules, ~443ns)
-    Layer 2: ConstitutionalImpactScorer (semantic risk, ~1ms)
-    Layer 3: Z3ConstraintVerifier (formal verification, ~50-500ms, this module)
+    Layer 1: GovernanceEngine (keyword rules, hot-path benchmarked per workload)
+    Layer 2: ConstitutionalImpactScorer (semantic risk, model/backend dependent)
+    Layer 3: Z3ConstraintVerifier (formal verification, solver/problem dependent, this module)
 
 Usage::
 
