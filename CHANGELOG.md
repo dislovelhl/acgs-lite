@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- MCP server integration: documented the non-mutating `validate(strict=False)` contract.
+  MCP tools (`validate_action`, `check_compliance`, `explain_violation`) pass `strict=False`
+  per call and never touch `engine.strict`; concurrent callers and shared engines are
+  unaffected. `engine.non_strict()` is still available but not recommended under concurrency.
+- EU AI Act deadline wording: CLI output, init templates, compliance module, PDF/Markdown
+  reports, and docs now use "main high-risk obligations: August 2, 2026" instead of the
+  over-broad "enforcement" framing. Docs note that timeline adjustments may be proposed.
+- Performance figures in README, architecture docstrings (`lean_verify.py`, `z3_verify.py`,
+  `memoization.py`), and the integration dashboard replaced hardcoded latency numbers
+  (`~443 ns`, `<10 ms`, etc.) with workload-dependent language.
+- `docs/why-governance.md`: tightened MACI guarantee language from "no single compromised
+  agent can bypass governance" to "no single compromised agent can both propose and approve
+  its own actions" — reflects what MACI structurally enforces.
+- `integrations/agno.py` example model updated to `gpt-5.4` (matches provider capability
+  manifest; `gpt-5.4-mini` was not in the manifest).
+
+### Fixed
+
+- `tests/test_server_api_key_auth.py`: two fixtures now call
+  `monkeypatch.delenv("ACGS_API_KEY", raising=False)` before constructing the app,
+  preventing environment bleed when `ACGS_API_KEY` is already set in the parent process.
+
+### Internal
+
+- `.gitignore` hardened: `.agents/`, `.bt/`, `.env`, `.env.*` (excluding `.env.example`),
+  and root-level `/*.pdf` assessment outputs are now excluded.
+
 ## [2.10.0] - 2026-04-23
 
 ### Breaking Changes
