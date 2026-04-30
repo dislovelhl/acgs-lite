@@ -47,6 +47,16 @@ graph TD
 
 This aligns with AI governance/MLOps release discipline: observe continuously, evaluate offline, gate risky changes, preserve approval trails, and roll out with rollback support.
 
+## Reproducible corpus artifact
+
+For command-line experiments, build a provenance-preserving JSONL corpus from decision logs:
+
+```bash
+python scripts/build_evolution_corpus.py decisions.jsonl --output corpus.jsonl --validate-schema
+```
+
+Each row includes a stable ID, normalized text, source field, source audit IDs, observed decisions, labels, and a coverage category. This makes gate results reproducible and independently auditable.
+
 ## Minimal usage
 
 ```python
@@ -75,8 +85,11 @@ amendments = engine.draft_amendments(
     protocol,
     proposer_id="policy-proposer",
     open_voting=True,
+    gate_report=gate_report,
 )
 ```
+
+When `gate_report` is supplied, drafted amendments include the candidate evidence, the per-candidate gate result, and a canonical `gate_report_hash` in amendment metadata.
 
 ## Recommended operating controls
 

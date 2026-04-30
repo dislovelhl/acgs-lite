@@ -9,6 +9,7 @@ quorum, voting, ratification, and audit trails still control every change.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
@@ -257,6 +258,7 @@ class SelfEvolutionEngine:
         *,
         proposer_id: str | None = None,
         open_voting: bool = False,
+        gate_report: EvolutionGateReport | None = None,
     ) -> list[Amendment]:
         """Draft candidates as formal amendments.
 
@@ -266,22 +268,31 @@ class SelfEvolutionEngine:
         """
 
         actor = proposer_id or self.config.proposer_id
+        gate_by_candidate = {
+            result.candidate.candidate_id: result for result in (gate_report.passed if gate_report else ())
+        }
+        gate_report_hash = _canonical_hash(gate_report.to_dict()) if gate_report is not None else ""
         amendments: list[Amendment] = []
         for candidate in report.actionable_candidates:
+            gate_result = gate_by_candidate.get(candidate.candidate_id)
+            metadata = {
+                "source": "self_evolution",
+                "candidate_id": candidate.candidate_id,
+                "fitness": candidate.fitness,
+                "risk": candidate.risk,
+                "support": candidate.support,
+                "evidence": [item.to_dict() for item in candidate.evidence],
+            }
+            if gate_result is not None:
+                metadata["gate_result"] = gate_result.to_dict()
+                metadata["gate_report_hash"] = gate_report_hash
             amd = protocol.draft(
                 proposer_id=actor,
                 amendment_type=candidate.amendment_type.value,
                 title=candidate.title,
                 description=candidate.description,
                 changes=candidate.changes,
-                metadata={
-                    "source": "self_evolution",
-                    "candidate_id": candidate.candidate_id,
-                    "fitness": candidate.fitness,
-                    "risk": candidate.risk,
-                    "support": candidate.support,
-                    "evidence": [item.to_dict() for item in candidate.evidence],
-                },
+                metadata=metadata,
             )
             if open_voting:
                 protocol.propose(amd.amendment_id, proposer_id=actor)
@@ -683,6 +694,11 @@ def _stable_rule_id(prefix: str, text: str) -> str:
 
 def _bounded(value: float) -> float:
     return max(0.0, min(1.0, value))
+
+
+def _canonical_hash(payload: Mapping[str, Any]) -> str:
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def _evidence(record: Mapping[str, Any], reason: str) -> EvolutionEvidence:
