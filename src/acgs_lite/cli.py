@@ -24,6 +24,8 @@ Commands:
     acgs evidence               Collect compliance evidence from runtime + filesystem
     acgs arckit                 Bridge arc-kit artifacts into ACGS governance
     acgs lean-smoke             Validate Lean runtime/toolchain configuration
+    acgs restore --bundle-id ID --backup-path PATH
+                                Restore active constitution from hot-backup + re-validate
     acgs activate <key>         Store license key
     acgs status                 Show current license tier and features
     acgs verify                 Validate license key integrity only
@@ -51,6 +53,7 @@ from acgs_lite.commands import (
     observe_session,
     refusal,
     report,
+    restore,
     test_cmd,
 )
 from acgs_lite.commands._helpers import cli_bar as _cli_bar  # noqa: F401
@@ -90,6 +93,7 @@ cmd_resume = halt.cmd_resume
 cmd_breaker_status = halt.cmd_breaker_status
 cmd_evidence = evidence.handler
 cmd_lean_smoke = lean_smoke.handler
+cmd_restore = restore.cmd_restore
 
 
 # ---------------------------------------------------------------------------
@@ -256,6 +260,7 @@ def build_parser() -> argparse.ArgumentParser:
     halt.add_parser(sub)
     evidence.add_parser(sub)
     lean_smoke.add_parser(sub)
+    restore.add_parser(sub)
 
     return parser
 
@@ -287,6 +292,7 @@ _COMMAND_MAP: dict[str, str] = {
     "breaker-status": "cmd_breaker_status",
     "evidence": "cmd_evidence",
     "lean-smoke": "cmd_lean_smoke",
+    "restore": "cmd_restore",
 }
 
 
