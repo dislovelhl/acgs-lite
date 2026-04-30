@@ -153,6 +153,96 @@ def test_drafted_amendment_contains_reconstructable_gate_metadata() -> None:
     assert amendment.metadata["evidence"][0]["audit_entry_id"] == "audit-1"
 
 
+def test_draft_amendments_rejects_failed_candidates_when_gate_report_supplied() -> None:
+    baseline = Constitution.from_rules(
+        [
+            Rule(
+                id="PII-001",
+                text="Block customer pii export",
+                severity=Severity.HIGH,
+                keywords=["customer", "pii"],
+            )
+        ],
+        name="baseline",
+    )
+    safe = _candidate(
+        "safe",
+        AmendmentType.add_rule,
+        {
+            "rule": {
+                "id": "SAFE-001",
+                "text": "Block wire transfer without approval",
+                "severity": "high",
+                "keywords": ["wire", "approval"],
+            }
+        },
+    )
+    regression = _candidate("regression", AmendmentType.remove_rule, {"rule_id": "PII-001"})
+    unfiltered_report = SelfEvolutionReport(input_records=2, candidates=(safe, regression))
+    engine = SelfEvolutionEngine(
+        SelfEvolutionConfig(min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0)
+    )
+    gate_report = engine.gate_candidates(
+        unfiltered_report,
+        baseline,
+        ["export customer pii", "wire transfer without approval"],
+    )
+
+    protocol = AmendmentProtocol(quorum=1, approval_threshold=1.0)
+    with pytest.raises(ValueError, match="not approved by the supplied gate_report"):
+        engine.draft_amendments(
+            unfiltered_report,
+            protocol,
+            gate_report=gate_report,
+        )
+    assert len(protocol) == 0
+
+
+def test_draft_amendments_rejects_stale_gate_report_candidate_payload() -> None:
+    baseline = Constitution.from_rules([], name="baseline")
+    gated_candidate = _candidate(
+        "same-id",
+        AmendmentType.add_rule,
+        {
+            "rule": {
+                "id": "SAFE-001",
+                "text": "Block wire transfer without approval",
+                "severity": "high",
+                "keywords": ["wire", "approval"],
+            }
+        },
+    )
+    mutated_candidate = _candidate(
+        "same-id",
+        AmendmentType.add_rule,
+        {
+            "rule": {
+                "id": "MUTATED-001",
+                "text": "Block every normal action",
+                "severity": "high",
+                "keywords": ["normal"],
+            }
+        },
+    )
+    engine = SelfEvolutionEngine(
+        SelfEvolutionConfig(min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0)
+    )
+    gate_report = engine.gate_candidates(
+        SelfEvolutionReport(input_records=1, candidates=(gated_candidate,)),
+        baseline,
+        ["wire transfer without approval"],
+    )
+    protocol = AmendmentProtocol(quorum=1, approval_threshold=1.0)
+
+    with pytest.raises(ValueError, match="not approved by the supplied gate_report"):
+        engine.draft_amendments(
+            SelfEvolutionReport(input_records=1, candidates=(mutated_candidate,)),
+            protocol,
+            gate_report=gate_report,
+        )
+    assert len(protocol) == 0
+
+
 def test_build_evolution_corpus_script_outputs_traceable_rows(tmp_path: Path) -> None:
     input_path = tmp_path / "decisions.jsonl"
     output_path = tmp_path / "corpus.jsonl"

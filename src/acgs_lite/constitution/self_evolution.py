@@ -272,6 +272,21 @@ class SelfEvolutionEngine:
             result.candidate.candidate_id: result for result in (gate_report.passed if gate_report else ())
         }
         gate_report_hash = _canonical_hash(gate_report.to_dict()) if gate_report is not None else ""
+        if gate_report is not None:
+            unapproved = [
+                candidate.candidate_id
+                for candidate in report.actionable_candidates
+                if candidate.candidate_id not in gate_by_candidate
+                or _canonical_hash(candidate.to_dict())
+                != _canonical_hash(gate_by_candidate[candidate.candidate_id].candidate.to_dict())
+            ]
+            if unapproved:
+                msg = (
+                    "Candidates were not approved by the supplied gate_report: "
+                    f"{', '.join(repr(candidate_id) for candidate_id in unapproved)}; "
+                    "pass gate_report.to_evolution_report() or omit failed candidates"
+                )
+                raise ValueError(msg)
         amendments: list[Amendment] = []
         for candidate in report.actionable_candidates:
             gate_result = gate_by_candidate.get(candidate.candidate_id)
