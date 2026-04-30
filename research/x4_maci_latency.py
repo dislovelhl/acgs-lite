@@ -129,7 +129,7 @@ def run_experiment(num_episodes: int, seed: int) -> dict[str, Any]:
         idx = int(len(arr) * p)
         return arr[min(idx, len(arr) - 1)]
 
-    deltas = [m - s for m, s in zip(maci_latencies, single_latencies)]
+    deltas = [m - s for m, s in zip(maci_latencies, single_latencies, strict=True)]
     deltas.sort()
 
     return {

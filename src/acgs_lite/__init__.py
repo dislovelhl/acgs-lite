@@ -463,6 +463,11 @@ _STABILITY_STABLE: frozenset[str] = frozenset(
         # Circuit breaker (Article 14 kill-switch)
         "GovernanceCircuitBreaker",
         "GovernanceHaltError",
+        # Production readiness gates (fail-closed startup validation)
+        "ProductionProfile",
+        "ProductionProfileError",
+        "ProductionProfileValidation",
+        "validate_production_profile",
         # Trajectory monitoring (core rule types are stable)
         "TrajectoryMonitor",
         "TrajectorySession",

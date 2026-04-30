@@ -15,7 +15,6 @@ import random
 from pathlib import Path
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Simulated HumanEval-like problems (5 proxy problems for speed)
 # In production: replace with real HumanEval dataset from datasets library
@@ -59,6 +58,7 @@ PROXY_PROBLEMS: list[dict[str, Any]] = [
 # Simulated LLM sampler with configurable constitution filter
 # ---------------------------------------------------------------------------
 
+
 class SimulatedLLM:
     """Deterministic sampler: correct solution + Gaussian noise mutation."""
 
@@ -66,7 +66,9 @@ class SimulatedLLM:
         self.rng = random.Random(seed)
         self.correctness_rate = correctness_rate
 
-    def sample(self, problem: dict[str, Any], constitution_filter: dict[str, Any] | None = None) -> str:
+    def sample(
+        self, problem: dict[str, Any], constitution_filter: dict[str, Any] | None = None
+    ) -> str:
         """Generate one sample. May inject a violation if filter demands it."""
         correct = self.rng.random() < self.correctness_rate
         if constitution_filter and self._triggers_filter(problem, constitution_filter):
@@ -127,7 +129,9 @@ def run_experiment(
         problem_results[pid] = pass_k
 
     # Aggregate
-    aggregated = {k: sum(pr[k] for pr in problem_results.values()) / len(problem_results) for k in k_values}
+    aggregated = {
+        k: sum(pr[k] for pr in problem_results.values()) / len(problem_results) for k in k_values
+    }
 
     return {
         "num_samples": num_samples,
@@ -143,7 +147,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="X1: Constitutional filter on pass@k")
     parser.add_argument("--num-samples", type=int, default=100)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--constitution", type=str, default="", help="Path to constitution filter JSON")
+    parser.add_argument(
+        "--constitution", type=str, default="", help="Path to constitution filter JSON"
+    )
     parser.add_argument("--output", type=str, default="x1_results.json")
     args = parser.parse_args()
 
@@ -151,12 +157,15 @@ def main() -> int:
     if args.constitution:
         constitution_filter = json.loads(Path(args.constitution).read_text())
 
-    baseline = run_experiment(num_samples=args.num_samples, seed=args.seed, constitution_filter=None)
-    filtered = run_experiment(num_samples=args.num_samples, seed=args.seed, constitution_filter=constitution_filter)
+    baseline = run_experiment(
+        num_samples=args.num_samples, seed=args.seed, constitution_filter=None
+    )
+    filtered = run_experiment(
+        num_samples=args.num_samples, seed=args.seed, constitution_filter=constitution_filter
+    )
 
     deltas = {
-        k: filtered["aggregated"][k] - baseline["aggregated"][k]
-        for k in baseline["aggregated"]
+        k: filtered["aggregated"][k] - baseline["aggregated"][k] for k in baseline["aggregated"]
     }
 
     result = {

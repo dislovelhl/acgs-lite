@@ -243,7 +243,9 @@ class SelfEvolutionEngine:
         candidates.extend(self._hot_rule_candidates(normalized, constitution, skipped))
         candidates.extend(self._low_confidence_allow_candidates(normalized, skipped))
 
-        filtered = [candidate for candidate in candidates if candidate.fitness >= self.config.min_fitness]
+        filtered = [
+            candidate for candidate in candidates if candidate.fitness >= self.config.min_fitness
+        ]
         filtered.sort(key=lambda c: (c.fitness, c.support, c.candidate_id), reverse=True)
         return SelfEvolutionReport(
             input_records=len(normalized),
@@ -269,7 +271,8 @@ class SelfEvolutionEngine:
 
         actor = proposer_id or self.config.proposer_id
         gate_by_candidate = {
-            result.candidate.candidate_id: result for result in (gate_report.passed if gate_report else ())
+            result.candidate.candidate_id: result
+            for result in (gate_report.passed if gate_report else ())
         }
         gate_report_hash = _canonical_hash(gate_report.to_dict()) if gate_report is not None else ""
         if gate_report is not None:
@@ -391,7 +394,10 @@ class SelfEvolutionEngine:
             try:
                 candidate_constitution = _candidate_constitution(constitution, candidate)
                 deltas = [
-                    (_decision_for(constitution, action), _decision_for(candidate_constitution, action))
+                    (
+                        _decision_for(constitution, action),
+                        _decision_for(candidate_constitution, action),
+                    )
                     for action in actions
                 ]
             except Exception as exc:
@@ -408,7 +414,9 @@ class SelfEvolutionEngine:
                 )
                 continue
             changed = sum(1 for before, after in deltas if before != after)
-            regressions = sum(1 for before, after in deltas if before == "deny" and after == "allow")
+            regressions = sum(
+                1 for before, after in deltas if before == "deny" and after == "allow"
+            )
             blast_radius = changed / len(actions)
             weighted_risk = sum(_transition_risk(before, after) for before, after in deltas) / len(
                 actions
@@ -418,13 +426,11 @@ class SelfEvolutionEngine:
                 reasons.append(f"{regressions} deny-to-allow regression(s)")
             if blast_radius > self.config.max_blast_radius:
                 reasons.append(
-                    f"blast radius {blast_radius:.1%} exceeds "
-                    f"{self.config.max_blast_radius:.1%}"
+                    f"blast radius {blast_radius:.1%} exceeds {self.config.max_blast_radius:.1%}"
                 )
             if weighted_risk > self.config.max_weighted_risk:
                 reasons.append(
-                    f"weighted risk {weighted_risk:.3f} exceeds "
-                    f"{self.config.max_weighted_risk:.3f}"
+                    f"weighted risk {weighted_risk:.3f} exceeds {self.config.max_weighted_risk:.3f}"
                 )
             if reasons:
                 recommendation = "no-go"
@@ -482,7 +488,9 @@ class SelfEvolutionEngine:
             rule_id = _stable_rule_id("EVO", key)
             support = len(items)
             fitness = _bounded(0.45 + min(0.4, support / 10) + 0.1 * bool(keywords))
-            evidence = tuple(_evidence(item, "denied with no active rule coverage") for item in items[:5])
+            evidence = tuple(
+                _evidence(item, "denied with no active rule coverage") for item in items[:5]
+            )
             candidates.append(
                 EvolutionCandidate(
                     candidate_id=_stable_rule_id("CAND", f"uncovered:{key}"),
@@ -531,7 +539,10 @@ class SelfEvolutionEngine:
             if rule is None or support < self.config.min_support:
                 skipped["hot_rule_unknown_or_below_support"] += 1
                 continue
-            changes: dict[str, Any] = {"rule_id": rule_id, "priority": min(rule.priority + support, 100)}
+            changes: dict[str, Any] = {
+                "rule_id": rule_id,
+                "priority": min(rule.priority + support, 100),
+            }
             amendment_type = AmendmentType.modify_rule
             risk = "low"
             if rule.severity in {Severity.LOW, Severity.MEDIUM}:
@@ -598,7 +609,9 @@ class SelfEvolutionEngine:
                 fitness=_bounded(0.5 + min(0.35, len(items) / 12)),
                 risk="medium",
                 support=len(items),
-                evidence=tuple(_evidence(item, "allowed below confidence threshold") for item in items[:5]),
+                evidence=tuple(
+                    _evidence(item, "allowed below confidence threshold") for item in items[:5]
+                ),
             )
         ]
 
@@ -613,7 +626,9 @@ def _record_to_mapping(record: GovernanceDecisionRecord | Mapping[str, Any]) -> 
     raise TypeError(msg)
 
 
-def _candidate_constitution(constitution: Constitution, candidate: EvolutionCandidate) -> Constitution:
+def _candidate_constitution(
+    constitution: Constitution, candidate: EvolutionCandidate
+) -> Constitution:
     bundle = constitution.to_bundle()
     rules = list(bundle.get("rules", []))
 
@@ -626,7 +641,9 @@ def _candidate_constitution(constitution: Constitution, candidate: EvolutionCand
     }:
         rule_id = str(candidate.changes.get("rule_id", ""))
         patch = {key: value for key, value in candidate.changes.items() if key != "rule_id"}
-        rules = [dict(rule, **patch) if str(rule.get("id", "")) == rule_id else rule for rule in rules]
+        rules = [
+            dict(rule, **patch) if str(rule.get("id", "")) == rule_id else rule for rule in rules
+        ]
     elif candidate.amendment_type == AmendmentType.remove_rule:
         rule_id = str(candidate.changes.get("rule_id", ""))
         rules = [rule for rule in rules if str(rule.get("id", "")) != rule_id]
@@ -644,7 +661,9 @@ def _decision_for(constitution: Constitution, action: str) -> str:
         return "deny"
     if result.valid:
         return "allow"
-    if any(getattr(violation.severity, "blocks", lambda: True)() for violation in result.violations):
+    if any(
+        getattr(violation.severity, "blocks", lambda: True)() for violation in result.violations
+    ):
         return "deny"
     return "escalate"
 

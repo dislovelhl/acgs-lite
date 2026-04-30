@@ -42,7 +42,10 @@ def main() -> int:
     args = parser.parse_args()
 
     experiments = [
-        ("x1_constitutional_humaneval.py", ["--seed", str(args.seed), "--constitution", "constitution_secrets.json"]),
+        (
+            "x1_constitutional_humaneval.py",
+            ["--seed", str(args.seed), "--constitution", "constitution_secrets.json"],
+        ),
         ("x2_swe_secrets.py", ["--seed", str(args.seed)]),
         ("x3_maci_decisions.py", ["--seed", str(args.seed)]),
         ("x4_maci_latency.py", ["--seed", str(args.seed)]),
@@ -56,7 +59,8 @@ def main() -> int:
         results.append(_run(script, extra))
 
     all_passed = all(
-        r.get("status") == "passed" and r.get("result", {}).get("pass", {}).get("pass@1_delta_ok", True)
+        r.get("status") == "passed"
+        and r.get("result", {}).get("pass", {}).get("pass@1_delta_ok", True)
         for r in results
     )
 

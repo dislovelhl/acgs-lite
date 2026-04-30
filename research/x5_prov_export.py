@@ -22,10 +22,10 @@ import time
 from pathlib import Path
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Simulated ACGS audit entries
 # ---------------------------------------------------------------------------
+
 
 def _make_audit_entry(rng: random.Random, index: int) -> dict[str, Any]:
     entry_types = ["validation", "maci_check", "override", "governance_decision", "bundle_bind"]

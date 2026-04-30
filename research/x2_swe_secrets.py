@@ -87,14 +87,10 @@ def run_experiment(num_trials: int, seed: int) -> dict[str, Any]:
     non_secret_issues = [i for i in issues if not i["has_secret"]]
 
     without_secret_rate = sum(
-        without_results[i]
-        for i, issue in enumerate(issues)
-        if issue["has_secret"]
+        without_results[i] for i, issue in enumerate(issues) if issue["has_secret"]
     ) / max(len(secret_issues), 1)
     with_secret_rate = sum(
-        with_results[i]
-        for i, issue in enumerate(issues)
-        if issue["has_secret"]
+        with_results[i] for i, issue in enumerate(issues) if issue["has_secret"]
     ) / max(len(secret_issues), 1)
 
     overall_without = sum(without_results) / len(without_results)

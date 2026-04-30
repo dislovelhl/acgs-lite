@@ -102,7 +102,9 @@ def _iter_texts(record: dict[str, Any], include_evidence: bool) -> list[tuple[st
     return items
 
 
-def build_corpus(records: list[dict[str, Any]], *, include_evidence: bool = True) -> list[dict[str, Any]]:
+def build_corpus(
+    records: list[dict[str, Any]], *, include_evidence: bool = True
+) -> list[dict[str, Any]]:
     by_key: dict[tuple[str, str], dict[str, Any]] = {}
     for index, record in enumerate(records):
         audit_id = str(record.get("audit_entry_id") or record.get("id") or f"record-{index}")
@@ -150,8 +152,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input", type=Path, help="Decision log JSONL or JSON array")
     parser.add_argument("--output", "-o", type=Path, help="Output JSONL path; defaults to stdout")
-    parser.add_argument("--no-evidence", action="store_true", help="Do not include violation text rows")
-    parser.add_argument("--validate-schema", action="store_true", help="Validate generated rows before writing")
+    parser.add_argument(
+        "--no-evidence", action="store_true", help="Do not include violation text rows"
+    )
+    parser.add_argument(
+        "--validate-schema", action="store_true", help="Validate generated rows before writing"
+    )
     args = parser.parse_args(argv)
 
     rows = build_corpus(_load_records(args.input), include_evidence=not args.no_evidence)
