@@ -1,6 +1,11 @@
 from acgs_lite.constitution import Constitution, Rule, Severity
 from acgs_lite.constitution.amendments import AmendmentProtocol, AmendmentStatus, AmendmentType
-from acgs_lite.constitution.self_evolution import SelfEvolutionConfig, SelfEvolutionEngine
+from acgs_lite.constitution.self_evolution import (
+    EvolutionCandidate,
+    SelfEvolutionConfig,
+    SelfEvolutionEngine,
+    SelfEvolutionReport,
+)
 from acgs_lite.engine.decision_record import GovernanceDecisionRecord, TriggeredRule
 
 
@@ -179,3 +184,75 @@ def test_self_evolution_gate_approves_bounded_candidate() -> None:
     assert len(gate_report.passed) == 1
     assert gate_report.approved_candidates == (report.candidates[0],)
     assert gate_report.passed[0].recommendation == "review"
+
+
+def test_action_corpus_from_records_deduplicates_actions_and_evidence() -> None:
+    engine = SelfEvolutionEngine()
+    records = [
+        GovernanceDecisionRecord(
+            decision="deny",
+            action=" export   customer pii ",
+            violations=[{"message": "public bucket personal data exposure"}],
+        ),
+        {
+            "decision": "deny",
+            "action": "export customer pii",
+            "violations": ["public bucket personal data exposure", {"reason": "missing consent"}],
+        },
+    ]
+
+    corpus = engine.action_corpus_from_records(records)
+
+    assert corpus == (
+        "export customer pii",
+        "public bucket personal data exposure",
+        "missing consent",
+    )
+
+
+def test_gate_candidates_fails_closed_for_invalid_candidate() -> None:
+    constitution = Constitution.from_rules([], name="empty")
+    candidate = EvolutionCandidate(
+        candidate_id="bad",
+        amendment_type=AmendmentType.add_rule,
+        title="Invalid generated rule",
+        description="Missing required rule text should fail before amendment drafting.",
+        changes={"rule": {"id": "BAD-001"}},
+        fitness=1.0,
+        risk="high",
+        support=1,
+    )
+    report = SelfEvolutionReport(input_records=1, candidates=(candidate,))
+
+    gate_report = SelfEvolutionEngine(SelfEvolutionConfig(min_fitness=0.0)).gate_candidates(
+        report, constitution, ["anything"]
+    )
+
+    assert gate_report.approved_candidates == ()
+    assert gate_report.failed[0].recommendation == "no-go"
+    assert "candidate simulation failed" in gate_report.failed[0].reasons[0]
+
+
+def test_gate_report_to_evolution_report_keeps_only_approved_candidates() -> None:
+    constitution = Constitution.from_rules([], name="empty")
+    engine = SelfEvolutionEngine(
+        SelfEvolutionConfig(min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0)
+    )
+    report = engine.evaluate(
+        [
+            GovernanceDecisionRecord(
+                decision="deny",
+                action="export customer pii",
+                violations=[{"message": "personal data exposure"}],
+            )
+        ],
+        constitution,
+    )
+    gate_report = engine.gate_candidates(report, constitution, ["export customer pii"])
+
+    approved_report = gate_report.to_evolution_report(
+        input_records=report.input_records, skipped=report.skipped
+    )
+
+    assert approved_report.input_records == 1
+    assert approved_report.candidates == gate_report.approved_candidates

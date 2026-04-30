@@ -57,15 +57,15 @@ constitution = Constitution.default()
 engine = SelfEvolutionEngine(SelfEvolutionConfig(min_support=3))
 
 report = engine.evaluate(decision_records, constitution)
+action_corpus = engine.action_corpus_from_records(decision_records)
 gate_report = engine.gate_candidates(
     report,
     constitution,
-    action_corpus=[record.action for record in decision_records if record.action],
+    action_corpus=action_corpus,
 )
 
-approved_report = type(report)(
+approved_report = gate_report.to_evolution_report(
     input_records=report.input_records,
-    candidates=gate_report.approved_candidates,
     skipped=report.skipped,
 )
 
@@ -82,7 +82,9 @@ amendments = engine.draft_amendments(
 
 - Keep `min_support` above 1 in production to avoid one-off noise.
 - Use a representative regression corpus: recent allowed actions, denied actions, canary incidents, and known compliance fixtures.
+- Use `action_corpus_from_records()` as a baseline corpus builder, then add curated regression/canary fixtures for stronger coverage.
 - Treat `review` recommendations as human-review-required, not auto-merge.
 - Keep `allow_regressions=False` for safety-critical deployments.
+- Treat gate failures as fail-closed: invalid generated candidates and simulation errors should be fixed upstream, not drafted as amendments.
 - Store `EvolutionGateReport.to_dict()` alongside amendment metadata for auditability.
 - Pair accepted amendments with lifecycle rollout stages and rollback plans.

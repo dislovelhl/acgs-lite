@@ -190,6 +190,20 @@ class EvolutionGateReport:
     def approved_candidates(self) -> tuple[EvolutionCandidate, ...]:
         return tuple(result.candidate for result in self.passed)
 
+    def to_evolution_report(
+        self,
+        *,
+        input_records: int = 0,
+        skipped: Mapping[str, int] | None = None,
+    ) -> SelfEvolutionReport:
+        """Return an amendment-ready report containing only gate-approved candidates."""
+
+        return SelfEvolutionReport(
+            input_records=input_records,
+            candidates=self.approved_candidates,
+            skipped=dict(skipped or {}),
+        )
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "evaluated": self.evaluated,
@@ -275,6 +289,44 @@ class SelfEvolutionEngine:
             amendments.append(amd)
         return amendments
 
+    def action_corpus_from_records(
+        self,
+        records: Iterable[GovernanceDecisionRecord | Mapping[str, Any]],
+        *,
+        include_evidence_actions: bool = True,
+        max_actions: int | None = None,
+    ) -> tuple[str, ...]:
+        """Build a stable, de-duplicated simulation corpus from decision records.
+
+        The corpus starts with observed ``action`` strings. When
+        ``include_evidence_actions`` is enabled, compact violation messages are
+        included too, which helps proposed uncovered-risk rules get simulated
+        against the actual text that caused the governance signal.
+        """
+
+        corpus: list[str] = []
+        seen: set[str] = set()
+
+        def _add(text: str) -> None:
+            normalized = " ".join(text.split())
+            if not normalized or normalized in seen:
+                return
+            seen.add(normalized)
+            corpus.append(normalized)
+
+        for record in records:
+            item = _record_to_mapping(record)
+            _add(str(item.get("action", "")))
+            if include_evidence_actions:
+                for violation in item.get("violations") or []:
+                    if isinstance(violation, Mapping):
+                        _add(str(violation.get("message") or violation.get("reason") or ""))
+                    else:
+                        _add(str(violation))
+            if max_actions is not None and len(corpus) >= max_actions:
+                return tuple(corpus[:max_actions])
+        return tuple(corpus)
+
     def gate_candidates(
         self,
         report: SelfEvolutionReport,
@@ -310,11 +362,25 @@ class SelfEvolutionEngine:
         failed_results: list[CandidateGateResult] = []
 
         for candidate in report.actionable_candidates:
-            candidate_constitution = _candidate_constitution(constitution, candidate)
-            deltas = [
-                (_decision_for(constitution, action), _decision_for(candidate_constitution, action))
-                for action in actions
-            ]
+            try:
+                candidate_constitution = _candidate_constitution(constitution, candidate)
+                deltas = [
+                    (_decision_for(constitution, action), _decision_for(candidate_constitution, action))
+                    for action in actions
+                ]
+            except Exception as exc:
+                failed_results.append(
+                    CandidateGateResult(
+                        candidate=candidate,
+                        passed=False,
+                        recommendation="no-go",
+                        blast_radius=1.0,
+                        weighted_risk=1.0,
+                        regressions=0,
+                        reasons=(f"candidate simulation failed: {type(exc).__name__}: {exc}",),
+                    )
+                )
+                continue
             changed = sum(1 for before, after in deltas if before != after)
             regressions = sum(1 for before, after in deltas if before == "deny" and after == "allow")
             blast_radius = changed / len(actions)
@@ -546,7 +612,10 @@ def _candidate_constitution(constitution: Constitution, candidate: EvolutionCand
 def _decision_for(constitution: Constitution, action: str) -> str:
     from acgs_lite.engine import GovernanceEngine
 
-    result = GovernanceEngine(constitution, strict=False).validate(action)
+    try:
+        result = GovernanceEngine(constitution, strict=False).validate(action)
+    except Exception:
+        return "deny"
     if result.valid:
         return "allow"
     if any(getattr(violation.severity, "blocks", lambda: True)() for violation in result.violations):
