@@ -116,6 +116,10 @@ an operator handles staging, activation, and rollback.
 - **`BundleAwareGovernanceEngine`** — wraps `ConstitutionLifecycle` to return a `GovernanceEngine` built from the tenant's active bundle. Engine instances are cached by `(tenant_id, bundle_hash)`. Host applications must call `invalidate(tenant_id)` after lifecycle changes that should refresh the bound engine.
 - **FastAPI lifecycle router** — thirteen REST endpoints under `/constitution/lifecycle/` expose the full saga over HTTP (10 `POST` mutation endpoints + 3 `GET` read endpoints). When configured, all lifecycle endpoints require `X-API-Key`; mutation endpoints also require `X-Actor-ID`. See [Constitution Lifecycle API](api/lifecycle.md) for the full reference.
 
+### Governed Self-Evolution
+
+Self-evolution is implemented as a proposal-and-gate layer on top of the lifecycle, not as direct self-modification. `SelfEvolutionEngine` analyzes decision records for uncovered denials, hot rules, and low-confidence allows, then emits scored `EvolutionCandidate` objects. Candidates are simulated against an action corpus for blast radius, weighted transition risk, and deny-to-allow regressions before any amendment is drafted. Passing candidates then enter `AmendmentProtocol` for MACI voting, ratification, enforcement, and lifecycle rollout. See [Governed Self-Evolution](self-evolution.md) for the operating model.
+
 ---
 
 ## Next Steps

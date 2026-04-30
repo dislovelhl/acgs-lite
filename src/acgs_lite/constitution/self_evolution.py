@@ -64,6 +64,9 @@ class SelfEvolutionConfig:
     low_confidence_threshold: float = 0.6
     max_candidates: int = 10
     proposer_id: str = "self-evolution-agent"
+    max_blast_radius: float = 0.25
+    max_weighted_risk: float = 0.35
+    allow_regressions: bool = False
 
     def __post_init__(self) -> None:
         if self.min_support < 1:
@@ -74,6 +77,10 @@ class SelfEvolutionConfig:
             raise ValueError("low_confidence_threshold must be between 0 and 1")
         if self.max_candidates < 1:
             raise ValueError("max_candidates must be >= 1")
+        if not 0.0 <= self.max_blast_radius <= 1.0:
+            raise ValueError("max_blast_radius must be between 0 and 1")
+        if not 0.0 <= self.max_weighted_risk <= 1.0:
+            raise ValueError("max_weighted_risk must be between 0 and 1")
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +134,30 @@ class EvolutionCandidate:
 
 
 @dataclass(frozen=True, slots=True)
+class CandidateGateResult:
+    """Pre-amendment simulation gate result for one candidate."""
+
+    candidate: EvolutionCandidate
+    passed: bool
+    recommendation: str
+    blast_radius: float
+    weighted_risk: float
+    regressions: int
+    reasons: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "candidate": self.candidate.to_dict(),
+            "passed": self.passed,
+            "recommendation": self.recommendation,
+            "blast_radius": round(self.blast_radius, 4),
+            "weighted_risk": round(self.weighted_risk, 4),
+            "regressions": self.regressions,
+            "reasons": list(self.reasons),
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class SelfEvolutionReport:
     """Result of one self-evolution evaluation pass."""
 
@@ -144,6 +175,26 @@ class SelfEvolutionReport:
             "candidate_count": len(self.candidates),
             "skipped": dict(self.skipped),
             "candidates": [candidate.to_dict() for candidate in self.candidates],
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class EvolutionGateReport:
+    """Aggregate pre-amendment safety gate report."""
+
+    evaluated: int
+    passed: tuple[CandidateGateResult, ...]
+    failed: tuple[CandidateGateResult, ...]
+
+    @property
+    def approved_candidates(self) -> tuple[EvolutionCandidate, ...]:
+        return tuple(result.candidate for result in self.passed)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "evaluated": self.evaluated,
+            "passed": [result.to_dict() for result in self.passed],
+            "failed": [result.to_dict() for result in self.failed],
         }
 
 
@@ -223,6 +274,92 @@ class SelfEvolutionEngine:
                 protocol.open_voting(amd.amendment_id, proposer_id=actor)
             amendments.append(amd)
         return amendments
+
+    def gate_candidates(
+        self,
+        report: SelfEvolutionReport,
+        constitution: Constitution,
+        action_corpus: Iterable[str],
+    ) -> EvolutionGateReport:
+        """Simulate candidates before drafting formal amendments.
+
+        This is the self-evolution safety valve: every candidate is converted to
+        a candidate constitution and compared against the current constitution on
+        a representative action corpus. Candidates that create regressions,
+        exceed blast-radius limits, or exceed weighted-risk limits are rejected
+        before they enter the amendment workflow.
+        """
+
+        actions = [action for action in action_corpus if action]
+        if not actions:
+            failed = tuple(
+                CandidateGateResult(
+                    candidate=candidate,
+                    passed=False,
+                    recommendation="no-go",
+                    blast_radius=0.0,
+                    weighted_risk=1.0,
+                    regressions=0,
+                    reasons=("empty action corpus",),
+                )
+                for candidate in report.actionable_candidates
+            )
+            return EvolutionGateReport(evaluated=len(failed), passed=(), failed=failed)
+
+        passed: list[CandidateGateResult] = []
+        failed_results: list[CandidateGateResult] = []
+
+        for candidate in report.actionable_candidates:
+            candidate_constitution = _candidate_constitution(constitution, candidate)
+            deltas = [
+                (_decision_for(constitution, action), _decision_for(candidate_constitution, action))
+                for action in actions
+            ]
+            changed = sum(1 for before, after in deltas if before != after)
+            regressions = sum(1 for before, after in deltas if before == "deny" and after == "allow")
+            blast_radius = changed / len(actions)
+            weighted_risk = sum(_transition_risk(before, after) for before, after in deltas) / len(
+                actions
+            )
+            reasons: list[str] = []
+            if not self.config.allow_regressions and regressions > 0:
+                reasons.append(f"{regressions} deny-to-allow regression(s)")
+            if blast_radius > self.config.max_blast_radius:
+                reasons.append(
+                    f"blast radius {blast_radius:.1%} exceeds "
+                    f"{self.config.max_blast_radius:.1%}"
+                )
+            if weighted_risk > self.config.max_weighted_risk:
+                reasons.append(
+                    f"weighted risk {weighted_risk:.3f} exceeds "
+                    f"{self.config.max_weighted_risk:.3f}"
+                )
+            if reasons:
+                recommendation = "no-go"
+            elif weighted_risk == 0:
+                recommendation = "go"
+            else:
+                recommendation = "review"
+            passed_gate = not reasons
+            gate_result = CandidateGateResult(
+                candidate=candidate,
+                passed=passed_gate,
+                recommendation=recommendation,
+                blast_radius=blast_radius,
+                weighted_risk=weighted_risk,
+                regressions=regressions,
+                reasons=tuple(reasons),
+            )
+            if passed_gate:
+                passed.append(gate_result)
+            else:
+                failed_results.append(gate_result)
+
+        return EvolutionGateReport(
+            evaluated=len(passed) + len(failed_results),
+            passed=tuple(passed),
+            failed=tuple(failed_results),
+        )
 
     def _uncovered_denial_candidates(
         self,
@@ -384,6 +521,51 @@ def _record_to_mapping(record: GovernanceDecisionRecord | Mapping[str, Any]) -> 
     raise TypeError(msg)
 
 
+def _candidate_constitution(constitution: Constitution, candidate: EvolutionCandidate) -> Constitution:
+    bundle = constitution.to_bundle()
+    rules = list(bundle.get("rules", []))
+
+    if candidate.amendment_type == AmendmentType.add_rule:
+        rules.append(dict(candidate.changes.get("rule", {})))
+    elif candidate.amendment_type in {
+        AmendmentType.modify_rule,
+        AmendmentType.modify_severity,
+        AmendmentType.modify_workflow,
+    }:
+        rule_id = str(candidate.changes.get("rule_id", ""))
+        patch = {key: value for key, value in candidate.changes.items() if key != "rule_id"}
+        rules = [dict(rule, **patch) if str(rule.get("id", "")) == rule_id else rule for rule in rules]
+    elif candidate.amendment_type == AmendmentType.remove_rule:
+        rule_id = str(candidate.changes.get("rule_id", ""))
+        rules = [rule for rule in rules if str(rule.get("id", "")) != rule_id]
+
+    bundle["rules"] = rules
+    return constitution.__class__.from_bundle(bundle)
+
+
+def _decision_for(constitution: Constitution, action: str) -> str:
+    from acgs_lite.engine import GovernanceEngine
+
+    result = GovernanceEngine(constitution, strict=False).validate(action)
+    if result.valid:
+        return "allow"
+    if any(getattr(violation.severity, "blocks", lambda: True)() for violation in result.violations):
+        return "deny"
+    return "escalate"
+
+
+def _transition_risk(before: str, after: str) -> float:
+    weights = {
+        ("deny", "allow"): 1.0,
+        ("deny", "escalate"): 0.8,
+        ("allow", "deny"): 0.5,
+        ("allow", "escalate"): 0.2,
+        ("escalate", "allow"): 0.2,
+        ("escalate", "deny"): 0.5,
+    }
+    return weights.get((before, after), 0.0)
+
+
 def _record_rule_ids(record: Mapping[str, Any]) -> tuple[str, ...]:
     ids: list[str] = []
     for rule in record.get("triggered_rules") or []:
@@ -448,6 +630,8 @@ def _evidence(record: Mapping[str, Any], reason: str) -> EvolutionEvidence:
 __all__ = [
     "EvolutionCandidate",
     "EvolutionEvidence",
+    "CandidateGateResult",
+    "EvolutionGateReport",
     "SelfEvolutionConfig",
     "SelfEvolutionEngine",
     "SelfEvolutionReport",

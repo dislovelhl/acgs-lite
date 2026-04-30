@@ -179,6 +179,8 @@ _LAZY_REGISTRY: dict[str, tuple[str, str]] = {
     "SelfEvolutionReport": ("self_evolution", "lifecycle"),
     "EvolutionCandidate": ("self_evolution", "lifecycle"),
     "EvolutionEvidence": ("self_evolution", "lifecycle"),
+    "CandidateGateResult": ("self_evolution", "lifecycle"),
+    "EvolutionGateReport": ("self_evolution", "lifecycle"),
     # ── enforcement ───────────────────────────────────────────────────────
     "PolicyDecisionPoint": ("enforcement", "enforcement"),
     "PolicyEnforcementPoint": ("enforcement", "enforcement"),

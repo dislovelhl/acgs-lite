@@ -92,3 +92,90 @@ def test_self_evolution_tunes_hot_rule_without_mutating_constitution() -> None:
     assert candidate.changes["severity"] == "high"
     assert constitution.rules[0].priority == 3
     assert constitution.rules[0].severity is Severity.MEDIUM
+
+
+def test_self_evolution_gate_rejects_empty_action_corpus() -> None:
+    constitution = Constitution.from_rules([], name="empty")
+    engine = SelfEvolutionEngine(SelfEvolutionConfig(min_support=1, min_fitness=0.0))
+    report = engine.evaluate(
+        [
+            GovernanceDecisionRecord(
+                decision="deny",
+                action="export customer pii to public bucket",
+                violations=[{"message": "public bucket personal data exposure"}],
+            )
+        ],
+        constitution,
+    )
+
+    gate_report = engine.gate_candidates(report, constitution, [])
+
+    assert gate_report.evaluated == 1
+    assert gate_report.approved_candidates == ()
+    assert gate_report.failed[0].reasons == ("empty action corpus",)
+
+
+def test_self_evolution_gate_blocks_excessive_blast_radius_before_amendment() -> None:
+    constitution = Constitution.from_rules([], name="empty")
+    engine = SelfEvolutionEngine(
+        SelfEvolutionConfig(
+            min_support=1,
+            min_fitness=0.0,
+            max_blast_radius=0.40,
+            max_weighted_risk=1.0,
+        )
+    )
+    report = engine.evaluate(
+        [
+            GovernanceDecisionRecord(
+                decision="deny",
+                action="export customer pii to public bucket",
+                violations=[{"message": "public bucket personal data exposure"}],
+            )
+        ],
+        constitution,
+    )
+
+    gate_report = engine.gate_candidates(
+        report,
+        constitution,
+        ["export customer pii to public bucket", "normal greeting"],
+    )
+
+    assert gate_report.evaluated == 1
+    assert len(gate_report.failed) == 1
+    assert gate_report.failed[0].recommendation == "no-go"
+    assert gate_report.failed[0].blast_radius == 0.5
+    assert "blast radius" in gate_report.failed[0].reasons[0]
+
+
+def test_self_evolution_gate_approves_bounded_candidate() -> None:
+    constitution = Constitution.from_rules([], name="empty")
+    engine = SelfEvolutionEngine(
+        SelfEvolutionConfig(
+            min_support=1,
+            min_fitness=0.0,
+            max_blast_radius=0.75,
+            max_weighted_risk=1.0,
+        )
+    )
+    report = engine.evaluate(
+        [
+            GovernanceDecisionRecord(
+                decision="deny",
+                action="export customer pii to public bucket",
+                violations=[{"message": "public bucket personal data exposure"}],
+            )
+        ],
+        constitution,
+    )
+
+    gate_report = engine.gate_candidates(
+        report,
+        constitution,
+        ["export customer pii to public bucket", "normal greeting"],
+    )
+
+    assert len(gate_report.passed) == 1
+    assert gate_report.approved_candidates == (report.candidates[0],)
+    assert gate_report.passed[0].recommendation == "review"
