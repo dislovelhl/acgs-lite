@@ -1,0 +1,15 @@
+{
+  "trials": 20,
+  "seed": 42,
+  "secret_issues": 7,
+  "non_secret_issues": 13,
+  "without_secret_resolve_rate": 0.8571428571428571,
+  "with_secret_resolve_rate": 0.7142857142857143,
+  "overall_without": 0.75,
+  "overall_with": 0.7,
+  "resolution_delta": -0.050000000000000044,
+  "pass": {
+    "delta_ok": true,
+    "no_secrets_more_difficult": true
+  }
+}

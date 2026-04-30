@@ -1,0 +1,13 @@
+{
+  "trials": 100,
+  "seed": 42,
+  "single_false_approvals": 9,
+  "maci_false_approvals": 0,
+  "reduction_ratio": 1.0,
+  "disagreements": 13,
+  "disagreement_rate": 0.13,
+  "pass": {
+    "reduction_ge_50": true,
+    "disagreement_ge_20": false
+  }
+}
