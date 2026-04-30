@@ -218,13 +218,6 @@ def _emit(result: dict[str, Any], inputs: _RestoreInputs) -> None:
         print(f"  error: {result['error']}", file=sys.stderr)
 
 
-def _redact(message: str, inputs: _RestoreInputs) -> str:
-    """Redact path/hash details from error message unless --debug."""
-    if inputs.debug:
-        return message
-    return message
-
-
 def cmd_restore(args: argparse.Namespace) -> int:
     """Restore active constitution from a hot-backup artifact and re-validate."""
     try:
@@ -366,7 +359,7 @@ def cmd_restore(args: argparse.Namespace) -> int:
         return EXIT_OK
 
     except RestoreError as exc:
-        public = _redact(exc.public_message(), inputs)
+        public = exc.public_message()
         if inputs.json_out:
             print(
                 json.dumps(
