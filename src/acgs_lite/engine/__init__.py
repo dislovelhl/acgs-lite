@@ -14,21 +14,37 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from .audit_runtime import (
         _ANON as _ANON,
+    )
+    from .audit_runtime import (
         _FastAuditLog as _FastAuditLog,
+    )
+    from .audit_runtime import (
         _NoopRecorder as _NoopRecorder,
+    )
+    from .audit_runtime import (
         _request_counter as _request_counter,
     )
     from .batch import (
         BatchValidationMixin as BatchValidationMixin,
+    )
+    from .batch import (
         BatchValidationResult as BatchValidationResult,
     )
     from .bundle_binding import BundleAwareGovernanceEngine as BundleAwareGovernanceEngine
     from .core import GovernanceEngine as GovernanceEngine
     from .models import (
         CustomValidator as CustomValidator,
+    )
+    from .models import (
         Severity as Severity,
+    )
+    from .models import (
         ValidationResult as ValidationResult,
+    )
+    from .models import (
         Violation as Violation,
+    )
+    from .models import (
         _dedup_violations as _dedup_violations,
     )
 
