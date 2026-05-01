@@ -38,6 +38,7 @@ import logging
 import random
 import re
 import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -382,6 +383,8 @@ class GovernancePolicyFuzzer:
         constitution: Any,
         n_cases: int = 200,
         context: dict[str, Any] | None = None,
+        *,
+        failure_mode_emitter: Callable[[FuzzReport], None] | None = None,
     ) -> FuzzReport:
         """Run a full fuzzing campaign against *constitution*.
 
@@ -392,6 +395,12 @@ class GovernancePolicyFuzzer:
                 ``(action, context) -> (outcome_str, [violation_ids])``).
             n_cases: Total number of fuzz cases to generate.
             context: Optional context dict passed to validate() for every call.
+            failure_mode_emitter: Optional callback invoked once with the
+                completed :class:`FuzzReport` before return. Wires this fuzz
+                run into a :class:`acgs_lite.constitution.failure_modes.FailureModeCatalog`
+                without coupling the fuzzer to the catalog directly.
+                Exceptions raised by the emitter are logged and swallowed so a
+                broken catalog cannot abort the fuzz run.
 
         Returns:
             :class:`FuzzReport` with all results.
@@ -438,7 +447,7 @@ class GovernancePolicyFuzzer:
 
         const_hash = self._constitution_hash(constitution)
 
-        return FuzzReport(
+        report = FuzzReport(
             constitution_hash=const_hash,
             seed=self._seed,
             n_cases=len(cases),
@@ -447,6 +456,22 @@ class GovernancePolicyFuzzer:
             cases=cases,
             rule_coverage=rule_coverage,
         )
+
+        if failure_mode_emitter is not None:
+            try:
+                failure_mode_emitter(report)
+            except Exception as exc:
+                # WARNING (not DEBUG): on governance systems where audit-log
+                # writes are a compliance requirement, a silent skip is worse
+                # than a noisy log line. We still don't re-raise — the fuzz
+                # run must outlive a broken catalog.
+                logger.warning(
+                    "failure_mode_emitter raised; stabilizer telemetry may be incomplete: %s",
+                    type(exc).__name__,
+                    exc_info=True,
+                )
+
+        return report
 
     def generate_cases(
         self,

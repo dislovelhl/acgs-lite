@@ -598,6 +598,11 @@ _STABILITY_EXPERIMENTAL: frozenset[str] = frozenset(
         "create_openshell_governance_router",
         # RuleSynthesisProvider (still maturing)
         "RuleSynthesisProvider",
+        # Production readiness profile validation
+        "ProductionProfile",
+        "ProductionProfileError",
+        "ProductionProfileValidation",
+        "validate_production_profile",
     }
 )
 

@@ -15,10 +15,10 @@ Architecture::
                     → if ok: ProofCertificate attached to AuditEntry
 
 Architecture position:
-    Layer 1:  GovernanceEngine (keyword rules, ~443ns)
-    Layer 2:  ConstitutionalImpactScorer (semantic risk, ~1ms)
-    Layer 3a: Z3ConstraintVerifier (SMT, ~50-500ms, decidable fragments)
-    Layer 3b: LeanstralVerifier (ITP, ~1-30s, inductive/dependent types, this module)
+    Layer 1:  GovernanceEngine (keyword rules, hot-path benchmarked per workload)
+    Layer 2:  ConstitutionalImpactScorer (semantic risk, model/backend dependent)
+    Layer 3a: Z3ConstraintVerifier (SMT, solver/problem dependent, decidable fragments)
+    Layer 3b: LeanstralVerifier (ITP, Lean/model/backend dependent, this module)
 
 Use Layer 3b when:
     - Constraints require inductive reasoning (role hierarchies, recursive rules)

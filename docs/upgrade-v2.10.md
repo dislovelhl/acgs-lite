@@ -7,7 +7,8 @@ one, you'll get a `ValueError` at startup:
 
 ```
 ValueError: require_auth=True but no api_key / ACGS_API_KEY configured.
-Pass api_key=... or set ACGS_LIFECYCLE_API_KEY env var, or pass require_auth=False.
+Set api_key=... or ACGS_API_KEY env var, or pass require_auth=False to explicitly run
+unauthenticated (not recommended for production).
 ```
 
 ### Who is affected
@@ -49,6 +50,14 @@ export ACGS_API_KEY="your-secret-key-here"
 ```python
 app = create_governance_app(constitution=constitution)
 ```
+
+`ACGS_API_KEY` protects the main governance server created by
+`create_governance_app()`. The lifecycle router uses a separate
+`ACGS_LIFECYCLE_API_KEY` when `include_lifecycle=True`; setting only the
+lifecycle key does not satisfy the main server startup requirement.
+
+Keep the main API key and lifecycle API key separate in deployment manifests;
+using the lifecycle key alone intentionally keeps the main server fail-closed.
 
 ### Fix option 3 — Opt out for local dev
 
@@ -99,8 +108,10 @@ carries a thread-safety caveat documented in its docstring.
 **Lazy `transformers`/`torch` import in `scoring.py`**
 
 The `transformers` and `torch` packages are now imported lazily inside
-`scoring.py`. Cold `import acgs_lite` time dropped from ~3.5 s to ~218 ms for
-users who have the heavy ML stack installed but do not use semantic scoring.
+`scoring.py`. In the release benchmark environment, cold `import acgs_lite`
+time dropped from ~3.5 s to ~218 ms for users who have the heavy ML stack
+installed but do not use semantic scoring. Treat these numbers as
+environment-specific reference data, not a product guarantee.
 
 **Python 3.10 compatibility**
 

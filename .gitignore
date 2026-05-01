@@ -61,6 +61,16 @@ output/
 .omc/
 .omx/
 .codex
+.agents/
+.bt/
+
+# Local secrets — never commit
+.env
+.env.*
+!.env.example
 
 # Generated compliance reports
 examples/compliance_reports/reports/
+
+# Root-level generated PDFs (eu_ai_act_*.pdf, text.pdf — assessment outputs)
+/*.pdf

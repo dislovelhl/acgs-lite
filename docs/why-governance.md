@@ -56,7 +56,7 @@ Generic agents perform poorly when evaluating their own safety. If an agent is c
 | **Executor** | Carries out approved actions | Cannot propose or validate |
 | **Observer** | Records the audit trail | Cannot modify decisions |
 
-By structurally separating these roles, ACGS guarantees that no single compromised agent can bypass governance constraints.
+By structurally separating these roles, ACGS is designed so no single compromised agent can both propose and approve its own actions.
 
 ## Proving Compliance: Tamper-Evident Audit Trails
 
@@ -67,7 +67,7 @@ ACGS utilizes **hash-chained audit logs**. Every governance decision produces an
 ## Frequently Asked Questions
 
 ### Does Constitutional Governance slow down my agents?
-While there is a slight overhead for validation (typically <10ms for deterministic rule checks), the ACGS engine is highly optimized. For high-throughput systems, asynchronous and batch validation pipelines are supported.
+Validation adds overhead that is workload- and rule-set-dependent (deterministic keyword rules are typically the cheapest layer; semantic and SMT/ITP layers cost more). The ACGS engine is designed to keep the hot path lean, and asynchronous and batch validation pipelines are supported for high-throughput systems. Benchmark on your own rule set and traffic shape before quoting numbers.
 
 ### Can I use ACGS with LangChain or AutoGen?
 Yes. ACGS provides native wrappers (`GovernedAgent`) that drop directly into existing LangChain, AutoGen, CrewAI, and raw OpenAI/Anthropic workflows. You don't need to rewrite your agent's logic.
@@ -77,7 +77,7 @@ The EU AI Act requires risk classification, human oversight, and post-market mon
 
 ## Conclusion
 
-Implementing Constitutional AI Governance with ACGS will help your organization deploy autonomous agents safely, securely, and in full compliance with global regulations. Stop hoping your prompts are secure, and start enforcing deterministic boundaries.
+Implementing Constitutional AI Governance with ACGS will help your organization deploy autonomous agents more safely, more securely, and with clearer compliance evidence. Stop hoping your prompts are secure, and start enforcing deterministic boundaries.
 
 **Ready to secure your agents?** Check out the [ACGS Quickstart](quickstart.md) to implement your first Agentic Firewall in under 5 lines of code.
 

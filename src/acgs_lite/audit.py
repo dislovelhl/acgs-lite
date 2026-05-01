@@ -219,7 +219,7 @@ class AuditEntry:
     """A single audit log entry."""
 
     id: str
-    type: str  # validation, override, maci_check
+    type: str  # validation, override, maci_check, stabilizer, failure_mode
     agent_id: str = ""
     action: str = ""
     valid: bool = True
