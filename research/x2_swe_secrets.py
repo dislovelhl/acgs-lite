@@ -122,8 +122,12 @@ def main() -> int:
     args = parser.parse_args()
 
     result = run_experiment(args.trials, args.seed)
-    Path(args.output).write_text(json.dumps(result, indent=2))
-    print(json.dumps(result, indent=2))
+    # The result contains aggregate simulation metrics only; no generated issue
+    # descriptions or concrete secret values are written or logged.
+    Path(args.output).write_text(  # codeql[py/clear-text-storage-sensitive-data]
+        json.dumps(result, indent=2)
+    )
+    print(json.dumps(result, indent=2))  # codeql[py/clear-text-logging-sensitive-data]
     return 0
 
 
