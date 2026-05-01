@@ -2,9 +2,9 @@
 
 **The missing safety layer between your LLM and production.**
 
-ACGS is constitutional governance infrastructure for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and prove compliance with tamper-evident audit trails. 
+ACGS is constitutional governance infrastructure for AI agents. Define rules in YAML, enforce them at runtime with MACI role separation, and generate compliance evidence with tamper-evident audit trails.
 
-As autonomous AI agents take on increasingly complex tasks, traditional "bolted-on" security measures fall short. ACGS introduces **Governed Autonomy**—a model where agents operate freely within mathematically and procedurally defined "safe zones" but must trigger escalation paths or human-in-the-loop (HITL) reviews for high-risk actions.
+As autonomous AI agents take on increasingly complex tasks, traditional "bolted-on" security measures fall short. ACGS introduces **Governed Autonomy**—a model where agents operate within procedurally defined "safe zones" but must trigger escalation paths or human-in-the-loop (HITL) reviews for high-risk actions.
 
 ## 5-Line Quickstart
 

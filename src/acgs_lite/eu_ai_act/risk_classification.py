@@ -7,7 +7,7 @@ Classifies AI systems into one of four risk tiers:
 - LIMITED_RISK — Transparency obligations only (Article 52).
 - MINIMAL_RISK — No mandatory obligations (most AI systems).
 
-High-risk deadline: August 2, 2026. Systems must comply before this date.
+Main high-risk deadline: August 2, 2026. Systems must comply before this date.
 
 Constitutional Hash: 608508a9bd224290
 

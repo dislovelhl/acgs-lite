@@ -15,7 +15,7 @@ from pathlib import Path
 _DEFAULT_RULES_YAML = """\
 # ACGS Constitutional Rules
 # See: https://acgs.ai | pip install acgs
-# EU AI Act enforcement: August 2, 2026
+# EU AI Act main high-risk obligations: August 2, 2026
 
 rules:
   - id: safety-001
@@ -53,7 +53,7 @@ rules:
 _GITLAB_CI_SNIPPET = """\
 # ACGS Governance Gate
 # Validates every MR against constitutional rules
-# Docs: https://acgs.ai | EU AI Act enforcement: August 2, 2026
+# Docs: https://acgs.ai | EU AI Act main high-risk obligations: August 2, 2026
 
 governance:
   stage: test
@@ -76,7 +76,7 @@ governance:
 _GITHUB_ACTIONS_SNIPPET = """\
 # ACGS Governance Gate
 # Validates every PR against constitutional rules
-# Docs: https://acgs.ai | EU AI Act enforcement: August 2, 2026
+# Docs: https://acgs.ai | EU AI Act main high-risk obligations: August 2, 2026
 
 name: ACGS Governance
 on:
@@ -176,7 +176,7 @@ def handler(args: argparse.Namespace) -> int:
     print("    2. Run: acgs assess")
     print("    3. Run: acgs report --pdf")
     print()
-    print("  EU AI Act deadline: August 2, 2026")
+    print("  EU AI Act main high-risk deadline: August 2, 2026")
     print("  Docs: https://acgs.ai")
 
     return 0
