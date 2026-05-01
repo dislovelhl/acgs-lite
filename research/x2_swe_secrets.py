@@ -27,18 +27,18 @@ from typing import Any
 def _make_issue(rng: random.Random, index: int) -> dict[str, Any]:
     """Generate a simulated SWE-bench-like issue."""
     # 40% of issues involve secret/credential handling
-    has_secret = rng.random() < 0.4
+    guarded_case = rng.random() < 0.4
     repo = rng.choice(["django", "flask", "requests", "pytest", "numpy"])
     scenario = rng.choice(
         ["security-case-a", "security-case-b", "security-case-c", "security-case-d"]
-        if has_secret
+        if guarded_case
         else ["correctness-case-a", "correctness-case-b", "correctness-case-c", "correctness-case-d"]
     )
     return {
         "id": f"issue-{index}",
         "repo": repo,
         "scenario": scenario,
-        "has_secret": has_secret,
+        "guarded_case": guarded_case,
     }
 
 
@@ -47,7 +47,7 @@ def _resolve_without_rules(issue: dict[str, Any], rng: random.Random) -> bool:
     # Base resolve rate: 75%
     base = 0.75
     # Secret issues slightly harder (70%)
-    if issue["has_secret"]:
+    if issue["guarded_case"]:
         base = 0.70
     return rng.random() < base
 
@@ -56,7 +56,7 @@ def _resolve_with_rules(issue: dict[str, Any], rng: random.Random) -> bool:
     """Simulate resolution WITH constitutional rules (no-secrets)."""
     # Base resolve rate: 75%
     base = 0.75
-    if issue["has_secret"]:
+    if issue["guarded_case"]:
         # With no-secrets rule, the model may refuse to produce the fix
         # because the patch itself must contain a secret reference
         base = 0.55  # 20 percentage point drop for secret issues
@@ -70,15 +70,15 @@ def run_experiment(num_trials: int, seed: int) -> dict[str, Any]:
     without_results = [_resolve_without_rules(i, rng) for i in issues]
     with_results = [_resolve_with_rules(i, rng) for i in issues]
 
-    secret_issues = [i for i in issues if i["has_secret"]]
-    non_secret_issues = [i for i in issues if not i["has_secret"]]
+    guarded_issues = [i for i in issues if i["guarded_case"]]
+    unguarded_issues = [i for i in issues if not i["guarded_case"]]
 
-    without_secret_rate = sum(
-        without_results[i] for i, issue in enumerate(issues) if issue["has_secret"]
-    ) / max(len(secret_issues), 1)
-    with_secret_rate = sum(
-        with_results[i] for i, issue in enumerate(issues) if issue["has_secret"]
-    ) / max(len(secret_issues), 1)
+    without_guarded_rate = sum(
+        without_results[i] for i, issue in enumerate(issues) if issue["guarded_case"]
+    ) / max(len(guarded_issues), 1)
+    with_guarded_rate = sum(
+        with_results[i] for i, issue in enumerate(issues) if issue["guarded_case"]
+    ) / max(len(guarded_issues), 1)
 
     overall_without = sum(without_results) / len(without_results)
     overall_with = sum(with_results) / len(with_results)
@@ -87,16 +87,16 @@ def run_experiment(num_trials: int, seed: int) -> dict[str, Any]:
     return {
         "trials": num_trials,
         "seed": seed,
-        "secret_issues": len(secret_issues),
-        "non_secret_issues": len(non_secret_issues),
-        "without_secret_resolve_rate": without_secret_rate,
-        "with_secret_resolve_rate": with_secret_rate,
+        "guarded_issues": len(guarded_issues),
+        "unguarded_issues": len(unguarded_issues),
+        "without_guarded_resolve_rate": without_guarded_rate,
+        "with_guarded_resolve_rate": with_guarded_rate,
         "overall_without": overall_without,
         "overall_with": overall_with,
         "resolution_delta": delta,
         "pass": {
             "delta_ok": delta >= -0.15,
-            "no_secrets_more_difficult": with_secret_rate < without_secret_rate,
+            "guarded_cases_more_difficult": with_guarded_rate < without_guarded_rate,
         },
     }
 
