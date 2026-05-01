@@ -22,9 +22,80 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_AUDIT_RETENTION_DAYS = 90
+
+
+@dataclass(frozen=True, slots=True)
+class AuditInvariantContract:
+    """Explicit audit-trail invariants for a concrete runtime/backend adapter."""
+
+    runtime: str
+    adapter: str
+    constitutional_hash: str
+    append_only: bool
+    hash_chain: bool
+    retention_days: int | None
+    durable: bool
+    default_persistence_mode: Literal["best-effort", "fail-closed"]
+    supports_fail_closed_persistence: bool
+
+
+def describe_audit_backend(
+    backend: AuditBackend | None,
+    *,
+    constitutional_hash: str,
+) -> AuditInvariantContract:
+    """Describe the audit invariants exposed by *backend*.
+
+    ``record()`` is best-effort for all current backends: it preserves in-memory
+    chain integrity and logs backend failures, but only ``record_atomic()``
+    provides fail-closed persistence semantics when the backend can roll back a
+    durable append.
+    """
+
+    if backend is None or isinstance(backend, InMemoryAuditBackend):
+        return AuditInvariantContract(
+            runtime="python",
+            adapter="memory",
+            constitutional_hash=constitutional_hash,
+            append_only=True,
+            hash_chain=True,
+            retention_days=None,
+            durable=False,
+            default_persistence_mode="best-effort",
+            supports_fail_closed_persistence=False,
+        )
+
+    if isinstance(backend, JSONLAuditBackend):
+        return AuditInvariantContract(
+            runtime="python",
+            adapter="jsonl",
+            constitutional_hash=constitutional_hash,
+            append_only=True,
+            hash_chain=True,
+            retention_days=DEFAULT_AUDIT_RETENTION_DAYS,
+            durable=True,
+            default_persistence_mode="best-effort",
+            supports_fail_closed_persistence=True,
+        )
+
+    return AuditInvariantContract(
+        runtime="python",
+        adapter=type(backend).__name__,
+        constitutional_hash=constitutional_hash,
+        append_only=True,
+        hash_chain=True,
+        retention_days=DEFAULT_AUDIT_RETENTION_DAYS,
+        durable=True,
+        default_persistence_mode="best-effort",
+        supports_fail_closed_persistence=all(
+            hasattr(backend, attribute) for attribute in ("begin_checkpoint", "rollback_to")
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -91,6 +162,9 @@ class JSONLAuditBackend:
     """Append-only JSONL file backend with explicit flush/fsync.
 
     Each line is a JSON object with ``_chain_hash`` alongside the entry fields.
+    Retention is a governance policy concern rather than an inline delete path:
+    the backend never rewrites historical rows except an immediate rollback from
+    ``record_atomic()`` / ``record_atomic_many()`` after a failed persist step.
     """
 
     def __init__(self, path: str | Path) -> None:
@@ -221,6 +295,13 @@ class AuditLog:
     def entries(self) -> list[AuditEntry]:
         return list(self._entries)
 
+    def invariant_contract(self, constitutional_hash: str = "608508a9bd224290") -> AuditInvariantContract:
+        """Return the explicit audit-trail invariants for this log instance."""
+        return describe_audit_backend(
+            self._backend,
+            constitutional_hash=constitutional_hash,
+        )
+
     def record(
         self,
         entry: AuditEntry,
@@ -231,7 +312,9 @@ class AuditLog:
         """Record an audit entry and return its chain hash.
 
         The chain hash includes the previous entry's hash, providing
-        tamper detection.
+        tamper detection. This method is intentionally best-effort for durable
+        backends; callers that require fail-closed persistence should use
+        ``record_atomic()`` instead.
         """
         self._prepare_entry(entry, proof_certificate, provenance)
 

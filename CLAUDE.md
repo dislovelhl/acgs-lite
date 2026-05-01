@@ -135,3 +135,12 @@ Update this section whenever a mistake is made so it never happens again.
 
 Package-local workflow routing should stay minimal here.
 Prefer the parent repo `CLAUDE.md` and `.claude/rules/` as the authoritative routing source so package guidance does not drift from installed skills.
+
+## GBrain Configuration (configured by /setup-gbrain)
+- Engine: pglite
+- Config file: ~/.gbrain/config.json (mode 0600)
+- Brain database: ~/.gbrain/brain.pglite (123 pages imported on init)
+- Setup date: 2026-04-30
+- MCP registered: yes (user scope, `/home/martin/.bun/bin/gbrain serve`)
+- Memory sync: off (gstack-brain-sync declined — local-only)
+- Current repo policy: read-write (origin: github.com/dislovelhl/acgs-lite)

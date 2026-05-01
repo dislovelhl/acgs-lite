@@ -174,6 +174,13 @@ _LAZY_REGISTRY: dict[str, tuple[str, str]] = {
     "LifecycleError": ("lifecycle_service", "lifecycle"),
     "ConcurrentLifecycleError": ("lifecycle_service", "lifecycle"),
     "LifecycleEvidenceError": ("lifecycle_service", "lifecycle"),
+    "SelfEvolutionConfig": ("self_evolution", "lifecycle"),
+    "SelfEvolutionEngine": ("self_evolution", "lifecycle"),
+    "SelfEvolutionReport": ("self_evolution", "lifecycle"),
+    "EvolutionCandidate": ("self_evolution", "lifecycle"),
+    "EvolutionEvidence": ("self_evolution", "lifecycle"),
+    "CandidateGateResult": ("self_evolution", "lifecycle"),
+    "EvolutionGateReport": ("self_evolution", "lifecycle"),
     # ── enforcement ───────────────────────────────────────────────────────
     "PolicyDecisionPoint": ("enforcement", "enforcement"),
     "PolicyEnforcementPoint": ("enforcement", "enforcement"),

@@ -26,7 +26,7 @@ class FakeRunResult:
 class FakeAgent:
     """Mock pydantic_ai.Agent."""
 
-    def __init__(self, model: str = "openai:gpt-5.4") -> None:
+    def __init__(self, model: str = "openai:gpt-5.5") -> None:
         self.model = model
         self._response: Any = "Agent response text"
 
@@ -203,9 +203,9 @@ class TestGovernedPydanticAgent:
     def test_attribute_delegation(self):
         from acgs_lite.integrations.pydantic_ai import GovernedPydanticAgent
 
-        agent = FakeAgent(model="openai:gpt-5.4")
+        agent = FakeAgent(model="openai:gpt-5.5")
         governed = GovernedPydanticAgent(agent)
-        assert governed.model == "openai:gpt-5.4"
+        assert governed.model == "openai:gpt-5.5"
 
     def test_empty_prompt_skips_validation(self):
         from acgs_lite.integrations.pydantic_ai import GovernedPydanticAgent

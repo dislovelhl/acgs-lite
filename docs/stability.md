@@ -58,3 +58,16 @@ to check — it returns `"experimental"` for unknown names rather than raising.
 Symbols backed by optional extras (`z3-solver`, `psycopg`, etc.) are at most
 `"experimental"` or `"beta"`. If the extra is not installed, importing them
 raises `ImportError` with an install hint rather than crashing the whole module.
+
+## Engine import compatibility
+
+The public `acgs_lite.engine` package keeps legacy imports stable even though the
+implementation is split across focused modules such as `engine.core`,
+`engine.models`, `engine.audit_runtime`, and `engine.batch`.
+
+```python
+from acgs_lite.engine import GovernanceEngine, ValidationResult
+```
+
+Those imports remain supported. Reach into deeper engine submodules only when
+you specifically need implementation details or narrower test seams.

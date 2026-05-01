@@ -55,10 +55,19 @@ class TestAcgsNamespaceImport:
         assert acgs.__version__ == acgs_lite.__version__
 
     def test_validationresult_is_canonical_model_type(self) -> None:
+        import acgs_lite.engine as engine
+
         from acgs_lite.engine.models import ValidationResult as ModelValidationResult
+        from acgs_lite.engine.audit_runtime import _FastAuditLog as RuntimeFastAuditLog
+        from acgs_lite.engine.core import GovernanceEngine as CoreGovernanceEngine
         from acgs_lite.engine.types import ValidationResult as TypesValidationResult
 
+        assert engine.GovernanceEngine is CoreGovernanceEngine
+        assert engine.ValidationResult is ModelValidationResult
         assert TypesValidationResult is ModelValidationResult
+        assert engine.models.ValidationResult is ModelValidationResult
+        assert engine.types.ValidationResult is ModelValidationResult
+        assert engine._FastAuditLog is RuntimeFastAuditLog
 
     def test_clean_env_import_resolves_from_src(self) -> None:
         """Prove ``import acgs`` resolves from this package's src/, not an ambient install."""
@@ -102,3 +111,30 @@ class TestAcgsNamespaceImport:
             f"acgs resolved from outside src/: {resolved!r}\n"
             "Core API import is satisfied by ambient install, not this package."
         )
+
+    def test_clean_env_engine_compat_imports(self) -> None:
+        """Prove legacy ``acgs_lite.engine`` re-exports resolve from split modules."""
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import sys; sys.path.insert(0, sys.argv[1]);"
+                    " import acgs_lite.engine as engine;"
+                    " from acgs_lite.engine.core import GovernanceEngine as CoreGovernanceEngine;"
+                    " from acgs_lite.engine.models import ValidationResult as ModelValidationResult;"
+                    " from acgs_lite.engine.audit_runtime import _FastAuditLog as RuntimeFastAuditLog;"
+                    " assert engine.GovernanceEngine is CoreGovernanceEngine;"
+                    " assert engine.ValidationResult is ModelValidationResult;"
+                    " assert engine.models.ValidationResult is ModelValidationResult;"
+                    " assert engine.types.ValidationResult is ModelValidationResult;"
+                    " assert engine._FastAuditLog is RuntimeFastAuditLog;"
+                    " print(engine.__file__)"
+                ),
+                SRC,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, f"engine compatibility imports failed:\n{result.stderr}"
+        assert SRC in result.stdout.strip()

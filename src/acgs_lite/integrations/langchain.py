@@ -7,7 +7,7 @@ Usage::
     from acgs_lite.integrations.langchain import GovernanceRunnable
     from langchain_openai import ChatOpenAI
 
-    llm = ChatOpenAI(model="gpt-5.4")
+    llm = ChatOpenAI(model="gpt-5.5")
     governed_llm = GovernanceRunnable.wrap(llm)
     result = governed_llm.invoke("Hello!")
 
@@ -48,7 +48,7 @@ class GovernanceRunnable:
         from acgs_lite.integrations.langchain import GovernanceRunnable
         from langchain_openai import ChatOpenAI
 
-        llm = ChatOpenAI(model="gpt-5.4")
+        llm = ChatOpenAI(model="gpt-5.5")
         governed = GovernanceRunnable.wrap(llm)
 
         # String input

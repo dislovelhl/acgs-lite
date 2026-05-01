@@ -25,7 +25,7 @@ Usage::
 
     agent = Agent(
         name="My Agent",
-        model=OpenAIChat(id="gpt-5.4"),
+        model=OpenAIChat(id="gpt-5.5"),
         pre_hooks=[governor],                 # input guardrail
         post_hooks=[governor.output_hook],    # output check
     )

@@ -9,12 +9,12 @@ Usage::
     from acgs_lite.integrations.litellm import GovernedLiteLLM
 
     llm = GovernedLiteLLM()
-    response = llm.completion(model="gpt-5.4", messages=[...])
+    response = llm.completion(model="gpt-5.5", messages=[...])
     response = await llm.acompletion(model="claude-sonnet-4-6", messages=[...])
 
     # Or use the module-level functions:
     from acgs_lite.integrations.litellm import governed_completion
-    response = governed_completion(model="gpt-5.4", messages=[...])
+    response = governed_completion(model="gpt-5.5", messages=[...])
 
 Constitutional Hash: 608508a9bd224290
 """
@@ -77,7 +77,7 @@ class GovernedLiteLLM:
 
         llm = GovernedLiteLLM()
         response = llm.completion(
-            model="gpt-5.4",
+            model="gpt-5.5",
             messages=[{"role": "user", "content": "Hello!"}],
         )
 
@@ -172,7 +172,7 @@ def governed_completion(**kwargs: Any) -> Any:
 
         from acgs_lite.integrations.litellm import governed_completion
         response = governed_completion(
-            model="gpt-5.4",
+            model="gpt-5.5",
             messages=[{"role": "user", "content": "Hello!"}],
         )
     """

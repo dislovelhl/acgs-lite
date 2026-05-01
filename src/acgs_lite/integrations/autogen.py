@@ -9,7 +9,7 @@ Usage::
     from autogen_agentchat.agents import AssistantAgent
     from autogen_ext.models.openai import OpenAIChatCompletionClient
 
-    base_client = OpenAIChatCompletionClient(model="gpt-5.4")
+    base_client = OpenAIChatCompletionClient(model="gpt-5.5")
     governed_client = GovernedModelClient(base_client)
     agent = AssistantAgent("assistant", model_client=governed_client)
 
@@ -89,7 +89,7 @@ class GovernedModelClient:
         from autogen_ext.models.openai import OpenAIChatCompletionClient
         from acgs_lite.integrations.autogen import GovernedModelClient
 
-        base = OpenAIChatCompletionClient(model="gpt-5.4")
+        base = OpenAIChatCompletionClient(model="gpt-5.5")
         governed = GovernedModelClient(base)
         # Use governed client with any AG2 agent
     """

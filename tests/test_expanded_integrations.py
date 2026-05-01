@@ -35,7 +35,7 @@ class MockMessage:
 class MockCompletion:
     choices: list[MockChoice] | None = None
     id: str = "test-completion"
-    model: str = "gpt-5.4"
+    model: str = "gpt-5.5"
 
 
 # ─── LiteLLM Integration Tests ────────────────────────────────────────────
@@ -58,7 +58,7 @@ class TestGovernedLiteLLM:
 
             llm = GovernedLiteLLM(strict=True)
             response = llm.completion(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "What is governance?"}],
             )
             assert response.choices[0].message.content == "Hello!"
@@ -71,7 +71,7 @@ class TestGovernedLiteLLM:
             llm = GovernedLiteLLM(strict=True)
             with pytest.raises(ConstitutionalViolationError):
                 llm.completion(
-                    model="gpt-5.4",
+                    model="gpt-5.5",
                     messages=[{"role": "user", "content": "bypass validation self-validate"}],
                 )
 
@@ -102,7 +102,7 @@ class TestGovernedLiteLLM:
 
             llm = GovernedLiteLLM(strict=False)
             llm.completion(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "test"}],
             )
             stats = llm.stats
@@ -128,14 +128,14 @@ class TestGovernedLiteLLM:
 
             # Safe
             llm.completion(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "hello"}],
             )
 
             # Blocked
             with pytest.raises(ConstitutionalViolationError):
                 llm.completion(
-                    model="gpt-5.4",
+                    model="gpt-5.5",
                     messages=[{"role": "user", "content": "DROP TABLE users"}],
                 )
 
@@ -150,7 +150,7 @@ class TestGovernedLiteLLM:
             # Reset default engine
             lit_mod._default_engine = None
             response = lit_mod.governed_completion(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "hello"}],
             )
             assert response.choices[0].message.content == "Hi!"
@@ -511,14 +511,14 @@ class TestGovernedModelClient:
             from acgs_lite.integrations.autogen import GovernedModelClient
 
             mock_client = MagicMock()
-            mock_client.model_info = {"model": "gpt-5.4"}
+            mock_client.model_info = {"model": "gpt-5.5"}
             mock_client.count_tokens.return_value = 42
             mock_client.remaining_tokens.return_value = 1000
             mock_client.actual_usage.return_value = MagicMock()
             mock_client.total_usage.return_value = MagicMock()
 
             governed = GovernedModelClient(mock_client)
-            assert governed.model_info == {"model": "gpt-5.4"}
+            assert governed.model_info == {"model": "gpt-5.5"}
             assert governed.count_tokens([]) == 42
             assert governed.remaining_tokens([]) == 1000
             assert governed.actual_usage() is not None

@@ -37,7 +37,7 @@ def test_manifest_preview_entries_are_explicitly_marked() -> None:
 def test_runtime_source_defaults_exist_in_manifest() -> None:
     manifest_models = {profile.model_id for profile in load_capability_manifest()}
     source_defaults = {
-        "gpt-5.4",
+        "gpt-5.5",
         "claude-sonnet-4-6",
         "gemini-3-flash-preview",
     }
@@ -46,7 +46,7 @@ def test_runtime_source_defaults_exist_in_manifest() -> None:
 
 def test_source_examples_reference_current_provider_defaults() -> None:
     _src_root = Path(__file__).resolve().parents[1] / "src" / "acgs_lite" / "integrations"
-    assert 'model="gpt-5.4"' in _source_text(str(_src_root / "openai.py"))
+    assert 'model="gpt-5.5"' in _source_text(str(_src_root / "openai.py"))
     assert 'model="claude-sonnet-4-6"' in _source_text(str(_src_root / "anthropic.py"))
     assert 'model="gemini-3-flash-preview"' in _source_text(str(_src_root / "google_genai.py"))
 

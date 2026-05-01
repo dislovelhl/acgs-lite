@@ -12,7 +12,7 @@ Usage::
     from acgs_lite.integrations.haystack import GovernedHaystackPipeline
 
     pipe = Pipeline()
-    pipe.add_component("llm", OpenAIGenerator(model="gpt-5.4"))
+    pipe.add_component("llm", OpenAIGenerator(model="gpt-5.5"))
     governed = GovernedHaystackPipeline(pipe)
     result = governed.run({"llm": {"prompt": "What is AI governance?"}})
 

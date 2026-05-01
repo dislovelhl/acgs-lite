@@ -41,7 +41,7 @@ def _make_pool(n: int = 10, domain: str = "finance", model_prefix: str = "model"
 class TestValidatorPool:
     def test_register_and_get(self) -> None:
         pool = ValidatorPool()
-        info = pool.register("v1", trust_score=0.9, domains=["fin"], model="gpt-5.4")
+        info = pool.register("v1", trust_score=0.9, domains=["fin"], model="gpt-5.5")
         assert info.validator_id == "v1"
         assert pool.get("v1") is info
         assert pool.get("nonexistent") is None
@@ -96,18 +96,18 @@ class TestValidatorPool:
 
     def test_monoculture_report(self) -> None:
         pool = ValidatorPool()
-        pool.register("v1", model="gpt-5.4")
-        pool.register("v2", model="gpt-5.4")
-        pool.register("v3", model="gpt-5.4")
+        pool.register("v1", model="gpt-5.5")
+        pool.register("v2", model="gpt-5.5")
+        pool.register("v3", model="gpt-5.5")
 
         report = pool.monoculture_report()
         assert report["monoculture_risk"] is True
-        assert report["dominant_model"] == "gpt-5.4"
+        assert report["dominant_model"] == "gpt-5.5"
         assert report["diversity_score"] == 0.0
 
     def test_diversity_report(self) -> None:
         pool = ValidatorPool()
-        pool.register("v1", model="gpt-5.4")
+        pool.register("v1", model="gpt-5.5")
         pool.register("v2", model="claude-sonnet-4-6")
         pool.register("v3", model="gemini-2.5-flash")
 
@@ -303,7 +303,7 @@ class TestValidatorSelector:
         pool = ValidatorPool()
         # All same model
         for i in range(6):
-            pool.register(f"v{i}", trust_score=0.9, domains=["fin"], model="gpt-5.4")
+            pool.register(f"v{i}", trust_score=0.9, domains=["fin"], model="gpt-5.5")
         selector = ValidatorSelector(pool)
         result = selector.select(
             case_id="case-001",
@@ -315,7 +315,7 @@ class TestValidatorSelector:
 
     def test_diverse_selection(self) -> None:
         pool = ValidatorPool()
-        pool.register("v1", trust_score=0.9, domains=["fin"], model="gpt-5.4")
+        pool.register("v1", trust_score=0.9, domains=["fin"], model="gpt-5.5")
         pool.register("v2", trust_score=0.9, domains=["fin"], model="claude-sonnet-4-6")
         pool.register("v3", trust_score=0.9, domains=["fin"], model="gemini-2.5-flash")
         pool.register("v4", trust_score=0.9, domains=["fin"], model="llama-3")

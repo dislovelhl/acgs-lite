@@ -1,0 +1,5 @@
+# Generated experiment outputs
+*.json
+.venv/
+__pycache__/
+*.pyc
