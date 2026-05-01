@@ -54,7 +54,9 @@ def test_self_evolution_drafts_and_opens_formal_amendment() -> None:
     )
     protocol = AmendmentProtocol(quorum=1, approval_threshold=1.0)
 
-    amendments = engine.draft_amendments(report, protocol, proposer_id="policy-proposer", open_voting=True)
+    amendments = engine.draft_amendments(
+        report, protocol, proposer_id="policy-proposer", open_voting=True
+    )
 
     assert len(amendments) == 1
     amendment = amendments[0]
@@ -236,7 +238,9 @@ def test_gate_candidates_fails_closed_for_invalid_candidate() -> None:
 def test_gate_report_to_evolution_report_keeps_only_approved_candidates() -> None:
     constitution = Constitution.from_rules([], name="empty")
     engine = SelfEvolutionEngine(
-        SelfEvolutionConfig(min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0)
+        SelfEvolutionConfig(
+            min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0
+        )
     )
     report = engine.evaluate(
         [

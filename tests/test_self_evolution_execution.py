@@ -16,7 +16,9 @@ from acgs_lite.constitution.self_evolution import (
 from acgs_lite.engine.decision_record import GovernanceDecisionRecord
 
 
-def _candidate(candidate_id: str, amendment_type: AmendmentType, changes: dict) -> EvolutionCandidate:
+def _candidate(
+    candidate_id: str, amendment_type: AmendmentType, changes: dict
+) -> EvolutionCandidate:
     return EvolutionCandidate(
         candidate_id=candidate_id,
         amendment_type=amendment_type,
@@ -95,7 +97,9 @@ def test_gate_matrix_safe_overblocking_and_regression_candidates() -> None:
 def test_self_evolution_amendment_flow_blocks_proposer_self_vote() -> None:
     constitution = Constitution.from_rules([], name="empty")
     engine = SelfEvolutionEngine(
-        SelfEvolutionConfig(min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0)
+        SelfEvolutionConfig(
+            min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0
+        )
     )
     records = [
         GovernanceDecisionRecord(
@@ -106,7 +110,9 @@ def test_self_evolution_amendment_flow_blocks_proposer_self_vote() -> None:
         )
     ]
     report = engine.evaluate(records, constitution)
-    gate_report = engine.gate_candidates(report, constitution, engine.action_corpus_from_records(records))
+    gate_report = engine.gate_candidates(
+        report, constitution, engine.action_corpus_from_records(records)
+    )
     approved_report = gate_report.to_evolution_report(input_records=report.input_records)
     protocol = AmendmentProtocol(quorum=1, approval_threshold=1.0)
 
@@ -130,7 +136,9 @@ def test_self_evolution_amendment_flow_blocks_proposer_self_vote() -> None:
 def test_drafted_amendment_contains_reconstructable_gate_metadata() -> None:
     constitution = Constitution.from_rules([], name="empty")
     engine = SelfEvolutionEngine(
-        SelfEvolutionConfig(min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0)
+        SelfEvolutionConfig(
+            min_support=1, min_fitness=0.0, max_blast_radius=1.0, max_weighted_risk=1.0
+        )
     )
     records = [
         GovernanceDecisionRecord(
@@ -148,7 +156,10 @@ def test_drafted_amendment_contains_reconstructable_gate_metadata() -> None:
     amendment = engine.draft_amendments(approved_report, protocol, gate_report=gate_report)[0]
 
     assert amendment.metadata["candidate_id"] == approved_report.candidates[0].candidate_id
-    assert amendment.metadata["gate_result"]["candidate"]["candidate_id"] == amendment.metadata["candidate_id"]
+    assert (
+        amendment.metadata["gate_result"]["candidate"]["candidate_id"]
+        == amendment.metadata["candidate_id"]
+    )
     assert len(amendment.metadata["gate_report_hash"]) == 64
     assert amendment.metadata["evidence"][0]["audit_entry_id"] == "audit-1"
 

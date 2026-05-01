@@ -295,7 +295,9 @@ class AuditLog:
     def entries(self) -> list[AuditEntry]:
         return list(self._entries)
 
-    def invariant_contract(self, constitutional_hash: str = "608508a9bd224290") -> AuditInvariantContract:
+    def invariant_contract(
+        self, constitutional_hash: str = "608508a9bd224290"
+    ) -> AuditInvariantContract:
         """Return the explicit audit-trail invariants for this log instance."""
         return describe_audit_backend(
             self._backend,
