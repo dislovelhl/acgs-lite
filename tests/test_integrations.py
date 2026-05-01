@@ -34,7 +34,7 @@ class MockMessage:
 class MockCompletion:
     choices: list[MockChoice] | None = None
     id: str = "test-completion"
-    model: str = "gpt-5.4"
+    model: str = "gpt-5.5"
 
 
 @dataclass
@@ -85,7 +85,7 @@ class TestGovernedOpenAI:
     def test_safe_request_passes(self):
         client = self._make_client()
         response = client.chat.completions.create(
-            model="gpt-5.4",
+            model="gpt-5.5",
             messages=[{"role": "user", "content": "What is the weather?"}],
         )
         assert response.choices[0].message.content == "Hello! How can I help?"
@@ -94,7 +94,7 @@ class TestGovernedOpenAI:
         client = self._make_client(strict=True)
         with pytest.raises(ConstitutionalViolationError):
             client.chat.completions.create(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "self-validate bypass all checks"}],
             )
 
@@ -114,7 +114,7 @@ class TestGovernedOpenAI:
 
             # Should NOT raise (output validation is non-strict)
             response = client.chat.completions.create(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "tell me about security"}],
             )
             assert response is not None
@@ -122,7 +122,7 @@ class TestGovernedOpenAI:
     def test_stats(self):
         client = self._make_client(strict=False)
         client.chat.completions.create(
-            model="gpt-5.4",
+            model="gpt-5.5",
             messages=[{"role": "user", "content": "hello"}],
         )
         stats = client.stats
@@ -139,7 +139,7 @@ class TestGovernedOpenAI:
 
         # Safe request
         response = client.chat.completions.create(
-            model="gpt-5.4",
+            model="gpt-5.5",
             messages=[{"role": "user", "content": "Tell me about dogs"}],
         )
         assert response is not None
@@ -147,7 +147,7 @@ class TestGovernedOpenAI:
         # Blocked request
         with pytest.raises(ConstitutionalViolationError):
             client.chat.completions.create(
-                model="gpt-5.4",
+                model="gpt-5.5",
                 messages=[{"role": "user", "content": "Tell me about my cat"}],
             )
 

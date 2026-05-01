@@ -22,9 +22,9 @@ Example::
     )
 
     pool = ValidatorPool()
-    pool.register("val-1", trust_score=0.95, domains=["finance"], model="gpt-5.4")
+    pool.register("val-1", trust_score=0.95, domains=["finance"], model="gpt-5.5")
     pool.register("val-2", trust_score=0.88, domains=["finance"], model="claude-sonnet-4-6")
-    pool.register("val-3", trust_score=0.72, domains=["finance", "privacy"], model="gpt-5.4")
+    pool.register("val-3", trust_score=0.72, domains=["finance", "privacy"], model="gpt-5.5")
     pool.register("val-4", trust_score=0.91, domains=["finance"], model="gemini-2.5-flash")
     pool.register("val-5", trust_score=0.65, domains=["privacy"], model="claude-sonnet-4-6")
 

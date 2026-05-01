@@ -130,7 +130,7 @@ governor = AgnoACGSGovernor(constitution=constitution, agent_id="agno-agent")
 
 agent = Agent(
     name="Governed Agent",
-    model=OpenAIChat(id="gpt-5.4-mini"),
+    model=OpenAIChat(id="gpt-5.5"),
     pre_hooks=[governor],                 # blocks unconstitutional user input
     post_hooks=[governor.output_hook],    # warns by default, can be configured to block
 )

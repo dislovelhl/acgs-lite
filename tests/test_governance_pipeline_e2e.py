@@ -50,7 +50,7 @@ def _ts(minutes: float = 0) -> datetime:
 def _setup_pool(n_validators: int = 10) -> ValidatorPool:
     """Create a pool with diverse validators across 3 model types."""
     pool = ValidatorPool()
-    models = ["gpt-5.4", "claude-sonnet-4-6", "gemini-2.5-flash"]
+    models = ["gpt-5.5", "claude-sonnet-4-6", "gemini-2.5-flash"]
     for i in range(n_validators):
         pool.register(
             f"val-{i:03d}",
@@ -442,7 +442,7 @@ class TestGovernancePipelineE2E:
         """
         pool = _setup_pool(10)
         # Add the miner as a validator too
-        pool.register("miner-1", trust_score=0.95, domains=["finance"], model="gpt-5.4")
+        pool.register("miner-1", trust_score=0.95, domains=["finance"], model="gpt-5.5")
         selector = ValidatorSelector(pool)
         case_mgr = CaseManager()
 
@@ -522,7 +522,7 @@ class TestGovernancePipelineE2E:
         # Monoculture pool
         mono_pool = ValidatorPool()
         for i in range(6):
-            mono_pool.register(f"v{i}", trust_score=0.9, domains=["fin"], model="gpt-5.4")
+            mono_pool.register(f"v{i}", trust_score=0.9, domains=["fin"], model="gpt-5.5")
 
         report = mono_pool.monoculture_report()
         assert report["monoculture_risk"] is True
@@ -531,7 +531,7 @@ class TestGovernancePipelineE2E:
         # Diverse pool
         diverse_pool = ValidatorPool()
         models = [
-            "gpt-5.4",
+            "gpt-5.5",
             "claude-sonnet-4-6",
             "gemini-2.5-flash",
             "llama-3",

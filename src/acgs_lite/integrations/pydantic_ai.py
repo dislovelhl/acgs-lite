@@ -9,7 +9,7 @@ Usage::
     from pydantic_ai import Agent
     from acgs_lite.integrations.pydantic_ai import GovernedPydanticAgent
 
-    agent = Agent("openai:gpt-5.4")
+    agent = Agent("openai:gpt-5.5")
     governed = GovernedPydanticAgent.wrap(agent)
     result = governed.run_sync("What is AI governance?")
 
@@ -46,7 +46,7 @@ class GovernedPydanticAgent(GovernedBase):
         from pydantic_ai import Agent
         from acgs_lite.integrations.pydantic_ai import GovernedPydanticAgent
 
-        agent = Agent("openai:gpt-5.4")
+        agent = Agent("openai:gpt-5.5")
         governed = GovernedPydanticAgent(agent)
         result = governed.run_sync("What is AI governance?")
 
