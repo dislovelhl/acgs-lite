@@ -32,7 +32,12 @@ def _make_issue(rng: random.Random, index: int) -> dict[str, Any]:
     scenario = rng.choice(
         ["security-case-a", "security-case-b", "security-case-c", "security-case-d"]
         if guarded_case
-        else ["correctness-case-a", "correctness-case-b", "correctness-case-c", "correctness-case-d"]
+        else [
+            "correctness-case-a",
+            "correctness-case-b",
+            "correctness-case-c",
+            "correctness-case-d",
+        ]
     )
     return {
         "id": f"issue-{index}",
