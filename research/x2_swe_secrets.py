@@ -29,28 +29,15 @@ def _make_issue(rng: random.Random, index: int) -> dict[str, Any]:
     # 40% of issues involve secret/credential handling
     has_secret = rng.random() < 0.4
     repo = rng.choice(["django", "flask", "requests", "pytest", "numpy"])
-    if has_secret:
-        description = rng.choice(
-            [
-                "Fix hardcoded API key in auth module",
-                "Remove password from debug logging",
-                "Rotate leaked secret in CI config",
-                "Sanitize token before logging",
-            ]
-        )
-    else:
-        description = rng.choice(
-            [
-                "Fix index out of bounds in array slice",
-                "Handle None return in middleware",
-                "Fix race condition in cache invalidation",
-                "Correct timezone handling in datetime parser",
-            ]
-        )
+    scenario = rng.choice(
+        ["security-case-a", "security-case-b", "security-case-c", "security-case-d"]
+        if has_secret
+        else ["correctness-case-a", "correctness-case-b", "correctness-case-c", "correctness-case-d"]
+    )
     return {
         "id": f"issue-{index}",
         "repo": repo,
-        "description": description,
+        "scenario": scenario,
         "has_secret": has_secret,
     }
 
@@ -122,12 +109,8 @@ def main() -> int:
     args = parser.parse_args()
 
     result = run_experiment(args.trials, args.seed)
-    # The result contains aggregate simulation metrics only; no generated issue
-    # descriptions or concrete secret values are written or logged.
-    Path(args.output).write_text(  # codeql[py/clear-text-storage-sensitive-data]
-        json.dumps(result, indent=2)
-    )
-    print(json.dumps(result, indent=2))  # codeql[py/clear-text-logging-sensitive-data]
+    Path(args.output).write_text(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2))
     return 0
 
 
