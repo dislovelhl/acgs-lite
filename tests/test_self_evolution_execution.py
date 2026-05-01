@@ -255,6 +255,7 @@ def test_draft_amendments_rejects_stale_gate_report_candidate_payload() -> None:
 
 
 def test_build_evolution_corpus_script_outputs_traceable_rows(tmp_path: Path) -> None:
+    package_root = Path(__file__).resolve().parents[1]
     input_path = tmp_path / "decisions.jsonl"
     output_path = tmp_path / "corpus.jsonl"
     input_path.write_text(
@@ -284,7 +285,7 @@ def test_build_evolution_corpus_script_outputs_traceable_rows(tmp_path: Path) ->
     result = subprocess.run(
         [
             sys.executable,
-            "scripts/build_evolution_corpus.py",
+            str(package_root / "scripts/build_evolution_corpus.py"),
             str(input_path),
             "--output",
             str(output_path),
