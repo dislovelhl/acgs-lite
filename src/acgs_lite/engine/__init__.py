@@ -9,7 +9,28 @@ is actually requested.
 from __future__ import annotations
 
 from importlib import import_module
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .audit_runtime import (
+        _ANON as _ANON,
+        _FastAuditLog as _FastAuditLog,
+        _NoopRecorder as _NoopRecorder,
+        _request_counter as _request_counter,
+    )
+    from .batch import (
+        BatchValidationMixin as BatchValidationMixin,
+        BatchValidationResult as BatchValidationResult,
+    )
+    from .bundle_binding import BundleAwareGovernanceEngine as BundleAwareGovernanceEngine
+    from .core import GovernanceEngine as GovernanceEngine
+    from .models import (
+        CustomValidator as CustomValidator,
+        Severity as Severity,
+        ValidationResult as ValidationResult,
+        Violation as Violation,
+        _dedup_violations as _dedup_violations,
+    )
 
 _EXPORTS: dict[str, tuple[str, str]] = {
     "BatchValidationMixin": ("batch", "BatchValidationMixin"),
