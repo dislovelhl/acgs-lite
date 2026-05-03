@@ -27,7 +27,7 @@ agent = GovernedAgent(my_agent, constitution=Constitution.from_template("general
 result = agent.run("some request")
 
 # The trail is automatically populated
-trail: AuditLog = agent.audit_trail
+trail: AuditLog = agent.audit_log
 ```
 
 ### Verify chain integrity
@@ -46,6 +46,6 @@ trail.export_json("audit_report.json")
 ### Query records
 
 ```python
-violations = [r for r in trail.entries if r.action == "BLOCK"]
+violations = [r for r in trail.entries if not r.valid]
 print(f"{len(violations)} blocked actions in this session")
 ```

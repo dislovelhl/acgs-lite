@@ -1,5 +1,12 @@
 # Constitution Lifecycle HTTP API
 
+> **Stability: beta.** The lifecycle bundle, store, and HTTP surface
+> (`ConstitutionBundle`, `BundleStatus`, `BundleStore`, `ConstitutionLifecycle`,
+> `ActivationRecord`, `LifecycleError`, etc.) are classified as **beta** in
+> `acgs_lite.API_STABILITY`. Behaviour is feature-complete but request/response
+> shapes and signatures may shift in minor releases until the lifecycle surface
+> reaches stable. The HTTP route paths below are stable for v2.10.x.
+
 The constitution lifecycle router exposes draft, review, evaluation, approval,
 activation, rollback, and history over FastAPI under `/constitution/lifecycle`.
 
