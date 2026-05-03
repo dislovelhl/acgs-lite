@@ -85,6 +85,7 @@ nav:
   - API Reference:
       - Constitution Lifecycle: api/lifecycle.md
       - Constitution: api/constitution.md
+      - Governance Engine: api/engine.md
       - GovernedAgent: api/governed_agent.md
       - MACI: api/maci.md
       - Audit Trail: api/audit.md
