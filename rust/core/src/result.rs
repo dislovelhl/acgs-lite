@@ -3,10 +3,11 @@
 /// Pure Rust types — no FFI dependencies.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use serde::{Deserialize, Serialize};
 
 use crate::severity::{self, Severity};
+
+pub type ViolationTuple = (String, String, String, String, String);
 
 /// A single rule violation detected during validation.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,9 +39,7 @@ impl Decision {
     pub fn to_legacy_tuple(&self) -> (i32, i64) {
         match self {
             Decision::Allow => (severity::ALLOW, 0),
-            Decision::DenyCritical { rule_idx } => {
-                (severity::DENY_CRITICAL, *rule_idx as i64)
-            }
+            Decision::DenyCritical { rule_idx } => (severity::DENY_CRITICAL, *rule_idx as i64),
             Decision::Deny { violations, .. } => {
                 let mut bitmask: u128 = 0;
                 for v in violations {

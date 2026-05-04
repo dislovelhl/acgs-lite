@@ -5,7 +5,6 @@
 /// validate actions, return structured results.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use std::collections::{HashMap, HashSet};
 
 use acgs_validator_core::{
@@ -109,7 +108,7 @@ impl WasmValidator {
                 Ok(ContextRule {
                     rule_id: cr.rule_id,
                     rule_text: cr.rule_text,
-                    severity: Severity::from_str(&cr.severity),
+                    severity: Severity::from_label(&cr.severity),
                     category: cr.category,
                     keywords_lower: cr.keywords_lower,
                     compiled_patterns,

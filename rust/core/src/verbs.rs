@@ -7,7 +7,6 @@
 /// that override the positive-verb exemption.
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use regex::Regex;
 use std::collections::HashSet;
 use std::sync::LazyLock;
@@ -17,12 +16,36 @@ use std::sync::LazyLock;
 /// (keywords are skipped unless they contain a negative indicator).
 pub static POSITIVE_VERBS: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
     [
-        "run", "test", "generate", "create", "schedule", "implement",
-        "log", "enable", "assign", "establish", "publish", "disclose",
-        "build", "review", "audit", "check", "verify", "assess",
-        "evaluate", "report", "document", "plan", "prepare",
-        "anonymize", "share", "update", "optimize", "parallelize",
-        "consolidate", "migrate",
+        "run",
+        "test",
+        "generate",
+        "create",
+        "schedule",
+        "implement",
+        "log",
+        "enable",
+        "assign",
+        "establish",
+        "publish",
+        "disclose",
+        "build",
+        "review",
+        "audit",
+        "check",
+        "verify",
+        "assess",
+        "evaluate",
+        "report",
+        "document",
+        "plan",
+        "prepare",
+        "anonymize",
+        "share",
+        "update",
+        "optimize",
+        "parallelize",
+        "consolidate",
+        "migrate",
     ]
     .into_iter()
     .collect()
