@@ -1,0 +1,9 @@
+# Default ownership for governance-sensitive changes.
+* @dislovelhl
+
+# Governance, CI, and policy-test surfaces require owner review.
+/.github/ @dislovelhl
+/docs/governance/ @dislovelhl
+/docs/contributing/ @dislovelhl
+/tests/policy/ @dislovelhl
+/src/acgs_lite/ @dislovelhl
