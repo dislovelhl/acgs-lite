@@ -5,7 +5,6 @@
 ///   hash = sha256(canonical.encode()).hexdigest()[:16]
 ///
 /// Constitutional Hash: 608508a9bd224290
-
 use sha2::{Digest, Sha256};
 
 /// Compute the constitutional hash from rule data.
@@ -13,9 +12,7 @@ use sha2::{Digest, Sha256};
 /// `rules` is a list of `(rule_id, rule_text, severity_value, sorted_keywords)`.
 /// Rules are sorted by rule_id before hashing (matching Python behavior).
 /// This function does not mutate the input — it clones and sorts internally.
-pub fn compute_constitutional_hash(
-    rules: &[(String, String, String, Vec<String>)],
-) -> String {
+pub fn compute_constitutional_hash(rules: &[(String, String, String, Vec<String>)]) -> String {
     let mut sorted: Vec<_> = rules.to_vec();
     sorted.sort_by(|a, b| a.0.cmp(&b.0));
 

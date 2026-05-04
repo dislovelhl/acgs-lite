@@ -8,11 +8,15 @@
 //!
 //! Constitutional Hash: 608508a9bd224290
 
-use spacetimedb::{table, reducer, Identity, ReducerContext, Table, Timestamp};
+use spacetimedb::{reducer, table, Identity, ReducerContext, Table, Timestamp};
 
 // --- Tables ---
 
-#[table(name = constitutional_principle, public)]
+#[table(
+    name = "constitutional_principle",
+    accessor = constitutional_principle,
+    public
+)]
 pub struct ConstitutionalPrinciple {
     #[primary_key]
     #[auto_inc]
@@ -26,7 +30,7 @@ pub struct ConstitutionalPrinciple {
     pub amended_by: Option<u64>,
 }
 
-#[table(name = governance_decision, public)]
+#[table(name = "governance_decision", accessor = governance_decision, public)]
 pub struct GovernanceDecision {
     #[primary_key]
     #[auto_inc]
@@ -41,7 +45,7 @@ pub struct GovernanceDecision {
     pub created_at: Timestamp,
 }
 
-#[table(name = maci_role_binding, public)]
+#[table(name = "maci_role_binding", accessor = maci_role_binding, public)]
 pub struct MACIRoleBinding {
     #[primary_key]
     pub agent_identity: Identity,
@@ -100,7 +104,7 @@ pub fn propose_action(
         .db
         .maci_role_binding()
         .agent_identity()
-        .find(ctx.sender)
+        .find(ctx.sender())
         .ok_or("No MACI role binding for caller")?;
 
     if binding.role != "proposer" {
@@ -131,7 +135,7 @@ pub fn propose_action(
         verdict: "pending".into(),
         reasoning,
         principle_ids,
-        proposer: ctx.sender,
+        proposer: ctx.sender(),
         validator: None,
         created_at: ctx.timestamp,
     });
@@ -150,7 +154,7 @@ pub fn validate_decision(
         .db
         .maci_role_binding()
         .agent_identity()
-        .find(ctx.sender)
+        .find(ctx.sender())
         .ok_or("No MACI role binding for caller")?;
 
     if binding.role != "validator" {
@@ -180,7 +184,7 @@ pub fn validate_decision(
     }
 
     // MACI core invariant: validator cannot be the proposer
-    if decision.proposer == ctx.sender {
+    if decision.proposer == ctx.sender() {
         return Err("MACI violation: agents cannot validate their own proposals".into());
     }
 
@@ -190,7 +194,7 @@ pub fn validate_decision(
 
     decision.verdict = verdict;
     decision.reasoning = reasoning;
-    decision.validator = Some(ctx.sender);
+    decision.validator = Some(ctx.sender());
     ctx.db.governance_decision().id().update(decision);
 
     Ok(())
@@ -209,7 +213,7 @@ pub fn amend_principle(
         .db
         .maci_role_binding()
         .agent_identity()
-        .find(ctx.sender)
+        .find(ctx.sender())
         .ok_or("No MACI role binding for caller")?;
 
     // Only validators can amend principles (constitutional authority)

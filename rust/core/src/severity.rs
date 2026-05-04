@@ -2,7 +2,6 @@
 ///
 /// Mirrors `constitution.Severity` in Python.
 /// Constitutional Hash: 608508a9bd224290
-
 use serde::{Deserialize, Serialize};
 
 /// Decision codes returned by the validator.
@@ -21,7 +20,7 @@ pub enum Severity {
 
 impl Severity {
     /// Parse from the Python severity string value.
-    pub fn from_str(s: &str) -> Self {
+    pub fn from_label(s: &str) -> Self {
         match s {
             "critical" => Severity::Critical,
             "high" => Severity::High,
@@ -52,12 +51,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_from_str() {
-        assert_eq!(Severity::from_str("critical"), Severity::Critical);
-        assert_eq!(Severity::from_str("high"), Severity::High);
-        assert_eq!(Severity::from_str("medium"), Severity::Medium);
-        assert_eq!(Severity::from_str("low"), Severity::Low);
-        assert_eq!(Severity::from_str("unknown"), Severity::Medium);
+    fn test_from_label() {
+        assert_eq!(Severity::from_label("critical"), Severity::Critical);
+        assert_eq!(Severity::from_label("high"), Severity::High);
+        assert_eq!(Severity::from_label("medium"), Severity::Medium);
+        assert_eq!(Severity::from_label("low"), Severity::Low);
+        assert_eq!(Severity::from_label("unknown"), Severity::Medium);
     }
 
     #[test]
