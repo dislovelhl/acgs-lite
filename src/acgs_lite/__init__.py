@@ -179,6 +179,19 @@ _LAZY_EXPORTS: dict[str, tuple[str, str, str]] = {
         "pip install z3-solver",
     ),
     "Z3VerifyResult": ("acgs_lite.z3_verify", "Z3VerifyResult", "pip install z3-solver"),
+    "VerificationStatus": ("acgs_lite.z3_verify", "VerificationStatus", "pip install z3-solver"),
+    "blocks_execution": ("acgs_lite.z3_verify", "blocks_execution", "pip install z3-solver"),
+    "verification_exempt": (
+        "acgs_lite.formal.exemption",
+        "verification_exempt",
+        "pip install acgs-lite",
+    ),
+    "VerificationExemption": (
+        "acgs_lite.formal.exemption",
+        "VerificationExemption",
+        "pip install acgs-lite",
+    ),
+    "ExemptionError": ("acgs_lite.formal.exemption", "ExemptionError", "pip install acgs-lite"),
 }
 
 try:

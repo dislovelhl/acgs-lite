@@ -459,7 +459,7 @@ class TestExemptionScopeIsAnAllowlistOverTheEnum:
         """Exemptions live at the gate, never in the enforcement predicate."""
         from acgs_lite.z3_verify import Z3VerifyResult
 
-        for status in list(VerificationStatus):
+        for status in VerificationStatus:
             res = Z3VerifyResult(
                 satisfiable=False,
                 verified=False,
