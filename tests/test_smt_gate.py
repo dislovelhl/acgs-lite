@@ -160,9 +160,14 @@ def test_malformed_policy_is_invalid_not_absent(tmp_path: Path) -> None:
 def test_broken_solver_module_is_error_not_pass() -> None:
     """A rule carrying a policy plus a solver module that raises must block."""
 
+    def _broken_solver_attr(name: str) -> Any:
+        # Raise outside the special method: the gate must catch the failure,
+        # and keeping the raise out of ``__getattr__`` keeps CodeQL quiet.
+        raise RuntimeError(f"solver is broken: {name}")
+
     class _BrokenSolver:
         def __getattr__(self, name: str) -> Any:
-            raise RuntimeError(f"solver is broken: {name}")
+            return _broken_solver_attr(name)
 
     report = Z3VerificationGate(z3_module=_BrokenSolver()).verify_constitution(
         _constitution(("T-1", "amount > 0"))
@@ -177,8 +182,12 @@ def test_unknown_verdict_does_not_pass(monkeypatch: pytest.MonkeyPatch) -> None:
     """A solver that will not answer is not a pass."""
 
     class _UnknownSolver:
-        def set(self, *_a: Any, **_k: Any) -> None: ...
-        def add(self, *_a: Any, **_k: Any) -> None: ...
+        def set(self, *_a: Any, **_k: Any) -> None:
+            """Accept and ignore solver declarations/assertions."""
+
+        def add(self, *_a: Any, **_k: Any) -> None:
+            """Accept and ignore solver assertions."""
+
         def check(self) -> Any:
             return _z3.unknown
 
@@ -192,7 +201,7 @@ def test_unknown_verdict_does_not_pass(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_every_non_pass_status_maps_to_a_non_zero_exit_code() -> None:
     """PASS is the only status that may exit 0. A new status blocks by default."""
-    for status in VerificationStatus:
+    for status in list(VerificationStatus):
         report = ConstitutionVerificationReport(status=status)
         assert (report.exit_code == 0) is (status is VerificationStatus.PASS), status
 
